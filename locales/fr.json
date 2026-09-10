@@ -1,0 +1,18 @@
+{
+  "meta": {
+    "title": "Create Next App",
+    "description": "Généré par create next app"
+  },
+  "home": {
+    "titleBeforeCode": "Pour commencer, modifiez le fichier ",
+    "titleCode": "index.tsx",
+    "titleAfterCode": ".",
+    "descriptionBeforeTemplates": "Vous cherchez un point de départ ou plus d'instructions ? Rendez-vous sur ",
+    "templatesLink": "les modèles",
+    "descriptionBetween": " ou le centre ",
+    "learningLink": "d'apprentissage",
+    "descriptionAfterLearning": ".",
+    "deployButton": "Déployer maintenant",
+    "docsButton": "Documentation"
+  }
+}
