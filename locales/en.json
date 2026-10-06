@@ -173,7 +173,19 @@
     "aiOffline": "Offline",
     "version": "Version",
     "privacy": "Photos are sent only to be analysed and are not kept on the server. Your history stays on your device.",
-    "aiProvider": "Model"
+    "aiProvider": "Model",
+    "permissions": "Permissions",
+    "permissionCamera": "Camera and photos",
+    "permissionNotifications": "Notifications",
+    "permissionStatus": {
+      "granted": "Allowed",
+      "denied": "Denied",
+      "prompt": "Not asked yet",
+      "unsupported": "Handled by the browser"
+    },
+    "permissionAllow": "Allow",
+    "permissionDeniedHint": "To turn a denied permission back on, open your phone settings → Apps → Pocket Assistant.",
+    "replayOnboarding": "Replay the introduction"
   },
   "notifications": {
     "readyTitle": "Analysis ready ✨"
@@ -187,5 +199,32 @@
     "installBody": "Add Pocket Assistant to your computer and open it like an app.",
     "installCta": "Install",
     "mobileApps": "Also available on Android and iOS."
+  },
+  "onboarding": {
+    "welcomeTitle": "Welcome!",
+    "welcomeBody": "Before we start, Pocket Assistant will ask for access to a few phone features. For each one we explain what it’s for: you can accept, decline, and change your mind any time.",
+    "start": "Let’s go",
+    "cameraTitle": "Camera and photos",
+    "cameraBody": "It’s the heart of the app: to analyse something, you need to take a photo of it or pick an image.",
+    "cameraReasons": [
+      "Snap a meal, a document or an object",
+      "Pick a photo you already took from your gallery"
+    ],
+    "cameraPrivacy": "Photos are only used for the analysis and never kept on our servers.",
+    "notificationsTitle": "Notifications",
+    "notificationsBody": "So we can let you know at the right time, without keeping the app open.",
+    "notificationsReasons": [
+      "Know when an analysis is ready",
+      "Get your reminders: food to finish, a bill to pay, a plant to water"
+    ],
+    "notificationsPrivacy": "Local notifications only, no ads.",
+    "allow": "Allow access",
+    "later": "Not now",
+    "granted": "Access granted",
+    "denied": "Access denied. You can turn it on later in your phone settings, under Apps.",
+    "continue": "Continue",
+    "doneTitle": "You’re all set",
+    "doneBody": "You can change these permissions any time in Settings.",
+    "finish": "Get started"
   }
 }

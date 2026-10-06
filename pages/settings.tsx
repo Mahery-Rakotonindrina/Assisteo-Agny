@@ -1,7 +1,7 @@
 import Head from "next/head";
 import { motion } from "motion/react";
-import { useEffect, useState, type ReactNode } from "react";
-import { BellRing, Cpu, Globe, Info, Moon, Monitor, Palette, Send, Smartphone, Sun, Trash2, Vibrate } from "lucide-react";
+import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
+import { BellRing, Camera, Check, Cpu, Globe, Info, Moon, Monitor, Palette, RotateCcw, Send, Smartphone, Sun, Trash2, Vibrate, X } from "lucide-react";
 import { Button } from "@/components/Button";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { SegmentedControl } from "@/components/SegmentedControl";
@@ -13,6 +13,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { config } from "@/lib/config";
 import { rise, stagger } from "@/lib/motion";
 import { useSettings, type ThemePreference } from "@/lib/settings/SettingsProvider";
+import { isNative } from "@/services/device";
 import { historyStore } from "@/services/historyStore";
 import {
   getNotificationPermission,
@@ -20,6 +21,7 @@ import {
   requestNotificationPermission,
   type NotificationPermission,
 } from "@/services/notifications";
+import { getPermission, requestPermission, type PermissionKind, type PermissionStatus } from "@/services/permissions";
 import styles from "@/styles/Settings.module.scss";
 
 export default function SettingsPage() {
@@ -28,12 +30,29 @@ export default function SettingsPage() {
   const { settings, update } = useSettings();
   const { entries } = useHistory();
   const [permission, setPermission] = useState<NotificationPermission>("prompt");
+  const [cameraPermission, setCameraPermission] = useState<PermissionStatus>("prompt");
   const aiStatus = useAiStatus();
+  // Server snapshot is false so the prerendered HTML matches the first client render.
+  const native = useSyncExternalStore(noSubscribe, isNative, () => false);
   const [confirmClear, setConfirmClear] = useState(false);
 
+  // Re-read on return to the app: the user may have changed them in the OS settings.
   useEffect(() => {
-    void getNotificationPermission().then(setPermission);
+    const refresh = () => {
+      void getNotificationPermission().then(setPermission);
+      void getPermission("camera").then(setCameraPermission).catch(() => setCameraPermission("unsupported"));
+    };
+    refresh();
+    document.addEventListener("visibilitychange", refresh);
+    return () => document.removeEventListener("visibilitychange", refresh);
   }, []);
+
+  const allow = async (kind: PermissionKind) => {
+    const result = await requestPermission(kind);
+    if (kind === "camera") setCameraPermission(result);
+    else setPermission(result);
+    if (result === "denied") toast(t("settings.permissionDeniedHint"), "error");
+  };
 
   const toggleNotifyOnResult = async (enabled: boolean) => {
     if (enabled && permission !== "granted") {
@@ -105,6 +124,42 @@ export default function SettingsPage() {
           </Row>
         </Group>
 
+        <Group title={t("settings.permissions")}>
+          {(
+            [
+              ["camera", cameraPermission, <Camera key="camera" />],
+              ["notifications", permission, <BellRing key="notifications" />],
+            ] as const
+          ).map(([kind, status, icon]) => (
+            <Row
+              key={kind}
+              icon={icon}
+              label={t(kind === "camera" ? "settings.permissionCamera" : "settings.permissionNotifications")}
+              hint={t(`settings.permissionStatus.${status}`)}
+            >
+              {status === "prompt" ? (
+                <Button size="md" onClick={() => void allow(kind)}>
+                  {t("settings.permissionAllow")}
+                </Button>
+              ) : (
+                <span className={styles.permission} data-status={status}>
+                  {status === "granted" ? <Check size={16} strokeWidth={3} /> : status === "denied" ? <X size={16} strokeWidth={3} /> : null}
+                </span>
+              )}
+            </Row>
+          ))}
+          {(cameraPermission === "denied" || permission === "denied") && (
+            <p className={styles.warning}>{t("settings.permissionDeniedHint")}</p>
+          )}
+          {native && (
+            <div className={styles.rowAction}>
+              <Button variant="ghost" icon={<RotateCcw />} onClick={() => update({ onboardingDone: false })} block>
+                {t("settings.replayOnboarding")}
+              </Button>
+            </div>
+          )}
+        </Group>
+
         <Group title={t("settings.notifications")}>
           <Row icon={<BellRing />} label={t("settings.notifyOnResult")} hint={t("settings.notifyOnResultHint")}>
             <Toggle
@@ -170,6 +225,8 @@ function Group({ title, children }: { title: string; children: ReactNode }) {
     </motion.section>
   );
 }
+
+const noSubscribe = () => () => {};
 
 type RowProps = {
   icon: ReactNode;

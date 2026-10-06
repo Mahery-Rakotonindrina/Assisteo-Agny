@@ -3,6 +3,7 @@ import Head from "next/head";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import { MotionConfig } from "motion/react";
 import { AppShell } from "@/components/AppShell";
+import { Onboarding } from "@/components/Onboarding";
 import { ToastProvider } from "@/components/Toast";
 import { useNativeBootstrap } from "@/hooks/useNativeBootstrap";
 import { SettingsProvider } from "@/lib/settings/SettingsProvider";
@@ -51,6 +52,7 @@ export default function App({ Component, pageProps }: AppProps) {
             <AppShell>
               <Component {...pageProps} />
             </AppShell>
+            <Onboarding />
           </MotionConfig>
         </ToastProvider>
       </SettingsProvider>

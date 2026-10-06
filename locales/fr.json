@@ -173,7 +173,19 @@
     "aiOffline": "Hors ligne",
     "version": "Version",
     "privacy": "Les photos sont envoyées uniquement pour l'analyse et ne sont pas conservées sur le serveur. L'historique reste sur ton appareil.",
-    "aiProvider": "Modèle"
+    "aiProvider": "Modèle",
+    "permissions": "Autorisations",
+    "permissionCamera": "Appareil photo et photos",
+    "permissionNotifications": "Notifications",
+    "permissionStatus": {
+      "granted": "Autorisé",
+      "denied": "Refusé",
+      "prompt": "Pas encore demandé",
+      "unsupported": "Géré par le navigateur"
+    },
+    "permissionAllow": "Autoriser",
+    "permissionDeniedHint": "Pour réactiver un accès refusé, ouvre les réglages du téléphone → Applications → Pocket Assistant.",
+    "replayOnboarding": "Revoir l’introduction"
   },
   "notifications": {
     "readyTitle": "Analyse prête ✨"
@@ -187,5 +199,32 @@
     "installBody": "Ajoute Pocket Assistant à ton ordinateur pour l’ouvrir comme une application.",
     "installCta": "Installer",
     "mobileApps": "Aussi disponible sur Android et iOS."
+  },
+  "onboarding": {
+    "welcomeTitle": "Bienvenue !",
+    "welcomeBody": "Avant de commencer, Pocket Assistant va te demander l’accès à quelques fonctions du téléphone. Pour chacune, on t’explique à quoi elle sert : tu peux accepter, refuser, et changer d’avis à tout moment.",
+    "start": "C’est parti",
+    "cameraTitle": "Appareil photo et photos",
+    "cameraBody": "C’est le cœur de l’app : pour analyser quelque chose, il faut pouvoir le prendre en photo ou choisir une image.",
+    "cameraReasons": [
+      "Photographier un plat, un document ou un objet",
+      "Choisir une photo déjà prise dans ta galerie"
+    ],
+    "cameraPrivacy": "Les photos ne servent qu’à l’analyse et ne sont jamais conservées sur nos serveurs.",
+    "notificationsTitle": "Notifications",
+    "notificationsBody": "Pour te prévenir au bon moment, sans que tu aies à garder l’app ouverte.",
+    "notificationsReasons": [
+      "Savoir quand une analyse est prête",
+      "Recevoir tes rappels : aliment à finir, facture à payer, plante à arroser"
+    ],
+    "notificationsPrivacy": "Uniquement des notifications locales, aucune publicité.",
+    "allow": "Autoriser l’accès",
+    "later": "Plus tard",
+    "granted": "Accès autorisé",
+    "denied": "Accès refusé. Tu pourras l’activer plus tard dans les réglages du téléphone, rubrique Applications.",
+    "continue": "Continuer",
+    "doneTitle": "Tout est prêt",
+    "doneBody": "Tu peux modifier ces autorisations à tout moment dans Réglages.",
+    "finish": "Commencer"
   }
 }

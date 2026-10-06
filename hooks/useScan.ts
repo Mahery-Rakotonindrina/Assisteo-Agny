@@ -8,6 +8,7 @@ import { CaptureCancelledError, capturePhoto, type PhotoSource } from "@/service
 import { haptics } from "@/services/device";
 import { createId, historyStore } from "@/services/historyStore";
 import { notify } from "@/services/notifications";
+import { ensureCameraAccess } from "@/services/permissions";
 import { ApiError } from "@/types/api";
 import { useTranslation } from "./useTranslation";
 
@@ -116,6 +117,11 @@ export function useScan(mode: ScanMode) {
   const start = useCallback(
     async (source: PhotoSource) => {
       haptics.press();
+      if (!(await ensureCameraAccess())) {
+        haptics.error();
+        setState({ phase: "error", error: "camera" });
+        return;
+      }
       let src: string;
       try {
         src = await capturePhoto(source);
