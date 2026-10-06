@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { activeProvider } from "@/lib/ai/provider";
 import { InstallIdSchema, installIdHeader, type TrialResponse } from "@/lib/ai/schema";
 import { applyCors, sendError } from "@/lib/server/http";
-import { getTrialUsed, TRIAL_LIMIT } from "@/lib/server/trialStore";
+import { getTrialUsage } from "@/lib/server/trialStore";
 
 /** How many free trial scans this install has used on the server's AI key. */
 export default async function handler(req: NextApiRequest, res: NextApiResponse<TrialResponse | unknown>) {
@@ -15,7 +15,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   res.setHeader("Cache-Control", "no-store");
   res.status(200).json({
     enabled: activeProvider !== "demo",
-    limit: TRIAL_LIMIT,
-    used: await getTrialUsed(installId.data),
+    ...(await getTrialUsage(installId.data)),
   } satisfies TrialResponse);
 }

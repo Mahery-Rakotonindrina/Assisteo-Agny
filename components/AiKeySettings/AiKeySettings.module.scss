@@ -154,3 +154,107 @@
   font-size: 0.85rem;
   font-weight: 500;
 }
+
+// ---- Provider picker --------------------------------------------------------
+
+.providers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.provider {
+  position: relative;
+  height: 2.3rem;
+  padding: 0 0.85rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: color 0.2s var(--ease-out);
+
+  &:hover {
+    color: var(--text);
+  }
+}
+
+.providerActive,
+.providerActive:hover {
+  color: var(--accent-ink);
+  border-color: transparent;
+}
+
+.providerPill {
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: var(--accent);
+}
+
+.providerName {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.free {
+  padding: 0.05rem 0.4rem;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--cat-plant) 18%, transparent);
+  color: var(--cat-plant);
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+
+  .providerActive & {
+    background: rgba(0, 0, 0, 0.12);
+    color: var(--accent-ink);
+  }
+}
+
+// ---- Model field --------------------------------------------------------------
+
+.labelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.textButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent-text);
+
+  &:disabled {
+    opacity: 0.4;
+  }
+}
+
+.suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  max-height: 9.5rem;
+  overflow-y: auto;
+}
+
+.suggestion {
+  padding: 0.3rem 0.6rem;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+
+  &:hover {
+    border-color: var(--accent);
+    color: var(--text);
+  }
+}

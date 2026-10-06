@@ -175,7 +175,7 @@
     "aiOffline": "Offline",
     "version": "Version",
     "privacy": "Photos are sent only to be analysed and are not kept on the server. Your history stays on your device.",
-    "aiProvider": "Model",
+    "aiProvider": "Provider",
     "permissions": "Permissions",
     "permissionCamera": "Camera and photos",
     "permissionNotifications": "Notifications",
@@ -190,31 +190,14 @@
     "replayOnboarding": "Replay the introduction",
     "aiEngine": "AI engine",
     "aiServer": "Server",
-    "aiServerHint": "Analyses use the AI configured on the server, for free. Pick Gemini or Claude to use your own key.",
+    "aiServerHint": "Analyses use the server’s AI. Pick a provider to use your own key: Gemini, Claude, OpenAI, Mistral, Groq, OpenRouter… or any OpenAI-compatible API.",
     "aiUseServer": "Switch back to the server’s AI",
     "aiModel": "Model",
-    "aiModels": {
-      "gemini-flash-latest": "Flash",
-      "gemini-flash-lite-latest": "Flash-Lite",
-      "claude-opus-5-5": "Opus 5.5",
-      "claude-sonnet-5-5": "Sonnet 5.5",
-      "claude-haiku-4-5": "Haiku 4.5"
-    },
-    "aiModelHints": {
-      "gemini-flash-latest": "Gemini’s most accurate. Free within your key’s quota.",
-      "gemini-flash-lite-latest": "Faster, larger free quota, slightly less accurate.",
-      "claude-opus-5-5": "Best analysis quality. About 2–4 cents per photo.",
-      "claude-sonnet-5-5": "Great quality for the price. About 1–2 cents per photo.",
-      "claude-haiku-4-5": "Cheapest and fastest. About half a cent per photo."
-    },
     "aiKey": "API key",
     "aiKeyReplace": "Replace the key",
     "aiKeyShow": "Show the key",
     "aiKeyHide": "Hide the key",
-    "aiGetKey": {
-      "gemini": "Get a free Gemini key",
-      "claude": "Get a Claude key"
-    },
+    "aiGetKey": "Get a {name} key",
     "aiKeyTest": "Test and save",
     "aiKeyTesting": "Checking…",
     "aiKeySaved": "Key checked and saved",
@@ -226,11 +209,20 @@
       "invalid_key": "This key was rejected. Check it’s complete and matches the selected provider.",
       "billing": "The key is valid but the account has no credit.",
       "rate_limited": "The key is valid but its quota is used up for now. Try later or pick another model.",
-      "model_unavailable": "This model isn’t available with this key. Pick another one.",
-      "error": "Can’t check the key right now.",
+      "model_unavailable": "This model doesn’t exist or isn’t available with this key.",
+      "bad_url": "The API refused the request. {detail}",
+      "error": "Can’t check right now. {detail}",
       "network": "Can’t reach the server."
     },
-    "aiKeyPrivacy": "Your key stays on this device (the phone’s secure storage). It’s only sent when you run an analysis and never kept on the server."
+    "aiKeyPrivacy": "Your key stays on this device (the phone’s secure storage). It’s only sent when you run an analysis and never kept on the server.",
+    "aiCustom": "Other",
+    "aiFree": "free",
+    "aiBaseUrl": "API address",
+    "aiBaseUrlHint": "An OpenAI-compatible API over https. The address often ends with /v1.",
+    "aiLoadModels": "Load models",
+    "aiModelPlaceholder": "model name",
+    "aiModelHint": "Pick a model that understands images (vision). “Load models” lists the ones your key can use.",
+    "aiModelsLoaded": "{count} models available with this key. Type to filter."
   },
   "notifications": {
     "readyTitle": "Analysis ready ✨"
@@ -280,5 +272,22 @@
     "freeKey": "Get a free Gemini key",
     "settingsLeft": "Free trial: {remaining} of {limit} analyses left on the server’s AI.",
     "settingsOver": "Your free trial is over. Add your Gemini (free) or Claude key to continue."
+  },
+  "admin": {
+    "title": "Admin",
+    "subtitle": "Server settings, applied immediately to every app.",
+    "token": "Admin token",
+    "unlock": "Unlock",
+    "badToken": "Invalid token.",
+    "disabled": "Admin is disabled: set ADMIN_TOKEN on the server.",
+    "error": "Something went wrong.",
+    "notDurable": "No Redis database is connected: these settings and trial counts will be lost on the next server restart.",
+    "limit": "Free scans per device",
+    "limitHint": "Analyses offered on the server’s AI before users must add their own key. 0 = no trial.",
+    "ipLimit": "Per-IP ceiling",
+    "ipLimitHint": "Over 30 days, against abuse (repeated reinstalls).",
+    "save": "Save",
+    "saved": "Settings saved",
+    "logout": "Log out"
   }
 }

@@ -43,16 +43,19 @@ export async function analyzeWithGemini(
   options: EngineOptions = {},
 ): Promise<{ analysis: Analysis; model: string }> {
   const client = getClient(options.apiKey);
-  const chain = [...new Set([options.model ?? GEMINI_MODEL, FALLBACK_MODEL])];
+  // Only fall back to Flash-Lite from the default model: a model the user
+  // picked by name is what they asked for.
+  const model = options.model ?? GEMINI_MODEL;
+  const chain = model === GEMINI_MODEL ? [...new Set([model, FALLBACK_MODEL])] : [model];
   let lastError: unknown;
-  for (const model of chain) {
+  for (const candidate of chain) {
     try {
-      return await analyzeOnce(client, model, input, signal);
+      return await analyzeOnce(client, candidate, input, signal);
     } catch (error) {
       lastError = error;
       const retryable = error instanceof ApiError && FALLBACK_STATUSES.has(error.status);
       if (!retryable || signal?.aborted) break;
-      console.warn(`[gemini] ${model} unavailable (${(error as ApiError).status}), trying next model`);
+      console.warn(`[gemini] ${candidate} unavailable (${(error as ApiError).status}), trying next model`);
     }
   }
   throw toAnalysisError(lastError);
@@ -100,6 +103,18 @@ function safeJson(text: string | undefined) {
 export async function verifyGeminiKey(apiKey: string, model: string) {
   try {
     await getClient(apiKey).models.generateContent({ model, contents: "Reply with OK." });
+  } catch (error) {
+    throw toAnalysisError(error);
+  }
+}
+
+export async function listGeminiModels(apiKey: string) {
+  try {
+    const ids: string[] = [];
+    for await (const model of await getClient(apiKey).models.list({ config: { pageSize: 100 } })) {
+      if (model.name && (model.supportedActions ?? []).includes("generateContent")) ids.push(model.name.replace(/^models\//, ""));
+    }
+    return ids;
   } catch (error) {
     throw toAnalysisError(error);
   }

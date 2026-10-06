@@ -93,31 +93,58 @@ export type AnalyzeRequest = z.infer<typeof AnalyzeRequestSchema>;
 export type AiProvider = "claude" | "gemini" | "demo";
 
 // ---- Bring your own key ---------------------------------------------------
-// A user can analyse with their own Claude or Gemini key. The key lives on the
-// device and travels with each request in these headers; the server uses it
-// for that call only and never stores or logs it.
+// A user can analyse with their own key for any provider. Claude and Gemini use
+// their native APIs; everything else (OpenAI, Mistral, Groq, OpenRouter, xAI,
+// self-hosted servers…) goes through the OpenAI-compatible chat API at a base
+// URL of their choice. The key lives on the device and travels with each
+// request in headers; the server uses it for that call only, never storing or
+// logging it.
 
-export const userModels = {
-  gemini: ["gemini-flash-latest", "gemini-flash-lite-latest"],
-  claude: ["claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-4-5"],
-} as const;
+export const protocols = ["claude", "gemini", "openai"] as const;
+export type Protocol = (typeof protocols)[number];
+
+const ApiKeySchema = z.string().trim().min(8).max(400);
+export const ModelIdSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(120)
+  .regex(/^[\w.:/@+-]+$/, "Invalid model name.");
+export const BaseUrlSchema = z
+  .string()
+  .trim()
+  .max(300)
+  .regex(/^https:\/\/\S+$/, "The API address must start with https://.")
+  .transform((url) => url.replace(/\/+$/, ""));
 
 export const AiOverrideSchema = z.discriminatedUnion("provider", [
-  z.object({ provider: z.literal("gemini"), apiKey: z.string().min(10).max(300), model: z.enum(userModels.gemini) }),
-  z.object({ provider: z.literal("claude"), apiKey: z.string().min(10).max(300), model: z.enum(userModels.claude) }),
+  z.object({ provider: z.literal("claude"), apiKey: ApiKeySchema, model: ModelIdSchema }),
+  z.object({ provider: z.literal("gemini"), apiKey: ApiKeySchema, model: ModelIdSchema }),
+  z.object({ provider: z.literal("openai"), apiKey: ApiKeySchema, model: ModelIdSchema, baseUrl: BaseUrlSchema }),
 ]);
 
 export type AiOverride = z.infer<typeof AiOverrideSchema>;
+
+/** Same as AiOverride without the model: what listing models needs. */
+export const ListModelsRequestSchema = z.discriminatedUnion("provider", [
+  z.object({ provider: z.literal("claude"), apiKey: ApiKeySchema }),
+  z.object({ provider: z.literal("gemini"), apiKey: ApiKeySchema }),
+  z.object({ provider: z.literal("openai"), apiKey: ApiKeySchema, baseUrl: BaseUrlSchema }),
+]);
+
+export type ListModelsRequest = z.infer<typeof ListModelsRequestSchema>;
+export type ListModelsResponse = { ok: true; models: string[] } | { ok: false; reason: VerifyFailure };
 
 export const overrideHeaders = {
   provider: "x-ai-provider",
   apiKey: "x-ai-key",
   model: "x-ai-model",
+  baseUrl: "x-ai-base-url",
 } as const;
 
-export type VerifyKeyResponse =
-  | { ok: true; model: string }
-  | { ok: false; reason: "invalid_key" | "billing" | "rate_limited" | "model_unavailable" | "error" };
+export type VerifyFailure = "invalid_key" | "billing" | "rate_limited" | "model_unavailable" | "bad_url" | "error";
+
+export type VerifyKeyResponse = { ok: true; model: string } | { ok: false; reason: VerifyFailure; detail?: string };
 
 export type HealthResponse = {
   status: "ok";

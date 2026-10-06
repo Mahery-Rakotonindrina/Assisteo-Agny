@@ -4,6 +4,8 @@ import {
   type AnalyzeRequest,
   type AnalyzeResponse,
   type HealthResponse,
+  type ListModelsRequest,
+  type ListModelsResponse,
   type VerifyKeyResponse,
 } from "@/lib/ai/schema";
 import { aiKeyStore } from "./aiKeyStore";
@@ -20,6 +22,7 @@ export const analysisService = {
           [overrideHeaders.provider]: override.provider,
           [overrideHeaders.apiKey]: override.apiKey,
           [overrideHeaders.model]: override.model,
+          ...(override.provider === "openai" && { [overrideHeaders.baseUrl]: override.baseUrl }),
         }
       : await installIdHeaders();
     return httpClient.post<AnalyzeResponse>("/api/analyze", payload, { signal, headers });
@@ -27,6 +30,10 @@ export const analysisService = {
 
   verifyKey(override: AiOverride, signal?: AbortSignal) {
     return httpClient.post<VerifyKeyResponse>("/api/verify-key", override, { signal });
+  },
+
+  listModels(request: ListModelsRequest, signal?: AbortSignal) {
+    return httpClient.post<ListModelsResponse>("/api/list-models", request, { signal });
   },
 
   health(signal?: AbortSignal) {

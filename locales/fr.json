@@ -175,7 +175,7 @@
     "aiOffline": "Hors ligne",
     "version": "Version",
     "privacy": "Les photos sont envoyées uniquement pour l'analyse et ne sont pas conservées sur le serveur. L'historique reste sur ton appareil.",
-    "aiProvider": "Modèle",
+    "aiProvider": "Fournisseur",
     "permissions": "Autorisations",
     "permissionCamera": "Appareil photo et photos",
     "permissionNotifications": "Notifications",
@@ -190,31 +190,14 @@
     "replayOnboarding": "Revoir l’introduction",
     "aiEngine": "Moteur IA",
     "aiServer": "Serveur",
-    "aiServerHint": "Les analyses utilisent l’IA configurée sur le serveur, gratuitement. Choisis Gemini ou Claude pour utiliser ta propre clé.",
+    "aiServerHint": "Les analyses utilisent l’IA du serveur. Choisis un fournisseur pour utiliser ta propre clé : Gemini, Claude, OpenAI, Mistral, Groq, OpenRouter… ou n’importe quelle API compatible OpenAI.",
     "aiUseServer": "Revenir à l’IA du serveur",
     "aiModel": "Modèle",
-    "aiModels": {
-      "gemini-flash-latest": "Flash",
-      "gemini-flash-lite-latest": "Flash-Lite",
-      "claude-opus-5-5": "Opus 5.5",
-      "claude-sonnet-5-5": "Sonnet 5.5",
-      "claude-haiku-4-5": "Haiku 4.5"
-    },
-    "aiModelHints": {
-      "gemini-flash-latest": "Le plus précis de Gemini. Gratuit dans la limite du quota de ta clé.",
-      "gemini-flash-lite-latest": "Plus rapide, quota gratuit plus large, un peu moins précis.",
-      "claude-opus-5-5": "La meilleure qualité d’analyse. ≈ 2 à 4 centimes par photo.",
-      "claude-sonnet-5-5": "Très bon équilibre qualité / prix. ≈ 1 à 2 centimes par photo.",
-      "claude-haiku-4-5": "Le plus économique et le plus rapide. ≈ 0,5 centime par photo."
-    },
     "aiKey": "Clé API",
     "aiKeyReplace": "Remplacer la clé",
     "aiKeyShow": "Afficher la clé",
     "aiKeyHide": "Masquer la clé",
-    "aiGetKey": {
-      "gemini": "Obtenir une clé Gemini gratuite",
-      "claude": "Obtenir une clé Claude"
-    },
+    "aiGetKey": "Obtenir une clé {name}",
     "aiKeyTest": "Tester et enregistrer",
     "aiKeyTesting": "Vérification…",
     "aiKeySaved": "Clé vérifiée et enregistrée",
@@ -223,14 +206,23 @@
     "aiKeyRemove": "Supprimer ma clé",
     "aiOwnKey": "ta clé",
     "aiKeyErrors": {
-      "invalid_key": "Cette clé est refusée. Vérifie qu’elle est complète et qu’elle correspond bien au fournisseur choisi.",
+      "invalid_key": "Cette clé est refusée. Vérifie qu’elle est complète et qu’elle correspond au fournisseur choisi.",
       "billing": "La clé est valide mais le compte n’a pas de crédit.",
       "rate_limited": "La clé est valide mais son quota est atteint pour le moment. Réessaie plus tard ou choisis un autre modèle.",
-      "model_unavailable": "Ce modèle n’est pas accessible avec cette clé. Choisis-en un autre.",
-      "error": "Impossible de vérifier la clé pour le moment.",
+      "model_unavailable": "Ce modèle n’existe pas ou n’est pas accessible avec cette clé.",
+      "bad_url": "L’API a refusé la demande. {detail}",
+      "error": "Impossible de vérifier pour le moment. {detail}",
       "network": "Pas de connexion au serveur."
     },
-    "aiKeyPrivacy": "Ta clé reste sur cet appareil (stockage sécurisé du téléphone). Elle n’est envoyée qu’au moment d’une analyse et n’est jamais conservée sur le serveur."
+    "aiKeyPrivacy": "Ta clé reste sur cet appareil (stockage sécurisé du téléphone). Elle n’est envoyée qu’au moment d’une analyse et n’est jamais conservée sur le serveur.",
+    "aiCustom": "Autre",
+    "aiFree": "gratuit",
+    "aiBaseUrl": "Adresse de l’API",
+    "aiBaseUrlHint": "Une API compatible OpenAI, en https. L’adresse se termine souvent par /v1.",
+    "aiLoadModels": "Charger les modèles",
+    "aiModelPlaceholder": "nom du modèle",
+    "aiModelHint": "Choisis un modèle qui comprend les images (vision). « Charger les modèles » liste ceux de ta clé.",
+    "aiModelsLoaded": "{count} modèles disponibles avec cette clé. Tape pour filtrer."
   },
   "notifications": {
     "readyTitle": "Analyse prête ✨"
@@ -280,5 +272,22 @@
     "freeKey": "Obtenir une clé Gemini gratuite",
     "settingsLeft": "Essai gratuit : {remaining} analyse(s) sur {limit} restante(s) avec l’IA du serveur.",
     "settingsOver": "Ton essai gratuit est terminé. Ajoute ta clé Gemini (gratuite) ou Claude pour continuer."
+  },
+  "admin": {
+    "title": "Administration",
+    "subtitle": "Réglages du serveur, appliqués immédiatement à toutes les apps.",
+    "token": "Jeton d’administration",
+    "unlock": "Déverrouiller",
+    "badToken": "Jeton invalide.",
+    "disabled": "L’administration est désactivée : définis ADMIN_TOKEN sur le serveur.",
+    "error": "Une erreur est survenue.",
+    "notDurable": "Aucune base Redis n’est branchée : ces réglages et les compteurs d’essai seront perdus au prochain redémarrage du serveur.",
+    "limit": "Essais gratuits par appareil",
+    "limitHint": "Analyses offertes avec l’IA du serveur avant de devoir ajouter sa clé. 0 = aucun essai.",
+    "ipLimit": "Plafond par adresse IP",
+    "ipLimitHint": "Sur 30 jours, contre les abus (réinstallations en boucle).",
+    "save": "Enregistrer",
+    "saved": "Réglages enregistrés",
+    "logout": "Se déconnecter"
   }
 }

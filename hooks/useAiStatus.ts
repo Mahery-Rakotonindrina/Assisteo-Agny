@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import type { AiProvider } from "@/lib/ai/schema";
+import { providerLabel } from "@/lib/ai/presets";
 import { aiKeyStore } from "@/services/aiKeyStore";
 import { analysisService } from "@/services/analysisService";
 
 export type AiStatus = {
   status: "checking" | "live" | "demo" | "offline";
-  provider?: AiProvider;
+  /** Display name of the engine: "Gemini", "Claude", "OpenAI", a custom host… */
+  label?: string;
   model?: string;
   /** True when analyses run on the user's own key rather than the server's. */
   ownKey?: boolean;
@@ -20,7 +21,13 @@ export function useAiStatus() {
     const controller = new AbortController();
     analysisService
       .health(controller.signal)
-      .then((health) => setServer({ status: health.ai, provider: health.provider, model: health.model }))
+      .then((health) =>
+        setServer({
+          status: health.ai,
+          label: health.provider === "gemini" ? "Gemini" : health.provider === "claude" ? "Claude" : undefined,
+          model: health.model,
+        }),
+      )
       .catch(() => {
         if (!controller.signal.aborted) setServer({ status: "offline" });
       });
@@ -32,7 +39,16 @@ export function useAiStatus() {
       void aiKeyStore
         .get()
         .then((override) =>
-          setOwn(override ? { status: "live", provider: override.provider, model: override.model, ownKey: true } : null),
+          setOwn(
+            override
+              ? {
+                  status: "live",
+                  label: providerLabel(override.presetId, override.provider === "openai" ? override.baseUrl : undefined),
+                  model: override.model,
+                  ownKey: true,
+                }
+              : null,
+          ),
         );
     load();
     return aiKeyStore.subscribe(load);

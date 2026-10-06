@@ -105,7 +105,7 @@ export default function SettingsPage() {
 
   const aiLabel = {
     checking: "…",
-    live: `${t("settings.aiLive")} · ${aiStatus.provider === "gemini" ? "Gemini" : "Claude"}${aiStatus.ownKey ? ` · ${t("settings.aiOwnKey")}` : ""}`,
+    live: `${t("settings.aiLive")} · ${aiStatus.label ?? "IA"}${aiStatus.ownKey ? ` · ${t("settings.aiOwnKey")}` : ""}`,
     demo: t("settings.aiDemo"),
     offline: t("settings.aiOffline"),
   }[aiStatus.status];

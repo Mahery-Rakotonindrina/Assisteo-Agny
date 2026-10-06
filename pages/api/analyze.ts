@@ -5,7 +5,7 @@ import { activeModel, activeProvider, analyzeImage, readOverride } from "@/lib/a
 import { AnalyzeRequestSchema, InstallIdSchema, installIdHeader, type AnalyzeResponse, type TrialState } from "@/lib/ai/schema";
 import { applyCors, clientIp, sendError } from "@/lib/server/http";
 import { rateLimit } from "@/lib/server/rateLimit";
-import { releaseTrialScan, reserveTrialScan, TRIAL_LIMIT } from "@/lib/server/trialStore";
+import { releaseTrialScan, reserveTrialScan } from "@/lib/server/trialStore";
 
 export const config = {
   api: {
@@ -61,11 +61,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       return sendError(res, 400, "invalid_request", "Missing install id: update the app.");
     }
     const ip = clientIp(req);
-    const used = await reserveTrialScan(installId.data, ip);
-    if (used === null) {
+    const usage = await reserveTrialScan(installId.data, ip);
+    if (usage === null) {
       return sendError(res, 403, "trial_exhausted", "The free trial is over: add your own API key in Settings.");
     }
-    trial = { installId: installId.data, ip, used, limit: TRIAL_LIMIT };
+    trial = { installId: installId.data, ip, ...usage };
   }
 
   // Stop paying for tokens if the user cancels or leaves the screen.

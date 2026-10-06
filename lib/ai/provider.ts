@@ -1,11 +1,20 @@
 import type { IncomingHttpHeaders } from "node:http";
-import { analyzeWithClaude, CLAUDE_MODEL, verifyClaudeKey, type EngineOptions } from "./claude";
-import { analyzeWithGemini, GEMINI_MODEL, verifyGeminiKey } from "./gemini";
-import { AiOverrideSchema, overrideHeaders, type AiOverride, type AiProvider, type Analysis, type AnalyzeRequest } from "./schema";
+import { analyzeWithClaude, CLAUDE_MODEL, listClaudeModels, verifyClaudeKey, type EngineOptions } from "./claude";
+import { analyzeWithGemini, GEMINI_MODEL, listGeminiModels, verifyGeminiKey } from "./gemini";
+import { analyzeWithOpenAICompatible, listOpenAICompatibleModels, verifyOpenAICompatibleKey } from "./openaiCompatible";
+import {
+  AiOverrideSchema,
+  overrideHeaders,
+  type AiOverride,
+  type AiProvider,
+  type Analysis,
+  type AnalyzeRequest,
+  type ListModelsRequest,
+} from "./schema";
 
 type Engine = (input: AnalyzeRequest, signal?: AbortSignal, options?: EngineOptions) => Promise<{ analysis: Analysis; model: string }>;
 
-const engines: Record<Exclude<AiProvider, "demo">, { analyze: Engine; model: string; configured: boolean }> = {
+const serverEngines: Record<Exclude<AiProvider, "demo">, { analyze: Engine; model: string; configured: boolean }> = {
   claude: {
     analyze: analyzeWithClaude,
     model: CLAUDE_MODEL,
@@ -25,15 +34,15 @@ const engines: Record<Exclude<AiProvider, "demo">, { analyze: Engine; model: str
 function resolveProvider(): AiProvider {
   if (process.env.AI_DEMO_MODE === "true") return "demo";
   const forced = process.env.AI_PROVIDER;
-  if (forced === "claude" || forced === "gemini") return engines[forced].configured ? forced : "demo";
-  if (engines.claude.configured) return "claude";
-  if (engines.gemini.configured) return "gemini";
+  if (forced === "claude" || forced === "gemini") return serverEngines[forced].configured ? forced : "demo";
+  if (serverEngines.claude.configured) return "claude";
+  if (serverEngines.gemini.configured) return "gemini";
   return "demo";
 }
 
 export const activeProvider = resolveProvider();
 
-export const activeModel = activeProvider === "demo" ? "demo" : engines[activeProvider].model;
+export const activeModel = activeProvider === "demo" ? "demo" : serverEngines[activeProvider].model;
 
 /**
  * Reads a user-supplied key from the request headers.
@@ -48,8 +57,9 @@ export function readOverride(headers: IncomingHttpHeaders): AiOverride | null | 
   if (!provider) return null;
   const parsed = AiOverrideSchema.safeParse({
     provider,
-    apiKey: get(overrideHeaders.apiKey)?.trim(),
+    apiKey: get(overrideHeaders.apiKey),
     model: get(overrideHeaders.model),
+    baseUrl: get(overrideHeaders.baseUrl),
   });
   return parsed.success ? parsed.data : "invalid";
 }
@@ -57,12 +67,36 @@ export function readOverride(headers: IncomingHttpHeaders): AiOverride | null | 
 /** Analyses with the user's own key when given, else with the server's engine. */
 export function analyzeImage(input: AnalyzeRequest, signal?: AbortSignal, override?: AiOverride | null) {
   if (override) {
-    return engines[override.provider].analyze(input, signal, { apiKey: override.apiKey, model: override.model });
+    switch (override.provider) {
+      case "claude":
+        return analyzeWithClaude(input, signal, override);
+      case "gemini":
+        return analyzeWithGemini(input, signal, override);
+      case "openai":
+        return analyzeWithOpenAICompatible(input, signal, override);
+    }
   }
   if (activeProvider === "demo") throw new Error("analyzeImage called in demo mode.");
-  return engines[activeProvider].analyze(input, signal);
+  return serverEngines[activeProvider].analyze(input, signal);
 }
 
-export function verifyKey({ provider, apiKey, model }: AiOverride) {
-  return provider === "claude" ? verifyClaudeKey(apiKey, model) : verifyGeminiKey(apiKey, model);
+export function verifyKey(override: AiOverride) {
+  switch (override.provider) {
+    case "claude":
+      return verifyClaudeKey(override.apiKey, override.model);
+    case "gemini":
+      return verifyGeminiKey(override.apiKey, override.model);
+    case "openai":
+      return verifyOpenAICompatibleKey(override);
+  }
+}
+
+export async function listModels(request: ListModelsRequest) {
+  const models =
+    request.provider === "claude"
+      ? await listClaudeModels(request.apiKey)
+      : request.provider === "gemini"
+        ? await listGeminiModels(request.apiKey)
+        : await listOpenAICompatibleModels(request.apiKey, request.baseUrl);
+  return [...new Set(models)].sort((a, b) => a.localeCompare(b));
 }

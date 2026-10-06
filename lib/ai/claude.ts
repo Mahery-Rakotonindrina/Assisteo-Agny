@@ -8,13 +8,18 @@ export const CLAUDE_MODEL = process.env.ANTHROPIC_MODEL ?? "claude-opus-5-5";
 
 const effort = (["low", "medium", "high"] as const).find((level) => level === process.env.AI_EFFORT) ?? "medium";
 
-// Haiku 4.5 rejects `effort` and server-side fallbacks; the 5.x models take both.
-const supportsEffortAndFallbacks = (model: string) => !model.startsWith("claude-haiku-4-5");
+// Users can name any Claude model, so only send what that model accepts:
+// `effort` exists on Opus 4.5+, Sonnet 4.6+ and Fable/Mythos; server-side
+// fallbacks ("default" form) on the Opus 5, Fable 5, Mythos 5 and Sonnet 5.5 lines.
+const supportsEffort = (model: string) => /^claude-(opus-(4-[5-9]|5)|sonnet-(4-6|5)|fable|mythos)/.test(model);
+const supportsFallbacks = (model: string) => /^claude-(opus-5|fable-5|mythos-5|sonnet-5-5)/.test(model);
 
 export type EngineOptions = {
   /** A key supplied by the user for this request only. */
   apiKey?: string;
   model?: string;
+  /** OpenAI-compatible APIs only. */
+  baseUrl?: string;
 };
 
 let serverClient: Anthropic | null = null;
@@ -30,7 +35,6 @@ export async function analyzeWithClaude(
   options: EngineOptions = {},
 ): Promise<{ analysis: Analysis; model: string }> {
   const model = options.model ?? CLAUDE_MODEL;
-  const advanced = supportsEffortAndFallbacks(model);
   let response;
   try {
     response = await getClient(options.apiKey).beta.messages.parse(
@@ -39,9 +43,9 @@ export async function analyzeWithClaude(
         max_tokens: 16000,
         // On a safety decline, let the API re-run the request on its recommended
         // fallback model instead of returning a refusal straight away.
-        ...(advanced && { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const }),
+        ...(supportsFallbacks(model) && { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const }),
         output_config: {
-          ...(advanced && { effort }),
+          ...(supportsEffort(model) && { effort }),
           format: betaZodOutputFormat(AnalysisSchema),
         },
         system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
@@ -80,11 +84,21 @@ export async function verifyClaudeKey(apiKey: string, model: string) {
     await getClient(apiKey).messages.create({
       model,
       max_tokens: 64,
-      ...(supportsEffortAndFallbacks(model) && { output_config: { effort: "low" as const } }),
+      ...(supportsEffort(model) && { output_config: { effort: "low" as const } }),
       messages: [{ role: "user", content: "Reply with OK." }],
     });
   } catch (error) {
     throw toAnalysisError(error, model);
+  }
+}
+
+export async function listClaudeModels(apiKey: string) {
+  try {
+    const ids: string[] = [];
+    for await (const model of getClient(apiKey).models.list({ limit: 100 })) ids.push(model.id);
+    return ids;
+  } catch (error) {
+    throw toAnalysisError(error, "");
   }
 }
 
