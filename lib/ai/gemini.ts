@@ -99,12 +99,19 @@ function safeJson(text: string | undefined) {
   }
 }
 
-/** Cheapest call that proves a key works for this model. */
+/**
+ * Proves the key works and the model exists, by reading the model's metadata.
+ * Unlike a test generation, it doesn't fail when the model is overloaded.
+ */
 export async function verifyGeminiKey(apiKey: string, model: string) {
+  let info;
   try {
-    await getClient(apiKey).models.generateContent({ model, contents: "Reply with OK." });
+    info = await getClient(apiKey).models.get({ model });
   } catch (error) {
     throw toAnalysisError(error);
+  }
+  if (info.supportedActions && !info.supportedActions.includes("generateContent")) {
+    throw new AnalysisError("unavailable", 404, `${model} can't analyse images.`);
   }
 }
 

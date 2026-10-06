@@ -212,7 +212,8 @@
       "model_unavailable": "Ce modèle n’existe pas ou n’est pas accessible avec cette clé.",
       "bad_url": "L’API a refusé la demande. {detail}",
       "error": "Impossible de vérifier pour le moment. {detail}",
-      "network": "Pas de connexion au serveur."
+      "network": "Pas de connexion au serveur.",
+      "overloaded": "Le service est saturé en ce moment. Ta clé n’est pas en cause : réessaie dans quelques instants, ou choisis un modèle plus léger (par exemple Flash-Lite)."
     },
     "aiKeyPrivacy": "Ta clé reste sur cet appareil (stockage sécurisé du téléphone). Elle n’est envoyée qu’au moment d’une analyse et n’est jamais conservée sur le serveur.",
     "aiCustom": "Autre",
