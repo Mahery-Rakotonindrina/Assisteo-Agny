@@ -9,13 +9,30 @@ name: Android APK
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [master, main]
     paths-ignore: ["**.md"]
 
 jobs:
   apk:
     runs-on: ubuntu-latest
     steps:
+      # An APK without a reachable API installs fine but every scan fails,
+      # so refuse to build one rather than ship a broken app.
+      - name: Check API URL
+        env:
+          API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+        run: |
+          if [ -z "$API_URL" ]; then
+            echo "::error::Set the repository variable NEXT_PUBLIC_API_URL to your public Vercel URL."
+            exit 1
+          fi
+          status=$(curl -s -o health.json -w "%{http_code}" "$API_URL/api/health")
+          if [ "$status" != "200" ]; then
+            echo "::error::$API_URL/api/health answered HTTP $status. Use the production domain and make sure it isn't behind Vercel Authentication."
+            exit 1
+          fi
+          echo "API OK: $(cat health.json)"
+
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
