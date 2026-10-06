@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { motion } from "motion/react";
-import { Download, History, ScanLine, Settings2, Smartphone } from "lucide-react";
+import { Download, History, ScanLine, Settings2, Smartphone, UserRound } from "lucide-react";
 import { useAiStatus } from "@/hooks/useAiStatus";
 import { useInstallPrompt } from "@/hooks/useInstallPrompt";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useAccount } from "@/lib/account/AccountProvider";
 import { spring } from "@/lib/motion";
 import styles from "./Sidebar.module.scss";
 
@@ -19,6 +20,7 @@ export function Sidebar() {
   const { pathname } = useRouter();
   const { t } = useTranslation();
   const aiStatus = useAiStatus();
+  const account = useAccount();
   const { canInstall, install } = useInstallPrompt();
 
   const statusLabel =
@@ -66,6 +68,15 @@ export function Sidebar() {
             {t("sidebar.mobileApps")}
           </p>
         </div>
+
+        {account.available && account.session !== undefined && (
+          <Link href="/settings?section=account" className={styles.account}>
+            <span className={account.email ? styles.avatar : styles.avatarEmpty}>
+              {account.email ? account.email.charAt(0).toUpperCase() : <UserRound size={16} />}
+            </span>
+            <span className={styles.accountText}>{account.email ?? t("account.signIn")}</span>
+          </Link>
+        )}
 
         <Link href="/settings" className={styles.status} data-status={aiStatus.status}>
           <span className={styles.dot} />

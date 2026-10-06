@@ -161,3 +161,46 @@
   background: var(--dot, var(--text-subtle));
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--dot, transparent) 25%, transparent);
 }
+
+.account {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: 14px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+
+  &:hover {
+    background: var(--surface);
+    color: var(--text);
+  }
+}
+
+.avatar,
+.avatarEmpty {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.avatar {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.avatarEmpty {
+  background: var(--surface-strong);
+}
+
+.accountText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

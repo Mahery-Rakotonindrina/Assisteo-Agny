@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { motion } from "motion/react";
 import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import { BellRing, Camera, Check, Cpu, Globe, Info, Moon, Monitor, Palette, RotateCcw, Send, Smartphone, Sun, Trash2, Vibrate, X } from "lucide-react";
+import { AccountSettings } from "@/components/AccountSettings";
 import { AiKeySettings } from "@/components/AiKeySettings";
 import { Button } from "@/components/Button";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
@@ -15,6 +16,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { config } from "@/lib/config";
 import { rise, stagger } from "@/lib/motion";
 import { useSettings, type ThemePreference } from "@/lib/settings/SettingsProvider";
+import { accountsAvailable } from "@/lib/supabase";
 import { isNative } from "@/services/device";
 import { historyStore } from "@/services/historyStore";
 import {
@@ -53,8 +55,9 @@ export default function SettingsPage() {
   // "Add my API key" links land on the AI engine section.
   const section = router.isReady ? router.query.section : undefined;
   useEffect(() => {
-    if (section !== "ai") return;
-    const timer = setTimeout(() => document.getElementById("ai-engine")?.scrollIntoView({ behavior: "smooth", block: "start" }), 350);
+    const target = section === "ai" ? "ai-engine" : section === "account" ? "account" : null;
+    if (!target) return;
+    const timer = setTimeout(() => document.getElementById(target)?.scrollIntoView({ behavior: "smooth", block: "start" }), 350);
     return () => clearTimeout(timer);
   }, [section]);
 
@@ -134,6 +137,12 @@ export default function SettingsPage() {
             />
           </Row>
         </Group>
+
+        {accountsAvailable && (
+          <Group id="account" title={t("account.section")}>
+            <AccountSettings />
+          </Group>
+        )}
 
         <Group id="ai-engine" title={t("settings.aiEngine")}>
           <AiKeySettings />
