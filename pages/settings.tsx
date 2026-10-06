@@ -11,9 +11,9 @@ import { SegmentedControl } from "@/components/SegmentedControl";
 import { Toggle } from "@/components/Toggle";
 import { useToast } from "@/components/Toast";
 import { useAiStatus } from "@/hooks/useAiStatus";
+import { useAppVersion } from "@/hooks/useAppVersion";
 import { useHistory } from "@/hooks/useHistory";
 import { useTranslation } from "@/hooks/useTranslation";
-import { config } from "@/lib/config";
 import { rise, stagger } from "@/lib/motion";
 import { useSettings, type ThemePreference } from "@/lib/settings/SettingsProvider";
 import { accountsAvailable } from "@/lib/supabase";
@@ -37,6 +37,7 @@ export default function SettingsPage() {
   const [permission, setPermission] = useState<NotificationPermission>("prompt");
   const [cameraPermission, setCameraPermission] = useState<PermissionStatus>("prompt");
   const aiStatus = useAiStatus();
+  const appVersion = useAppVersion();
   // Server snapshot is false so the prerendered HTML matches the first client render.
   const native = useSyncExternalStore(noSubscribe, isNative, () => false);
   const [confirmClear, setConfirmClear] = useState(false);
@@ -232,7 +233,7 @@ export default function SettingsPage() {
             </Row>
           )}
           <Row icon={<Info />} label={t("settings.version")}>
-            <span className={styles.value}>{config.appVersion}</span>
+            <span className={styles.value}>{appVersion}</span>
           </Row>
           <p className={styles.privacy}>{t("settings.privacy")}</p>
         </Group>
