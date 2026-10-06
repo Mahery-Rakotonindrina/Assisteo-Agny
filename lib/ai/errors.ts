@@ -19,6 +19,8 @@ export function toVerifyFailure(error: unknown): { reason: VerifyFailure; detail
   if (error.code === "billing") return { reason: "billing" };
   if (error.code === "rate_limited") return { reason: "rate_limited" };
   if (error.status === 404) return { reason: "model_unavailable" };
+  // Temporary capacity problems at the provider: the key itself is not at fault.
+  if (error.code === "unavailable" && (error.status === 503 || error.status === 504)) return { reason: "overloaded" };
   // URL checks and provider 400s carry a message worth showing as-is.
   if (error.code === "invalid_request") return { reason: "bad_url", detail: error.message };
   if (error.code === "unavailable") return { reason: "bad_url", detail: error.message };

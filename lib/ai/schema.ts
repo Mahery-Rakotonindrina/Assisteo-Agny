@@ -142,7 +142,7 @@ export const overrideHeaders = {
   baseUrl: "x-ai-base-url",
 } as const;
 
-export type VerifyFailure = "invalid_key" | "billing" | "rate_limited" | "model_unavailable" | "bad_url" | "error";
+export type VerifyFailure = "invalid_key" | "billing" | "rate_limited" | "overloaded" | "model_unavailable" | "bad_url" | "error";
 
 export type VerifyKeyResponse = { ok: true; model: string } | { ok: false; reason: VerifyFailure; detail?: string };
 

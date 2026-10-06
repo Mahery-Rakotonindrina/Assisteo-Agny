@@ -179,6 +179,9 @@ function toAnalysisError(error: unknown, model: string): unknown {
     return new AnalysisError("billing", 402, "The account behind this key has no credit.");
   }
   if (status === 429) return new AnalysisError("rate_limited", 429, "This API's rate limit is reached, try again later.");
+  if (status === 502 || status === 503 || status === 504) {
+    return new AnalysisError("unavailable", 503, "This API is overloaded right now, try again in a moment.");
+  }
   if (status === 404) return new AnalysisError("unavailable", 404, `The model ${model} isn't available at this API.`);
   if (status === 400 && /image|vision|multimodal|image_url/i.test(message)) {
     return new AnalysisError("invalid_request", 400, `The model ${model} doesn't accept images. Pick a vision model.`);

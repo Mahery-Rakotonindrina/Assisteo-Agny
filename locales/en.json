@@ -212,7 +212,8 @@
       "model_unavailable": "This model doesn’t exist or isn’t available with this key.",
       "bad_url": "The API refused the request. {detail}",
       "error": "Can’t check right now. {detail}",
-      "network": "Can’t reach the server."
+      "network": "Can’t reach the server.",
+      "overloaded": "The service is overloaded right now. Your key isn’t the problem: try again in a moment, or pick a lighter model (for example Flash-Lite)."
     },
     "aiKeyPrivacy": "Your key stays on this device (the phone’s secure storage). It’s only sent when you run an analysis and never kept on the server.",
     "aiCustom": "Other",
