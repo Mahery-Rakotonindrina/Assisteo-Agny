@@ -1,0 +1,84 @@
+.track {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.option {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-pill);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: color 0.25s var(--ease-out);
+
+  &:hover {
+    color: var(--text);
+  }
+}
+
+.md .option {
+  height: 2.1rem;
+  padding: 0 0.75rem;
+}
+
+.option {
+  min-width: 0;
+}
+
+// Large variant stacks icon over label so four options fit a 360 px phone.
+.lg {
+  border-radius: 22px;
+
+  .option {
+    height: 3.6rem;
+    padding: 0 0.25rem;
+    border-radius: 18px;
+    font-size: 0.78rem;
+  }
+
+  .label {
+    flex-direction: column;
+    gap: 0.2rem;
+
+    svg {
+      width: 1.15rem;
+      height: 1.15rem;
+    }
+  }
+}
+
+.active {
+  color: var(--accent-ink);
+
+  &:hover {
+    color: var(--accent-ink);
+  }
+}
+
+.pill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--accent);
+  box-shadow: 0 6px 20px -8px var(--accent-glow);
+}
+
+.label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+  }
+}

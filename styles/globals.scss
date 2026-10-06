@@ -1,13 +1,101 @@
+// Design tokens. Dark is the reference theme; light overrides it either through
+// the OS preference (theme = "system") or an explicit data-theme attribute.
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: dark;
+
+  --bg: #0b0c10;
+  --bg-elevated: #14161c;
+  --surface: rgba(255, 255, 255, 0.04);
+  --surface-strong: rgba(255, 255, 255, 0.075);
+  --surface-glass: rgba(20, 22, 28, 0.72);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+
+  --text: #f3f4f6;
+  --text-muted: #a2a7b3;
+  --text-subtle: #6c7280;
+
+  --accent: #c6ff4d;
+  --accent-ink: #0b0c10;
+  --accent-text: #c6ff4d;
+  --accent-soft: rgba(198, 255, 77, 0.12);
+  --accent-glow: rgba(198, 255, 77, 0.45);
+  --danger: #ff6b6b;
+  --danger-soft: rgba(255, 107, 107, 0.14);
+
+  --cat-food: #ffb547;
+  --cat-document: #6ea8ff;
+  --cat-object: #c792ff;
+  --cat-plant: #4ade80;
+  --cat-other: #94a3b8;
+
+  --aurora-a: rgba(198, 255, 77, 0.16);
+  --aurora-b: rgba(124, 92, 255, 0.2);
+
+  --shadow-lg: 0 24px 60px -24px rgba(0, 0, 0, 0.7);
+  --shadow-md: 0 12px 32px -16px rgba(0, 0, 0, 0.6);
+
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 26px;
+  --radius-pill: 999px;
+
+  --font-sans: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-instrument-serif), Georgia, serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --app-width: 480px;
+  --tabbar-height: 72px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@mixin light-tokens {
+  color-scheme: light;
+
+  --bg: #f4f5f0;
+  --bg-elevated: #ffffff;
+  --surface: rgba(17, 19, 23, 0.035);
+  --surface-strong: rgba(17, 19, 23, 0.07);
+  --surface-glass: rgba(255, 255, 255, 0.78);
+  --border: rgba(17, 19, 23, 0.08);
+  --border-strong: rgba(17, 19, 23, 0.16);
+
+  --text: #111317;
+  --text-muted: #555b66;
+  --text-subtle: #868c97;
+
+  --accent: #c6ff4d;
+  --accent-ink: #111317;
+  --accent-text: #4b7a00;
+  --accent-soft: rgba(120, 180, 0, 0.13);
+  --accent-glow: rgba(150, 220, 20, 0.5);
+  --danger: #e03e3e;
+  --danger-soft: rgba(224, 62, 62, 0.1);
+
+  --cat-food: #d98200;
+  --cat-document: #2f6fe0;
+  --cat-object: #8a4fe0;
+  --cat-plant: #16a34a;
+  --cat-other: #64748b;
+
+  --aurora-a: rgba(170, 230, 40, 0.28);
+  --aurora-b: rgba(124, 92, 255, 0.14);
+
+  --shadow-lg: 0 24px 60px -28px rgba(17, 19, 23, 0.28);
+  --shadow-md: 0 12px 30px -18px rgba(17, 19, 23, 0.25);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    @include light-tokens;
   }
+}
+
+:root[data-theme="light"] {
+  @include light-tokens;
 }
 
 * {
@@ -22,9 +110,16 @@ body {
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+  transition: background-color 0.3s var(--ease-out), color 0.3s var(--ease-out);
 }
 
 a {
@@ -32,8 +127,53 @@ a {
   text-decoration: none;
 }
 
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+input {
+  font: inherit;
+  color: inherit;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
 #__next {
   display: flex;
   min-height: 100%;
   flex-direction: column;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }

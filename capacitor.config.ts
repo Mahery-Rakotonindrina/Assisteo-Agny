@@ -1,0 +1,26 @@
+import type { CapacitorConfig } from "@capacitor/cli";
+
+// Set CAP_SERVER_URL (e.g. http://192.168.1.20:3000) to live-reload the
+// device against `npm run dev` instead of the bundled static export.
+const liveReloadUrl = process.env.CAP_SERVER_URL;
+
+const config: CapacitorConfig = {
+  appId: "com.mahery.pocketassistant",
+  appName: "Pocket Assistant",
+  webDir: "out",
+  ...(liveReloadUrl && {
+    server: { url: liveReloadUrl, cleartext: true },
+  }),
+  plugins: {
+    SplashScreen: {
+      launchShowDuration: 600,
+      backgroundColor: "#0b0c10",
+      showSpinner: false,
+    },
+    LocalNotifications: {
+      iconColor: "#c6ff4d",
+    },
+  },
+};
+
+export default config;

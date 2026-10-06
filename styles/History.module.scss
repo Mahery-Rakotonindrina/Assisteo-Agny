@@ -1,0 +1,189 @@
+@use "mixins" as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.header {
+  padding-top: 1.25rem;
+
+  @include desktop {
+    padding-top: 0;
+  }
+
+  h1 {
+    @include display(2.6rem);
+  }
+
+  p {
+    margin-top: 0.3rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+}
+
+.tools {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  @include desktop {
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+  }
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  height: 3rem;
+  padding: 0 1rem;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-subtle);
+  transition: border-color 0.2s var(--ease-out);
+
+  &:focus-within {
+    border-color: var(--accent);
+  }
+
+  @include desktop {
+    flex: 0 0 340px;
+  }
+
+  input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: 0;
+    outline: none;
+    background: none;
+    color: var(--text);
+
+    &::placeholder {
+      color: var(--text-subtle);
+    }
+  }
+}
+
+.filters {
+  display: flex;
+  gap: 0.4rem;
+  margin: 0 -1.25rem;
+  padding: 0 1.25rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  @include desktop {
+    margin: 0;
+    padding: 0;
+    flex-wrap: wrap;
+  }
+}
+
+.chip {
+  position: relative;
+  flex-shrink: 0;
+  height: 2.2rem;
+  padding: 0 0.9rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.chipActive {
+  color: var(--accent-ink);
+  border-color: transparent;
+}
+
+.chipPill {
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: var(--accent);
+}
+
+.chipLabel {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--cat);
+}
+
+.chipCount {
+  font-size: 0.75rem;
+  opacity: 0.6;
+  font-variant-numeric: tabular-nums;
+}
+
+.hint {
+  font-size: 0.75rem;
+  color: var(--text-subtle);
+
+  @include desktop {
+    display: none;
+  }
+}
+
+.groups {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+}
+
+.day {
+  @include eyebrow;
+  margin-bottom: 0.6rem;
+
+  &::first-letter {
+    text-transform: uppercase;
+  }
+}
+
+.items {
+  display: flex;
+  flex-direction: column;
+
+  @include desktop {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 1rem;
+  }
+}
+
+.row {
+  margin-bottom: 0.5rem;
+
+  @include desktop {
+    margin-bottom: 0;
+  }
+}
+
+.noMatch {
+  padding: 2rem 0;
+  text-align: center;
+  color: var(--text-muted);
+}

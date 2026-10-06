@@ -1,18 +1,191 @@
 {
   "meta": {
-    "title": "Create Next App",
-    "description": "Généré par create next app"
+    "title": "Pocket Assistant",
+    "description": "Prends une photo, l'IA t'explique ce que tu vois."
   },
-  "home": {
-    "titleBeforeCode": "Pour commencer, modifiez le fichier ",
-    "titleCode": "index.tsx",
-    "titleAfterCode": ".",
-    "descriptionBeforeTemplates": "Vous cherchez un point de départ ou plus d'instructions ? Rendez-vous sur ",
-    "templatesLink": "les modèles",
-    "descriptionBetween": " ou le centre ",
-    "learningLink": "d'apprentissage",
-    "descriptionAfterLearning": ".",
-    "deployButton": "Déployer maintenant",
-    "docsButton": "Documentation"
+  "nav": {
+    "scan": "Scanner",
+    "history": "Historique",
+    "settings": "Réglages",
+    "back": "Retour"
+  },
+  "scan": {
+    "greeting": {
+      "morning": "Bonjour",
+      "afternoon": "Bon après-midi",
+      "evening": "Bonsoir"
+    },
+    "headline": "Qu'est-ce qu'on",
+    "headlineAccent": "regarde ?",
+    "modes": {
+      "auto": "Auto",
+      "food": "Aliment",
+      "document": "Document",
+      "object": "Objet"
+    },
+    "modeHints": {
+      "auto": "L'IA détecte toute seule ce qu'il y a sur la photo.",
+      "food": "Nutrition estimée, conservation et idées de recettes.",
+      "document": "Points clés, dates importantes et actions à faire.",
+      "object": "Identification, entretien, usage et valeur."
+    },
+    "capture": "Prendre une photo",
+    "gallery": "Importer une image",
+    "recent": "Récents",
+    "seeAll": "Tout voir",
+    "preparing": "Préparation de l'image…",
+    "steps": [
+      "Lecture de l'image",
+      "Détection du sujet",
+      "Analyse des détails",
+      "Rédaction des conseils"
+    ],
+    "cancel": "Annuler",
+    "retry": "Réessayer",
+    "newPhoto": "Nouvelle photo",
+    "demoTitle": "Mode démo : réponses d’exemple",
+    "demoBody": "Aucune clé IA n’est configurée sur le serveur : l’IA ne regarde pas tes photos. Ajoute GEMINI_API_KEY (gratuit) ou ANTHROPIC_API_KEY dans .env.local puis redémarre le serveur.",
+    "webIntro": "Dépose la photo d’un aliment, d’un document ou d’un objet : l’IA t’explique ce que c’est et ce que tu peux en faire.",
+    "drop": "Glisse une image ici",
+    "dropActive": "Lâche pour lancer l’analyse",
+    "dropHint": "ou colle-la avec Ctrl+V · JPG, PNG, WebP",
+    "chooseFile": "Choisir un fichier",
+    "webcam": "Utiliser la webcam",
+    "how": "Comment ça marche",
+    "how1": "Choisis le type de sujet, ou laisse l’IA deviner.",
+    "how2": "Dépose, colle ou photographie ton image.",
+    "how3": "Reçois infos, conseils et rappels, gardés dans ton historique."
+  },
+  "errors": {
+    "title": "L'analyse n'a pas abouti",
+    "network": "Pas de connexion au serveur. Vérifie ton réseau et réessaie.",
+    "rate_limited": "Beaucoup de demandes en ce moment. Patiente quelques secondes.",
+    "refused": "Cette image ne peut pas être analysée. Essaie avec une autre photo.",
+    "unavailable": "Le service IA est indisponible pour l'instant.",
+    "invalid_request": "Ce format d'image n'est pas pris en charge.",
+    "upstream_error": "L'IA a renvoyé une réponse incomplète. Réessaie.",
+    "image": "Impossible de lire cette image.",
+    "camera": "La caméra n'est pas accessible. Autorise-la dans les réglages du téléphone.",
+    "unknown": "Une erreur inattendue s'est produite.",
+    "billing": "Le compte IA n’a plus de crédit. Ajoute du crédit sur console.anthropic.com ou repasse en mode démo.",
+    "notImage": "Ce fichier n’est pas une image."
+  },
+  "categories": {
+    "food": "Aliment",
+    "document": "Document",
+    "object": "Objet",
+    "plant": "Plante",
+    "other": "Autre"
+  },
+  "result": {
+    "confidence": "Confiance",
+    "summary": "En bref",
+    "facts": "À retenir",
+    "suggestions": "Suggestions",
+    "nutrition": "Nutrition estimée",
+    "kcal": "kcal",
+    "protein": "Protéines",
+    "carbs": "Glucides",
+    "fat": "Lipides",
+    "document": "Contenu du document",
+    "keyPoints": "Points clés",
+    "dates": "Dates",
+    "actionItems": "À faire",
+    "tags": "Mots-clés",
+    "share": "Partager",
+    "shared": "Partagé",
+    "copied": "Copié dans le presse-papiers",
+    "remind": "Me le rappeler",
+    "reminderIn": "{hours} h",
+    "reminderSet": "Rappel prévu le {date}",
+    "reminderCancelled": "Rappel annulé",
+    "reminderDenied": "Active les notifications pour recevoir des rappels.",
+    "delete": "Supprimer",
+    "deleted": "Analyse supprimée",
+    "newScan": "Nouvelle analyse",
+    "demo": "Exemple · démo",
+    "analyzedIn": "Analysé en {seconds} s",
+    "notFound": "Analyse introuvable",
+    "notFoundHint": "Elle a peut-être été supprimée de cet appareil.",
+    "kinds": {
+      "tip": "Astuce",
+      "action": "À faire",
+      "warning": "Attention",
+      "idea": "Idée"
+    },
+    "demoNote": "Réponse d’exemple : en mode démo, l’IA n’a pas analysé ta photo.",
+    "recipe": "Recette",
+    "recipePrep": "Préparation",
+    "recipeCook": "Cuisson",
+    "recipeServings": "Portions",
+    "recipeDifficulty": "Difficulté",
+    "recipeIngredients": "Ingrédients",
+    "recipeSteps": "Étapes",
+    "recipeTip": "Astuce du chef :",
+    "minutes": "{count} min",
+    "difficulty": {
+      "easy": "Facile",
+      "medium": "Moyen",
+      "hard": "Difficile"
+    }
+  },
+  "history": {
+    "title": "Historique",
+    "count": "{count} analyses sur cet appareil",
+    "search": "Rechercher…",
+    "all": "Tout",
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "emptyTitle": "Rien pour l'instant",
+    "emptyBody": "Tes analyses apparaîtront ici. Elles restent stockées uniquement sur ton appareil.",
+    "emptyCta": "Faire une première analyse",
+    "noMatch": "Aucune analyse ne correspond à ta recherche.",
+    "swipeHint": "Glisse vers la gauche pour supprimer"
+  },
+  "settings": {
+    "title": "Réglages",
+    "appearance": "Apparence",
+    "language": "Langue",
+    "theme": "Thème",
+    "themes": {
+      "system": "Auto",
+      "light": "Clair",
+      "dark": "Sombre"
+    },
+    "notifications": "Notifications",
+    "notifyOnResult": "Résultat prêt",
+    "notifyOnResultHint": "Être prévenu si l'analyse se termine en arrière-plan.",
+    "notificationsDenied": "Les notifications sont bloquées. Autorise-les dans les réglages du système.",
+    "testNotification": "Envoyer une notification de test",
+    "testTitle": "Tout fonctionne 👋",
+    "testBody": "Pocket Assistant peut t'envoyer des rappels.",
+    "haptics": "Retour haptique",
+    "hapticsHint": "Vibrations légères lors des actions.",
+    "data": "Données",
+    "storage": "{count} analyses stockées localement",
+    "clearHistory": "Effacer l'historique",
+    "clearConfirm": "Effacer définitivement toutes les analyses ?",
+    "cleared": "Historique effacé",
+    "about": "À propos",
+    "aiStatus": "Moteur IA",
+    "aiLive": "Connecté",
+    "aiDemo": "Démo (sans clé API)",
+    "aiOffline": "Hors ligne",
+    "version": "Version",
+    "privacy": "Les photos sont envoyées uniquement pour l'analyse et ne sont pas conservées sur le serveur. L'historique reste sur ton appareil.",
+    "aiProvider": "Modèle"
+  },
+  "notifications": {
+    "readyTitle": "Analyse prête ✨"
+  },
+  "common": {
+    "confirm": "Confirmer",
+    "cancel": "Annuler"
+  },
+  "sidebar": {
+    "installTitle": "Installer l’app",
+    "installBody": "Ajoute Pocket Assistant à ton ordinateur pour l’ouvrir comme une application.",
+    "installCta": "Installer",
+    "mobileApps": "Aussi disponible sur Android et iOS."
   }
 }

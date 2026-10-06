@@ -1,0 +1,52 @@
+// Shared mixins, imported with `@use "../../styles/mixins" as *;`.
+
+@mixin card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+@mixin glass {
+  background: var(--surface-glass);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+}
+
+@mixin eyebrow {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-subtle);
+}
+
+@mixin display($size: 2rem) {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: $size;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+}
+
+@mixin pressable {
+  transition: transform 0.15s var(--ease-out), background-color 0.2s var(--ease-out);
+  user-select: none;
+  -webkit-user-select: none;
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+$desktop-min: 1024px;
+
+// Desktop browsers only. Native apps keep the mobile UI, even on tablets:
+// <html> gets a `native` class before first paint inside Capacitor.
+@mixin desktop {
+  @media (min-width: $desktop-min) {
+    :global(html:not(.native)) & {
+      @content;
+    }
+  }
+}

@@ -1,7 +1,12 @@
 import type { AppProps } from "next/app";
-import { Geist, Geist_Mono } from "next/font/google";
+import Head from "next/head";
+import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
+import { MotionConfig } from "motion/react";
+import { AppShell } from "@/components/AppShell";
+import { ToastProvider } from "@/components/Toast";
+import { useNativeBootstrap } from "@/hooks/useNativeBootstrap";
+import { SettingsProvider } from "@/lib/settings/SettingsProvider";
 import "@/styles/globals.scss";
-import styles from "@/styles/App.module.scss";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,10 +18,42 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-instrument-serif",
+  subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
+});
+
+function Bootstrap() {
+  useNativeBootstrap();
+  return null;
+}
+
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <div className={`${geistSans.variable} ${geistMono.variable} ${styles.app}`}>
-      <Component {...pageProps} />
-    </div>
+    <>
+      <Head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+      </Head>
+      {/* Font families exposed on :root so fixed and portaled UI get them too. */}
+      <style jsx global>{`
+        :root {
+          --font-geist-sans: ${geistSans.style.fontFamily};
+          --font-geist-mono: ${geistMono.style.fontFamily};
+          --font-instrument-serif: ${instrumentSerif.style.fontFamily};
+        }
+      `}</style>
+      <SettingsProvider>
+        <ToastProvider>
+          <MotionConfig reducedMotion="user">
+            <Bootstrap />
+            <AppShell>
+              <Component {...pageProps} />
+            </AppShell>
+          </MotionConfig>
+        </ToastProvider>
+      </SettingsProvider>
+    </>
   );
 }

@@ -1,0 +1,51 @@
+# Builds an installable debug APK in the cloud, so no Android SDK is needed locally.
+# Download it from the run's "Artifacts" section, then open it on an Android phone.
+#
+# Set the repository variable NEXT_PUBLIC_API_URL (Settings → Secrets and
+# variables → Actions → Variables) to the URL of the deployed web build, which
+# hosts the AI API. Without it the app installs but analyses can't reach a server.
+name: Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths-ignore: ["**.md"]
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - run: npm ci
+
+      - name: Build static export
+        run: npm run build:mobile
+        env:
+          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+
+      - run: npx cap sync android
+
+      - name: Assemble debug APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pocket-assistant-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14

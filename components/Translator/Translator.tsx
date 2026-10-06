@@ -2,11 +2,12 @@ import { useTranslation } from "@/hooks/useTranslation";
 
 type TranslatorProps = {
   i18nKey: string;
+  params?: Record<string, string | number>;
   className?: string;
 };
 
-export function Translator({ i18nKey, className }: TranslatorProps) {
+export function Translator({ i18nKey, params, className }: TranslatorProps) {
   const { t } = useTranslation();
 
-  return <span className={className}>{t(i18nKey)}</span>;
+  return <span className={className}>{t(i18nKey, params)}</span>;
 }

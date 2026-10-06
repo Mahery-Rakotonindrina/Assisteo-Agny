@@ -1,0 +1,373 @@
+@use "mixins" as *;
+
+.topBar {
+  position: fixed;
+  top: calc(0.75rem + var(--safe-top));
+  left: 50%;
+  z-index: 30;
+  width: 100%;
+  max-width: var(--app-width);
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1.25rem;
+  pointer-events: none;
+
+  > * {
+    pointer-events: auto;
+  }
+
+  @include desktop {
+    position: static;
+    width: auto;
+    max-width: none;
+    margin-bottom: 1.5rem;
+    padding: 0;
+    transform: none;
+  }
+}
+
+.glassButton {
+  @include glass;
+}
+
+.demo {
+  @include glass;
+  padding: 0.35rem 0.8rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--cat-food);
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-bottom: calc(5.5rem + var(--safe-bottom));
+
+  @include desktop {
+    display: grid;
+    grid-template-columns: minmax(300px, 400px) minmax(0, 1fr);
+    gap: 3.5rem;
+    align-items: start;
+    padding-bottom: 2rem;
+  }
+}
+
+// Desktop: image and actions stay in view while the analysis scrolls.
+.media {
+  @include desktop {
+    position: sticky;
+    top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  @include desktop {
+    max-width: 720px;
+  }
+}
+
+.panel {
+  @include card;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.75rem;
+}
+
+.panelButton {
+  width: 100%;
+}
+
+.panelRow {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.hero {
+  position: relative;
+  margin: calc(-1rem - var(--safe-top)) -1.25rem 0;
+  aspect-ratio: 4 / 3.6;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  @include desktop {
+    margin: 0;
+    aspect-ratio: 4 / 5;
+    border-radius: 28px;
+    box-shadow: var(--shadow-lg);
+  }
+
+  // Mobile: fade the photo into the page. Desktop: darken its base under the badge.
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.35), transparent 25%, transparent 55%, var(--bg));
+
+    @include desktop {
+      background: linear-gradient(to bottom, transparent 60%, rgba(0, 0, 0, 0.45));
+    }
+  }
+}
+
+.heroBadge {
+  position: absolute;
+  left: 1.25rem;
+  bottom: 1.5rem;
+  z-index: 1;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: -0.5rem;
+
+  @include desktop {
+    margin-top: 0;
+  }
+
+  h1 {
+    @include display(2.4rem);
+
+    @include desktop {
+      font-size: 3.4rem;
+    }
+  }
+}
+
+.meta {
+  margin-bottom: 0.6rem;
+  font-size: 0.82rem;
+  color: var(--text-subtle);
+}
+
+.demoNote {
+  margin-top: 0.6rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--cat-food) 12%, transparent);
+  color: var(--cat-food);
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.summary {
+  font-size: 1.02rem;
+  line-height: 1.6;
+}
+
+.doc {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.bullets {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+
+  li::marker {
+    color: var(--accent-text);
+  }
+}
+
+.dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.date {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.5rem 0.8rem;
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  font-weight: 600;
+
+  svg {
+    color: var(--accent-text);
+  }
+
+  span {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+  }
+
+  small {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--text-muted);
+  }
+}
+
+.subTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.checklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+
+  li {
+    position: relative;
+    padding-left: 1.6rem;
+
+    &::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.2rem;
+      width: 1rem;
+      height: 1rem;
+      border-radius: 5px;
+      border: 1.5px solid var(--border-strong);
+    }
+  }
+}
+
+.facts {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+.fact {
+  padding: 0.7rem 0.8rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+
+  dt {
+    font-size: 0.72rem;
+    color: var(--text-subtle);
+  }
+
+  dd {
+    margin: 0.1rem 0 0;
+    font-weight: 600;
+  }
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  font-size: 0.82rem;
+  color: var(--text-muted);
+
+  svg {
+    color: var(--text-subtle);
+  }
+}
+
+.footer {
+  margin-top: 0.5rem;
+}
+
+.actionBar {
+  @include glass;
+  position: fixed;
+  left: 50%;
+  bottom: calc(0.75rem + var(--safe-bottom));
+  z-index: 30;
+  width: calc(min(100%, var(--app-width)) - 2rem);
+  margin-left: calc(min(100%, var(--app-width)) / -2 + 1rem);
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 26px;
+  box-shadow: var(--shadow-lg);
+}
+
+.grow {
+  flex: 1;
+  min-width: 0;
+}
+
+.reminderHint {
+  padding: 0.1rem 0.45rem;
+  border-radius: var(--radius-pill);
+  background: rgba(0, 0, 0, 0.12);
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.missing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 30vh;
+  text-align: center;
+
+  h1 {
+    @include display(2rem);
+  }
+
+  p {
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+  }
+}
+
+.skeleton {
+  margin: calc(-1rem - var(--safe-top)) -1.25rem 0;
+  aspect-ratio: 4 / 3.6;
+  background: linear-gradient(100deg, var(--surface) 30%, var(--surface-strong) 50%, var(--surface) 70%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s linear infinite;
+
+  @include desktop {
+    width: 400px;
+    margin: 0;
+    aspect-ratio: 4 / 5;
+    border-radius: 28px;
+  }
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}

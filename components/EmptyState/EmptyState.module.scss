@@ -1,0 +1,61 @@
+@use "../../styles/mixins" as *;
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 2rem 1rem;
+  text-align: center;
+
+  h2 {
+    @include display(1.9rem);
+  }
+
+  p {
+    max-width: 18rem;
+    margin-bottom: 0.75rem;
+    color: var(--text-muted);
+    font-size: 0.92rem;
+  }
+}
+
+.art {
+  position: relative;
+  width: 200px;
+  height: 150px;
+  margin-bottom: 1rem;
+}
+
+.card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 92px;
+  height: 116px;
+  margin: -58px 0 0 -46px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 16px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+}
+
+.cardImage {
+  flex: 1;
+  border-radius: 10px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--cat) 55%, transparent), color-mix(in srgb, var(--cat) 15%, transparent));
+}
+
+.cardLine {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--surface-strong);
+}
+
+.short {
+  width: 60%;
+}

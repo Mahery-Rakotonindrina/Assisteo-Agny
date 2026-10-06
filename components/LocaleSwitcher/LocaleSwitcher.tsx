@@ -1,31 +1,23 @@
-import Link from "next/link";
-import { useRouter } from "next/router";
-import { locales } from "@/i18n.config";
-import styles from "./LocaleSwitcher.module.scss";
+import { SegmentedControl } from "@/components/SegmentedControl";
+import { locales, type Locale } from "@/i18n.config";
+import { useSettings } from "@/lib/settings/SettingsProvider";
+
+const labels: Record<Locale, string> = { fr: "Français", en: "English" };
 
 type LocaleSwitcherProps = {
   className?: string;
 };
 
 export function LocaleSwitcher({ className }: LocaleSwitcherProps) {
-  const { pathname, query, asPath, locale: activeLocale } = useRouter();
+  const { settings, update } = useSettings();
 
   return (
-    <nav
-      className={[styles.switcher, className].filter(Boolean).join(" ")}
-      aria-label="Language switcher"
-    >
-      {locales.map((locale) => (
-        <Link
-          key={locale}
-          href={{ pathname, query }}
-          as={asPath}
-          locale={locale}
-          className={locale === activeLocale ? styles.active : styles.link}
-        >
-          {locale}
-        </Link>
-      ))}
-    </nav>
+    <SegmentedControl
+      className={className}
+      ariaLabel="Language"
+      value={settings.locale}
+      onChange={(locale) => update({ locale })}
+      options={locales.map((locale) => ({ value: locale, label: labels[locale] }))}
+    />
   );
 }

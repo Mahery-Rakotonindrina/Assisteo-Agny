@@ -1,0 +1,207 @@
+@use "../../styles/mixins" as *;
+
+// ---- Section card ---------------------------------------------------------
+
+.section {
+  @include card;
+  padding: 1.15rem 1.2rem 1.25rem;
+}
+
+.sectionTitle {
+  @include eyebrow;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.85rem;
+
+  svg {
+    width: 0.95rem;
+    height: 0.95rem;
+    color: var(--accent-text);
+  }
+}
+
+// ---- Confidence -----------------------------------------------------------
+
+.confidence {
+  --level: var(--accent);
+
+  &[data-level="medium"] {
+    --level: var(--cat-food);
+  }
+
+  &[data-level="low"] {
+    --level: var(--danger);
+  }
+}
+
+.confidenceHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.45rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+
+  strong {
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.confidenceTrack {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--surface-strong);
+  overflow: hidden;
+}
+
+.confidenceFill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--level);
+  box-shadow: 0 0 12px var(--level);
+}
+
+// ---- Nutrition ------------------------------------------------------------
+
+.nutrition {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.kcal {
+  display: flex;
+  flex-direction: column;
+  min-width: 6.5rem;
+
+  strong {
+    @include display(2.8rem);
+    font-variant-numeric: tabular-nums;
+  }
+
+  span {
+    font-weight: 600;
+    color: var(--accent-text);
+  }
+
+  small {
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--text-subtle);
+  }
+}
+
+.rings {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.ring {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  svg {
+    width: 100%;
+    max-width: 72px;
+    transform: rotate(-90deg);
+  }
+}
+
+.ringTrack {
+  fill: none;
+  stroke: var(--surface-strong);
+  stroke-width: 6;
+}
+
+.ringValue {
+  fill: none;
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+
+.ringValueText {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  max-width: 72px;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.ringLabel {
+  margin-top: 0.3rem;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+// ---- Suggestions ----------------------------------------------------------
+
+.suggestions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.suggestion {
+  --kind: var(--accent-text);
+  display: flex;
+  gap: 0.8rem;
+
+  &[data-kind="warning"] {
+    --kind: var(--danger);
+  }
+
+  &[data-kind="idea"] {
+    --kind: var(--cat-object);
+  }
+
+  &[data-kind="action"] {
+    --kind: var(--cat-document);
+  }
+
+  h3 {
+    font-size: 0.97rem;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+
+  p {
+    margin-top: 0.15rem;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+  }
+}
+
+.suggestionIcon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 12px;
+  color: var(--kind);
+  background: color-mix(in srgb, var(--kind) 14%, transparent);
+}
+
+.suggestionKind {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--kind);
+}

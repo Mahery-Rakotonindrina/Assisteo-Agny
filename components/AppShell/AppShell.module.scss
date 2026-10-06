@@ -1,0 +1,91 @@
+@use "../../styles/mixins" as *;
+
+.shell {
+  position: relative;
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  isolation: isolate;
+
+  @include desktop {
+    display: grid;
+    grid-template-columns: 272px minmax(0, 1fr);
+    justify-content: stretch;
+  }
+}
+
+.sidebar {
+  display: none;
+
+  @include desktop {
+    display: block;
+  }
+}
+
+// Two slow-drifting blurred blobs give the background some life.
+.aurora {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+
+  span {
+    position: absolute;
+    width: 70vmax;
+    height: 70vmax;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.9;
+    animation: drift 22s ease-in-out infinite alternate;
+  }
+
+  span:first-child {
+    top: -35vmax;
+    left: -25vmax;
+    background: radial-gradient(circle, var(--aurora-a), transparent 65%);
+  }
+
+  span:last-child {
+    right: -30vmax;
+    bottom: -40vmax;
+    background: radial-gradient(circle, var(--aurora-b), transparent 65%);
+    animation-duration: 28s;
+    animation-direction: alternate-reverse;
+  }
+}
+
+@keyframes drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(8vmax, 6vmax, 0) scale(1.15);
+  }
+}
+
+.main {
+  width: 100%;
+  max-width: var(--app-width);
+  min-height: 100%;
+  padding: calc(1rem + var(--safe-top)) 1.25rem calc(2rem + var(--safe-bottom));
+}
+
+.withTabBar {
+  padding-bottom: calc(var(--tabbar-height) + 2.5rem + var(--safe-bottom));
+}
+
+// Declared after .withTabBar so the desktop padding wins.
+.main {
+  @include desktop {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2.5rem 3rem 4rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora span {
+    animation: none;
+  }
+}

@@ -1,0 +1,39 @@
+@use "../../styles/mixins" as *;
+
+.viewport {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--tabbar-height) + var(--safe-bottom) + 1.25rem);
+  z-index: 60;
+  width: min(calc(100% - 2rem), calc(var(--app-width) - 2rem));
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+
+  // Centre over the content area, right of the 272px sidebar.
+  @include desktop {
+    left: calc(50% + 136px);
+    bottom: 2rem;
+  }
+}
+
+.toast {
+  @include glass;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1.1rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.9rem;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+}
+
+.success svg {
+  color: var(--accent-text);
+}
+
+.error svg {
+  color: var(--danger);
+}

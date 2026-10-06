@@ -1,0 +1,92 @@
+$size: 176px;
+
+.wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: $size + 80px;
+  height: $size + 80px;
+}
+
+.halo {
+  position: absolute;
+  width: $size;
+  height: $size;
+  border-radius: 50%;
+  border: 1.5px solid var(--accent);
+  opacity: 0;
+  animation: halo 3.2s var(--ease-out) infinite;
+}
+
+.haloDelayed {
+  animation-delay: 1.6s;
+}
+
+@keyframes halo {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(1.45);
+    opacity: 0;
+  }
+}
+
+.orb {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: $size;
+  height: $size;
+  border-radius: 50%;
+  isolation: isolate;
+  box-shadow:
+    0 30px 80px -20px var(--accent-glow),
+    0 0 0 1px var(--border);
+
+  &:disabled {
+    opacity: 0.6;
+  }
+}
+
+// A conic gradient spinning behind a masked core reads as a light trail
+// running around the edge.
+.ring {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0deg, var(--accent) 80deg, transparent 160deg, transparent 360deg);
+  animation: spin 4.5s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.core {
+  position: absolute;
+  inset: 4px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.22), transparent 55%),
+    radial-gradient(circle at 50% 120%, var(--accent), transparent 60%),
+    var(--bg-elevated);
+  color: var(--text);
+}
+
+.glyph {
+  display: flex;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .halo,
+  .ring {
+    animation: none;
+  }
+}

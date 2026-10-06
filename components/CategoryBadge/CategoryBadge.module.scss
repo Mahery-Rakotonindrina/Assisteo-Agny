@@ -1,0 +1,26 @@
+@use "../../styles/mixins" as *;
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  height: 1.75rem;
+  padding: 0 0.7rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--cat);
+}
+
+.soft {
+  background: color-mix(in srgb, var(--cat) 14%, transparent);
+}
+
+.glass {
+  @include glass;
+  color: var(--text);
+
+  svg {
+    color: var(--cat);
+  }
+}

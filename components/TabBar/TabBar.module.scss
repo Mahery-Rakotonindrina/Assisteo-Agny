@@ -1,0 +1,74 @@
+@use "../../styles/mixins" as *;
+
+.bar {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  z-index: 40;
+  width: 100%;
+  max-width: var(--app-width);
+  transform: translateX(-50%);
+  padding: 0 1rem calc(0.75rem + var(--safe-bottom));
+  pointer-events: none;
+
+  @include desktop {
+    display: none;
+  }
+}
+
+.inner {
+  @include glass;
+  pointer-events: auto;
+  display: flex;
+  gap: 0.25rem;
+  height: var(--tabbar-height);
+  padding: 0.45rem;
+  border-radius: 28px;
+  box-shadow: var(--shadow-lg);
+}
+
+.tab {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  border-radius: 22px;
+  color: var(--text-subtle);
+  transition: color 0.25s var(--ease-out);
+
+  &:hover {
+    color: var(--text-muted);
+  }
+}
+
+.active,
+.active:hover {
+  color: var(--text);
+}
+
+.pill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+}
+
+.icon {
+  position: relative;
+  display: flex;
+
+  .active & {
+    color: var(--accent-text);
+  }
+}
+
+.label {
+  position: relative;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
