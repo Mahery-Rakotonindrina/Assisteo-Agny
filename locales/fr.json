@@ -68,7 +68,8 @@
     "camera": "La caméra n'est pas accessible. Autorise-la dans les réglages du téléphone.",
     "unknown": "Une erreur inattendue s'est produite.",
     "billing": "Le compte IA n’a plus de crédit. Ajoute du crédit sur console.anthropic.com ou repasse en mode démo.",
-    "notImage": "Ce fichier n’est pas une image."
+    "notImage": "Ce fichier n’est pas une image.",
+    "invalid_key": "Ta clé API a été refusée. Vérifie-la dans Réglages → Moteur IA."
   },
   "categories": {
     "food": "Aliment",
@@ -185,7 +186,50 @@
     },
     "permissionAllow": "Autoriser",
     "permissionDeniedHint": "Pour réactiver un accès refusé, ouvre les réglages du téléphone → Applications → Pocket Assistant.",
-    "replayOnboarding": "Revoir l’introduction"
+    "replayOnboarding": "Revoir l’introduction",
+    "aiEngine": "Moteur IA",
+    "aiServer": "Serveur",
+    "aiServerHint": "Les analyses utilisent l’IA configurée sur le serveur, gratuitement. Choisis Gemini ou Claude pour utiliser ta propre clé.",
+    "aiUseServer": "Revenir à l’IA du serveur",
+    "aiModel": "Modèle",
+    "aiModels": {
+      "gemini-flash-latest": "Flash",
+      "gemini-flash-lite-latest": "Flash-Lite",
+      "claude-opus-5-5": "Opus 5.5",
+      "claude-sonnet-5-5": "Sonnet 5.5",
+      "claude-haiku-4-5": "Haiku 4.5"
+    },
+    "aiModelHints": {
+      "gemini-flash-latest": "Le plus précis de Gemini. Gratuit dans la limite du quota de ta clé.",
+      "gemini-flash-lite-latest": "Plus rapide, quota gratuit plus large, un peu moins précis.",
+      "claude-opus-5-5": "La meilleure qualité d’analyse. ≈ 2 à 4 centimes par photo.",
+      "claude-sonnet-5-5": "Très bon équilibre qualité / prix. ≈ 1 à 2 centimes par photo.",
+      "claude-haiku-4-5": "Le plus économique et le plus rapide. ≈ 0,5 centime par photo."
+    },
+    "aiKey": "Clé API",
+    "aiKeyReplace": "Remplacer la clé",
+    "aiKeyShow": "Afficher la clé",
+    "aiKeyHide": "Masquer la clé",
+    "aiGetKey": {
+      "gemini": "Obtenir une clé Gemini gratuite",
+      "claude": "Obtenir une clé Claude"
+    },
+    "aiKeyTest": "Tester et enregistrer",
+    "aiKeyTesting": "Vérification…",
+    "aiKeySaved": "Clé vérifiée et enregistrée",
+    "aiKeyRemoved": "Clé supprimée de l’appareil",
+    "aiKeyActive": "Ta clé est active",
+    "aiKeyRemove": "Supprimer ma clé",
+    "aiOwnKey": "ta clé",
+    "aiKeyErrors": {
+      "invalid_key": "Cette clé est refusée. Vérifie qu’elle est complète et qu’elle correspond bien au fournisseur choisi.",
+      "billing": "La clé est valide mais le compte n’a pas de crédit.",
+      "rate_limited": "La clé est valide mais son quota est atteint pour le moment. Réessaie plus tard ou choisis un autre modèle.",
+      "model_unavailable": "Ce modèle n’est pas accessible avec cette clé. Choisis-en un autre.",
+      "error": "Impossible de vérifier la clé pour le moment.",
+      "network": "Pas de connexion au serveur."
+    },
+    "aiKeyPrivacy": "Ta clé reste sur cet appareil (stockage sécurisé du téléphone). Elle n’est envoyée qu’au moment d’une analyse et n’est jamais conservée sur le serveur."
   },
   "notifications": {
     "readyTitle": "Analyse prête ✨"

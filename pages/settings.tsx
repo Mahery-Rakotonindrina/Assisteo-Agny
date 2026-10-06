@@ -2,6 +2,7 @@ import Head from "next/head";
 import { motion } from "motion/react";
 import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import { BellRing, Camera, Check, Cpu, Globe, Info, Moon, Monitor, Palette, RotateCcw, Send, Smartphone, Sun, Trash2, Vibrate, X } from "lucide-react";
+import { AiKeySettings } from "@/components/AiKeySettings";
 import { Button } from "@/components/Button";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { SegmentedControl } from "@/components/SegmentedControl";
@@ -94,7 +95,7 @@ export default function SettingsPage() {
 
   const aiLabel = {
     checking: "…",
-    live: `${t("settings.aiLive")} · ${aiStatus.provider === "gemini" ? "Gemini" : "Claude"}`,
+    live: `${t("settings.aiLive")} · ${aiStatus.provider === "gemini" ? "Gemini" : "Claude"}${aiStatus.ownKey ? ` · ${t("settings.aiOwnKey")}` : ""}`,
     demo: t("settings.aiDemo"),
     offline: t("settings.aiOffline"),
   }[aiStatus.status];
@@ -122,6 +123,10 @@ export default function SettingsPage() {
               options={themeOptions.map(({ value, icon }) => ({ value, icon, label: t(`settings.themes.${value}`) }))}
             />
           </Row>
+        </Group>
+
+        <Group title={t("settings.aiEngine")}>
+          <AiKeySettings />
         </Group>
 
         <Group title={t("settings.permissions")}>

@@ -18,6 +18,7 @@ export type ScanErrorKind =
   | "refused"
   | "unavailable"
   | "billing"
+  | "invalid_key"
   | "invalid_request"
   | "upstream_error"
   | "image"

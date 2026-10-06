@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import type { ApiErrorBody, ApiErrorCode } from "@/lib/ai/schema";
+import { overrideHeaders, type ApiErrorBody, type ApiErrorCode } from "@/lib/ai/schema";
 
 // Origins used by the Capacitor WebView (iOS, Android, live reload).
 const capacitorOrigins = ["capacitor://localhost", "https://localhost", "http://localhost"];
@@ -19,7 +19,7 @@ export function applyCors(req: NextApiRequest, res: NextApiResponse, methods: st
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Vary", "Origin");
     res.setHeader("Access-Control-Allow-Methods", [...methods, "OPTIONS"].join(", "));
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    res.setHeader("Access-Control-Allow-Headers", ["Content-Type", ...Object.values(overrideHeaders)].join(", "));
     res.setHeader("Access-Control-Max-Age", "86400");
   }
 

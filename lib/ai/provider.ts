@@ -1,8 +1,9 @@
-import { analyzeWithClaude, CLAUDE_MODEL } from "./claude";
-import { analyzeWithGemini, GEMINI_MODEL } from "./gemini";
-import type { AiProvider, Analysis, AnalyzeRequest } from "./schema";
+import type { IncomingHttpHeaders } from "node:http";
+import { analyzeWithClaude, CLAUDE_MODEL, verifyClaudeKey, type EngineOptions } from "./claude";
+import { analyzeWithGemini, GEMINI_MODEL, verifyGeminiKey } from "./gemini";
+import { AiOverrideSchema, overrideHeaders, type AiOverride, type AiProvider, type Analysis, type AnalyzeRequest } from "./schema";
 
-type Engine = (input: AnalyzeRequest, signal?: AbortSignal) => Promise<{ analysis: Analysis; model: string }>;
+type Engine = (input: AnalyzeRequest, signal?: AbortSignal, options?: EngineOptions) => Promise<{ analysis: Analysis; model: string }>;
 
 const engines: Record<Exclude<AiProvider, "demo">, { analyze: Engine; model: string; configured: boolean }> = {
   claude: {
@@ -34,7 +35,34 @@ export const activeProvider = resolveProvider();
 
 export const activeModel = activeProvider === "demo" ? "demo" : engines[activeProvider].model;
 
-export function analyzeImage(input: AnalyzeRequest, signal?: AbortSignal) {
+/**
+ * Reads a user-supplied key from the request headers.
+ * Returns null when none was sent, or "invalid" when the headers are malformed.
+ */
+export function readOverride(headers: IncomingHttpHeaders): AiOverride | null | "invalid" {
+  const get = (name: string) => {
+    const value = headers[name];
+    return Array.isArray(value) ? value[0] : value;
+  };
+  const provider = get(overrideHeaders.provider);
+  if (!provider) return null;
+  const parsed = AiOverrideSchema.safeParse({
+    provider,
+    apiKey: get(overrideHeaders.apiKey)?.trim(),
+    model: get(overrideHeaders.model),
+  });
+  return parsed.success ? parsed.data : "invalid";
+}
+
+/** Analyses with the user's own key when given, else with the server's engine. */
+export function analyzeImage(input: AnalyzeRequest, signal?: AbortSignal, override?: AiOverride | null) {
+  if (override) {
+    return engines[override.provider].analyze(input, signal, { apiKey: override.apiKey, model: override.model });
+  }
   if (activeProvider === "demo") throw new Error("analyzeImage called in demo mode.");
   return engines[activeProvider].analyze(input, signal);
+}
+
+export function verifyKey({ provider, apiKey, model }: AiOverride) {
+  return provider === "claude" ? verifyClaudeKey(apiKey, model) : verifyGeminiKey(apiKey, model);
 }

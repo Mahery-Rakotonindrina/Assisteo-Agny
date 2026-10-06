@@ -68,7 +68,8 @@
     "camera": "The camera isn't accessible. Allow it in your phone settings.",
     "unknown": "Something unexpected happened.",
     "billing": "The AI account has no credit left. Add credit at console.anthropic.com or switch back to demo mode.",
-    "notImage": "This file isn’t an image."
+    "notImage": "This file isn’t an image.",
+    "invalid_key": "Your API key was rejected. Check it in Settings → AI engine."
   },
   "categories": {
     "food": "Food",
@@ -185,7 +186,50 @@
     },
     "permissionAllow": "Allow",
     "permissionDeniedHint": "To turn a denied permission back on, open your phone settings → Apps → Pocket Assistant.",
-    "replayOnboarding": "Replay the introduction"
+    "replayOnboarding": "Replay the introduction",
+    "aiEngine": "AI engine",
+    "aiServer": "Server",
+    "aiServerHint": "Analyses use the AI configured on the server, for free. Pick Gemini or Claude to use your own key.",
+    "aiUseServer": "Switch back to the server’s AI",
+    "aiModel": "Model",
+    "aiModels": {
+      "gemini-flash-latest": "Flash",
+      "gemini-flash-lite-latest": "Flash-Lite",
+      "claude-opus-5-5": "Opus 5.5",
+      "claude-sonnet-5-5": "Sonnet 5.5",
+      "claude-haiku-4-5": "Haiku 4.5"
+    },
+    "aiModelHints": {
+      "gemini-flash-latest": "Gemini’s most accurate. Free within your key’s quota.",
+      "gemini-flash-lite-latest": "Faster, larger free quota, slightly less accurate.",
+      "claude-opus-5-5": "Best analysis quality. About 2–4 cents per photo.",
+      "claude-sonnet-5-5": "Great quality for the price. About 1–2 cents per photo.",
+      "claude-haiku-4-5": "Cheapest and fastest. About half a cent per photo."
+    },
+    "aiKey": "API key",
+    "aiKeyReplace": "Replace the key",
+    "aiKeyShow": "Show the key",
+    "aiKeyHide": "Hide the key",
+    "aiGetKey": {
+      "gemini": "Get a free Gemini key",
+      "claude": "Get a Claude key"
+    },
+    "aiKeyTest": "Test and save",
+    "aiKeyTesting": "Checking…",
+    "aiKeySaved": "Key checked and saved",
+    "aiKeyRemoved": "Key removed from this device",
+    "aiKeyActive": "Your key is active",
+    "aiKeyRemove": "Remove my key",
+    "aiOwnKey": "your key",
+    "aiKeyErrors": {
+      "invalid_key": "This key was rejected. Check it’s complete and matches the selected provider.",
+      "billing": "The key is valid but the account has no credit.",
+      "rate_limited": "The key is valid but its quota is used up for now. Try later or pick another model.",
+      "model_unavailable": "This model isn’t available with this key. Pick another one.",
+      "error": "Can’t check the key right now.",
+      "network": "Can’t reach the server."
+    },
+    "aiKeyPrivacy": "Your key stays on this device (the phone’s secure storage). It’s only sent when you run an analysis and never kept on the server."
   },
   "notifications": {
     "readyTitle": "Analysis ready ✨"

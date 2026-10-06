@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { AnalysisError } from "@/lib/ai/errors";
 import { mockAnalysis } from "@/lib/ai/mock";
-import { activeModel, activeProvider, analyzeImage } from "@/lib/ai/provider";
+import { activeModel, activeProvider, analyzeImage, readOverride } from "@/lib/ai/provider";
 import { AnalyzeRequestSchema, type AnalyzeResponse } from "@/lib/ai/schema";
 import { applyCors, clientIp, sendError } from "@/lib/server/http";
 import { rateLimit } from "@/lib/server/rateLimit";
@@ -36,9 +36,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     return sendError(res, 400, "invalid_request", parsed.error.issues[0]?.message ?? "Invalid request body.");
   }
 
+  // The user's own key (if any) is used for this request only, never stored or logged.
+  const override = readOverride(req.headers);
+  if (override === "invalid") {
+    return sendError(res, 400, "invalid_request", "Invalid AI provider, model or key.");
+  }
+
   const startedAt = Date.now();
 
-  if (activeProvider === "demo") {
+  if (!override && activeProvider === "demo") {
     await new Promise((resolve) => setTimeout(resolve, DEMO_LATENCY_MS));
     return res.status(200).json({
       analysis: mockAnalysis(parsed.data.mode, parsed.data.locale),
@@ -53,18 +59,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   });
 
   try {
-    const { analysis, model } = await analyzeImage(parsed.data, abort.signal);
+    const { analysis, model } = await analyzeImage(parsed.data, abort.signal, override);
     return res.status(200).json({
       analysis: { ...analysis, confidence: Math.min(1, Math.max(0, analysis.confidence)) },
       meta: { model, demo: false, durationMs: Date.now() - startedAt },
     } satisfies AnalyzeResponse);
   } catch (error) {
     if (abort.signal.aborted) return;
+    const engine = override ? `user-${override.provider}` : activeProvider;
     if (error instanceof AnalysisError) {
-      if (error.status >= 500 || error.code === "billing") console.error(`[analyze:${activeProvider}]`, error.message);
+      // A rejected server key is a deployment problem, not something the user can fix.
+      if (!override && error.code === "invalid_key") {
+        console.error(`[analyze:${engine}] server key rejected`);
+        return sendError(res, 503, "unavailable", "The AI service is not configured correctly.");
+      }
+      if (error.status >= 500 || error.code === "billing") console.error(`[analyze:${engine}]`, error.message);
       return sendError(res, error.status, error.code, error.message);
     }
-    console.error(`[analyze:${activeProvider}] unexpected`, error);
+    console.error(`[analyze:${engine}] unexpected`, error instanceof Error ? error.message : error);
     return sendError(res, 500, "upstream_error", `Something went wrong (${activeModel}).`);
   }
 }
