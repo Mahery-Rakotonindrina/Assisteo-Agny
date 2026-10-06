@@ -5,6 +5,7 @@ import { Button } from "@/components/Button";
 import { SegmentedControl } from "@/components/SegmentedControl";
 import { useToast } from "@/components/Toast";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useTrial } from "@/hooks/useTrial";
 import { userModels, type AiOverride, type VerifyKeyResponse } from "@/lib/ai/schema";
 import { easeOut } from "@/lib/motion";
 import { aiKeyStore, maskKey } from "@/services/aiKeyStore";
@@ -35,7 +36,7 @@ export function AiKeySettings() {
   const { t } = useTranslation();
   const toast = useToast();
   const [saved, setSaved] = useState<AiOverride | null>(null);
-  const [choice, setChoice] = useState<Choice>("server");
+  const [chosen, setChosen] = useState<Choice | null>(null);
   const [models, setModels] = useState(defaultModels);
   const [key, setKey] = useState("");
   const [showKey, setShowKey] = useState(false);
@@ -46,18 +47,21 @@ export function AiKeySettings() {
     void aiKeyStore.get().then((override) => {
       setSaved(override);
       if (override) {
-        setChoice(override.provider);
+        setChosen(override.provider);
         setModels((current) => ({ ...current, [override.provider]: override.model }));
       }
     });
   }, []);
 
+  const trial = useTrial();
+  // Once the free trial is over, start on Gemini (free keys) rather than the server.
+  const choice: Choice = chosen ?? (trial.exhausted && !saved ? "gemini" : "server");
   const provider = choice === "server" ? null : choice;
   const savedForChoice = saved && saved.provider === provider ? saved : null;
   const modelChanged = savedForChoice && savedForChoice.model !== models[savedForChoice.provider];
 
   const select = (next: Choice) => {
-    setChoice(next);
+    setChosen(next);
     setKey("");
     setFailure(null);
   };
@@ -92,7 +96,7 @@ export function AiKeySettings() {
   const removeKey = async () => {
     await aiKeyStore.clear();
     setSaved(null);
-    setChoice("server");
+    setChosen("server");
     setKey("");
     toast(t("settings.aiKeyRemoved"));
   };
@@ -122,6 +126,13 @@ export function AiKeySettings() {
           {!provider ? (
             <>
               <p className={styles.hint}>{t("settings.aiServerHint")}</p>
+              {trial.limited && trial.remaining !== null && (
+                <p className={trial.exhausted ? styles.error : styles.trial}>
+                  {trial.exhausted
+                    ? t("trial.settingsOver")
+                    : t("trial.settingsLeft", { remaining: trial.remaining, limit: trial.limit ?? 0 })}
+                </p>
+              )}
               {saved && (
                 <Button variant="secondary" block onClick={() => void removeKey()}>
                   {t("settings.aiUseServer")}

@@ -126,13 +126,28 @@ export type HealthResponse = {
   model: string;
 };
 
+export type TrialState = { limit: number; used: number };
+
 export type AnalyzeResponse = {
   analysis: Analysis;
   meta: {
     model: string;
     demo: boolean;
     durationMs: number;
+    /** Present when the analysis used the server's key (free trial). */
+    trial?: TrialState;
   };
+};
+
+// ---- Free trial ------------------------------------------------------------
+// Each install has an anonymous id; the server counts trial scans against it.
+
+export const installIdHeader = "x-install-id";
+export const InstallIdSchema = z.string().regex(/^[a-zA-Z0-9-]{16,64}$/);
+
+export type TrialResponse = TrialState & {
+  /** False when the server runs in demo mode: no trial to count. */
+  enabled: boolean;
 };
 
 export type ApiErrorCode =
@@ -143,6 +158,7 @@ export type ApiErrorCode =
   | "unavailable"
   | "billing"
   | "invalid_key"
+  | "trial_exhausted"
   | "method_not_allowed";
 
 export type ApiErrorBody = {

@@ -2,9 +2,10 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { AnalysisError } from "@/lib/ai/errors";
 import { mockAnalysis } from "@/lib/ai/mock";
 import { activeModel, activeProvider, analyzeImage, readOverride } from "@/lib/ai/provider";
-import { AnalyzeRequestSchema, type AnalyzeResponse } from "@/lib/ai/schema";
+import { AnalyzeRequestSchema, InstallIdSchema, installIdHeader, type AnalyzeResponse, type TrialState } from "@/lib/ai/schema";
 import { applyCors, clientIp, sendError } from "@/lib/server/http";
 import { rateLimit } from "@/lib/server/rateLimit";
+import { releaseTrialScan, reserveTrialScan, TRIAL_LIMIT } from "@/lib/server/trialStore";
 
 export const config = {
   api: {
@@ -52,6 +53,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     } satisfies AnalyzeResponse);
   }
 
+  // Without their own key, the user spends one of the free trial scans.
+  let trial: (TrialState & { installId: string; ip: string }) | null = null;
+  if (!override) {
+    const installId = InstallIdSchema.safeParse(req.headers[installIdHeader]);
+    if (!installId.success) {
+      return sendError(res, 400, "invalid_request", "Missing install id: update the app.");
+    }
+    const ip = clientIp(req);
+    const used = await reserveTrialScan(installId.data, ip);
+    if (used === null) {
+      return sendError(res, 403, "trial_exhausted", "The free trial is over: add your own API key in Settings.");
+    }
+    trial = { installId: installId.data, ip, used, limit: TRIAL_LIMIT };
+  }
+
   // Stop paying for tokens if the user cancels or leaves the screen.
   const abort = new AbortController();
   res.on("close", () => {
@@ -62,9 +78,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const { analysis, model } = await analyzeImage(parsed.data, abort.signal, override);
     return res.status(200).json({
       analysis: { ...analysis, confidence: Math.min(1, Math.max(0, analysis.confidence)) },
-      meta: { model, demo: false, durationMs: Date.now() - startedAt },
+      meta: {
+        model,
+        demo: false,
+        durationMs: Date.now() - startedAt,
+        ...(trial && { trial: { used: trial.used, limit: trial.limit } }),
+      },
     } satisfies AnalyzeResponse);
   } catch (error) {
+    // A failed or cancelled analysis doesn't consume a trial scan.
+    if (trial) await releaseTrialScan(trial.installId, trial.ip).catch(() => undefined);
     if (abort.signal.aborted) return;
     const engine = override ? `user-${override.provider}` : activeProvider;
     if (error instanceof AnalysisError) {

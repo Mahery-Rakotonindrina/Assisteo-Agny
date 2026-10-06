@@ -69,7 +69,8 @@
     "unknown": "Something unexpected happened.",
     "billing": "The AI account has no credit left. Add credit at console.anthropic.com or switch back to demo mode.",
     "notImage": "This file isn’t an image.",
-    "invalid_key": "Your API key was rejected. Check it in Settings → AI engine."
+    "invalid_key": "Your API key was rejected. Check it in Settings → AI engine.",
+    "trial_exhausted": "Your free trial is over. Add your own API key in Settings → AI engine to continue."
   },
   "categories": {
     "food": "Food",
@@ -270,5 +271,14 @@
     "doneTitle": "You’re all set",
     "doneBody": "You can change these permissions any time in Settings.",
     "finish": "Get started"
+  },
+  "trial": {
+    "pill": "Free trial · {remaining}/{limit}",
+    "overTitle": "Your free trial is over",
+    "overBody": "You’ve used your {limit} free analyses. To keep going, add your own API key: Gemini gives free keys in two minutes.",
+    "addKey": "Add my API key",
+    "freeKey": "Get a free Gemini key",
+    "settingsLeft": "Free trial: {remaining} of {limit} analyses left on the server’s AI.",
+    "settingsOver": "Your free trial is over. Add your Gemini (free) or Claude key to continue."
   }
 }

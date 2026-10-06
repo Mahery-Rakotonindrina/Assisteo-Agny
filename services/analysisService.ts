@@ -8,18 +8,20 @@ import {
 } from "@/lib/ai/schema";
 import { aiKeyStore } from "./aiKeyStore";
 import { httpClient } from "./httpClient";
+import { installIdHeaders } from "./trial";
 
 export const analysisService = {
   /** Uses the user's own key when one is saved, else the server's engine. */
   async analyze(payload: AnalyzeRequest, signal?: AbortSignal) {
     const override = await aiKeyStore.get();
+    // Own key: no limits. Otherwise the install id lets the server count trial scans.
     const headers: Record<string, string> = override
       ? {
           [overrideHeaders.provider]: override.provider,
           [overrideHeaders.apiKey]: override.apiKey,
           [overrideHeaders.model]: override.model,
         }
-      : {};
+      : await installIdHeaders();
     return httpClient.post<AnalyzeResponse>("/api/analyze", payload, { signal, headers });
   },
 

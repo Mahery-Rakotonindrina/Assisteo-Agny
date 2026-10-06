@@ -1,4 +1,5 @@
 import Head from "next/head";
+import { useRouter } from "next/router";
 import { motion } from "motion/react";
 import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import { BellRing, Camera, Check, Cpu, Globe, Info, Moon, Monitor, Palette, RotateCcw, Send, Smartphone, Sun, Trash2, Vibrate, X } from "lucide-react";
@@ -27,6 +28,7 @@ import styles from "@/styles/Settings.module.scss";
 
 export default function SettingsPage() {
   const { t } = useTranslation();
+  const router = useRouter();
   const toast = useToast();
   const { settings, update } = useSettings();
   const { entries } = useHistory();
@@ -47,6 +49,14 @@ export default function SettingsPage() {
     document.addEventListener("visibilitychange", refresh);
     return () => document.removeEventListener("visibilitychange", refresh);
   }, []);
+
+  // "Add my API key" links land on the AI engine section.
+  const section = router.isReady ? router.query.section : undefined;
+  useEffect(() => {
+    if (section !== "ai") return;
+    const timer = setTimeout(() => document.getElementById("ai-engine")?.scrollIntoView({ behavior: "smooth", block: "start" }), 350);
+    return () => clearTimeout(timer);
+  }, [section]);
 
   const allow = async (kind: PermissionKind) => {
     const result = await requestPermission(kind);
@@ -125,7 +135,7 @@ export default function SettingsPage() {
           </Row>
         </Group>
 
-        <Group title={t("settings.aiEngine")}>
+        <Group id="ai-engine" title={t("settings.aiEngine")}>
           <AiKeySettings />
         </Group>
 
@@ -222,9 +232,9 @@ export default function SettingsPage() {
   );
 }
 
-function Group({ title, children }: { title: string; children: ReactNode }) {
+function Group({ id, title, children }: { id?: string; title: string; children: ReactNode }) {
   return (
-    <motion.section variants={rise} className={styles.group}>
+    <motion.section id={id} variants={rise} className={styles.group}>
       <h2>{title}</h2>
       <div className={styles.card}>{children}</div>
     </motion.section>

@@ -2,18 +2,20 @@ import Head from "next/head";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { Apple, ArrowRight, Box, FileText, FlaskConical, ImageUp, RotateCcw, Sparkles, X } from "lucide-react";
+import { Apple, ArrowRight, Box, FileText, FlaskConical, ImageUp, KeyRound, RotateCcw, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/Button";
 import { CaptureOrb } from "@/components/CaptureOrb";
 import { DropZone } from "@/components/DropZone";
 import { HistoryItem } from "@/components/HistoryItem";
 import { ScanStage } from "@/components/ScanStage";
 import { SegmentedControl } from "@/components/SegmentedControl";
+import { AI_SETTINGS_HREF, TrialOver, TrialPill } from "@/components/Trial";
 import { useAiStatus } from "@/hooks/useAiStatus";
 import { useHistory } from "@/hooks/useHistory";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import { useScan } from "@/hooks/useScan";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useTrial } from "@/hooks/useTrial";
 import type { ScanMode } from "@/lib/ai/schema";
 import { easeOut, rise, stagger } from "@/lib/motion";
 import styles from "@/styles/Scan.module.scss";
@@ -32,12 +34,13 @@ export default function ScanPage() {
   const { entries } = useHistory();
   const aiStatus = useAiStatus();
   const isDesktop = useIsDesktop();
+  const trial = useTrial();
   const recent = entries.slice(0, isDesktop ? 4 : 3);
   const busy = state.phase === "preparing" || state.phase === "analyzing";
 
   // Pasting an image anywhere on the screen starts an analysis.
   useEffect(() => {
-    if (state.phase !== "idle") return;
+    if (state.phase !== "idle" || trial.exhausted) return;
     const onPaste = (event: ClipboardEvent) => {
       const file = [...(event.clipboardData?.files ?? [])].find((item) => item.type.startsWith("image/"));
       if (!file) return;
@@ -46,7 +49,7 @@ export default function ScanPage() {
     };
     window.addEventListener("paste", onPaste);
     return () => window.removeEventListener("paste", onPaste);
-  }, [startWithFile, state.phase]);
+  }, [startWithFile, state.phase, trial.exhausted]);
 
   return (
     <>
@@ -74,6 +77,11 @@ export default function ScanPage() {
                   {t("scan.headline")} <em>{t("scan.headlineAccent")}</em>
                 </h1>
                 <p className={styles.lead}>{t("scan.webIntro")}</p>
+                {trial.limited && !trial.exhausted && trial.remaining !== null && trial.limit !== null && (
+                  <div className={styles.trial}>
+                    <TrialPill remaining={trial.remaining} limit={trial.limit} />
+                  </div>
+                )}
               </motion.header>
 
               {aiStatus.status === "demo" && (
@@ -122,16 +130,22 @@ export default function ScanPage() {
             </div>
 
             <motion.div variants={rise} className={styles.capture}>
-              <div className={styles.orb}>
-                <CaptureOrb label={t("scan.capture")} onPress={() => void start("camera")} />
-                <p className={styles.captureLabel}>{t("scan.capture")}</p>
-                <Button variant="ghost" icon={<ImageUp />} onClick={() => void start("gallery")}>
-                  {t("scan.gallery")}
-                </Button>
-              </div>
-              <div className={styles.drop}>
-                <DropZone onFile={(file) => void startWithFile(file)} onWebcam={() => void start("camera")} />
-              </div>
+              {trial.exhausted && trial.limit !== null ? (
+                <TrialOver limit={trial.limit} />
+              ) : (
+                <>
+                  <div className={styles.orb}>
+                    <CaptureOrb label={t("scan.capture")} onPress={() => void start("camera")} />
+                    <p className={styles.captureLabel}>{t("scan.capture")}</p>
+                    <Button variant="ghost" icon={<ImageUp />} onClick={() => void start("gallery")}>
+                      {t("scan.gallery")}
+                    </Button>
+                  </div>
+                  <div className={styles.drop}>
+                    <DropZone onFile={(file) => void startWithFile(file)} onWebcam={() => void start("camera")} />
+                  </div>
+                </>
+              )}
             </motion.div>
 
             {recent.length > 0 && (
@@ -181,7 +195,16 @@ export default function ScanPage() {
             )}
 
             <div className={styles.actions}>
-              {state.phase === "error" ? (
+              {state.phase === "error" && state.error === "trial_exhausted" ? (
+                <>
+                  <Button size="lg" href={AI_SETTINGS_HREF} icon={<KeyRound />}>
+                    {t("trial.addKey")}
+                  </Button>
+                  <Button size="lg" variant="secondary" onClick={reset}>
+                    {t("scan.cancel")}
+                  </Button>
+                </>
+              ) : state.phase === "error" ? (
                 <>
                   {canRetry && (
                     <Button size="lg" icon={<RotateCcw />} onClick={retry}>

@@ -69,7 +69,8 @@
     "unknown": "Une erreur inattendue s'est produite.",
     "billing": "Le compte IA n’a plus de crédit. Ajoute du crédit sur console.anthropic.com ou repasse en mode démo.",
     "notImage": "Ce fichier n’est pas une image.",
-    "invalid_key": "Ta clé API a été refusée. Vérifie-la dans Réglages → Moteur IA."
+    "invalid_key": "Ta clé API a été refusée. Vérifie-la dans Réglages → Moteur IA.",
+    "trial_exhausted": "Ton essai gratuit est terminé. Ajoute ta propre clé API dans Réglages → Moteur IA pour continuer."
   },
   "categories": {
     "food": "Aliment",
@@ -270,5 +271,14 @@
     "doneTitle": "Tout est prêt",
     "doneBody": "Tu peux modifier ces autorisations à tout moment dans Réglages.",
     "finish": "Commencer"
+  },
+  "trial": {
+    "pill": "Essai gratuit · {remaining}/{limit}",
+    "overTitle": "Ton essai gratuit est terminé",
+    "overBody": "Tu as utilisé tes {limit} analyses offertes. Pour continuer, ajoute ta propre clé API : Gemini propose des clés gratuites en deux minutes.",
+    "addKey": "Ajouter ma clé API",
+    "freeKey": "Obtenir une clé Gemini gratuite",
+    "settingsLeft": "Essai gratuit : {remaining} analyse(s) sur {limit} restante(s) avec l’IA du serveur.",
+    "settingsOver": "Ton essai gratuit est terminé. Ajoute ta clé Gemini (gratuite) ou Claude pour continuer."
   }
 }
