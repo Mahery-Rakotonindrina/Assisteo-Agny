@@ -23,7 +23,7 @@ export function Sidebar() {
 
   const statusLabel =
     aiStatus.status === "live"
-      ? `${aiStatus.provider === "gemini" ? "Gemini" : "Claude"} · ${t("settings.aiLive")}`
+      ? `${aiStatus.label ?? "IA"} · ${aiStatus.ownKey ? t("settings.aiOwnKey") : t("settings.aiLive")}`
       : aiStatus.status === "demo"
         ? t("settings.aiDemo")
         : aiStatus.status === "offline"

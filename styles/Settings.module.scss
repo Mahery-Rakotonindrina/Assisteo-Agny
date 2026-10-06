@@ -149,3 +149,21 @@
   font-size: 0.8rem;
   color: var(--text-subtle);
 }
+
+.permission {
+  display: grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 50%;
+
+  &[data-status="granted"] {
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
+
+  &[data-status="denied"] {
+    background: var(--danger-soft);
+    color: var(--danger);
+  }
+}

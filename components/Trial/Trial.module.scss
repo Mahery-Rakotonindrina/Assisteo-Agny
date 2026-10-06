@@ -1,0 +1,82 @@
+@use "../../styles/mixins" as *;
+
+.pill {
+  @include pressable;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  align-self: flex-start;
+  padding: 0.45rem 0.8rem;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.dots {
+  display: inline-flex;
+  gap: 3px;
+
+  i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--surface-strong);
+  }
+
+  .left {
+    background: var(--accent-text);
+  }
+}
+
+.over {
+  @include card;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 2rem 1.5rem 1.5rem;
+  text-align: center;
+  background:
+    radial-gradient(circle at 50% 0%, var(--accent-soft), transparent 60%),
+    var(--surface);
+
+  h2 {
+    @include display(1.9rem);
+  }
+
+  p {
+    margin-bottom: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.92rem;
+  }
+
+  @include desktop {
+    min-height: 420px;
+    justify-content: center;
+    padding: 3rem 2.5rem;
+    border-radius: 32px;
+  }
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  width: 4.5rem;
+  height: 4.5rem;
+  margin-bottom: 0.25rem;
+  border-radius: 22px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: 0 20px 50px -18px var(--accent-glow);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent-text);
+}

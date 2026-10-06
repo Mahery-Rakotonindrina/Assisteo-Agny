@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.131.0",
+    "@aparajita/capacitor-secure-storage": "^8.0.1",
     "@capacitor/android": "^8.5.2",
     "@capacitor/app": "^8.1.2",
     "@capacitor/camera": "^8.2.5",
@@ -29,6 +30,7 @@
     "@capacitor/status-bar": "^8.0.4",
     "@google/genai": "^2.27.0",
     "@ionic/pwa-elements": "^3.4.0",
+    "@upstash/redis": "^1.39.0",
     "idb-keyval": "^6.3.0",
     "lucide-react": "^1.52.0",
     "motion": "^14.0.0",

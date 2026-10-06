@@ -1,7 +1,9 @@
 import Head from "next/head";
+import { useRouter } from "next/router";
 import { motion } from "motion/react";
-import { useEffect, useState, type ReactNode } from "react";
-import { BellRing, Cpu, Globe, Info, Moon, Monitor, Palette, Send, Smartphone, Sun, Trash2, Vibrate } from "lucide-react";
+import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
+import { BellRing, Camera, Check, Cpu, Globe, Info, Moon, Monitor, Palette, RotateCcw, Send, Smartphone, Sun, Trash2, Vibrate, X } from "lucide-react";
+import { AiKeySettings } from "@/components/AiKeySettings";
 import { Button } from "@/components/Button";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { SegmentedControl } from "@/components/SegmentedControl";
@@ -13,6 +15,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { config } from "@/lib/config";
 import { rise, stagger } from "@/lib/motion";
 import { useSettings, type ThemePreference } from "@/lib/settings/SettingsProvider";
+import { isNative } from "@/services/device";
 import { historyStore } from "@/services/historyStore";
 import {
   getNotificationPermission,
@@ -20,20 +23,47 @@ import {
   requestNotificationPermission,
   type NotificationPermission,
 } from "@/services/notifications";
+import { getPermission, requestPermission, type PermissionKind, type PermissionStatus } from "@/services/permissions";
 import styles from "@/styles/Settings.module.scss";
 
 export default function SettingsPage() {
   const { t } = useTranslation();
+  const router = useRouter();
   const toast = useToast();
   const { settings, update } = useSettings();
   const { entries } = useHistory();
   const [permission, setPermission] = useState<NotificationPermission>("prompt");
+  const [cameraPermission, setCameraPermission] = useState<PermissionStatus>("prompt");
   const aiStatus = useAiStatus();
+  // Server snapshot is false so the prerendered HTML matches the first client render.
+  const native = useSyncExternalStore(noSubscribe, isNative, () => false);
   const [confirmClear, setConfirmClear] = useState(false);
 
+  // Re-read on return to the app: the user may have changed them in the OS settings.
   useEffect(() => {
-    void getNotificationPermission().then(setPermission);
+    const refresh = () => {
+      void getNotificationPermission().then(setPermission);
+      void getPermission("camera").then(setCameraPermission).catch(() => setCameraPermission("unsupported"));
+    };
+    refresh();
+    document.addEventListener("visibilitychange", refresh);
+    return () => document.removeEventListener("visibilitychange", refresh);
   }, []);
+
+  // "Add my API key" links land on the AI engine section.
+  const section = router.isReady ? router.query.section : undefined;
+  useEffect(() => {
+    if (section !== "ai") return;
+    const timer = setTimeout(() => document.getElementById("ai-engine")?.scrollIntoView({ behavior: "smooth", block: "start" }), 350);
+    return () => clearTimeout(timer);
+  }, [section]);
+
+  const allow = async (kind: PermissionKind) => {
+    const result = await requestPermission(kind);
+    if (kind === "camera") setCameraPermission(result);
+    else setPermission(result);
+    if (result === "denied") toast(t("settings.permissionDeniedHint"), "error");
+  };
 
   const toggleNotifyOnResult = async (enabled: boolean) => {
     if (enabled && permission !== "granted") {
@@ -75,7 +105,7 @@ export default function SettingsPage() {
 
   const aiLabel = {
     checking: "…",
-    live: `${t("settings.aiLive")} · ${aiStatus.provider === "gemini" ? "Gemini" : "Claude"}`,
+    live: `${t("settings.aiLive")} · ${aiStatus.label ?? "IA"}${aiStatus.ownKey ? ` · ${t("settings.aiOwnKey")}` : ""}`,
     demo: t("settings.aiDemo"),
     offline: t("settings.aiOffline"),
   }[aiStatus.status];
@@ -103,6 +133,46 @@ export default function SettingsPage() {
               options={themeOptions.map(({ value, icon }) => ({ value, icon, label: t(`settings.themes.${value}`) }))}
             />
           </Row>
+        </Group>
+
+        <Group id="ai-engine" title={t("settings.aiEngine")}>
+          <AiKeySettings />
+        </Group>
+
+        <Group title={t("settings.permissions")}>
+          {(
+            [
+              ["camera", cameraPermission, <Camera key="camera" />],
+              ["notifications", permission, <BellRing key="notifications" />],
+            ] as const
+          ).map(([kind, status, icon]) => (
+            <Row
+              key={kind}
+              icon={icon}
+              label={t(kind === "camera" ? "settings.permissionCamera" : "settings.permissionNotifications")}
+              hint={t(`settings.permissionStatus.${status}`)}
+            >
+              {status === "prompt" ? (
+                <Button size="md" onClick={() => void allow(kind)}>
+                  {t("settings.permissionAllow")}
+                </Button>
+              ) : (
+                <span className={styles.permission} data-status={status}>
+                  {status === "granted" ? <Check size={16} strokeWidth={3} /> : status === "denied" ? <X size={16} strokeWidth={3} /> : null}
+                </span>
+              )}
+            </Row>
+          ))}
+          {(cameraPermission === "denied" || permission === "denied") && (
+            <p className={styles.warning}>{t("settings.permissionDeniedHint")}</p>
+          )}
+          {native && (
+            <div className={styles.rowAction}>
+              <Button variant="ghost" icon={<RotateCcw />} onClick={() => update({ onboardingDone: false })} block>
+                {t("settings.replayOnboarding")}
+              </Button>
+            </div>
+          )}
         </Group>
 
         <Group title={t("settings.notifications")}>
@@ -162,14 +232,16 @@ export default function SettingsPage() {
   );
 }
 
-function Group({ title, children }: { title: string; children: ReactNode }) {
+function Group({ id, title, children }: { id?: string; title: string; children: ReactNode }) {
   return (
-    <motion.section variants={rise} className={styles.group}>
+    <motion.section id={id} variants={rise} className={styles.group}>
       <h2>{title}</h2>
       <div className={styles.card}>{children}</div>
     </motion.section>
   );
 }
+
+const noSubscribe = () => () => {};
 
 type RowProps = {
   icon: ReactNode;

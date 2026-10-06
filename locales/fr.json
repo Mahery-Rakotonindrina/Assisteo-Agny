@@ -68,7 +68,9 @@
     "camera": "La caméra n'est pas accessible. Autorise-la dans les réglages du téléphone.",
     "unknown": "Une erreur inattendue s'est produite.",
     "billing": "Le compte IA n’a plus de crédit. Ajoute du crédit sur console.anthropic.com ou repasse en mode démo.",
-    "notImage": "Ce fichier n’est pas une image."
+    "notImage": "Ce fichier n’est pas une image.",
+    "invalid_key": "Ta clé API a été refusée. Vérifie-la dans Réglages → Moteur IA.",
+    "trial_exhausted": "Ton essai gratuit est terminé. Ajoute ta propre clé API dans Réglages → Moteur IA pour continuer."
   },
   "categories": {
     "food": "Aliment",
@@ -173,7 +175,54 @@
     "aiOffline": "Hors ligne",
     "version": "Version",
     "privacy": "Les photos sont envoyées uniquement pour l'analyse et ne sont pas conservées sur le serveur. L'historique reste sur ton appareil.",
-    "aiProvider": "Modèle"
+    "aiProvider": "Fournisseur",
+    "permissions": "Autorisations",
+    "permissionCamera": "Appareil photo et photos",
+    "permissionNotifications": "Notifications",
+    "permissionStatus": {
+      "granted": "Autorisé",
+      "denied": "Refusé",
+      "prompt": "Pas encore demandé",
+      "unsupported": "Géré par le navigateur"
+    },
+    "permissionAllow": "Autoriser",
+    "permissionDeniedHint": "Pour réactiver un accès refusé, ouvre les réglages du téléphone → Applications → Pocket Assistant.",
+    "replayOnboarding": "Revoir l’introduction",
+    "aiEngine": "Moteur IA",
+    "aiServer": "Serveur",
+    "aiServerHint": "Les analyses utilisent l’IA du serveur. Choisis un fournisseur pour utiliser ta propre clé : Gemini, Claude, OpenAI, Mistral, Groq, OpenRouter… ou n’importe quelle API compatible OpenAI.",
+    "aiUseServer": "Revenir à l’IA du serveur",
+    "aiModel": "Modèle",
+    "aiKey": "Clé API",
+    "aiKeyReplace": "Remplacer la clé",
+    "aiKeyShow": "Afficher la clé",
+    "aiKeyHide": "Masquer la clé",
+    "aiGetKey": "Obtenir une clé {name}",
+    "aiKeyTest": "Tester et enregistrer",
+    "aiKeyTesting": "Vérification…",
+    "aiKeySaved": "Clé vérifiée et enregistrée",
+    "aiKeyRemoved": "Clé supprimée de l’appareil",
+    "aiKeyActive": "Ta clé est active",
+    "aiKeyRemove": "Supprimer ma clé",
+    "aiOwnKey": "ta clé",
+    "aiKeyErrors": {
+      "invalid_key": "Cette clé est refusée. Vérifie qu’elle est complète et qu’elle correspond au fournisseur choisi.",
+      "billing": "La clé est valide mais le compte n’a pas de crédit.",
+      "rate_limited": "La clé est valide mais son quota est atteint pour le moment. Réessaie plus tard ou choisis un autre modèle.",
+      "model_unavailable": "Ce modèle n’existe pas ou n’est pas accessible avec cette clé.",
+      "bad_url": "L’API a refusé la demande. {detail}",
+      "error": "Impossible de vérifier pour le moment. {detail}",
+      "network": "Pas de connexion au serveur."
+    },
+    "aiKeyPrivacy": "Ta clé reste sur cet appareil (stockage sécurisé du téléphone). Elle n’est envoyée qu’au moment d’une analyse et n’est jamais conservée sur le serveur.",
+    "aiCustom": "Autre",
+    "aiFree": "gratuit",
+    "aiBaseUrl": "Adresse de l’API",
+    "aiBaseUrlHint": "Une API compatible OpenAI, en https. L’adresse se termine souvent par /v1.",
+    "aiLoadModels": "Charger les modèles",
+    "aiModelPlaceholder": "nom du modèle",
+    "aiModelHint": "Choisis un modèle qui comprend les images (vision). « Charger les modèles » liste ceux de ta clé.",
+    "aiModelsLoaded": "{count} modèles disponibles avec cette clé. Tape pour filtrer."
   },
   "notifications": {
     "readyTitle": "Analyse prête ✨"
@@ -187,5 +236,58 @@
     "installBody": "Ajoute Pocket Assistant à ton ordinateur pour l’ouvrir comme une application.",
     "installCta": "Installer",
     "mobileApps": "Aussi disponible sur Android et iOS."
+  },
+  "onboarding": {
+    "welcomeTitle": "Bienvenue !",
+    "welcomeBody": "Avant de commencer, Pocket Assistant va te demander l’accès à quelques fonctions du téléphone. Pour chacune, on t’explique à quoi elle sert : tu peux accepter, refuser, et changer d’avis à tout moment.",
+    "start": "C’est parti",
+    "cameraTitle": "Appareil photo et photos",
+    "cameraBody": "C’est le cœur de l’app : pour analyser quelque chose, il faut pouvoir le prendre en photo ou choisir une image.",
+    "cameraReasons": [
+      "Photographier un plat, un document ou un objet",
+      "Choisir une photo déjà prise dans ta galerie"
+    ],
+    "cameraPrivacy": "Les photos ne servent qu’à l’analyse et ne sont jamais conservées sur nos serveurs.",
+    "notificationsTitle": "Notifications",
+    "notificationsBody": "Pour te prévenir au bon moment, sans que tu aies à garder l’app ouverte.",
+    "notificationsReasons": [
+      "Savoir quand une analyse est prête",
+      "Recevoir tes rappels : aliment à finir, facture à payer, plante à arroser"
+    ],
+    "notificationsPrivacy": "Uniquement des notifications locales, aucune publicité.",
+    "allow": "Autoriser l’accès",
+    "later": "Plus tard",
+    "granted": "Accès autorisé",
+    "denied": "Accès refusé. Tu pourras l’activer plus tard dans les réglages du téléphone, rubrique Applications.",
+    "continue": "Continuer",
+    "doneTitle": "Tout est prêt",
+    "doneBody": "Tu peux modifier ces autorisations à tout moment dans Réglages.",
+    "finish": "Commencer"
+  },
+  "trial": {
+    "pill": "Essai gratuit · {remaining}/{limit}",
+    "overTitle": "Ton essai gratuit est terminé",
+    "overBody": "Tu as utilisé tes {limit} analyses offertes. Pour continuer, ajoute ta propre clé API : Gemini propose des clés gratuites en deux minutes.",
+    "addKey": "Ajouter ma clé API",
+    "freeKey": "Obtenir une clé Gemini gratuite",
+    "settingsLeft": "Essai gratuit : {remaining} analyse(s) sur {limit} restante(s) avec l’IA du serveur.",
+    "settingsOver": "Ton essai gratuit est terminé. Ajoute ta clé Gemini (gratuite) ou Claude pour continuer."
+  },
+  "admin": {
+    "title": "Administration",
+    "subtitle": "Réglages du serveur, appliqués immédiatement à toutes les apps.",
+    "token": "Jeton d’administration",
+    "unlock": "Déverrouiller",
+    "badToken": "Jeton invalide.",
+    "disabled": "L’administration est désactivée : définis ADMIN_TOKEN sur le serveur.",
+    "error": "Une erreur est survenue.",
+    "notDurable": "Aucune base Redis n’est branchée : ces réglages et les compteurs d’essai seront perdus au prochain redémarrage du serveur.",
+    "limit": "Essais gratuits par appareil",
+    "limitHint": "Analyses offertes avec l’IA du serveur avant de devoir ajouter sa clé. 0 = aucun essai.",
+    "ipLimit": "Plafond par adresse IP",
+    "ipLimitHint": "Sur 30 jours, contre les abus (réinstallations en boucle).",
+    "save": "Enregistrer",
+    "saved": "Réglages enregistrés",
+    "logout": "Se déconnecter"
   }
 }

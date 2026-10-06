@@ -8,6 +8,8 @@ import { CaptureCancelledError, capturePhoto, type PhotoSource } from "@/service
 import { haptics } from "@/services/device";
 import { createId, historyStore } from "@/services/historyStore";
 import { notify } from "@/services/notifications";
+import { ensureCameraAccess } from "@/services/permissions";
+import { trialStore } from "@/services/trial";
 import { ApiError } from "@/types/api";
 import { useTranslation } from "./useTranslation";
 
@@ -17,6 +19,8 @@ export type ScanErrorKind =
   | "refused"
   | "unavailable"
   | "billing"
+  | "invalid_key"
+  | "trial_exhausted"
   | "invalid_request"
   | "upstream_error"
   | "image"
@@ -66,6 +70,8 @@ export function useScan(mode: ScanMode) {
           controller.signal,
         );
 
+        if (meta.trial) trialStore.update(meta.trial);
+
         const id = createId();
         await historyStore.save({
           id,
@@ -86,6 +92,7 @@ export function useScan(mode: ScanMode) {
         setState({ phase: "idle" });
       } catch (error) {
         if (controller.signal.aborted) return;
+        if (error instanceof ApiError && error.code === "trial_exhausted") trialStore.markExhausted();
         haptics.error();
         setState({ phase: "error", previewSrc: prepared.preview.dataUrl, error: toErrorKind(error) });
       }
@@ -116,6 +123,11 @@ export function useScan(mode: ScanMode) {
   const start = useCallback(
     async (source: PhotoSource) => {
       haptics.press();
+      if (!(await ensureCameraAccess())) {
+        haptics.error();
+        setState({ phase: "error", error: "camera" });
+        return;
+      }
       let src: string;
       try {
         src = await capturePhoto(source);

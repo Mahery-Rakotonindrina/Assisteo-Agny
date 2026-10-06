@@ -11,6 +11,8 @@ export type Settings = {
   /** Notify when an analysis finishes while the app is in the background. */
   notifyOnResult: boolean;
   haptics: boolean;
+  /** The first-run permission walkthrough has been completed or skipped. */
+  onboardingDone: boolean;
 };
 
 type SettingsContextValue = {
@@ -27,6 +29,7 @@ const defaults: Settings = {
   theme: "system",
   notifyOnResult: true,
   haptics: true,
+  onboardingDone: false,
 };
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);

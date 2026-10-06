@@ -68,7 +68,9 @@
     "camera": "The camera isn't accessible. Allow it in your phone settings.",
     "unknown": "Something unexpected happened.",
     "billing": "The AI account has no credit left. Add credit at console.anthropic.com or switch back to demo mode.",
-    "notImage": "This file isn’t an image."
+    "notImage": "This file isn’t an image.",
+    "invalid_key": "Your API key was rejected. Check it in Settings → AI engine.",
+    "trial_exhausted": "Your free trial is over. Add your own API key in Settings → AI engine to continue."
   },
   "categories": {
     "food": "Food",
@@ -173,7 +175,54 @@
     "aiOffline": "Offline",
     "version": "Version",
     "privacy": "Photos are sent only to be analysed and are not kept on the server. Your history stays on your device.",
-    "aiProvider": "Model"
+    "aiProvider": "Provider",
+    "permissions": "Permissions",
+    "permissionCamera": "Camera and photos",
+    "permissionNotifications": "Notifications",
+    "permissionStatus": {
+      "granted": "Allowed",
+      "denied": "Denied",
+      "prompt": "Not asked yet",
+      "unsupported": "Handled by the browser"
+    },
+    "permissionAllow": "Allow",
+    "permissionDeniedHint": "To turn a denied permission back on, open your phone settings → Apps → Pocket Assistant.",
+    "replayOnboarding": "Replay the introduction",
+    "aiEngine": "AI engine",
+    "aiServer": "Server",
+    "aiServerHint": "Analyses use the server’s AI. Pick a provider to use your own key: Gemini, Claude, OpenAI, Mistral, Groq, OpenRouter… or any OpenAI-compatible API.",
+    "aiUseServer": "Switch back to the server’s AI",
+    "aiModel": "Model",
+    "aiKey": "API key",
+    "aiKeyReplace": "Replace the key",
+    "aiKeyShow": "Show the key",
+    "aiKeyHide": "Hide the key",
+    "aiGetKey": "Get a {name} key",
+    "aiKeyTest": "Test and save",
+    "aiKeyTesting": "Checking…",
+    "aiKeySaved": "Key checked and saved",
+    "aiKeyRemoved": "Key removed from this device",
+    "aiKeyActive": "Your key is active",
+    "aiKeyRemove": "Remove my key",
+    "aiOwnKey": "your key",
+    "aiKeyErrors": {
+      "invalid_key": "This key was rejected. Check it’s complete and matches the selected provider.",
+      "billing": "The key is valid but the account has no credit.",
+      "rate_limited": "The key is valid but its quota is used up for now. Try later or pick another model.",
+      "model_unavailable": "This model doesn’t exist or isn’t available with this key.",
+      "bad_url": "The API refused the request. {detail}",
+      "error": "Can’t check right now. {detail}",
+      "network": "Can’t reach the server."
+    },
+    "aiKeyPrivacy": "Your key stays on this device (the phone’s secure storage). It’s only sent when you run an analysis and never kept on the server.",
+    "aiCustom": "Other",
+    "aiFree": "free",
+    "aiBaseUrl": "API address",
+    "aiBaseUrlHint": "An OpenAI-compatible API over https. The address often ends with /v1.",
+    "aiLoadModels": "Load models",
+    "aiModelPlaceholder": "model name",
+    "aiModelHint": "Pick a model that understands images (vision). “Load models” lists the ones your key can use.",
+    "aiModelsLoaded": "{count} models available with this key. Type to filter."
   },
   "notifications": {
     "readyTitle": "Analysis ready ✨"
@@ -187,5 +236,58 @@
     "installBody": "Add Pocket Assistant to your computer and open it like an app.",
     "installCta": "Install",
     "mobileApps": "Also available on Android and iOS."
+  },
+  "onboarding": {
+    "welcomeTitle": "Welcome!",
+    "welcomeBody": "Before we start, Pocket Assistant will ask for access to a few phone features. For each one we explain what it’s for: you can accept, decline, and change your mind any time.",
+    "start": "Let’s go",
+    "cameraTitle": "Camera and photos",
+    "cameraBody": "It’s the heart of the app: to analyse something, you need to take a photo of it or pick an image.",
+    "cameraReasons": [
+      "Snap a meal, a document or an object",
+      "Pick a photo you already took from your gallery"
+    ],
+    "cameraPrivacy": "Photos are only used for the analysis and never kept on our servers.",
+    "notificationsTitle": "Notifications",
+    "notificationsBody": "So we can let you know at the right time, without keeping the app open.",
+    "notificationsReasons": [
+      "Know when an analysis is ready",
+      "Get your reminders: food to finish, a bill to pay, a plant to water"
+    ],
+    "notificationsPrivacy": "Local notifications only, no ads.",
+    "allow": "Allow access",
+    "later": "Not now",
+    "granted": "Access granted",
+    "denied": "Access denied. You can turn it on later in your phone settings, under Apps.",
+    "continue": "Continue",
+    "doneTitle": "You’re all set",
+    "doneBody": "You can change these permissions any time in Settings.",
+    "finish": "Get started"
+  },
+  "trial": {
+    "pill": "Free trial · {remaining}/{limit}",
+    "overTitle": "Your free trial is over",
+    "overBody": "You’ve used your {limit} free analyses. To keep going, add your own API key: Gemini gives free keys in two minutes.",
+    "addKey": "Add my API key",
+    "freeKey": "Get a free Gemini key",
+    "settingsLeft": "Free trial: {remaining} of {limit} analyses left on the server’s AI.",
+    "settingsOver": "Your free trial is over. Add your Gemini (free) or Claude key to continue."
+  },
+  "admin": {
+    "title": "Admin",
+    "subtitle": "Server settings, applied immediately to every app.",
+    "token": "Admin token",
+    "unlock": "Unlock",
+    "badToken": "Invalid token.",
+    "disabled": "Admin is disabled: set ADMIN_TOKEN on the server.",
+    "error": "Something went wrong.",
+    "notDurable": "No Redis database is connected: these settings and trial counts will be lost on the next server restart.",
+    "limit": "Free scans per device",
+    "limitHint": "Analyses offered on the server’s AI before users must add their own key. 0 = no trial.",
+    "ipLimit": "Per-IP ceiling",
+    "ipLimitHint": "Over 30 days, against abuse (repeated reinstalls).",
+    "save": "Save",
+    "saved": "Settings saved",
+    "logout": "Log out"
   }
 }
