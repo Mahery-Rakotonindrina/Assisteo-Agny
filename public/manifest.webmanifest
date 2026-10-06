@@ -1,6 +1,6 @@
 {
-  "name": "Pocket Assistant",
-  "short_name": "Pocket",
+  "name": "Assisteo Agny",
+  "short_name": "Assisteo",
   "description": "Snap a photo, the AI explains what you're looking at.",
   "start_url": "/",
   "display": "standalone",

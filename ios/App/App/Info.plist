@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-        <string>Pocket Assistant</string>
+        <string>Assisteo Agny</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -52,11 +52,11 @@
 		<string>armv7</string>
 	</array>
 	<key>NSCameraUsageDescription</key>
-	<string>Pocket Assistant utilise l'appareil photo pour analyser ce que tu photographies.</string>
+	<string>Assisteo Agny utilise l'appareil photo pour analyser ce que tu photographies.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Pocket Assistant accède à tes photos pour analyser une image existante.</string>
+	<string>Assisteo Agny accède à tes photos pour analyser une image existante.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Pocket Assistant peut enregistrer des photos dans ta galerie.</string>
+	<string>Assisteo Agny peut enregistrer des photos dans ta galerie.</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

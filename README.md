@@ -1,4 +1,4 @@
-# Pocket Assistant
+# Assisteo Agny
 
 Petite app mobile : tu prends en photo un aliment, un document ou un objet, l'IA (Claude) l'analyse et te renvoie des infos utiles et des suggestions. Les analyses sont gardées dans un historique local et peuvent déclencher des rappels par notification.
 
@@ -99,7 +99,7 @@ Elle héberge l'API IA. Les applications natives et la version iPhone l'appellen
 
 1. Pousse le projet sur GitHub.
 2. Sur [vercel.com](https://vercel.com) : *Add New → Project*, puis importe le dépôt et déploie. Ajoute `ANTHROPIC_API_KEY` dans *Environment Variables* pour la vraie IA ; sans clé, le mode démo est actif.
-3. Note l'URL obtenue, par exemple `https://pocket-assistant.vercel.app`.
+3. Note l'URL obtenue, par exemple `https://assisteo-agny.vercel.app`.
 
 ### Android : APK compilé dans le cloud
 
@@ -107,7 +107,7 @@ Aucun SDK n'est nécessaire en local : le workflow [.github/workflows/android-ap
 
 1. Sur GitHub : *Settings → Secrets and variables → Actions → Variables*, puis crée `NEXT_PUBLIC_API_URL` avec l'URL Vercel.
 2. *Actions → Android APK → Run workflow*. Compte environ 5 minutes.
-3. Télécharge l'artefact `pocket-assistant-debug-apk`, envoie l'APK sur le téléphone et ouvre-le (autorise l'installation depuis cette source).
+3. Télécharge l'artefact `assisteo-agny-android`, envoie l'APK sur le téléphone et ouvre-le (autorise l'installation depuis cette source).
 
 En local, si tu as Android Studio et environ 10 Go libres : `nvm use 22`, puis `npm run cap:android`, puis ▶ Run.
 

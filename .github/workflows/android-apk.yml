@@ -88,8 +88,8 @@ jobs:
           echo "Using $apksigner"
           "$apksigner" verify --print-certs app/build/outputs/apk/release/app-release.apk
           mkdir -p ../dist
-          cp app/build/outputs/apk/release/app-release.apk "../dist/PocketAssistant-$ANDROID_VERSION_NAME.apk"
-          cp app/build/outputs/bundle/release/app-release.aab "../dist/PocketAssistant-$ANDROID_VERSION_NAME.aab"
+          cp app/build/outputs/apk/release/app-release.apk "../dist/AssisteoAgny-$ANDROID_VERSION_NAME.apk"
+          cp app/build/outputs/bundle/release/app-release.aab "../dist/AssisteoAgny-$ANDROID_VERSION_NAME.aab"
 
       - name: Build debug APK (no signing key)
         if: steps.signing.outputs.release != 'true'
@@ -98,7 +98,7 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
           mkdir -p ../dist
-          cp app/build/outputs/apk/debug/app-debug.apk "../dist/PocketAssistant-$ANDROID_VERSION_NAME-debug.apk"
+          cp app/build/outputs/apk/debug/app-debug.apk "../dist/AssisteoAgny-$ANDROID_VERSION_NAME-debug.apk"
 
       - name: Remove signing key
         if: always()
@@ -106,13 +106,13 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: pocket-assistant-android
+          name: assisteo-agny-android
           path: dist/*.apk
           retention-days: 30
 
       - uses: actions/upload-artifact@v4
         if: steps.signing.outputs.release == 'true'
         with:
-          name: pocket-assistant-play-store-bundle
+          name: assisteo-agny-play-store-bundle
           path: dist/*.aab
           retention-days: 30

@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Pocket Assistant",
+    "title": "Assisteo Agny",
     "description": "Snap a photo, the AI explains what you're looking at."
   },
   "nav": {
@@ -160,7 +160,7 @@
     "notificationsDenied": "Notifications are blocked. Allow them in your system settings.",
     "testNotification": "Send a test notification",
     "testTitle": "All good 👋",
-    "testBody": "Pocket Assistant can send you reminders.",
+    "testBody": "Assisteo Agny can send you reminders.",
     "haptics": "Haptic feedback",
     "hapticsHint": "Light vibrations on actions.",
     "data": "Data",
@@ -186,7 +186,7 @@
       "unsupported": "Handled by the browser"
     },
     "permissionAllow": "Allow",
-    "permissionDeniedHint": "To turn a denied permission back on, open your phone settings → Apps → Pocket Assistant.",
+    "permissionDeniedHint": "To turn a denied permission back on, open your phone settings → Apps → Assisteo Agny.",
     "replayOnboarding": "Replay the introduction",
     "aiEngine": "AI engine",
     "aiServer": "Server",
@@ -233,13 +233,13 @@
   },
   "sidebar": {
     "installTitle": "Install the app",
-    "installBody": "Add Pocket Assistant to your computer and open it like an app.",
+    "installBody": "Add Assisteo Agny to your computer and open it like an app.",
     "installCta": "Install",
     "mobileApps": "Also available on Android and iOS."
   },
   "onboarding": {
     "welcomeTitle": "Welcome!",
-    "welcomeBody": "Before we start, Pocket Assistant will ask for access to a few phone features. For each one we explain what it’s for: you can accept, decline, and change your mind any time.",
+    "welcomeBody": "Before we start, Assisteo Agny will ask for access to a few phone features. For each one we explain what it’s for: you can accept, decline, and change your mind any time.",
     "start": "Let’s go",
     "cameraTitle": "Camera and photos",
     "cameraBody": "It’s the heart of the app: to analyse something, you need to take a photo of it or pick an image.",
