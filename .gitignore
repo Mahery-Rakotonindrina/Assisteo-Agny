@@ -45,3 +45,8 @@ next-env.d.ts
 *.p12
 *.jks
 *.keystore
+
+# Coding-agent skills installed by the Vercel CLI (not part of the app)
+.agents/
+.claude/skills/
+skills-lock.json

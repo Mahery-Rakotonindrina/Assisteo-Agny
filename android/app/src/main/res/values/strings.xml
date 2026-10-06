@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Pocket Assistant</string>
-    <string name="title_activity_main">Pocket Assistant</string>
+    <string name="app_name">Assisteo Agny</string>
+    <string name="title_activity_main">Assisteo Agny</string>
     <string name="package_name">com.mahery.pocketassistant</string>
     <string name="custom_url_scheme">com.mahery.pocketassistant</string>
 </resources>

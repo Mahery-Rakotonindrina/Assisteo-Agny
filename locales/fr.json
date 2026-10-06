@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Pocket Assistant",
+    "title": "Assisteo Agny",
     "description": "Prends une photo, l'IA t'explique ce que tu vois."
   },
   "nav": {
@@ -160,7 +160,7 @@
     "notificationsDenied": "Les notifications sont bloquées. Autorise-les dans les réglages du système.",
     "testNotification": "Envoyer une notification de test",
     "testTitle": "Tout fonctionne 👋",
-    "testBody": "Pocket Assistant peut t'envoyer des rappels.",
+    "testBody": "Assisteo Agny peut t'envoyer des rappels.",
     "haptics": "Retour haptique",
     "hapticsHint": "Vibrations légères lors des actions.",
     "data": "Données",
@@ -186,7 +186,7 @@
       "unsupported": "Géré par le navigateur"
     },
     "permissionAllow": "Autoriser",
-    "permissionDeniedHint": "Pour réactiver un accès refusé, ouvre les réglages du téléphone → Applications → Pocket Assistant.",
+    "permissionDeniedHint": "Pour réactiver un accès refusé, ouvre les réglages du téléphone → Applications → Assisteo Agny.",
     "replayOnboarding": "Revoir l’introduction",
     "aiEngine": "Moteur IA",
     "aiServer": "Serveur",
@@ -233,13 +233,13 @@
   },
   "sidebar": {
     "installTitle": "Installer l’app",
-    "installBody": "Ajoute Pocket Assistant à ton ordinateur pour l’ouvrir comme une application.",
+    "installBody": "Ajoute Assisteo Agny à ton ordinateur pour l’ouvrir comme une application.",
     "installCta": "Installer",
     "mobileApps": "Aussi disponible sur Android et iOS."
   },
   "onboarding": {
     "welcomeTitle": "Bienvenue !",
-    "welcomeBody": "Avant de commencer, Pocket Assistant va te demander l’accès à quelques fonctions du téléphone. Pour chacune, on t’explique à quoi elle sert : tu peux accepter, refuser, et changer d’avis à tout moment.",
+    "welcomeBody": "Avant de commencer, Assisteo Agny va te demander l’accès à quelques fonctions du téléphone. Pour chacune, on t’explique à quoi elle sert : tu peux accepter, refuser, et changer d’avis à tout moment.",
     "start": "C’est parti",
     "cameraTitle": "Appareil photo et photos",
     "cameraBody": "C’est le cœur de l’app : pour analyser quelque chose, il faut pouvoir le prendre en photo ou choisir une image.",

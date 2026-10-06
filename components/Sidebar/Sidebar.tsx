@@ -35,7 +35,7 @@ export function Sidebar() {
       <Link href="/" className={styles.brand}>
         {/* eslint-disable-next-line @next/next/no-img-element -- static SVG logo */}
         <img src="/icon.svg" alt="" width={36} height={36} />
-        <span>Pocket Assistant</span>
+        <span>Assisteo Agny</span>
       </Link>
 
       <nav className={styles.nav} aria-label="Main">

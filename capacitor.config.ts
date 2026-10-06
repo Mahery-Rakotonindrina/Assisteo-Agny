@@ -6,7 +6,7 @@ const liveReloadUrl = process.env.CAP_SERVER_URL;
 
 const config: CapacitorConfig = {
   appId: "com.mahery.pocketassistant",
-  appName: "Pocket Assistant",
+  appName: "Assisteo Agny",
   webDir: "out",
   ...(liveReloadUrl && {
     server: { url: liveReloadUrl, cleartext: true },
