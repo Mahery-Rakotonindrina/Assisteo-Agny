@@ -40,3 +40,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Android signing keys: never commit (they live in GitHub secrets)
+*.p12
+*.jks
+*.keystore
