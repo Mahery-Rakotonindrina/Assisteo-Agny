@@ -7,11 +7,19 @@ import { AiOverrideSchema, type AiOverride } from "@/lib/ai/schema";
 const STORAGE_KEY = "ai-override.v2";
 
 /** The key itself plus which provider preset the user picked (for display). */
-export type SavedKey = AiOverride & { presetId: string };
+export type SavedKey = AiOverride & {
+  presetId: string;
+  /** When it was set, to settle changes made on two devices. */
+  updatedAt?: number;
+};
+
+type LocalChange = { type: "save"; key: SavedKey } | { type: "clear" };
 
 let cache: SavedKey | null | undefined;
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((listener) => listener());
+// Changes made on this device (not ones received from the account), for sync.
+const localListeners = new Set<(change: LocalChange) => void>();
 
 function parse(raw: string | null): SavedKey | null {
   if (!raw) return null;
@@ -19,7 +27,11 @@ function parse(raw: string | null): SavedKey | null {
     const data = JSON.parse(raw);
     const parsed = AiOverrideSchema.safeParse(data);
     if (!parsed.success) return null;
-    return { ...parsed.data, presetId: typeof data.presetId === "string" ? data.presetId : parsed.data.provider };
+    return {
+      ...parsed.data,
+      presetId: typeof data.presetId === "string" ? data.presetId : parsed.data.provider,
+      updatedAt: typeof data.updatedAt === "number" ? data.updatedAt : undefined,
+    };
   } catch {
     return null;
   }
@@ -43,20 +55,30 @@ export const aiKeyStore = {
     return cache;
   },
 
-  async save(key: SavedKey) {
-    await SecureStorage.setItem(STORAGE_KEY, JSON.stringify(key));
-    await SecureStorage.removeItem("ai-override.v1").catch(() => undefined);
-    cache = key;
-    emit();
+  onLocalChange(listener: (change: LocalChange) => void) {
+    localListeners.add(listener);
+    return () => {
+      localListeners.delete(listener);
+    };
   },
 
-  async clear() {
+  async save(key: SavedKey, { fromSync = false } = {}) {
+    const stamped = fromSync ? key : { ...key, updatedAt: Date.now() };
+    await SecureStorage.setItem(STORAGE_KEY, JSON.stringify(stamped));
+    await SecureStorage.removeItem("ai-override.v1").catch(() => undefined);
+    cache = stamped;
+    emit();
+    if (!fromSync) localListeners.forEach((listener) => listener({ type: "save", key: stamped }));
+  },
+
+  async clear({ fromSync = false } = {}) {
     await Promise.all([
       SecureStorage.removeItem(STORAGE_KEY).catch(() => undefined),
       SecureStorage.removeItem("ai-override.v1").catch(() => undefined),
     ]);
     cache = null;
     emit();
+    if (!fromSync) localListeners.forEach((listener) => listener({ type: "clear" }));
   },
 };
 

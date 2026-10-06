@@ -13,13 +13,20 @@ export type Settings = {
   haptics: boolean;
   /** The first-run permission walkthrough has been completed or skipped. */
   onboardingDone: boolean;
+  /** Last change to the synced fields, to settle edits from two devices. */
+  updatedAt: number;
 };
+
+/** Preferences that follow the account across devices (the rest is per device). */
+export const syncedSettingKeys = ["locale", "theme", "notifyOnResult", "haptics"] as const;
+export type SyncedSettings = Pick<Settings, (typeof syncedSettingKeys)[number]>;
 
 type SettingsContextValue = {
   settings: Settings;
   /** False until persisted settings have been read on the client. */
   ready: boolean;
-  update: (patch: Partial<Settings>) => void;
+  /** `fromSync` applies values received from the account without re-sending them. */
+  update: (patch: Partial<Settings>, options?: { fromSync?: boolean; updatedAt?: number }) => void;
 };
 
 const STORAGE_KEY = "settings.v1";
@@ -30,6 +37,7 @@ const defaults: Settings = {
   notifyOnResult: true,
   haptics: true,
   onboardingDone: false,
+  updatedAt: 0,
 };
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
@@ -71,9 +79,11 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     setHapticsEnabled(settings.haptics);
   }, [settings]);
 
-  const update = useCallback((patch: Partial<Settings>) => {
+  const update = useCallback((patch: Partial<Settings>, options: { fromSync?: boolean; updatedAt?: number } = {}) => {
     setSettings((current) => {
-      const next = { ...current, ...patch };
+      const touchesSynced = syncedSettingKeys.some((key) => key in patch);
+      const updatedAt = options.fromSync ? (options.updatedAt ?? current.updatedAt) : touchesSynced ? Date.now() : current.updatedAt;
+      const next = { ...current, ...patch, updatedAt };
       void Preferences.set({ key: STORAGE_KEY, value: JSON.stringify(next) });
       return next;
     });

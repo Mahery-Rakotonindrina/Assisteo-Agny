@@ -19,7 +19,7 @@ export function applyCors(req: NextApiRequest, res: NextApiResponse, methods: st
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Vary", "Origin");
     res.setHeader("Access-Control-Allow-Methods", [...methods, "OPTIONS"].join(", "));
-    res.setHeader("Access-Control-Allow-Headers", ["Content-Type", installIdHeader, ...Object.values(overrideHeaders)].join(", "));
+    res.setHeader("Access-Control-Allow-Headers", ["Content-Type", "Authorization", installIdHeader, ...Object.values(overrideHeaders)].join(", "));
     res.setHeader("Access-Control-Max-Age", "86400");
   }
 

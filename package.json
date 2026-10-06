@@ -1,6 +1,6 @@
 {
   "name": "assisteo-agny",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit",
     "cap:sync": "npm run build:mobile && cap sync",
     "cap:android": "npm run cap:sync && cap open android",
-    "cap:ios": "npm run cap:sync && cap open ios"
+    "cap:ios": "npm run cap:sync && cap open ios",
+    "db:migrate": "node scripts/db-migrate.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.131.0",
@@ -30,6 +31,7 @@
     "@capacitor/status-bar": "^8.0.4",
     "@google/genai": "^2.27.0",
     "@ionic/pwa-elements": "^3.4.0",
+    "@supabase/supabase-js": "^2.109.0",
     "@upstash/redis": "^1.39.0",
     "idb-keyval": "^6.3.0",
     "lucide-react": "^1.52.0",
@@ -42,12 +44,17 @@
   "devDependencies": {
     "@capacitor/cli": "^8.5.2",
     "@types/node": "^20",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "cross-env": "^10.1.0",
     "eslint": "^9",
     "eslint-config-next": "16.3.4",
+    "pg": "^8.23.1",
     "sass": "^1.104.0",
     "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

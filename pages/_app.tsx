@@ -6,6 +6,7 @@ import { AppShell } from "@/components/AppShell";
 import { Onboarding } from "@/components/Onboarding";
 import { ToastProvider } from "@/components/Toast";
 import { useNativeBootstrap } from "@/hooks/useNativeBootstrap";
+import { AccountProvider } from "@/lib/account/AccountProvider";
 import { SettingsProvider } from "@/lib/settings/SettingsProvider";
 import "@/styles/globals.scss";
 
@@ -47,13 +48,15 @@ export default function App({ Component, pageProps }: AppProps) {
       `}</style>
       <SettingsProvider>
         <ToastProvider>
-          <MotionConfig reducedMotion="user">
-            <Bootstrap />
-            <AppShell>
-              <Component {...pageProps} />
-            </AppShell>
-            <Onboarding />
-          </MotionConfig>
+          <AccountProvider>
+            <MotionConfig reducedMotion="user">
+              <Bootstrap />
+              <AppShell>
+                <Component {...pageProps} />
+              </AppShell>
+              <Onboarding />
+            </MotionConfig>
+          </AccountProvider>
         </ToastProvider>
       </SettingsProvider>
     </>
