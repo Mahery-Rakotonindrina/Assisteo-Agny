@@ -52,6 +52,19 @@ jobs:
 
       - run: npm ci
 
+      # Firebase config for reminder pushes (docs/push.md). Without it the
+      # app is built without push and keeps local notifications only.
+      - name: Restore Firebase config
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -z "$GOOGLE_SERVICES_JSON" ]; then
+            echo "::notice::No GOOGLE_SERVICES_JSON secret: building without push notifications."
+            exit 0
+          fi
+          echo "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
+          echo "NEXT_PUBLIC_PUSH_ENABLED=true" >> "$GITHUB_ENV"
+
       - name: Build static export
         run: npm run build:mobile
         env:
@@ -103,9 +116,9 @@ jobs:
           mkdir -p ../dist
           cp app/build/outputs/apk/debug/app-debug.apk "../dist/AssisteoAgny-$ANDROID_VERSION_NAME-debug.apk"
 
-      - name: Remove signing key
+      - name: Remove signing key and Firebase config
         if: always()
-        run: rm -f "$RUNNER_TEMP/release.p12"
+        run: rm -f "$RUNNER_TEMP/release.p12" android/app/google-services.json
 
       - uses: actions/upload-artifact@v4
         with:

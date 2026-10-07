@@ -1,4 +1,5 @@
 import type { Session } from "@supabase/supabase-js";
+import Router from "next/router";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { pick } from "@/lib/account/pick";
 import { syncedSettingKeys, useSettings, type SyncedSettings } from "@/lib/settings/SettingsProvider";
@@ -7,6 +8,7 @@ import { deleteAccountOnServer, onSessionChange, signOutAccount } from "@/servic
 import { aiKeyStore } from "@/services/aiKeyStore";
 import { accountKeyApi } from "@/services/accountKeyApi";
 import { cancelAllNotifications } from "@/services/notifications";
+import { registerPush, unregisterPush } from "@/services/push";
 import { sync, type SyncStatus } from "@/services/sync";
 import { trialStore } from "@/services/trial";
 
@@ -51,6 +53,12 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     if (sessionKnown) void trialStore.refresh();
   }, [userId, sessionKnown]);
   useEffect(() => sync.subscribe(() => setSyncStatus(sync.status())), []);
+
+  // Reminder pushes on this device (Android builds with Firebase only).
+  useEffect(() => {
+    if (!userId) return;
+    void registerPush((entryId) => void Router.push({ pathname: "/result", query: { id: entryId } })).catch(() => undefined);
+  }, [userId]);
 
   // History.
   useEffect(() => {
@@ -124,6 +132,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   }, [userId]);
 
   const signOut = useCallback(async () => {
+    await unregisterPush().catch(() => undefined);
     await sync.now()?.catch(() => undefined);
     await sync.stop({ wipe: true });
     await aiKeyStore.clear({ fromSync: true });
@@ -133,6 +142,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   const deleteAccount = useCallback(async () => {
     // Stop pushing first so nothing is re-uploaded while the server deletes.
     await sync.stop({ wipe: false });
+    await unregisterPush().catch(() => undefined);
     try {
       await deleteAccountOnServer();
     } catch (error) {

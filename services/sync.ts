@@ -104,6 +104,7 @@ async function applyRemote(row: Row) {
       chat: Array.isArray(row.chat) && row.chat.length > 0 ? row.chat : undefined,
       // Notifications are scheduled per device: keep this device's own one.
       reminderId: local?.reminderId,
+      reminderScheduledAt: local?.reminderScheduledAt,
       ...photos,
       updatedAt: remoteUpdated,
       // A pending remote shrink (see photoStorage) must survive this pull.

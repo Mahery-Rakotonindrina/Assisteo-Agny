@@ -1,0 +1,34 @@
+name: Reminder pushes
+
+# Vercel's free plan only runs crons once a day, so GitHub Actions triggers
+# the reminder pushes instead (schedules run on the default branch only, and
+# may start a few minutes late). Needs the repository secret CRON_SECRET,
+# equal to the CRON_SECRET of the Vercel project, and the variable
+# NEXT_PUBLIC_API_URL (already used by the APK build).
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: reminder-pushes
+  cancel-in-progress: false
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Send due reminders
+        env:
+          API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ] || [ -z "$API_URL" ]; then
+            echo "::notice::CRON_SECRET or NEXT_PUBLIC_API_URL missing: reminder pushes are off."
+            exit 0
+          fi
+          status=$(curl -s -o result.json -w "%{http_code}" --max-time 90 \
+            -H "Authorization: Bearer $CRON_SECRET" "$API_URL/api/cron/reminders")
+          cat result.json; echo
+          [ "$status" = "200" ] || { echo "::error::Reminder cron answered HTTP $status"; exit 1; }

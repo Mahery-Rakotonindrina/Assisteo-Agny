@@ -54,3 +54,7 @@ skills-lock.json
 # Playwright
 /test-results/
 /playwright-report/
+
+# Firebase config (per developer / CI secret, see docs/push.md)
+android/app/google-services.json
+ios/App/App/GoogleService-Info.plist
