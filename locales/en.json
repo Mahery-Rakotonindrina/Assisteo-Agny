@@ -529,5 +529,19 @@
   "home": {
     "nextReminder": "Next reminder",
     "otherReminders": "{count} more planned"
+  },
+  "feedback": {
+    "title": "Was this answer right?",
+    "yes": "Yes",
+    "no": "No",
+    "why": "What was wrong?",
+    "reasons": {
+      "wrong_subject": "Not the right subject",
+      "wrong_info": "Wrong or inaccurate info",
+      "other": "Something else"
+    },
+    "skip": "Send without saying",
+    "thanks": "Thanks! Your feedback helps improve the answers.",
+    "error": "Couldn’t send your feedback right now. Try again later."
   }
 }

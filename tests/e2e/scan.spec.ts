@@ -33,4 +33,18 @@ test.describe("scan", () => {
     await page.getByRole("button", { name: /envoyer/i }).click();
     await expect(page.getByText(/mode démo/)).toBeVisible({ timeout: 15_000 });
   });
+
+  test("collects a thumbs-down with a reason", async ({ page }) => {
+    await prepare(page);
+    await page.goto("/");
+    await page.locator('input[type="file"]').setInputFiles("tests/e2e/fixtures/apple.jpg");
+    await expect(page).toHaveURL(/\/result\?id=/, { timeout: 20_000 });
+
+    await page.getByRole("button", { name: "Non" }).click();
+    await page.getByRole("button", { name: "Ce n’est pas le bon sujet" }).click();
+    await expect(page.getByText(/Merci ! Ton avis/)).toBeVisible();
+    // Remembered on the scan.
+    await page.reload();
+    await expect(page.getByText(/Merci ! Ton avis/)).toBeVisible();
+  });
 });

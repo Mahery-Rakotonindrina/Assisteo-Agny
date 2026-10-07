@@ -529,5 +529,19 @@
   "home": {
     "nextReminder": "Prochain rappel",
     "otherReminders": "{count} autre(s) prévu(s)"
+  },
+  "feedback": {
+    "title": "Cette réponse est-elle juste ?",
+    "yes": "Oui",
+    "no": "Non",
+    "why": "Qu’est-ce qui ne va pas ?",
+    "reasons": {
+      "wrong_subject": "Ce n’est pas le bon sujet",
+      "wrong_info": "Des infos fausses ou imprécises",
+      "other": "Autre chose"
+    },
+    "skip": "Envoyer sans préciser",
+    "thanks": "Merci ! Ton avis aide à améliorer les réponses.",
+    "error": "Impossible d’envoyer ton avis pour l’instant. Réessaie plus tard."
   }
 }

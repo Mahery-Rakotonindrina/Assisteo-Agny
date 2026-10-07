@@ -29,6 +29,7 @@ import { CategoryBadge } from "@/components/CategoryBadge";
 import { ReminderSheet } from "@/components/ReminderSheet";
 import { ScanChat } from "@/components/ScanChat";
 import {
+  AnswerFeedback,
   ConfidenceBadge,
   confidenceLevel,
   NutritionCard,
@@ -488,6 +489,8 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
                 <SuggestionList suggestions={analysis.suggestions} />
               </Section>
             )}
+
+            {!example && <AnswerFeedback entry={entry} />}
 
             {analysis.tags.length > 0 && (
               <motion.div variants={rise} className={styles.tags} aria-label={t("result.tags")}>

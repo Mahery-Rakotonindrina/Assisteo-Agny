@@ -105,6 +105,8 @@ async function applyRemote(row: Row) {
       // Notifications are scheduled per device: keep this device's own one.
       reminderId: local?.reminderId,
       reminderScheduledAt: local?.reminderScheduledAt,
+      // The answer vote is kept on this device only.
+      feedback: local?.feedback,
       ...photos,
       updatedAt: remoteUpdated,
       // A pending remote shrink (see photoStorage) must survive this pull.

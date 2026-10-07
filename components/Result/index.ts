@@ -1,4 +1,5 @@
 export { ConfidenceBadge, confidenceLevel } from "./ConfidenceBadge";
+export { AnswerFeedback } from "./AnswerFeedback";
 export { CountUp } from "./CountUp";
 export { NutritionCard } from "./NutritionCard";
 export { RecipeCard } from "./RecipeCard";
