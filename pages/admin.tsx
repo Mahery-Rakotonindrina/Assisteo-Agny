@@ -1,7 +1,7 @@
 import Head from "next/head";
 import { motion } from "motion/react";
 import { useEffect, useState, type FormEvent } from "react";
-import { Gauge, Gift, LockKeyhole, LogOut, MessageCircle, Minus, Plus, Save, ShieldAlert, Wifi } from "lucide-react";
+import { Download, Gauge, Gift, LockKeyhole, Smartphone, LogOut, MessageCircle, Minus, Plus, Save, ShieldAlert, Wifi } from "lucide-react";
 import { Button } from "@/components/Button";
 import { useToast } from "@/components/Toast";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -9,6 +9,7 @@ import { rise, stagger } from "@/lib/motion";
 import { httpClient } from "@/services/httpClient";
 import { ApiError } from "@/types/api";
 import type { AdminTrialResponse } from "@/pages/api/admin/trial";
+import type { AppVersionResponse } from "@/pages/api/app-version";
 import styles from "@/styles/Admin.module.scss";
 
 const TOKEN_KEY = "admin-token";
@@ -200,6 +201,8 @@ export default function AdminPage() {
             </Button>
           </motion.form>
         )}
+
+        {config && <AppVersionCard token={token} />}
       </motion.div>
     </>
   );
@@ -243,5 +246,76 @@ function Stepper({ icon, label, hint, value, min, max, onChange }: StepperProps)
         </button>
       </div>
     </div>
+  );
+}
+
+const VERSION_PATTERN = /^(d+(.d+){0,2})?$/;
+
+/** Minimum and latest app versions, checked by the native apps at launch. */
+function AppVersionCard({ token }: { token: string }) {
+  const { t } = useTranslation();
+  const toast = useToast();
+  const [saved, setSaved] = useState<AppVersionResponse | null>(null);
+  const [draft, setDraft] = useState<AppVersionResponse>({ minimum: "", latest: "", downloadUrl: "" });
+  const [saving, setSaving] = useState(false);
+  const headers = { Authorization: `Bearer ${token}` };
+
+  useEffect(() => {
+    httpClient
+      .get<AppVersionResponse>("/api/admin/app", { headers: { Authorization: `Bearer ${token}` } })
+      .then((result) => {
+        setSaved(result);
+        setDraft(result);
+      })
+      .catch(() => undefined);
+  }, [token]);
+
+  const valid = VERSION_PATTERN.test(draft.minimum) && VERSION_PATTERN.test(draft.latest) && (!draft.downloadUrl || draft.downloadUrl.startsWith("https://"));
+  const dirty = saved !== null && (saved.minimum !== draft.minimum || saved.latest !== draft.latest || saved.downloadUrl !== draft.downloadUrl);
+
+  const save = async (event: FormEvent) => {
+    event.preventDefault();
+    setSaving(true);
+    try {
+      const result = await httpClient.put<AppVersionResponse>("/api/admin/app", draft, { headers });
+      setSaved(result);
+      toast(t("admin.saved"));
+    } catch {
+      toast(t("admin.error"), "error");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const field = (key: keyof AppVersionResponse, label: string, hint: string | null, icon: React.ReactNode, placeholder: string) => (
+    <label className={styles.field}>
+      <span className={styles.label}>
+        {icon} {label}
+      </span>
+      <input
+        className={styles.input}
+        value={draft[key]}
+        placeholder={placeholder}
+        inputMode={key === "downloadUrl" ? "url" : "decimal"}
+        onChange={(event) => setDraft({ ...draft, [key]: event.target.value.trim() })}
+      />
+      {hint && <small>{hint}</small>}
+    </label>
+  );
+
+  return (
+    <motion.form variants={rise} initial="hidden" animate="show" className={styles.card} onSubmit={(event) => void save(event)}>
+      <div>
+        <h2 className={styles.cardTitle}>{t("admin.appTitle")}</h2>
+        <p className={styles.cardSubtitle}>{t("admin.appSubtitle")}</p>
+      </div>
+      {field("minimum", t("admin.minimum"), t("admin.minimumHint"), <ShieldAlert size={16} />, "1.0.0")}
+      {field("latest", t("admin.latest"), t("admin.latestHint"), <Smartphone size={16} />, "1.0.0")}
+      {field("downloadUrl", t("admin.downloadUrl"), null, <Download size={16} />, "https://…")}
+      {!valid && <p className={styles.error}>{t("admin.invalidVersion")}</p>}
+      <Button type="submit" block icon={<Save />} disabled={!dirty || !valid || saving}>
+        {t("admin.save")}
+      </Button>
+    </motion.form>
   );
 }

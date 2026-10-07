@@ -6,6 +6,7 @@ import { AppShell } from "@/components/AppShell";
 import { Onboarding } from "@/components/Onboarding";
 import { ReminderKeeper } from "@/components/ReminderKeeper";
 import { ToastProvider } from "@/components/Toast";
+import { UpdateGate } from "@/components/UpdateGate";
 import { useNativeBootstrap } from "@/hooks/useNativeBootstrap";
 import { AccountProvider } from "@/lib/account/AccountProvider";
 import { SettingsProvider } from "@/lib/settings/SettingsProvider";
@@ -57,6 +58,7 @@ export default function App({ Component, pageProps }: AppProps) {
               </AppShell>
               <Onboarding />
               <ReminderKeeper />
+              <UpdateGate />
             </MotionConfig>
           </AccountProvider>
         </ToastProvider>

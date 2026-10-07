@@ -305,7 +305,15 @@
     "askLimit": "Questions par jour et par appareil",
     "askLimitHint": "Questions sur un scan avec l’IA du serveur. Illimité avec sa propre clé.",
     "dailyLimit": "Plafond global par jour",
-    "dailyLimitHint": "Scans + questions sur la clé du serveur, tous utilisateurs confondus (0 = illimité). Aujourd’hui : {used}."
+    "dailyLimitHint": "Scans + questions sur la clé du serveur, tous utilisateurs confondus (0 = illimité). Aujourd’hui : {used}.",
+    "appTitle": "Versions de l’app",
+    "appSubtitle": "Bloque les vieilles versions incompatibles ou propose la mise à jour.",
+    "minimum": "Version minimale",
+    "minimumHint": "En dessous, l’app est bloquée jusqu’à la mise à jour. Vide = aucune.",
+    "latest": "Dernière version",
+    "latestHint": "En dessous, un bandeau propose la mise à jour. Vide = rien.",
+    "downloadUrl": "Lien de téléchargement (https)",
+    "invalidVersion": "Format attendu : 1.0.12"
   },
   "account": {
     "section": "Compte",
@@ -426,5 +434,15 @@
     "privacy": "Politique de confidentialité",
     "terms": "Conditions d’utilisation",
     "consent": "En continuant, tu acceptes les {terms} et la {privacy}."
+  },
+  "update": {
+    "requiredTitle": "Mise à jour nécessaire",
+    "requiredBody": "Cette version d’Assisteo Agny n’est plus compatible. Installe la nouvelle version pour continuer : ton historique est conservé.",
+    "download": "Télécharger la mise à jour",
+    "noLink": "Télécharge la dernière version depuis l’endroit où tu as installé l’app.",
+    "availableTitle": "Version {version} disponible",
+    "availableBody": "Des améliorations t’attendent.",
+    "update": "Mettre à jour",
+    "later": "Plus tard"
   }
 }
