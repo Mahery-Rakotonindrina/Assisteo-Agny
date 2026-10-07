@@ -10,6 +10,8 @@ import { createId, historyStore } from "@/services/historyStore";
 import { notify } from "@/services/notifications";
 import { ensureCameraAccess } from "@/services/permissions";
 import { trialStore } from "@/services/trial";
+import { insuranceReminderAt, scheduleReminder } from "@/services/reminders";
+import { useReminderTexts } from "./useReminderTexts";
 import { ApiError } from "@/types/api";
 import { useTranslation } from "./useTranslation";
 
@@ -39,7 +41,7 @@ type Prepared = Awaited<ReturnType<typeof prepareCapture>>;
 function toErrorKind(error: unknown): ScanErrorKind {
   if (error instanceof ApiError) {
     const code = error.code;
-    return code === "method_not_allowed" ? "unknown" : code;
+    return code === "method_not_allowed" || code === "ask_limit" ? "unknown" : code;
   }
   return "unknown";
 }
@@ -51,6 +53,7 @@ export function useScan(mode: ScanMode) {
   const router = useRouter();
   const { settings } = useSettings();
   const { t, locale } = useTranslation();
+  const reminderTexts = useReminderTexts();
   const [state, setState] = useState<ScanState>({ phase: "idle" });
   const abortRef = useRef<AbortController | null>(null);
   const lastCaptureRef = useRef<Prepared | null>(null);
@@ -83,6 +86,13 @@ export function useScan(mode: ScanMode) {
           meta,
         });
 
+        // Insurance: the 5-day notice is scheduled right away, without asking.
+        const forcedAt = insuranceReminderAt(analysis);
+        if (forcedAt !== null) {
+          const saved = await historyStore.get(id);
+          if (saved) await scheduleReminder(saved, forcedAt, reminderTexts.insurance(saved));
+        }
+
         haptics.success();
         if (settings.notifyOnResult && document.visibilityState === "hidden") {
           void notify({ title: t("notifications.readyTitle"), body: analysis.title, entryId: id });
@@ -97,7 +107,7 @@ export function useScan(mode: ScanMode) {
         setState({ phase: "error", previewSrc: prepared.preview.dataUrl, error: toErrorKind(error) });
       }
     },
-    [locale, mode, router, settings.notifyOnResult, t],
+    [locale, mode, reminderTexts, router, settings.notifyOnResult, t],
   );
 
   const prepareAndAnalyze = useCallback(

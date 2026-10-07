@@ -5,13 +5,16 @@ import { useState } from "react";
 import {
   ArrowLeft,
   Bell,
-  BellOff,
+  BellRing,
   CalendarDays,
+  Car,
   ClipboardList,
   CookingPot,
   FileText,
   Hash,
   ListChecks,
+  Lock,
+  MessageCircle,
   Plus,
   Share2,
   Sparkles,
@@ -20,17 +23,21 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/Button";
 import { CategoryBadge } from "@/components/CategoryBadge";
-import { ConfidenceMeter, NutritionCard, RecipeCard, Section, SuggestionList } from "@/components/Result";
+import { ReminderSheet } from "@/components/ReminderSheet";
+import { ScanChat } from "@/components/ScanChat";
+import { ConfidenceMeter, NutritionCard, RecipeCard, Section, SuggestionList, VehicleCard } from "@/components/Result";
 import { useToast } from "@/components/Toast";
 import { useHistoryEntry } from "@/hooks/useHistory";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import { useNow } from "@/hooks/useNow";
+import { useReminderTexts } from "@/hooks/useReminderTexts";
 import { useTranslation } from "@/hooks/useTranslation";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, formatDay } from "@/lib/format";
 import { pop, rise, spring, stagger } from "@/lib/motion";
 import { haptics, shareText } from "@/services/device";
 import { historyStore } from "@/services/historyStore";
-import { cancelNotification, notify, requestNotificationPermission } from "@/services/notifications";
+import { cancelNotification } from "@/services/notifications";
+import { cancelReminder, expiryDate, INSURANCE_NOTICE_DAYS, insuranceReminderAt, scheduleReminder } from "@/services/reminders";
 import type { HistoryEntry } from "@/types/history";
 import styles from "@/styles/Result.module.scss";
 
@@ -66,12 +73,16 @@ function ResultView({ entry, onBack }: { entry: HistoryEntry; onBack: () => void
   const router = useRouter();
   const { t, locale } = useTranslation();
   const toast = useToast();
-  const [busy, setBusy] = useState(false);
   const now = useNow(15_000);
   const { analysis, meta } = entry;
   const reminderActive = Boolean(entry.reminderAt && entry.reminderAt > now);
-  const hasReminder = Boolean(analysis.reminder) || reminderActive;
+  // Insurance documents get a mandatory notice 5 days before expiry: not editable.
+  const forcedAt = insuranceReminderAt(analysis, now);
   const isDesktop = useIsDesktop();
+  const reminderTexts = useReminderTexts();
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [sheetKey, setSheetKey] = useState(0);
+  const hasReminder = true;
 
   const share = async () => {
     haptics.tap();
@@ -95,32 +106,28 @@ function ResultView({ entry, onBack }: { entry: HistoryEntry; onBack: () => void
     if (outcome === "copied") toast(t("result.copied"));
   };
 
-  const toggleReminder = async () => {
-    if (busy) return;
-    setBusy(true);
-    try {
-      if (reminderActive && entry.reminderId) {
-        await cancelNotification(entry.reminderId);
-        await historyStore.update(entry.id, { reminderId: undefined, reminderAt: undefined });
-        toast(t("result.reminderCancelled"));
-        return;
-      }
-      if (!analysis.reminder) return;
+  const openReminder = () => {
+    haptics.tap();
+    // A fresh key resets the sheet to the current reminder each time it opens.
+    setSheetKey((key) => key + 1);
+    setSheetOpen(true);
+  };
 
-      if ((await requestNotificationPermission()) !== "granted") {
-        haptics.error();
-        toast(t("result.reminderDenied"), "error");
-        return;
-      }
-      const at = new Date(Date.now() + analysis.reminder.delayHours * 3_600_000);
-      const reminderId = await notify({ title: analysis.reminder.title, body: analysis.reminder.body, at, entryId: entry.id });
-      if (reminderId === null) return;
-      await historyStore.update(entry.id, { reminderId, reminderAt: at.getTime() });
-      haptics.success();
-      toast(t("result.reminderSet", { date: formatDateTime(at.getTime(), locale) }));
-    } finally {
-      setBusy(false);
+  const scheduleAt = async (at: number, texts = reminderTexts.other(entry)) => {
+    if (!(await scheduleReminder(entry, at, texts))) {
+      haptics.error();
+      toast(t("result.reminderDenied"), "error");
+      return false;
     }
+    haptics.success();
+    toast(t("result.reminderSet", { date: formatDateTime(at, locale) }));
+    return true;
+  };
+
+  const removeReminder = async () => {
+    await cancelReminder(entry);
+    toast(t("result.reminderCancelled"));
+    setSheetOpen(false);
   };
 
   const remove = async () => {
@@ -198,6 +205,12 @@ function ResultView({ entry, onBack }: { entry: HistoryEntry; onBack: () => void
             </Section>
           )}
 
+          {analysis.vehicle && (
+            <Section title={t("result.vehicle")} icon={<Car />}>
+              <VehicleCard vehicle={analysis.vehicle} />
+            </Section>
+          )}
+
           {analysis.recipe && (
             <Section title={t("result.recipe")} icon={<CookingPot />}>
               <RecipeCard recipe={analysis.recipe} />
@@ -227,7 +240,19 @@ function ResultView({ entry, onBack }: { entry: HistoryEntry; onBack: () => void
                     ))}
                   </div>
                 )}
-                {analysis.document.actionItems.length > 0 && (
+                {forcedAt !== null && (
+                <p className={styles.insurance}>
+                  <Lock size={15} />
+                  <span>
+                    {t("reminders.insuranceNotice", {
+                      days: INSURANCE_NOTICE_DAYS,
+                      expiry: formatDay(expiryDate(analysis)!, locale),
+                      date: formatDateTime(entry.reminderAt && reminderActive ? entry.reminderAt : forcedAt, locale),
+                    })}
+                  </span>
+                </p>
+              )}
+              {analysis.document.actionItems.length > 0 && (
                   <div>
                     <h3 className={styles.subTitle}>
                       <ListChecks size={14} /> {t("result.actionItems")}
@@ -261,6 +286,10 @@ function ResultView({ entry, onBack }: { entry: HistoryEntry; onBack: () => void
               <SuggestionList suggestions={analysis.suggestions} />
             </Section>
           )}
+
+          <Section title={t("chat.title")} icon={<MessageCircle />}>
+            <ScanChat entry={entry} />
+          </Section>
 
           {analysis.tags.length > 0 && (
             <motion.div variants={rise} className={styles.tags} aria-label={t("result.tags")}>
@@ -314,27 +343,43 @@ function ResultView({ entry, onBack }: { entry: HistoryEntry; onBack: () => void
           </Button>
         </motion.div>
       )}
+      <ReminderSheet
+        key={sheetKey}
+        open={sheetOpen}
+        current={reminderActive ? entry.reminderAt : undefined}
+        suggestedHours={analysis.reminder?.delayHours}
+        onSchedule={async (at) => {
+          if (await scheduleAt(at)) setSheetOpen(false);
+        }}
+        onCancelReminder={removeReminder}
+        onClose={() => setSheetOpen(false)}
+      />
     </>
   );
 
   function renderReminder(className: string) {
-    if (!hasReminder) return null;
+    if (forcedAt !== null) {
+      // Scheduled automatically; the button only appears if notifications are off.
+      return (
+        <Button
+          variant={reminderActive ? "secondary" : "primary"}
+          icon={reminderActive ? <Lock /> : <Bell />}
+          onClick={reminderActive ? undefined : () => void scheduleAt(forcedAt, reminderTexts.insurance(entry))}
+          className={className}
+          aria-label={reminderActive ? t("reminders.forcedLabel", { date: formatDateTime(entry.reminderAt!, locale) }) : undefined}
+        >
+          {reminderActive ? formatDateTime(entry.reminderAt!, locale) : t("reminders.enableInsurance")}
+        </Button>
+      );
+    }
     return (
       <Button
         variant={reminderActive ? "secondary" : "primary"}
-        icon={reminderActive ? <BellOff /> : <Bell />}
-        onClick={() => void toggleReminder()}
-        disabled={busy}
+        icon={reminderActive ? <BellRing /> : <Bell />}
+        onClick={openReminder}
         className={className}
       >
-        {reminderActive ? (
-          formatDateTime(entry.reminderAt!, locale)
-        ) : (
-          <>
-            {t("result.remind")}
-            <span className={styles.reminderHint}>{t("result.reminderIn", { hours: analysis.reminder!.delayHours })}</span>
-          </>
-        )}
+        {reminderActive ? formatDateTime(entry.reminderAt!, locale) : t("result.remind")}
       </Button>
     );
   }

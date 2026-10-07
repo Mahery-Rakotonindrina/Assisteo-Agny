@@ -1,5 +1,5 @@
 import { Preferences } from "@capacitor/preferences";
-import { AnalysisSchema, type ScanMode } from "@/lib/ai/schema";
+import { AnalysisSchema, normalizeStoredAnalysis, type ScanMode } from "@/lib/ai/schema";
 import { supabase } from "@/lib/supabase";
 import type { HistoryEntry } from "@/types/history";
 import { historyStore } from "./historyStore";
@@ -26,6 +26,7 @@ type Row = {
   reminder_at: string | null;
   preview_path: string | null;
   thumbnail_path: string | null;
+  chat: HistoryEntry["chat"] | null;
   server_updated_at: string;
 };
 
@@ -85,7 +86,7 @@ async function applyRemote(row: Row) {
     return;
   }
 
-  const analysis = AnalysisSchema.safeParse(row.analysis);
+  const analysis = AnalysisSchema.safeParse(normalizeStoredAnalysis(row.analysis));
   if (!analysis.success) return;
 
   // Photos are immutable: only download them for entries this device lacks.
@@ -100,6 +101,7 @@ async function applyRemote(row: Row) {
       analysis: analysis.data,
       meta: row.meta,
       reminderAt: time(row.reminder_at),
+      chat: Array.isArray(row.chat) && row.chat.length > 0 ? row.chat : undefined,
       // Notifications are scheduled per device: keep this device's own one.
       reminderId: local?.reminderId,
       ...photos,
@@ -179,6 +181,7 @@ async function pushEntry(uid: string, entry: HistoryEntry) {
     analysis: entry.analysis,
     meta: entry.meta,
     reminder_at: entry.reminderAt ? new Date(entry.reminderAt).toISOString() : null,
+    chat: entry.chat ?? [],
     preview_path: remote.preview,
     thumbnail_path: remote.thumbnail,
   });

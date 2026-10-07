@@ -2,7 +2,7 @@ import Head from "next/head";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { Apple, ArrowRight, Box, FileText, FlaskConical, ImageUp, KeyRound, RotateCcw, Sparkles, X } from "lucide-react";
+import { Apple, ArrowRight, Box, Car, FileText, FlaskConical, ImageUp, KeyRound, RotateCcw, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/Button";
 import { CaptureOrb } from "@/components/CaptureOrb";
 import { DropZone } from "@/components/DropZone";
@@ -20,7 +20,7 @@ import type { ScanMode } from "@/lib/ai/schema";
 import { easeOut, rise, stagger } from "@/lib/motion";
 import styles from "@/styles/Scan.module.scss";
 
-const modeIcons = { auto: Sparkles, food: Apple, document: FileText, object: Box } as const;
+const modeIcons = { auto: Sparkles, food: Apple, document: FileText, vehicle: Car, object: Box } as const;
 
 function greetingKey() {
   const hour = new Date().getHours();

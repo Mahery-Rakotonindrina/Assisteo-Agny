@@ -1,4 +1,6 @@
-import type { Analysis, ScanMode } from "@/lib/ai/schema";
+import type { Analysis, ChatMessage, ScanMode } from "@/lib/ai/schema";
+
+export type ChatEntry = ChatMessage & { at: number };
 
 export type HistoryEntry = {
   id: string;
@@ -13,6 +15,8 @@ export type HistoryEntry = {
   /** Id of a scheduled local notification, if the user asked for a reminder. */
   reminderId?: number;
   reminderAt?: number;
+  /** Follow-up conversation about this scan. */
+  chat?: ChatEntry[];
 
   // ---- Sync bookkeeping (accounts) ----
   /** Last local change, used to settle edits made on two devices. */

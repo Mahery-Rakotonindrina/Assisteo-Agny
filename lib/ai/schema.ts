@@ -4,10 +4,10 @@ import { z } from "zod";
 // client (response validation + types). Fields are nullable rather than
 // optional so the model always emits every key.
 
-export const scanModes = ["auto", "food", "document", "object"] as const;
+export const scanModes = ["auto", "food", "document", "vehicle", "object"] as const;
 export type ScanMode = (typeof scanModes)[number];
 
-export const categories = ["food", "document", "object", "plant", "other"] as const;
+export const categories = ["food", "document", "vehicle", "object", "plant", "other"] as const;
 export type Category = (typeof categories)[number];
 
 export const AnalysisSchema = z.object({
@@ -61,9 +61,33 @@ export const AnalysisSchema = z.object({
       keyPoints: z.array(z.string()),
       dates: z.array(z.object({ label: z.string(), date: z.string() })),
       actionItems: z.array(z.string()),
+      expiresOn: z
+        .string()
+        .nullable()
+        .describe("The date the document expires or is due, as YYYY-MM-DD (insurance end date, bill due date, ID expiry), or null if none is legible."),
+      isInsurance: z.boolean().describe("True for any insurance document: certificate, policy, attestation, green card, renewal notice."),
     })
     .nullable()
     .describe("Only for documents, null otherwise."),
+  vehicle: z
+    .object({
+      make: z.string().describe("Brand, e.g. Toyota."),
+      model: z.string().describe("Model, e.g. Corolla."),
+      generation: z.string().nullable().describe("Generation or production years, e.g. '2019–2024', or null if unsure."),
+      kind: z.string().describe("Car, motorbike, scooter, van, truck…"),
+      priceNew: z.string().nullable().describe("Typical new price range with currency, or null if no longer sold new."),
+      priceUsed: z.string().nullable().describe("Typical used price range with currency, given the visible condition."),
+      specs: z
+        .array(z.object({ label: z.string(), value: z.string() }))
+        .describe("4 to 8 key specs: engine, power, fuel, consumption, gearbox, seats, boot volume…"),
+      maintenance: z
+        .array(z.object({ task: z.string(), interval: z.string() }))
+        .describe("Main maintenance items and their usual interval, e.g. oil change / every 10,000 km or 1 year."),
+      tips: z.array(z.string()).describe("2 to 4 practical tips to drive, maintain or keep it longer."),
+      watchOuts: z.array(z.string()).describe("Known weak points, recalls and what to check before buying."),
+    })
+    .nullable()
+    .describe("Only for vehicles (car, motorbike, scooter, truck…), null otherwise."),
   reminder: z
     .object({
       title: z.string(),
@@ -75,6 +99,22 @@ export const AnalysisSchema = z.object({
 });
 
 export type Analysis = z.infer<typeof AnalysisSchema>;
+
+/**
+ * Analyses saved by older versions lack fields added since (recipe, vehicle,
+ * document expiry…). Fills them in so stored data still validates.
+ */
+export function normalizeStoredAnalysis(raw: unknown): unknown {
+  if (!raw || typeof raw !== "object") return raw;
+  const analysis = raw as Record<string, unknown>;
+  const document = analysis.document as Record<string, unknown> | null | undefined;
+  return {
+    recipe: null,
+    vehicle: null,
+    ...analysis,
+    document: document ? { expiresOn: null, isInsurance: false, ...document } : null,
+  };
+}
 
 export const imageMediaTypes = ["image/jpeg", "image/png", "image/webp"] as const;
 
@@ -89,6 +129,30 @@ export const AnalyzeRequestSchema = z.object({
 });
 
 export type AnalyzeRequest = z.infer<typeof AnalyzeRequestSchema>;
+
+// ---- Follow-up questions about a scan ----------------------------------------
+
+export const ChatMessageSchema = z.object({
+  role: z.enum(["user", "assistant"]),
+  content: z.string().trim().min(1).max(2000),
+});
+export type ChatMessage = z.infer<typeof ChatMessageSchema>;
+
+export const AskRequestSchema = z.object({
+  /** The scan's photo, sent again so the model can look at it. */
+  image: z.string().min(1).max(MAX_IMAGE_BASE64_LENGTH),
+  mediaType: z.enum(imageMediaTypes),
+  /** The earlier analysis, as context (validated against AnalysisSchema server-side). */
+  analysis: z.unknown(),
+  messages: z
+    .array(ChatMessageSchema)
+    .min(1)
+    .max(40)
+    .refine((messages) => messages[messages.length - 1].role === "user", "The last message must be the user's question."),
+  locale: z.enum(["fr", "en"]),
+});
+export type AskRequest = Omit<z.infer<typeof AskRequestSchema>, "analysis"> & { analysis: Analysis };
+export type AskResponse = { answer: string; model: string; demo: boolean };
 
 export type AiProvider = "claude" | "gemini" | "demo";
 
@@ -186,6 +250,7 @@ export type ApiErrorCode =
   | "billing"
   | "invalid_key"
   | "trial_exhausted"
+  | "ask_limit"
   | "method_not_allowed";
 
 export type ApiErrorBody = {

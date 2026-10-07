@@ -41,7 +41,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         key={router.pathname}
         className={`${styles.main} ${showTabBar ? styles.withTabBar : ""}`}
         initial={hasNavigated ? { opacity: 0, y: 14, filter: "blur(6px)" } : false}
-        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+        // Drop the filter once done: any filter (even blur(0)) makes position:fixed
+        // children (sheets, action bars) position against <main> instead of the screen.
+        animate={{ opacity: 1, y: 0, filter: "blur(0px)", transitionEnd: { filter: "none", transform: "none" } }}
         transition={{ duration: 0.45, ease: easeOut }}
       >
         {children}

@@ -1,9 +1,9 @@
-import { ApiError, createPartFromBase64, FinishReason, GoogleGenAI } from "@google/genai";
+import { ApiError, createPartFromBase64, FinishReason, GoogleGenAI, ThinkingLevel } from "@google/genai";
 import { z } from "zod";
 import type { EngineOptions } from "./claude";
 import { AnalysisError } from "./errors";
-import { buildUserPrompt, SYSTEM_PROMPT } from "./prompt";
-import { AnalysisSchema, type Analysis, type AnalyzeRequest } from "./schema";
+import { ASK_SYSTEM_PROMPT, buildAskContext, buildUserPrompt, SYSTEM_PROMPT } from "./prompt";
+import { AnalysisSchema, type Analysis, type AnalyzeRequest, type AskRequest } from "./schema";
 
 // Free-tier friendly alternative to Claude (Google AI Studio key, no billing).
 // The "-latest" aliases always point at the current Flash models.
@@ -12,7 +12,19 @@ export const GEMINI_MODEL = process.env.GEMINI_MODEL ?? "gemini-flash-latest";
 // Free-tier capacity is shared: when a model is overloaded, fall through to
 // the next one instead of failing the analysis.
 const FALLBACK_MODEL = "gemini-flash-lite-latest";
-const FALLBACK_STATUSES = new Set([404, 429, 500, 503]);
+const FALLBACK_STATUSES = new Set([404, 429, 500, 503, 504]);
+// A saturated model can hang for minutes before failing: give each attempt
+// this long, then move on to the next model in the chain.
+const ATTEMPT_TIMEOUT_MS = 30_000;
+
+/** Overloaded, rate-limited, missing or stuck: worth trying the next model. */
+function canFallBack(error: unknown, signal?: AbortSignal) {
+  if (signal?.aborted) return false;
+  if (error instanceof ApiError) return FALLBACK_STATUSES.has(error.status);
+  const name = error instanceof Error ? error.name : "";
+  const message = error instanceof Error ? error.message : "";
+  return /timeout|abort/i.test(name) || /timed? ?out|aborted/i.test(message);
+}
 
 // Gemini accepts a subset of JSON Schema; the draft URI is not part of it.
 const responseJsonSchema = { ...z.toJSONSchema(AnalysisSchema), $schema: undefined };
@@ -53,9 +65,9 @@ export async function analyzeWithGemini(
       return await analyzeOnce(client, candidate, input, signal);
     } catch (error) {
       lastError = error;
-      const retryable = error instanceof ApiError && FALLBACK_STATUSES.has(error.status);
+      const retryable = canFallBack(error, signal);
       if (!retryable || signal?.aborted) break;
-      console.warn(`[gemini] ${candidate} unavailable (${(error as ApiError).status}), trying next model`);
+      console.warn(`[gemini] ${candidate} unavailable (${error instanceof ApiError ? error.status : "timeout"}), trying next model`);
     }
   }
   throw toAnalysisError(lastError);
@@ -75,6 +87,7 @@ async function analyzeOnce(
       responseMimeType: "application/json",
       responseJsonSchema,
       abortSignal: signal,
+      httpOptions: { timeout: ATTEMPT_TIMEOUT_MS },
     },
   });
 
@@ -97,6 +110,54 @@ function safeJson(text: string | undefined) {
   } catch {
     return undefined;
   }
+}
+
+/** Answers a follow-up question about a scan; the photo goes with the first question. */
+export async function askWithGemini(
+  input: AskRequest,
+  signal?: AbortSignal,
+  options: EngineOptions = {},
+): Promise<{ answer: string; model: string }> {
+  const client = getClient(options.apiKey);
+  const model = options.model ?? GEMINI_MODEL;
+  // Replies start on Flash-Lite (about 1 s) and only use Flash if it fails.
+  const chain = model === GEMINI_MODEL ? [...new Set([FALLBACK_MODEL, model])] : [model];
+  const contents = input.messages.map((message, index) => ({
+    role: message.role === "assistant" ? "model" : "user",
+    parts:
+      index === 0
+        ? [createPartFromBase64(input.image, input.mediaType), { text: buildAskContext(input.analysis, input.locale) + message.content }]
+        : [{ text: message.content }],
+  }));
+
+  let lastError: unknown;
+  for (const candidate of chain) {
+    try {
+      const response = await client.models.generateContent({
+        model: candidate,
+        contents,
+        // Chat replies favour speed: low thinking cuts answers from ~15 s to a few seconds.
+        config: {
+          systemInstruction: ASK_SYSTEM_PROMPT,
+          abortSignal: signal,
+          httpOptions: { timeout: ATTEMPT_TIMEOUT_MS },
+          thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+        },
+      });
+      const finish = response.candidates?.[0]?.finishReason;
+      if (response.promptFeedback?.blockReason || blockedReasons.has(finish)) {
+        throw new AnalysisError("refused", 422, "Gemini blocked this question.");
+      }
+      const answer = response.text?.trim();
+      if (!answer) throw new AnalysisError("upstream_error", 502, `Empty Gemini answer (finishReason: ${finish}).`);
+      return { answer, model: response.modelVersion ?? candidate };
+    } catch (error) {
+      lastError = error;
+      const retryable = canFallBack(error, signal);
+      if (!retryable || signal?.aborted) break;
+    }
+  }
+  throw toAnalysisError(lastError);
 }
 
 /**
@@ -138,7 +199,7 @@ function toAnalysisError(error: unknown): unknown {
   if (error.status === 400) {
     return new AnalysisError("invalid_request", 400, error.message);
   }
-  if (error.status === 503) {
+  if (error.status === 503 || error.status === 504) {
     return new AnalysisError("unavailable", 503, "Gemini is overloaded right now, try again in a moment.");
   }
   if (error.status === 401 || error.status === 403) {

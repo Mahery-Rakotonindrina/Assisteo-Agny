@@ -4,3 +4,4 @@ export { NutritionCard } from "./NutritionCard";
 export { RecipeCard } from "./RecipeCard";
 export { Section } from "./Section";
 export { SuggestionList } from "./SuggestionList";
+export { VehicleCard } from "./VehicleCard";

@@ -10,6 +10,7 @@ export type AdminTrialResponse = TrialConfig & { durable: boolean };
 const ConfigSchema = z.object({
   limit: z.number().int().min(0).max(1000),
   ipLimit: z.number().int().min(1).max(100_000),
+  askLimit: z.number().int().min(0).max(1000),
 });
 
 function isAuthorized(req: NextApiRequest) {

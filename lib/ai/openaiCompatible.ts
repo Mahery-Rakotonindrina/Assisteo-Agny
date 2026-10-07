@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { assertPublicHttpsUrl, UnsafeUrlError } from "@/lib/server/safeUrl";
 import { AnalysisError } from "./errors";
-import { buildUserPrompt, SYSTEM_PROMPT } from "./prompt";
-import { AnalysisSchema, type Analysis, type AnalyzeRequest } from "./schema";
+import { ASK_SYSTEM_PROMPT, buildAskContext, buildUserPrompt, SYSTEM_PROMPT } from "./prompt";
+import { AnalysisSchema, type Analysis, type AnalyzeRequest, type AskRequest } from "./schema";
 
 // Any provider that speaks the OpenAI chat completions API: OpenAI, Mistral,
 // Groq, OpenRouter, xAI, Together, self-hosted servers… Not every one supports
@@ -127,6 +127,44 @@ export async function analyzeWithOpenAICompatible(
     }
   }
   throw new AnalysisError("upstream_error", 502, "No response format worked with this API.");
+}
+
+/** Answers a follow-up question about a scan; the photo goes with the first question. */
+export async function askWithOpenAICompatible(
+  input: AskRequest,
+  signal: AbortSignal | undefined,
+  { apiKey, model, baseUrl }: Options,
+): Promise<{ answer: string; model: string }> {
+  await checkUrl(baseUrl);
+  const image = `data:${input.mediaType};base64,${input.image}`;
+  const messages = [
+    { role: "system", content: ASK_SYSTEM_PROMPT },
+    ...input.messages.map((message, index) =>
+      index === 0
+        ? {
+            role: "user",
+            content: [
+              { type: "text", text: buildAskContext(input.analysis, input.locale) + message.content },
+              { type: "image_url", image_url: { url: image } },
+            ],
+          }
+        : { role: message.role, content: message.content },
+    ),
+  ];
+  try {
+    const body = await post(baseUrl, "/chat/completions", apiKey, { model, messages }, signal);
+    const message = body.choices?.[0]?.message;
+    if (message?.refusal) throw new AnalysisError("refused", 422, message.refusal);
+    const content = message?.content;
+    const answer = (Array.isArray(content)
+      ? content.map((part) => (typeof part === "object" && part && "text" in part ? String(part.text) : "")).join("")
+      : String(content ?? "")
+    ).trim();
+    if (!answer) throw new AnalysisError("upstream_error", 502, "The API returned an empty answer.");
+    return { answer, model };
+  } catch (error) {
+    throw toAnalysisError(error, model);
+  }
 }
 
 /** Cheapest call that proves the key, the model and the account work. */
