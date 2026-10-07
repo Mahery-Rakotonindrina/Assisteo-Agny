@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+// No eval-based fast paths: the web CSP forbids eval, and Zod's probe for it
+// would otherwise log a violation on every page.
+z.config({ jitless: true });
+
 // Shared by the API route (structured output contract with Claude) and the
 // client (response validation + types). Fields are nullable rather than
 // optional so the model always emits every key.
