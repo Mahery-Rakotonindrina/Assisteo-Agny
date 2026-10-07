@@ -518,5 +518,9 @@
     },
     "note": "Exemple d’analyse",
     "cta": "Faire mon premier scan"
+  },
+  "home": {
+    "nextReminder": "Prochain rappel",
+    "otherReminders": "{count} autre(s) prévu(s)"
   }
 }

@@ -344,3 +344,20 @@
     font-weight: 600;
   }
 }
+
+.idleWithReminder {
+  @include desktop {
+    grid-template-areas:
+      "intro capture"
+      "reminder reminder"
+      "recent recent";
+  }
+}
+
+// Next reminder card, only rendered when one is coming up.
+.reminderSlot {
+  @include desktop {
+    grid-area: reminder;
+    max-width: 560px;
+  }
+}
