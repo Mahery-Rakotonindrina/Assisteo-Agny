@@ -67,7 +67,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  color: var(--accent);
+  color: var(--accent-text);
   font-weight: 600;
   word-break: break-all;
 }
@@ -82,4 +82,11 @@
     text-decoration: underline;
     text-underline-offset: 3px;
   }
+}
+
+.topRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  align-self: stretch;
 }

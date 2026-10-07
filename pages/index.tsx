@@ -1,5 +1,6 @@
 import Head from "next/head";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { Apple, ArrowRight, Box, Car, FileText, FlaskConical, ImageUp, KeyRound, RotateCcw, Sparkles, X } from "lucide-react";
@@ -8,6 +9,7 @@ import { CaptureOrb } from "@/components/CaptureOrb";
 import { DropZone } from "@/components/DropZone";
 import { HistoryItem } from "@/components/HistoryItem";
 import { ScanStage } from "@/components/ScanStage";
+import { ScanWait } from "@/components/ScanWait";
 import { SegmentedControl } from "@/components/SegmentedControl";
 import { AI_SETTINGS_HREF, TrialOver, TrialPill } from "@/components/Trial";
 import { useAiStatus } from "@/hooks/useAiStatus";
@@ -17,6 +19,7 @@ import { useScan } from "@/hooks/useScan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTrial } from "@/hooks/useTrial";
 import type { ScanMode } from "@/lib/ai/schema";
+import { exampleIds, exampleImage } from "@/lib/examples";
 import { easeOut, rise, stagger } from "@/lib/motion";
 import styles from "@/styles/Scan.module.scss";
 
@@ -27,16 +30,32 @@ function greetingKey() {
   return hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening";
 }
 
+function isMode(value: unknown): value is ScanMode {
+  return typeof value === "string" && value in modeIcons;
+}
+
 export default function ScanPage() {
   const { t, list } = useTranslation();
+  const router = useRouter();
   const [mode, setMode] = useState<ScanMode>("auto");
+  // "Retake the photo" from an uncertain result comes back with ?mode=…, and
+  // "Choose the type" with ?pick=1 (the mode picker is highlighted until used).
+  const queryMode = router.isReady && isMode(router.query.mode) ? router.query.mode : null;
+  const [appliedQueryMode, setAppliedQueryMode] = useState<ScanMode | null>(null);
+  if (queryMode && queryMode !== appliedQueryMode) {
+    setAppliedQueryMode(queryMode);
+    setMode(queryMode);
+  }
+  const [picked, setPicked] = useState(false);
+  const picking = router.isReady && router.query.pick === "1" && !picked;
   const { state, start, startWithFile, retry, reset, canRetry } = useScan(mode);
-  const { entries } = useHistory();
+  const { entries, isLoading: historyLoading } = useHistory();
   const aiStatus = useAiStatus();
   const isDesktop = useIsDesktop();
   const trial = useTrial();
   const recent = entries.slice(0, isDesktop ? 4 : 3);
   const busy = state.phase === "preparing" || state.phase === "analyzing";
+  const ModeIcon = modeIcons[mode];
 
   // Pasting an image anywhere on the screen starts an analysis.
   useEffect(() => {
@@ -94,12 +113,15 @@ export default function ScanPage() {
                 </motion.div>
               )}
 
-              <motion.div variants={rise} className={styles.modes}>
+              <motion.div variants={rise} className={`${styles.modes} ${picking ? styles.modesPick : ""}`}>
                 <SegmentedControl
                   size="lg"
                   ariaLabel="Mode"
                   value={mode}
-                  onChange={setMode}
+                  onChange={(next) => {
+                    setMode(next);
+                    setPicked(true);
+                  }}
                   options={(Object.keys(modeIcons) as ScanMode[]).map((value) => {
                     const Icon = modeIcons[value];
                     return { value, label: t(`scan.modes.${value}`), icon: <Icon /> };
@@ -107,14 +129,14 @@ export default function ScanPage() {
                 />
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.p
-                    key={mode}
-                    className={styles.modeHint}
+                    key={picking ? "pick" : mode}
+                    className={`${styles.modeHint} ${picking ? styles.modeHintPick : ""}`}
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}
                     transition={{ duration: 0.22, ease: easeOut }}
                   >
-                    {t(`scan.modeHints.${mode}`)}
+                    {picking ? t("scan.pickHint") : t(`scan.modeHints.${mode}`)}
                   </motion.p>
                 </AnimatePresence>
               </motion.div>
@@ -148,6 +170,24 @@ export default function ScanPage() {
               )}
             </motion.div>
 
+            {!historyLoading && recent.length === 0 && (
+              <motion.section variants={rise} className={styles.recent}>
+                <div className={styles.sectionHead}>
+                  <h2>{t("examples.title")}</h2>
+                </div>
+                <p className={styles.examplesHint}>{t("examples.hint")}</p>
+                <div className={styles.examples}>
+                  {exampleIds.map((id) => (
+                    <Link key={id} href={{ pathname: "/result", query: { example: id } }} className={styles.example}>
+                      {/* eslint-disable-next-line @next/next/no-img-element -- static example photo, works in the static export */}
+                      <img src={exampleImage(id)} alt="" loading="lazy" />
+                      <span>{t(`examples.labels.${id}`)}</span>
+                    </Link>
+                  ))}
+                </div>
+              </motion.section>
+            )}
+
             {recent.length > 0 && (
               <motion.section variants={rise} className={styles.recent}>
                 <div className={styles.sectionHead}>
@@ -180,6 +220,10 @@ export default function ScanPage() {
                 scanning={busy}
               />
             ) : null}
+
+            {state.phase === "analyzing" && (
+              <ScanWait mode={mode} modeIcon={<ModeIcon />} startedAt={state.startedAt} />
+            )}
 
             {state.phase === "error" && (
               <motion.div

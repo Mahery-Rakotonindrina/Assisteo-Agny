@@ -29,7 +29,7 @@
       "food": "Nutrition estimée, conservation et idées de recettes.",
       "document": "Points clés, dates importantes et actions à faire.",
       "vehicle": "Prix, caractéristiques, entretien et points à surveiller.",
-      "object": "Identification, entretien, usage et valeur."
+      "object": "Un objet ou une plante : identification, entretien, usage et valeur."
     },
     "capture": "Prendre une photo",
     "gallery": "Importer une image",
@@ -56,7 +56,37 @@
     "how": "Comment ça marche",
     "how1": "Choisis le type de sujet, ou laisse l’IA deviner.",
     "how2": "Dépose, colle ou photographie ton image.",
-    "how3": "Reçois infos, conseils et rappels, gardés dans ton historique."
+    "how3": "Reçois infos, conseils et rappels, gardés dans ton historique.",
+    "pickHint": "Choisis d’abord ce que tu photographies, puis reprends la photo.",
+    "elapsed": "{seconds} secondes écoulées",
+    "slow": "L’IA est très demandée en ce moment : encore quelques secondes…",
+    "tips": {
+      "auto": [
+        "Une photo bien éclairée donne de meilleures réponses : évite le contre-jour.",
+        "Remplis le cadre avec le sujet, sans trop d’arrière-plan.",
+        "Après l’analyse, pose tes questions dans l’onglet Question."
+      ],
+      "food": [
+        "Photographie l’assiette entière, vue de dessus.",
+        "Une fourchette ou une main à côté aide l’IA à estimer la portion.",
+        "Chaque aliment analysé est accompagné d’une recette."
+      ],
+      "document": [
+        "Pose le document à plat, bien éclairé, sans reflet.",
+        "Cadre la page entière : les dates d’échéance sont souvent en bas.",
+        "Pour une assurance, un rappel est programmé 5 jours avant l’échéance."
+      ],
+      "vehicle": [
+        "De trois quarts avant, la calandre et les feux aident à reconnaître le modèle.",
+        "Le logo et la forme des phares sont les meilleurs indices.",
+        "Depuis le résultat, tu peux programmer un rappel d’entretien."
+      ],
+      "object": [
+        "Montre l’objet en entier, sur un fond simple.",
+        "Une étiquette ou une marque visible rend la réponse plus précise.",
+        "Pour une plante, photographie les feuilles de près."
+      ]
+    }
   },
   "errors": {
     "title": "L'analyse n'a pas abouti",
@@ -109,10 +139,9 @@
     "delete": "Supprimer",
     "deleted": "Analyse supprimée",
     "newScan": "Nouvelle analyse",
-    "demo": "Exemple · démo",
     "analyzedIn": "Analysé en {seconds} s",
     "notFound": "Analyse introuvable",
-    "notFoundHint": "Elle a peut-être été supprimée de cet appareil.",
+    "notFoundHint": "Elle a peut-être été supprimée.",
     "kinds": {
       "tip": "Astuce",
       "action": "À faire",
@@ -141,20 +170,44 @@
     "vehicleSpecs": "Caractéristiques",
     "vehicleMaintenance": "Entretien",
     "vehicleTips": "Conseils",
-    "vehicleWatchOuts": "Points à surveiller"
+    "vehicleWatchOuts": "Points à surveiller",
+    "tabs": {
+      "label": "Sections de l’analyse",
+      "overview": "Résumé",
+      "nutrition": "Nutrition",
+      "recipe": "Recette",
+      "vehicle": "Véhicule",
+      "document": "Document",
+      "chat": "Question"
+    },
+    "ask": "Poser une question",
+    "askShort": "Question",
+    "remindShort": "Rappel",
+    "remindMaintenance": "Rappel d’entretien",
+    "deleteConfirm": "Supprimer ?",
+    "confidenceLevels": {
+      "high": "Identification sûre",
+      "medium": "Identification probable",
+      "low": "Identification incertaine"
+    },
+    "uncertainTitle": "L’IA n’est pas sûre d’elle",
+    "uncertainBody": "Une photo plus nette et bien éclairée, ou le bon type de scan, donne une meilleure réponse.",
+    "retake": "Reprendre la photo",
+    "pickType": "Préciser le type"
   },
   "history": {
     "title": "Historique",
-    "count": "{count} analyses sur cet appareil",
+    "count": "{count} analyses",
     "search": "Rechercher…",
     "all": "Tout",
     "today": "Aujourd'hui",
     "yesterday": "Hier",
     "emptyTitle": "Rien pour l'instant",
-    "emptyBody": "Tes analyses apparaîtront ici. Elles restent stockées uniquement sur ton appareil.",
+    "emptyBody": "Tes analyses apparaîtront ici. Connecte-toi pour les retrouver aussi sur tes autres appareils.",
     "emptyCta": "Faire une première analyse",
     "noMatch": "Aucune analyse ne correspond à ta recherche.",
-    "swipeHint": "Glisse vers la gauche pour supprimer"
+    "swipeHint": "Glisse vers la gauche pour supprimer",
+    "reminderOn": "Rappel le {date}"
   },
   "settings": {
     "title": "Réglages",
@@ -214,7 +267,7 @@
     "aiKeyTest": "Tester et enregistrer",
     "aiKeyTesting": "Vérification…",
     "aiKeySaved": "Clé vérifiée et enregistrée",
-    "aiKeyRemoved": "Clé supprimée de l’appareil",
+    "aiKeyRemoved": "Clé supprimée",
     "aiKeyActive": "Ta clé est active",
     "aiKeyRemove": "Supprimer ma clé",
     "aiOwnKey": "ta clé",
@@ -228,7 +281,7 @@
       "network": "Pas de connexion au serveur.",
       "overloaded": "Le service est saturé en ce moment. Ta clé n’est pas en cause : réessaie dans quelques instants, ou choisis un modèle plus léger (par exemple Flash-Lite)."
     },
-    "aiKeyPrivacy": "Ta clé reste sur cet appareil (stockage sécurisé du téléphone). Elle n’est envoyée qu’au moment d’une analyse et n’est jamais conservée sur le serveur.",
+    "aiKeyPrivacy": "Ta clé est gardée dans le stockage sécurisé du téléphone. Si tu es connecté, elle est aussi synchronisée chiffrée avec ton compte. Elle ne sert qu’à tes analyses.",
     "aiCustom": "Autre",
     "aiFree": "gratuit",
     "aiBaseUrl": "Adresse de l’API",
@@ -236,7 +289,15 @@
     "aiLoadModels": "Charger les modèles",
     "aiModelPlaceholder": "nom du modèle",
     "aiModelHint": "Choisis un modèle qui comprend les images (vision). « Charger les modèles » liste ceux de ta clé.",
-    "aiModelsLoaded": "{count} modèles disponibles avec cette clé. Tape pour filtrer."
+    "aiModelsLoaded": "{count} modèles disponibles avec cette clé. Tape pour filtrer.",
+    "aiDefaultTitle": "IA Assisteo",
+    "aiDefaultLeft": "{remaining} analyse(s) gratuite(s) restante(s) sur {limit}",
+    "aiDefaultOver": "Essai gratuit terminé : ajoute ta propre clé pour continuer.",
+    "aiDefaultIncluded": "Incluse avec l’app",
+    "aiOwnKeyTitle": "Ta clé {name}",
+    "aiUseOwnKey": "Utiliser ma propre clé IA",
+    "aiChangeKey": "Changer de clé ou de fournisseur",
+    "aiUseOwnKeyHint": "Avancé · Gemini propose des clés gratuites"
   },
   "notifications": {
     "readyTitle": "Analyse prête ✨"
@@ -296,7 +357,7 @@
     "disabled": "L’administration est désactivée : définis ADMIN_TOKEN sur le serveur.",
     "error": "Une erreur est survenue.",
     "notDurable": "Aucune base Redis n’est branchée : ces réglages et les compteurs d’essai seront perdus au prochain redémarrage du serveur.",
-    "limit": "Essais gratuits par appareil",
+    "limit": "Essais gratuits par appareil et par compte",
     "limitHint": "Analyses offertes avec l’IA du serveur avant de devoir ajouter sa clé. 0 = aucun essai.",
     "ipLimit": "Plafond par adresse IP",
     "ipLimitHint": "Sur 30 jours, contre les abus (réinstallations en boucle).",
@@ -445,5 +506,17 @@
     "availableBody": "Des améliorations t’attendent.",
     "update": "Mettre à jour",
     "later": "Plus tard"
+  },
+  "examples": {
+    "title": "Exemples",
+    "hint": "Touche un exemple pour voir ce que l’IA te répond.",
+    "labels": {
+      "food": "Un repas",
+      "document": "Une facture",
+      "vehicle": "Une voiture",
+      "object": "Une plante"
+    },
+    "note": "Exemple d’analyse",
+    "cta": "Faire mon premier scan"
   }
 }

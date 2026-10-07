@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { animate, motion, useMotionValue, useTransform, type PanInfo } from "motion/react";
 import { useRef } from "react";
-import { BellRing, ChevronRight, Trash2 } from "lucide-react";
+import { BellRing, ChevronRight, Lock, Trash2 } from "lucide-react";
 import { categoryIcons } from "@/components/CategoryBadge";
 import { useNow } from "@/hooks/useNow";
 import { useTranslation } from "@/hooks/useTranslation";
-import { formatTime } from "@/lib/format";
+import { formatReminder, formatTime } from "@/lib/format";
 import { spring } from "@/lib/motion";
 import { haptics } from "@/services/device";
+import { isForced } from "@/services/reminders";
 import type { HistoryEntry } from "@/types/history";
 import styles from "./HistoryItem.module.scss";
 
@@ -30,6 +31,9 @@ export function HistoryItem({ entry, onDelete, variant = "row" }: HistoryItemPro
   const iconScale = useTransform(x, [DELETE_THRESHOLD - 20, DELETE_THRESHOLD, 0], [1.2, 1, 0.6]);
   const { category, title, summary } = entry.analysis;
   const Icon = categoryIcons[category];
+  const reminderAt = entry.reminderAt && entry.reminderAt > now ? entry.reminderAt : null;
+  // Insurance notices are automatic: a lock tells them apart from the user's own reminders.
+  const forced = reminderAt !== null && isForced(entry);
 
   const handleDragEnd = (_: unknown, info: PanInfo) => {
     if (info.offset.x < DELETE_THRESHOLD && onDelete) {
@@ -62,14 +66,16 @@ export function HistoryItem({ entry, onDelete, variant = "row" }: HistoryItemPro
       <span className={styles.body}>
         <span className={styles.title}>{title}</span>
         <span className={styles.summary}>{summary}</span>
+        {reminderAt !== null && (
+          <span className={styles.reminder} aria-label={t("history.reminderOn", { date: formatReminder(reminderAt, now, locale) })}>
+            {forced ? <Lock size={12} strokeWidth={2.4} /> : <BellRing size={12} strokeWidth={2.4} />}
+            {formatReminder(reminderAt, now, locale)}
+          </span>
+        )}
       </span>
       <span className={styles.meta}>
         <span className={styles.time}>{formatTime(entry.createdAt, locale)}</span>
-        {entry.reminderAt && entry.reminderAt > now ? (
-          <BellRing size={14} className={styles.bell} />
-        ) : (
-          <ChevronRight size={16} className={styles.chevron} />
-        )}
+        <ChevronRight size={16} className={styles.chevron} />
       </span>
     </Link>
   );

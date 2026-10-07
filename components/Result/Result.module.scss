@@ -23,8 +23,18 @@
 
 // ---- Confidence -----------------------------------------------------------
 
-.confidence {
-  --level: var(--accent);
+.confidenceBadge {
+  --level: var(--accent-mark);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  align-self: flex-start;
+  padding: 0.3rem 0.75rem 0.3rem 0.6rem;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--level) 14%, transparent);
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 600;
 
   &[data-level="medium"] {
     --level: var(--cat-food);
@@ -35,33 +45,90 @@
   }
 }
 
-.confidenceHead {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 0.45rem;
-  font-size: 0.82rem;
-  color: var(--text-muted);
+.confidenceDot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--level);
+  box-shadow: 0 0 8px var(--level);
+}
 
-  strong {
-    color: var(--text);
-    font-variant-numeric: tabular-nums;
+// ---- Tabs ------------------------------------------------------------------
+
+.tabs {
+  @include glass;
+  display: flex;
+  gap: 0.2rem;
+  padding: 0.25rem;
+  border-radius: var(--radius-pill);
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
   }
 }
 
-.confidenceTrack {
-  height: 6px;
-  border-radius: 3px;
-  background: var(--surface-strong);
-  overflow: hidden;
+.tab {
+  position: relative;
+  flex: 1 0 auto;
+  height: 2.4rem;
+  padding: 0 0.7rem;
+  border-radius: var(--radius-pill);
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: color 0.25s var(--ease-out);
+
+  &:hover {
+    color: var(--text);
+  }
 }
 
-.confidenceFill {
-  display: block;
-  height: 100%;
+.tabActive {
+  color: var(--accent-ink);
+
+  &:hover {
+    color: var(--accent-ink);
+  }
+}
+
+.tabPill {
+  position: absolute;
+  inset: 0;
   border-radius: inherit;
-  background: var(--level);
-  box-shadow: 0 0 12px var(--level);
+  background: var(--accent);
+  box-shadow: 0 6px 20px -8px var(--accent-glow);
+}
+
+.tabLabel {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+
+  svg {
+    display: none;
+    width: 0.95rem;
+    height: 0.95rem;
+
+    @include desktop {
+      display: block;
+    }
+  }
+}
+
+.tabDot {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: var(--accent-mark);
+
+  .tabActive & {
+    background: var(--accent-ink);
+  }
 }
 
 // ---- Nutrition ------------------------------------------------------------
@@ -89,7 +156,7 @@
 
   small {
     margin-top: 0.25rem;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     color: var(--text-subtle);
   }
 }
@@ -142,7 +209,7 @@
 
 .ringLabel {
   margin-top: 0.3rem;
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   color: var(--text-muted);
 }
 
@@ -199,7 +266,7 @@
 }
 
 .suggestionKind {
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;

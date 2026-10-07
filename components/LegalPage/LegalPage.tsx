@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { motion } from "motion/react";
 import { ArrowLeft, Mail } from "lucide-react";
 import { Button } from "@/components/Button";
+import { Logo } from "@/components/Logo";
 import { useTranslation } from "@/hooks/useTranslation";
 import { config } from "@/lib/config";
 import { LEGAL_UPDATED_AT, legalDocuments, type LegalKind } from "@/lib/legal";
@@ -30,9 +31,12 @@ export function LegalPage({ kind }: { kind: LegalKind }) {
       </Head>
       <motion.article className={styles.page} variants={stagger} initial="hidden" animate="show">
         <motion.header variants={rise} className={styles.header}>
-          <Button variant="secondary" size="icon" onClick={back} aria-label={t("nav.back")}>
-            <ArrowLeft />
-          </Button>
+          <div className={styles.topRow}>
+            <Button variant="secondary" size="icon" onClick={back} aria-label={t("nav.back")}>
+              <ArrowLeft />
+            </Button>
+            <Logo size={28} />
+          </div>
           <h1>{doc.title}</h1>
           <p className={styles.updated}>{t("legal.updated", { date: updated })}</p>
           <p className={styles.intro}>{doc.intro}</p>

@@ -8,6 +8,7 @@ import { AccountSettings } from "@/components/AccountSettings";
 import { AiKeySettings } from "@/components/AiKeySettings";
 import { Button } from "@/components/Button";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
+import { Logo } from "@/components/Logo";
 import { SegmentedControl } from "@/components/SegmentedControl";
 import { Toggle } from "@/components/Toggle";
 import { useToast } from "@/components/Toast";
@@ -148,7 +149,7 @@ export default function SettingsPage() {
         )}
 
         <Group id="ai-engine" title={t("settings.aiEngine")}>
-          <AiKeySettings />
+          <AiKeySettings requestOpen={section === "ai"} />
         </Group>
 
         <Group title={t("settings.permissions")}>
@@ -257,6 +258,12 @@ export default function SettingsPage() {
           </Link>
           <p className={styles.privacy}>{t("settings.privacy")}</p>
         </Group>
+
+        <motion.footer variants={rise} className={styles.brandFooter}>
+          <Logo size={30} />
+          <p>{t("meta.description")}</p>
+          <small>{appVersion}</small>
+        </motion.footer>
       </motion.div>
     </>
   );

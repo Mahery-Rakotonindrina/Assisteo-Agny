@@ -93,7 +93,7 @@
   color: var(--text-subtle);
 
   &:focus-within {
-    border-color: var(--accent);
+    border-color: var(--accent-mark);
   }
 
   input {
@@ -123,7 +123,7 @@
   padding-left: 0.45em;
 
   &:focus {
-    border-color: var(--accent);
+    border-color: var(--accent-mark);
   }
 }
 
@@ -140,7 +140,7 @@
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   color: var(--text-subtle);
 }
 

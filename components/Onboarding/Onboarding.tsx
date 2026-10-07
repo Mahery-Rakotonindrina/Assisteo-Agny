@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState, type ReactNode } from "react";
 import { BellRing, Camera, Check, ShieldCheck, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/Button";
+import { Logo } from "@/components/Logo";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import { useTranslation } from "@/hooks/useTranslation";
 import { easeOut, spring } from "@/lib/motion";
@@ -119,8 +120,7 @@ function Walkthrough({ steps, onFinish }: { steps: Step[]; onFinish: () => void 
           {step === "welcome" && (
             <>
               <Illustration>
-                {/* eslint-disable-next-line @next/next/no-img-element -- static SVG logo */}
-                <img src="/icon.svg" alt="" width={88} height={88} className={styles.logo} />
+                <Logo size={88} markOnly />
               </Illustration>
               <h1 id="onboarding-title">{t("onboarding.welcomeTitle")}</h1>
               <p>{t("onboarding.welcomeBody")}</p>

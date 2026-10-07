@@ -19,14 +19,6 @@
   align-items: center;
   gap: 0.7rem;
   padding: 0 0.5rem;
-
-  img {
-    border-radius: 10px;
-  }
-
-  span {
-    @include display(1.45rem);
-  }
 }
 
 .nav {
@@ -138,7 +130,7 @@
   color: var(--text-muted);
 
   &[data-status="live"] {
-    --dot: var(--accent);
+    --dot: var(--accent-mark);
   }
 
   &[data-status="demo"] {

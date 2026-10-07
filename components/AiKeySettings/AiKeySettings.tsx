@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
-import { Check, Cpu, ExternalLink, Eye, EyeOff, Globe, KeyRound, ListRestart, Loader2, ShieldCheck, Trash2 } from "lucide-react";
+import { Check, ChevronDown, Cpu, ExternalLink, Eye, EyeOff, Globe, KeyRound, ListRestart, Loader2, ShieldCheck, Sparkles, Trash2 } from "lucide-react";
 import { Button } from "@/components/Button";
 import { useToast } from "@/components/Toast";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -26,8 +26,13 @@ function toOverride(preset: ProviderPreset, apiKey: string, draft: Draft): AiOve
   return { provider: preset.protocol, apiKey, model };
 }
 
-/** Lets the user analyse with their own key for any provider instead of the server's AI. */
-export function AiKeySettings() {
+/**
+ * Which AI analyses the photos. Most people never need more than the summary
+ * card (the app's own AI and the free scans left); bringing one's own key for
+ * any provider sits behind an "advanced" toggle, opened by itself when the
+ * trial is over or when an "Add my key" button led here (`requestOpen`).
+ */
+export function AiKeySettings({ requestOpen = false }: { requestOpen?: boolean }) {
   const { t } = useTranslation();
   const toast = useToast();
   const trial = useTrial();
@@ -41,6 +46,8 @@ export function AiKeySettings() {
   const [models, setModels] = useState<string[] | null>(null);
   const [loadingModels, setLoadingModels] = useState(false);
   const [modelsFailure, setModelsFailure] = useState<VerifyFailure | "network" | null>(null);
+  const [openChoice, setOpenChoice] = useState<boolean | null>(null);
+  const open = openChoice ?? (requestOpen || trial.exhausted);
 
   useEffect(() => {
     void aiKeyStore.get().then((current) => {
@@ -145,198 +152,243 @@ export function AiKeySettings() {
       (savedForChoice.provider === "openai" && needsBaseUrl && savedForChoice.baseUrl !== draft.baseUrl.trim()));
   const canTest = Boolean(preset && apiKey && draft.model.trim() && (!needsBaseUrl || draft.baseUrl.trim()) && (key.trim() || changed));
 
+  const savedPreset = saved ? findPreset(saved.presetId) : undefined;
+  const savedName = saved?.presetId === "custom" ? t("settings.aiCustom") : (savedPreset?.name ?? "");
+  const summaryDetail = saved
+    ? saved.model
+    : !trial.limited
+      ? t("settings.aiDefaultIncluded")
+      : trial.exhausted
+        ? t("settings.aiDefaultOver")
+        : t("settings.aiDefaultLeft", { remaining: trial.remaining ?? 0, limit: trial.limit ?? 0 });
+
   return (
     <div className={styles.wrap}>
-      <div className={styles.providers} role="radiogroup" aria-label={t("settings.aiProvider")}>
-        {[{ id: "server", name: t("settings.aiServer"), free: false }, ...providerPresets].map((item) => {
-          const active = item.id === choice;
-          return (
-            <button
-              key={item.id}
-              type="button"
-              role="radio"
-              aria-checked={active}
-              className={`${styles.provider} ${active ? styles.providerActive : ""}`}
-              onClick={() => select(item.id)}
-            >
-              {active && <motion.span layoutId="ai-provider-pill" className={styles.providerPill} transition={spring} />}
-              <span className={styles.providerName}>
-                {item.id === "custom" ? t("settings.aiCustom") : item.name}
-                {item.free && <span className={styles.free}>{t("settings.aiFree")}</span>}
-                {saved?.presetId === item.id && <Check size={13} strokeWidth={3} />}
-              </span>
-            </button>
-          );
-        })}
+      <div className={styles.summary}>
+        <span className={`${styles.summaryIcon} ${trial.exhausted && !saved ? styles.summaryIconOver : ""}`}>
+          {saved ? <KeyRound /> : <Sparkles />}
+        </span>
+        <div className={styles.summaryText}>
+          <strong>{saved ? t("settings.aiOwnKeyTitle", { name: savedName }) : t("settings.aiDefaultTitle")}</strong>
+          <small>{summaryDetail}</small>
+        </div>
       </div>
 
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.div
-          key={choice}
-          className={styles.panel}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.2, ease: easeOut }}
-        >
-          {!preset ? (
-            <>
-              <p className={styles.hint}>{t("settings.aiServerHint")}</p>
-              {trial.limited && trial.remaining !== null && (
-                <p className={trial.exhausted ? styles.error : styles.trial}>
-                  {trial.exhausted
-                    ? t("trial.settingsOver")
-                    : t("trial.settingsLeft", { remaining: trial.remaining, limit: trial.limit ?? 0 })}
-                </p>
-              )}
-              {saved && (
-                <Button variant="secondary" block onClick={() => void removeKey()}>
-                  {t("settings.aiUseServer")}
-                </Button>
-              )}
-            </>
-          ) : (
-            <>
-              {savedForChoice && !key && (
-                <div className={styles.active}>
-                  <span className={styles.activeIcon}>
-                    <Check size={16} strokeWidth={3} />
-                  </span>
-                  <div>
-                    <strong>{t("settings.aiKeyActive")}</strong>
-                    <small>
-                      {maskKey(savedForChoice.apiKey)} · {savedForChoice.model}
-                    </small>
-                  </div>
-                  <button type="button" className={styles.iconButton} onClick={() => void removeKey()} aria-label={t("settings.aiKeyRemove")}>
-                    <Trash2 size={17} />
-                  </button>
-                </div>
-              )}
+      <button
+        type="button"
+        className={styles.disclosure}
+        aria-expanded={open}
+        aria-controls="ai-advanced"
+        onClick={() => {
+          haptics.tap();
+          setOpenChoice(!open);
+        }}
+      >
+        <span>
+          <strong>{saved ? t("settings.aiChangeKey") : t("settings.aiUseOwnKey")}</strong>
+          <small>{t("settings.aiUseOwnKeyHint")}</small>
+        </span>
+        <ChevronDown size={18} className={`${styles.chevron} ${open ? styles.chevronOpen : ""}`} />
+      </button>
 
-              {needsBaseUrl && (
-                <div className={styles.field}>
-                  <label className={styles.label} htmlFor="ai-base-url">
-                    {t("settings.aiBaseUrl")}
-                  </label>
-                  <div className={styles.input}>
-                    <Globe size={17} />
-                    <input
-                      id="ai-base-url"
-                      type="url"
-                      inputMode="url"
-                      value={draft.baseUrl}
-                      onChange={(event) => updateDraft({ baseUrl: event.target.value })}
-                      placeholder="https://api.example.com/v1"
-                      autoComplete="off"
-                      autoCapitalize="off"
-                      spellCheck={false}
-                    />
-                  </div>
-                  <p className={styles.hint}>{t("settings.aiBaseUrlHint")}</p>
-                </div>
-              )}
-
-              <div className={styles.field}>
-                <label className={styles.label} htmlFor="ai-key">
-                  {savedForChoice ? t("settings.aiKeyReplace") : t("settings.aiKey")}
-                </label>
-                <div className={styles.input}>
-                  <KeyRound size={17} />
-                  <input
-                    id="ai-key"
-                    type={showKey ? "text" : "password"}
-                    value={key}
-                    onChange={(event) => {
-                      setKey(event.target.value);
-                      setFailure(null);
-                    }}
-                    placeholder={preset.keyPlaceholder}
-                    autoComplete="off"
-                    autoCapitalize="off"
-                    autoCorrect="off"
-                    spellCheck={false}
-                  />
-                  <button
-                    type="button"
-                    className={styles.iconButton}
-                    onClick={() => setShowKey((current) => !current)}
-                    aria-label={showKey ? t("settings.aiKeyHide") : t("settings.aiKeyShow")}
-                  >
-                    {showKey ? <EyeOff size={17} /> : <Eye size={17} />}
-                  </button>
-                </div>
-                {preset.keyUrl && (
-                  <a className={styles.link} href={preset.keyUrl} target="_blank" rel="noopener noreferrer">
-                    {t("settings.aiGetKey", { name: preset.name })} <ExternalLink size={13} />
-                  </a>
-                )}
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            id="ai-advanced"
+            className={styles.advanced}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: easeOut }}
+          >
+            <div className={styles.advancedInner}>
+              <div className={styles.providers} role="radiogroup" aria-label={t("settings.aiProvider")}>
+                {[{ id: "server", name: t("settings.aiServer"), free: false }, ...providerPresets].map((item) => {
+                  const active = item.id === choice;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={active}
+                      className={`${styles.provider} ${active ? styles.providerActive : ""}`}
+                      onClick={() => select(item.id)}
+                    >
+                      {active && <motion.span layoutId="ai-provider-pill" className={styles.providerPill} transition={spring} />}
+                      <span className={styles.providerName}>
+                        {item.id === "custom" ? t("settings.aiCustom") : item.name}
+                        {item.free && <span className={styles.free}>{t("settings.aiFree")}</span>}
+                        {saved?.presetId === item.id && <Check size={13} strokeWidth={3} />}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
 
-              <div className={styles.field}>
-                <div className={styles.labelRow}>
-                  <label className={styles.label} htmlFor="ai-model">
-                    {t("settings.aiModel")}
-                  </label>
-                  <button
-                    type="button"
-                    className={styles.textButton}
-                    onClick={() => void loadModels()}
-                    disabled={!apiKey || loadingModels || (needsBaseUrl && !draft.baseUrl.trim())}
-                  >
-                    {loadingModels ? <Loader2 size={14} className={styles.spin} /> : <ListRestart size={14} />}
-                    {t("settings.aiLoadModels")}
-                  </button>
-                </div>
-                <div className={styles.input}>
-                  <Cpu size={17} />
-                  <input
-                    id="ai-model"
-                    value={draft.model}
-                    onChange={(event) => updateDraft({ model: event.target.value })}
-                    placeholder={t("settings.aiModelPlaceholder")}
-                    autoComplete="off"
-                    autoCapitalize="off"
-                    spellCheck={false}
-                  />
-                </div>
-                {suggestions.length > 0 && (
-                  <div className={styles.suggestions}>
-                    {suggestions.map((model) => (
-                      <button key={model} type="button" className={styles.suggestion} onClick={() => updateDraft({ model })}>
-                        {model}
-                      </button>
-                    ))}
-                  </div>
-                )}
-                <p className={styles.hint}>
-                  {modelsFailure
-                    ? t(`settings.aiKeyErrors.${modelsFailure}`, { detail: "" })
-                    : models
-                      ? t("settings.aiModelsLoaded", { count: models.length })
-                      : t("settings.aiModelHint")}
-                </p>
-              </div>
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={choice}
+                  className={styles.panel}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.2, ease: easeOut }}
+                >
+                  {!preset ? (
+                    <>
+                      <p className={styles.hint}>{t("settings.aiServerHint")}</p>
+                      {saved && (
+                        <Button variant="secondary" block onClick={() => void removeKey()}>
+                          {t("settings.aiUseServer")}
+                        </Button>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {savedForChoice && !key && (
+                        <div className={styles.active}>
+                          <span className={styles.activeIcon}>
+                            <Check size={16} strokeWidth={3} />
+                          </span>
+                          <div>
+                            <strong>{t("settings.aiKeyActive")}</strong>
+                            <small>
+                              {maskKey(savedForChoice.apiKey)} · {savedForChoice.model}
+                            </small>
+                          </div>
+                          <button type="button" className={styles.iconButton} onClick={() => void removeKey()} aria-label={t("settings.aiKeyRemove")}>
+                            <Trash2 size={17} />
+                          </button>
+                        </div>
+                      )}
 
-              {failure && (
-                <p className={styles.error} role="alert">
-                  {t(`settings.aiKeyErrors.${failure.reason}`, { detail: failure.detail ?? "" })}
-                </p>
-              )}
+                      {needsBaseUrl && (
+                        <div className={styles.field}>
+                          <label className={styles.label} htmlFor="ai-base-url">
+                            {t("settings.aiBaseUrl")}
+                          </label>
+                          <div className={styles.input}>
+                            <Globe size={17} />
+                            <input
+                              id="ai-base-url"
+                              type="url"
+                              inputMode="url"
+                              value={draft.baseUrl}
+                              onChange={(event) => updateDraft({ baseUrl: event.target.value })}
+                              placeholder="https://api.example.com/v1"
+                              autoComplete="off"
+                              autoCapitalize="off"
+                              spellCheck={false}
+                            />
+                          </div>
+                          <p className={styles.hint}>{t("settings.aiBaseUrlHint")}</p>
+                        </div>
+                      )}
 
-              <Button
-                block
-                icon={testing ? <Loader2 className={styles.spin} /> : <ShieldCheck />}
-                onClick={() => void testAndSave()}
-                disabled={testing || !canTest}
-              >
-                {testing ? t("settings.aiKeyTesting") : t("settings.aiKeyTest")}
-              </Button>
+                      <div className={styles.field}>
+                        <label className={styles.label} htmlFor="ai-key">
+                          {savedForChoice ? t("settings.aiKeyReplace") : t("settings.aiKey")}
+                        </label>
+                        <div className={styles.input}>
+                          <KeyRound size={17} />
+                          <input
+                            id="ai-key"
+                            type={showKey ? "text" : "password"}
+                            value={key}
+                            onChange={(event) => {
+                              setKey(event.target.value);
+                              setFailure(null);
+                            }}
+                            placeholder={preset.keyPlaceholder}
+                            autoComplete="off"
+                            autoCapitalize="off"
+                            autoCorrect="off"
+                            spellCheck={false}
+                          />
+                          <button
+                            type="button"
+                            className={styles.iconButton}
+                            onClick={() => setShowKey((current) => !current)}
+                            aria-label={showKey ? t("settings.aiKeyHide") : t("settings.aiKeyShow")}
+                          >
+                            {showKey ? <EyeOff size={17} /> : <Eye size={17} />}
+                          </button>
+                        </div>
+                        {preset.keyUrl && (
+                          <a className={styles.link} href={preset.keyUrl} target="_blank" rel="noopener noreferrer">
+                            {t("settings.aiGetKey", { name: preset.name })} <ExternalLink size={13} />
+                          </a>
+                        )}
+                      </div>
 
-              <p className={styles.privacy}>{t("settings.aiKeyPrivacy")}</p>
-            </>
-          )}
-        </motion.div>
+                      <div className={styles.field}>
+                        <div className={styles.labelRow}>
+                          <label className={styles.label} htmlFor="ai-model">
+                            {t("settings.aiModel")}
+                          </label>
+                          <button
+                            type="button"
+                            className={styles.textButton}
+                            onClick={() => void loadModels()}
+                            disabled={!apiKey || loadingModels || (needsBaseUrl && !draft.baseUrl.trim())}
+                          >
+                            {loadingModels ? <Loader2 size={14} className={styles.spin} /> : <ListRestart size={14} />}
+                            {t("settings.aiLoadModels")}
+                          </button>
+                        </div>
+                        <div className={styles.input}>
+                          <Cpu size={17} />
+                          <input
+                            id="ai-model"
+                            value={draft.model}
+                            onChange={(event) => updateDraft({ model: event.target.value })}
+                            placeholder={t("settings.aiModelPlaceholder")}
+                            autoComplete="off"
+                            autoCapitalize="off"
+                            spellCheck={false}
+                          />
+                        </div>
+                        {suggestions.length > 0 && (
+                          <div className={styles.suggestions}>
+                            {suggestions.map((model) => (
+                              <button key={model} type="button" className={styles.suggestion} onClick={() => updateDraft({ model })}>
+                                {model}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        <p className={styles.hint}>
+                          {modelsFailure
+                            ? t(`settings.aiKeyErrors.${modelsFailure}`, { detail: "" })
+                            : models
+                              ? t("settings.aiModelsLoaded", { count: models.length })
+                              : t("settings.aiModelHint")}
+                        </p>
+                      </div>
+
+                      {failure && (
+                        <p className={styles.error} role="alert">
+                          {t(`settings.aiKeyErrors.${failure.reason}`, { detail: failure.detail ?? "" })}
+                        </p>
+                      )}
+
+                      <Button
+                        block
+                        icon={testing ? <Loader2 className={styles.spin} /> : <ShieldCheck />}
+                        onClick={() => void testAndSave()}
+                        disabled={testing || !canTest}
+                      >
+                        {testing ? t("settings.aiKeyTesting") : t("settings.aiKeyTest")}
+                      </Button>
+
+                      <p className={styles.privacy}>{t("settings.aiKeyPrivacy")}</p>
+                    </>
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   );
