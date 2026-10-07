@@ -1,19 +1,30 @@
+@use "../../styles/mixins" as *;
+
 .stage {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1.1rem;
+
+  @include desktop {
+    gap: 1.5rem;
+  }
 }
 
 .frame {
   position: relative;
   width: 100%;
   aspect-ratio: 3 / 4;
-  max-height: 58vh;
+  // Phones: leave room for the status, tips and Cancel above the tab bar.
+  max-height: 46vh;
   border-radius: var(--radius-lg);
   overflow: hidden;
   background: var(--bg-elevated);
   box-shadow: var(--shadow-lg);
+
+  @include desktop {
+    max-height: 58vh;
+  }
 }
 
 .image {
