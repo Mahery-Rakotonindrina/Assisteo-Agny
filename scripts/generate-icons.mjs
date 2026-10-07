@@ -1,10 +1,12 @@
-// Generates every native icon and splash image from the brand SVGs.
+// Generates every icon and splash image from the brand SVGs: native apps
+// (Android, iOS) and the web app added to a home screen (PWA).
 // Usage: npm run icons   (then commit the PNGs; `cap sync` keeps them)
-import { mkdirSync, readFileSync } from "node:fs";
+import { mkdirSync, readFileSync, renameSync } from "node:fs";
 import { dirname, join } from "node:path";
 import sharp from "sharp";
 
 const BG = "#0b0c10";
+const iosSplashScreens = JSON.parse(readFileSync("lib/iosSplashScreens.json", "utf8"));
 const icon = readFileSync("public/icon.svg", "utf8");
 const glyph = readFileSync("assets/brand/glyph.svg", "utf8");
 
@@ -12,13 +14,13 @@ const glyph = readFileSync("assets/brand/glyph.svg", "utf8");
 const squareIcon = icon.replaceAll('rx="116"', 'rx="0"');
 // Background layer of the Android adaptive icon: dark with the lime glow.
 const adaptiveBackground = squareIcon.replace(/<g[\s\S]*<\/svg>/, "</svg>");
-// Monochrome glyph for the status bar (Android tints it, colours are ignored).
-// Cropped to the glyph so it fills the 24 dp box.
 // Splash art: the glyph over a soft lime halo, on the app background.
 const splashArt = glyph.replace(
   /<g /,
   '<defs><radialGradient id="halo"><stop offset="0" stop-color="#c6ff4d" stop-opacity="0.28"/><stop offset="1" stop-color="#c6ff4d" stop-opacity="0"/></radialGradient></defs><circle cx="256" cy="256" r="256" fill="url(#halo)"/><g ',
 );
+// Monochrome glyph for the status bar (Android tints it, colours are ignored).
+// Cropped to the glyph so it fills the 24 dp box.
 const notificationGlyph = glyph.replace(/#f3f4f6|#c6ff4d/g, "#ffffff").replace('viewBox="0 0 512 512"', 'viewBox="116 116 280 280"');
 
 const res = "android/app/src/main/res";
@@ -73,6 +75,27 @@ const ios = "ios/App/App/Assets.xcassets";
 await png(squareIcon, 1024, join(ios, "AppIcon.appiconset/AppIcon-512@2x.png"), { flatten: true });
 for (const suffix of ["", "-1", "-2"]) {
   await png(splashArt, 2732, join(ios, `Splash.imageset/splash-2732x2732${suffix}.png`), { scale: 0.3, flatten: true });
+}
+
+// ---- Web app on a home screen (PWA) -----------------------------------------
+
+// iOS ignores SVG touch icons (it would screenshot the page instead) and
+// rounds the corners itself: a full-bleed 180 px PNG.
+await png(squareIcon, 180, "public/apple-touch-icon.png", { flatten: true });
+// Manifest icons for Android/Chrome: rounded as is, and full-bleed "maskable"
+// with the glyph inside the safe zone.
+await png(icon, 192, "public/icons/icon-192.png");
+await png(icon, 512, "public/icons/icon-512.png");
+await png(adaptiveBackground, 512, "public/icons/maskable-512.png");
+await sharp("public/icons/maskable-512.png")
+  .composite([{ input: await sharp(Buffer.from(glyph), { density: 384 }).resize(512, 512).png().toBuffer() }])
+  .toFile("public/icons/maskable-512.tmp.png");
+renameSync("public/icons/maskable-512.tmp.png", "public/icons/maskable-512.png");
+
+// iOS has no generated launch screen for web apps: one image per screen size
+// (declared in pages/_document.tsx from the same list).
+for (const { width, height, ratio } of iosSplashScreens) {
+  await png(splashArt, [width * ratio, height * ratio], `public/splash/${width}x${height}@${ratio}x.png`, { scale: 0.5, flatten: true });
 }
 
 console.log("Icons and splash screens generated.");
