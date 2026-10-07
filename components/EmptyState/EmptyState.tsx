@@ -7,6 +7,8 @@ type EmptyStateProps = {
   title: string;
   body: string;
   action?: ReactNode;
+  /** Photos for the three floating cards (falls back to coloured placeholders). */
+  images?: string[];
 };
 
 const cards = [
@@ -15,8 +17,8 @@ const cards = [
   { rotate: -2, x: 0, y: -6, delay: 0.3, cat: "plant" },
 ];
 
-/** A small floating stack of "scan cards" instead of a stock illustration. */
-export function EmptyState({ title, body, action }: EmptyStateProps) {
+/** A small floating stack of "scan cards", with real example photos when given. */
+export function EmptyState({ title, body, action, images }: EmptyStateProps) {
   return (
     <div className={styles.empty}>
       <div className={styles.art} aria-hidden>
@@ -34,7 +36,10 @@ export function EmptyState({ title, body, action }: EmptyStateProps) {
               y: { duration: 4 + index, repeat: Infinity, ease: "easeInOut", delay: card.delay },
             }}
           >
-            <span className={styles.cardImage} />
+            <span
+              className={styles.cardImage}
+              style={images?.[index] ? { backgroundImage: `url(${images[index]})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}
+            />
             <span className={styles.cardLine} />
             <span className={`${styles.cardLine} ${styles.short}`} />
           </motion.span>

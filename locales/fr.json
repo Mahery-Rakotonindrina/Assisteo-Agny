@@ -506,5 +506,17 @@
     "availableBody": "Des améliorations t’attendent.",
     "update": "Mettre à jour",
     "later": "Plus tard"
+  },
+  "examples": {
+    "title": "Exemples",
+    "hint": "Touche un exemple pour voir ce que l’IA te répond.",
+    "labels": {
+      "food": "Un repas",
+      "document": "Une facture",
+      "vehicle": "Une voiture",
+      "object": "Une plante"
+    },
+    "note": "Exemple d’analyse",
+    "cta": "Faire mon premier scan"
   }
 }

@@ -488,3 +488,15 @@ $bar-height: calc(var(--safe-top) + 3.95rem);
     color: var(--accent-text);
   }
 }
+
+// Example scans: says what this page is instead of a date.
+.exampleNote {
+  align-self: flex-start;
+  margin-bottom: 0.4rem;
+  padding: 0.35rem 0.8rem;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-size: 0.85rem;
+  font-weight: 600;
+}

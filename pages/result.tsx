@@ -45,6 +45,7 @@ import { useIsDesktop } from "@/hooks/useIsDesktop";
 import { useNow } from "@/hooks/useNow";
 import { useReminderTexts } from "@/hooks/useReminderTexts";
 import { useTranslation } from "@/hooks/useTranslation";
+import { exampleEntry, isExampleId } from "@/lib/examples";
 import { formatDateTime, formatDay } from "@/lib/format";
 import { easeOut, pop, rise, spring, stagger } from "@/lib/motion";
 import { haptics, shareText } from "@/services/device";
@@ -64,12 +65,16 @@ export default function ResultPage() {
   const router = useRouter();
   const id = router.isReady && typeof router.query.id === "string" ? router.query.id : undefined;
   const entry = useHistoryEntry(id);
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
+  // Example scans (from the home screen) open read-only, never from the history.
+  const example = router.isReady && isExampleId(router.query.example) ? router.query.example : null;
 
   const goBack = () => {
     if (window.history.length > 1) router.back();
     else void router.replace("/");
   };
+
+  if (example) return <ResultView entry={exampleEntry(example, locale)} onBack={goBack} example />;
 
   if (entry === null) {
     return (
@@ -88,7 +93,7 @@ export default function ResultPage() {
   return <ResultView entry={entry} onBack={goBack} />;
 }
 
-function ResultView({ entry, onBack }: { entry: HistoryEntry; onBack: () => void }) {
+function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; onBack: () => void; example?: boolean }) {
   const router = useRouter();
   const { t, locale } = useTranslation();
   const toast = useToast();
@@ -149,7 +154,8 @@ function ResultView({ entry, onBack }: { entry: HistoryEntry; onBack: () => void
     analysis.recipe && { id: "recipe", label: t("result.tabs.recipe"), icon: <CookingPot /> },
     analysis.vehicle && { id: "vehicle", label: t("result.tabs.vehicle"), icon: <Car /> },
     analysis.document && { id: "document", label: t("result.tabs.document"), icon: <FileText /> },
-    { id: "chat", label: t("result.tabs.chat"), icon: <MessageCircle />, dot: (entry.chat?.length ?? 0) > 0 },
+    // Examples aren't real scans: nothing to ask the AI about.
+    !example && { id: "chat", label: t("result.tabs.chat"), icon: <MessageCircle />, dot: (entry.chat?.length ?? 0) > 0 },
   ].filter(Boolean) as ResultTab[];
 
   const changeTab = (next: TabId) => {
@@ -177,7 +183,7 @@ function ResultView({ entry, onBack }: { entry: HistoryEntry; onBack: () => void
     analysis.category === "document" ||
     analysis.category === "vehicle" ||
     (analysis.category === "plant" && analysis.reminder !== null);
-  const actions = ((reminderFirst ? ["reminder", "question"] : ["question", "reminder"]) as Action[]).filter(
+  const actions = (example ? [] : ((reminderFirst ? ["reminder", "question"] : ["question", "reminder"]) as Action[])).filter(
     // The question tab has its own composer.
     (action) => !(action === "question" && tab === "chat"),
   );
@@ -249,29 +255,31 @@ function ResultView({ entry, onBack }: { entry: HistoryEntry; onBack: () => void
         <span className={styles.barTitle} aria-hidden={!barTitled}>
           {analysis.title}
         </span>
-        <div className={styles.barActions}>
-          <Button variant="secondary" size="icon" className={styles.glassButton} onClick={() => void share()} aria-label={t("result.share")}>
-            <Share2 />
-          </Button>
-          {confirmDelete ? (
-            <Button variant="danger" icon={<Trash2 />} onClick={() => void remove()}>
-              {t("result.deleteConfirm")}
+        {!example && (
+          <div className={styles.barActions}>
+            <Button variant="secondary" size="icon" className={styles.glassButton} onClick={() => void share()} aria-label={t("result.share")}>
+              <Share2 />
             </Button>
-          ) : (
-            <Button
-              variant="secondary"
-              size="icon"
-              className={styles.glassButton}
-              onClick={() => {
-                haptics.tap();
-                setConfirmDelete(true);
-              }}
-              aria-label={t("result.delete")}
-            >
-              <Trash2 />
-            </Button>
-          )}
-        </div>
+            {confirmDelete ? (
+              <Button variant="danger" icon={<Trash2 />} onClick={() => void remove()}>
+                {t("result.deleteConfirm")}
+              </Button>
+            ) : (
+              <Button
+                variant="secondary"
+                size="icon"
+                className={styles.glassButton}
+                onClick={() => {
+                  haptics.tap();
+                  setConfirmDelete(true);
+                }}
+                aria-label={t("result.delete")}
+              >
+                <Trash2 />
+              </Button>
+            )}
+          </div>
+        )}
       </div>
 
       <motion.div className={styles.page} variants={stagger} initial="hidden" animate="show">
@@ -290,7 +298,14 @@ function ResultView({ entry, onBack }: { entry: HistoryEntry; onBack: () => void
             </motion.div>
           </motion.div>
 
-          {isDesktop && (
+          {isDesktop && example && (
+            <motion.div variants={rise} className={styles.panel}>
+              <Button href="/" icon={<Camera />} block>
+                {t("examples.cta")}
+              </Button>
+            </motion.div>
+          )}
+          {isDesktop && !example && (
             <motion.div variants={rise} className={styles.panel}>
               {actions.map((action, index) => renderAction(action, index === 0 ? "primary" : "panel"))}
               <Button variant="secondary" icon={<Share2 />} onClick={() => void share()} block>
@@ -311,10 +326,14 @@ function ResultView({ entry, onBack }: { entry: HistoryEntry; onBack: () => void
         <div className={styles.content}>
           <motion.header ref={headerRef} variants={rise} className={styles.header}>
             <h1 ref={titleRef}>{analysis.title}</h1>
-            <p className={styles.meta}>
-              {formatDateTime(entry.createdAt, locale)}
-              {!meta.demo && <> · {t("result.analyzedIn", { seconds: (meta.durationMs / 1000).toFixed(1) })}</>}
-            </p>
+            {example ? (
+              <p className={styles.exampleNote}>{t("examples.note")}</p>
+            ) : (
+              <p className={styles.meta}>
+                {formatDateTime(entry.createdAt, locale)}
+                {!meta.demo && <> · {t("result.analyzedIn", { seconds: (meta.durationMs / 1000).toFixed(1) })}</>}
+              </p>
+            )}
             <ConfidenceBadge value={analysis.confidence} label={t(`result.confidenceLevels.${level}`)} />
             {level === "low" && (
               <div className={styles.uncertain} role="note">
@@ -356,7 +375,7 @@ function ResultView({ entry, onBack }: { entry: HistoryEntry; onBack: () => void
             </motion.div>
           </AnimatePresence>
 
-          {!isDesktop && (
+          {!isDesktop && !example && (
             <motion.div variants={rise} className={styles.footer}>
               <Button href="/" variant="secondary" icon={<Plus />} block>
                 {t("result.newScan")}
@@ -365,6 +384,14 @@ function ResultView({ entry, onBack }: { entry: HistoryEntry; onBack: () => void
           )}
         </div>
       </motion.div>
+
+      {!isDesktop && example && (
+        <motion.div className={styles.actionBar} initial={{ y: 100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ ...spring, delay: 0.2 }}>
+          <Button href="/" icon={<Camera />} className={styles.grow}>
+            {t("examples.cta")}
+          </Button>
+        </motion.div>
+      )}
 
       <AnimatePresence>
         {!isDesktop && !composerFocused && actions.length > 0 && (

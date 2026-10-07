@@ -293,3 +293,54 @@
     --orb-size: 140px;
   }
 }
+
+// ---- Examples (before the first scan) -----------------------------------------
+
+.examplesHint {
+  margin-top: -0.35rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.examples {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+
+  @include desktop {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+  }
+}
+
+.example {
+  @include pressable;
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--bg-elevated);
+  box-shadow: var(--card-shadow);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s var(--ease-out);
+  }
+
+  &:hover img {
+    transform: scale(1.04);
+  }
+
+  // Label on a dark fade so it reads on any photo, in both themes.
+  span {
+    position: absolute;
+    inset: auto 0 0;
+    padding: 1.6rem 0.8rem 0.65rem;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.72), transparent);
+    color: #fff;
+    font-size: 0.92rem;
+    font-weight: 600;
+  }
+}

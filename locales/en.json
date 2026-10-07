@@ -506,5 +506,17 @@
     "availableBody": "Improvements are waiting for you.",
     "update": "Update",
     "later": "Later"
+  },
+  "examples": {
+    "title": "Examples",
+    "hint": "Tap an example to see what the AI tells you.",
+    "labels": {
+      "food": "A meal",
+      "document": "A bill",
+      "vehicle": "A car",
+      "object": "A plant"
+    },
+    "note": "Example analysis",
+    "cta": "Make my first scan"
   }
 }

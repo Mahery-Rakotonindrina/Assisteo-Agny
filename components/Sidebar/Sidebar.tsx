@@ -2,6 +2,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { motion } from "motion/react";
 import { Download, History, ScanLine, Settings2, Smartphone, UserRound } from "lucide-react";
+import { Logo } from "@/components/Logo";
 import { useAiStatus } from "@/hooks/useAiStatus";
 import { useInstallPrompt } from "@/hooks/useInstallPrompt";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -34,10 +35,8 @@ export function Sidebar() {
 
   return (
     <aside className={styles.sidebar}>
-      <Link href="/" className={styles.brand}>
-        {/* eslint-disable-next-line @next/next/no-img-element -- static SVG logo */}
-        <img src="/icon.svg" alt="" width={36} height={36} />
-        <span>Assisteo Agny</span>
+      <Link href="/" className={styles.brand} aria-label="Assisteo Agny">
+        <Logo size={36} />
       </Link>
 
       <nav className={styles.nav} aria-label="Main">

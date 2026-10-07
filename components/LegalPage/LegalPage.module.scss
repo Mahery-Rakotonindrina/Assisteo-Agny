@@ -83,3 +83,10 @@
     text-underline-offset: 3px;
   }
 }
+
+.topRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  align-self: stretch;
+}

@@ -19,6 +19,7 @@ import { useScan } from "@/hooks/useScan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTrial } from "@/hooks/useTrial";
 import type { ScanMode } from "@/lib/ai/schema";
+import { exampleIds, exampleImage } from "@/lib/examples";
 import { easeOut, rise, stagger } from "@/lib/motion";
 import styles from "@/styles/Scan.module.scss";
 
@@ -48,7 +49,7 @@ export default function ScanPage() {
   const [picked, setPicked] = useState(false);
   const picking = router.isReady && router.query.pick === "1" && !picked;
   const { state, start, startWithFile, retry, reset, canRetry } = useScan(mode);
-  const { entries } = useHistory();
+  const { entries, isLoading: historyLoading } = useHistory();
   const aiStatus = useAiStatus();
   const isDesktop = useIsDesktop();
   const trial = useTrial();
@@ -168,6 +169,24 @@ export default function ScanPage() {
                 </>
               )}
             </motion.div>
+
+            {!historyLoading && recent.length === 0 && (
+              <motion.section variants={rise} className={styles.recent}>
+                <div className={styles.sectionHead}>
+                  <h2>{t("examples.title")}</h2>
+                </div>
+                <p className={styles.examplesHint}>{t("examples.hint")}</p>
+                <div className={styles.examples}>
+                  {exampleIds.map((id) => (
+                    <Link key={id} href={{ pathname: "/result", query: { example: id } }} className={styles.example}>
+                      {/* eslint-disable-next-line @next/next/no-img-element -- static example photo, works in the static export */}
+                      <img src={exampleImage(id)} alt="" loading="lazy" />
+                      <span>{t(`examples.labels.${id}`)}</span>
+                    </Link>
+                  ))}
+                </div>
+              </motion.section>
+            )}
 
             {recent.length > 0 && (
               <motion.section variants={rise} className={styles.recent}>

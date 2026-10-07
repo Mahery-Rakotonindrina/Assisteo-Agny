@@ -11,6 +11,7 @@ import { useIsDesktop } from "@/hooks/useIsDesktop";
 import { useNow } from "@/hooks/useNow";
 import { useTranslation } from "@/hooks/useTranslation";
 import { categories, type Category } from "@/lib/ai/schema";
+import { exampleImage } from "@/lib/examples";
 import { formatDay, startOfDay } from "@/lib/format";
 import { easeOut, rise, spring, stagger } from "@/lib/motion";
 import { haptics } from "@/services/device";
@@ -126,6 +127,7 @@ export default function HistoryPage() {
             <EmptyState
               title={t("history.emptyTitle")}
               body={t("history.emptyBody")}
+              images={[exampleImage("food"), exampleImage("document"), exampleImage("object")]}
               action={
                 <Button href="/" icon={<ScanLine />}>
                   {t("history.emptyCta")}
