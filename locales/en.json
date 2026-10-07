@@ -382,7 +382,24 @@
     "latest": "Latest version",
     "latestHint": "Below it, a banner suggests updating. Empty = nothing.",
     "downloadUrl": "Download link (https)",
-    "invalidVersion": "Expected format: 1.0.12"
+    "invalidVersion": "Expected format: 1.0.12",
+    "stats": {
+      "title": "Usage · last 14 days",
+      "subtitle": "Anonymous counters: no photos, content or identifiers.",
+      "refresh": "Refresh",
+      "scans": "analyses",
+      "devices": "active devices",
+      "questions": "questions",
+      "satisfaction": "answers rated right ({count} votes)",
+      "perDay": "Analyses per day",
+      "today": "today",
+      "avgDuration": "Average time: {seconds} s",
+      "ownKey": "{count} with a personal key",
+      "categories": "What gets scanned",
+      "errors": "Errors and blocks",
+      "feedback": "Latest feedback",
+      "noFeedback": "No feedback yet."
+    }
   },
   "account": {
     "section": "Account",

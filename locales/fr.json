@@ -382,7 +382,24 @@
     "latest": "Dernière version",
     "latestHint": "En dessous, un bandeau propose la mise à jour. Vide = rien.",
     "downloadUrl": "Lien de téléchargement (https)",
-    "invalidVersion": "Format attendu : 1.0.12"
+    "invalidVersion": "Format attendu : 1.0.12",
+    "stats": {
+      "title": "Utilisation · 14 derniers jours",
+      "subtitle": "Compteurs anonymes : ni photo, ni contenu, ni identifiant.",
+      "refresh": "Actualiser",
+      "scans": "analyses",
+      "devices": "appareils actifs",
+      "questions": "questions",
+      "satisfaction": "réponses jugées justes ({count} avis)",
+      "perDay": "Analyses par jour",
+      "today": "aujourd’hui",
+      "avgDuration": "Durée moyenne : {seconds} s",
+      "ownKey": "{count} avec une clé personnelle",
+      "categories": "Ce qui est scanné",
+      "errors": "Erreurs et blocages",
+      "feedback": "Derniers avis",
+      "noFeedback": "Pas encore d’avis."
+    }
   },
   "account": {
     "section": "Compte",

@@ -128,3 +128,14 @@ export async function getRecentFeedback(limit = 30): Promise<FeedbackRecord[]> {
   // Upstash decodes JSON automatically; tolerate raw strings too.
   return items.map((item) => (typeof item === "string" ? (JSON.parse(item) as FeedbackRecord) : item));
 }
+
+/** Distinct devices over the last `days` days (union of the daily estimates). */
+export async function getUniqueDevices(days: number): Promise<number> {
+  const dates = Array.from({ length: days }, (_, index) => dayOf(Date.now() - index * 86_400_000));
+  if (!redis) {
+    const all = new Set<string>();
+    for (const date of dates) memory.get(date)?.devices.forEach((device) => all.add(device));
+    return all.size;
+  }
+  return redis.pfcount(...(dates.map(devicesKey) as [string, ...string[]]));
+}
