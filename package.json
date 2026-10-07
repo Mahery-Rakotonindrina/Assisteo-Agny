@@ -34,6 +34,7 @@
     "@capacitor/status-bar": "^8.0.4",
     "@google/genai": "^2.27.0",
     "@ionic/pwa-elements": "^3.4.0",
+    "@sentry/nextjs": "^11.4.0",
     "@supabase/supabase-js": "^2.109.0",
     "@upstash/redis": "^1.39.0",
     "idb-keyval": "^6.3.0",

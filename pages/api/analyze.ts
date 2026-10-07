@@ -5,6 +5,7 @@ import { activeModel, activeProvider, analyzeImage, readOverride } from "@/lib/a
 import { AnalyzeRequestSchema, InstallIdSchema, installIdHeader, type AnalyzeResponse, type TrialState } from "@/lib/ai/schema";
 import { applyCors, clientIp, sendError } from "@/lib/server/http";
 import { rateLimit } from "@/lib/server/rateLimit";
+import { reportError } from "@/lib/server/reportError";
 import { releaseServerCall, releaseTrialScan, reserveServerCall, reserveTrialScan } from "@/lib/server/trialStore";
 
 export const config = {
@@ -98,12 +99,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       // A rejected server key is a deployment problem, not something the user can fix.
       if (!override && error.code === "invalid_key") {
         console.error(`[analyze:${engine}] server key rejected`);
+        await reportError(error, { route: "analyze", engine, kind: "server_key_rejected" });
         return sendError(res, 503, "unavailable", "The AI service is not configured correctly.");
       }
-      if (error.status >= 500 || error.code === "billing") console.error(`[analyze:${engine}]`, error.message);
+      if (error.status >= 500 || error.code === "billing") {
+        console.error(`[analyze:${engine}]`, error.message);
+        // The user's own key failing is their business; the server's is ours.
+        if (!override) await reportError(error, { route: "analyze", engine, code: error.code });
+      }
       return sendError(res, error.status, error.code, error.message);
     }
     console.error(`[analyze:${engine}] unexpected`, error instanceof Error ? error.message : error);
+    await reportError(error, { route: "analyze", engine, kind: "unexpected" });
     return sendError(res, 500, "upstream_error", `Something went wrong (${activeModel}).`);
   }
 }

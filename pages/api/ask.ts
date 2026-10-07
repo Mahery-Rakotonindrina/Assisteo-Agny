@@ -11,6 +11,7 @@ import {
 } from "@/lib/ai/schema";
 import { applyCors, clientIp, sendError } from "@/lib/server/http";
 import { rateLimit } from "@/lib/server/rateLimit";
+import { reportError } from "@/lib/server/reportError";
 import { releaseAsk, releaseServerCall, reserveAsk, reserveServerCall } from "@/lib/server/trialStore";
 
 export const config = {
@@ -74,10 +75,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     if (abort.signal.aborted) return;
     if (error instanceof AnalysisError) {
       if (!override && error.code === "invalid_key") return sendError(res, 503, "unavailable", "The AI service is not configured correctly.");
-      if (error.status >= 500) console.error(`[ask:${override ? `user-${override.provider}` : activeProvider}]`, error.message);
+      if (error.status >= 500) {
+        console.error(`[ask:${override ? `user-${override.provider}` : activeProvider}]`, error.message);
+        if (!override) await reportError(error, { route: "ask", engine: activeProvider, code: error.code });
+      }
       return sendError(res, error.status, error.code, error.message);
     }
     console.error("[ask] unexpected", error instanceof Error ? error.message : error);
+    await reportError(error, { route: "ask", kind: "unexpected" });
     return sendError(res, 500, "upstream_error", "Something went wrong.");
   }
 }
