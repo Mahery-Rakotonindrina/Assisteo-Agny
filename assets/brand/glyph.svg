@@ -1,0 +1,10 @@
+<!-- The scan glyph alone, on a 512 canvas (same geometry as public/icon.svg). -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <g fill="none" stroke="#f3f4f6" stroke-width="30" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M150 196v-30a36 36 0 0 1 36-36h30"/>
+    <path d="M296 130h30a36 36 0 0 1 36 36v30"/>
+    <path d="M362 316v30a36 36 0 0 1-36 36h-30"/>
+    <path d="M216 382h-30a36 36 0 0 1-36-36v-30"/>
+  </g>
+  <circle cx="256" cy="256" r="54" fill="#c6ff4d"/>
+</svg>
