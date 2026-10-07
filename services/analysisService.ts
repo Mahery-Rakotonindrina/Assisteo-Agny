@@ -16,15 +16,17 @@ export const analysisService = {
   /** Uses the user's own key when one is saved, else the server's engine. */
   async analyze(payload: AnalyzeRequest, signal?: AbortSignal) {
     const override = await aiKeyStore.get();
-    // Own key: no limits. Otherwise the install id lets the server count trial scans.
-    const headers: Record<string, string> = override
-      ? {
-          [overrideHeaders.provider]: override.provider,
-          [overrideHeaders.apiKey]: override.apiKey,
-          [overrideHeaders.model]: override.model,
-          ...(override.provider === "openai" && { [overrideHeaders.baseUrl]: override.baseUrl }),
-        }
-      : await installIdHeaders();
+    // Own key: no limits. Otherwise the install id lets the server count trial
+    // scans; it's sent either way for the anonymous active-device estimate.
+    const headers: Record<string, string> = {
+      ...(await installIdHeaders()),
+      ...(override && {
+        [overrideHeaders.provider]: override.provider,
+        [overrideHeaders.apiKey]: override.apiKey,
+        [overrideHeaders.model]: override.model,
+        ...(override.provider === "openai" && { [overrideHeaders.baseUrl]: override.baseUrl }),
+      }),
+    };
     return httpClient.post<AnalyzeResponse>("/api/analyze", payload, { signal, headers });
   },
 

@@ -6,6 +6,7 @@ import { AnalyzeRequestSchema, InstallIdSchema, installIdHeader, type AnalyzeRes
 import { applyCors, clientIp, sendError } from "@/lib/server/http";
 import { rateLimit } from "@/lib/server/rateLimit";
 import { reportError } from "@/lib/server/reportError";
+import { track } from "@/lib/server/stats";
 import { verifyUser } from "@/lib/server/supabaseAdmin";
 import { releaseServerCall, releaseTrialScan, reserveServerCall, reserveTrialScan, type TrialSubject } from "@/lib/server/trialStore";
 
@@ -46,6 +47,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   }
 
   const startedAt = Date.now();
+  // Anonymous usage counters (lib/server/stats.ts); the id is only hashed into a device estimate.
+  const statsDevice = InstallIdSchema.safeParse(req.headers[installIdHeader]).data ?? null;
 
   if (!override && activeProvider === "demo") {
     await new Promise((resolve) => setTimeout(resolve, DEMO_LATENCY_MS));
@@ -67,10 +70,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const subject: TrialSubject = { installId: installId.data, userId: await verifyUser(req).catch(() => null) };
     const usage = await reserveTrialScan(subject, ip);
     if (usage === null) {
+      await track({ type: "error", route: "analyze", code: "trial_exhausted" }, statsDevice);
       return sendError(res, 403, "trial_exhausted", "The free trial is over: add your own API key in Settings.");
     }
     if (!(await reserveServerCall())) {
       await releaseTrialScan(subject, ip).catch(() => undefined);
+      await track({ type: "error", route: "analyze", code: "server_busy" }, statsDevice);
       return sendError(res, 503, "server_busy", "The free AI has reached today's limit: add your own API key or come back tomorrow.");
     }
     trial = { subject, ip, ...usage };
@@ -84,6 +89,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
   try {
     const { analysis, model } = await analyzeImage(parsed.data, abort.signal, override);
+    await track(
+      { type: "scan", mode: parsed.data.mode, category: analysis.category, ownKey: Boolean(override), durationMs: Date.now() - startedAt },
+      statsDevice,
+    );
     return res.status(200).json({
       analysis: { ...analysis, confidence: Math.min(1, Math.max(0, analysis.confidence)) },
       meta: {
@@ -97,6 +106,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     // A failed or cancelled analysis doesn't consume a trial scan.
     if (trial) await Promise.all([releaseTrialScan(trial.subject, trial.ip), releaseServerCall()]).catch(() => undefined);
     if (abort.signal.aborted) return;
+    await track({ type: "error", route: "analyze", code: error instanceof AnalysisError ? error.code : "upstream_error" }, statsDevice);
     const engine = override ? `user-${override.provider}` : activeProvider;
     if (error instanceof AnalysisError) {
       // A rejected server key is a deployment problem, not something the user can fix.
