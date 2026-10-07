@@ -9,6 +9,7 @@ import { haptics } from "@/services/device";
 import { createId, historyStore } from "@/services/historyStore";
 import { notify } from "@/services/notifications";
 import { ensureCameraAccess } from "@/services/permissions";
+import { compactOldPhotos } from "@/services/photoStorage";
 import { trialStore } from "@/services/trial";
 import { insuranceReminderAt, scheduleReminder } from "@/services/reminders";
 import { useReminderTexts } from "./useReminderTexts";
@@ -99,6 +100,7 @@ export function useScan(mode: ScanMode) {
           void notify({ title: t("notifications.readyTitle"), body: analysis.title, entryId: id });
         }
         lastCaptureRef.current = null;
+        void compactOldPhotos().catch(() => undefined);
         await router.push({ pathname: "/result", query: { id } });
         setState({ phase: "idle" });
       } catch (error) {

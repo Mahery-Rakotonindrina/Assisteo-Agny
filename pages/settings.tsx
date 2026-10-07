@@ -20,6 +20,7 @@ import { useSettings, type ThemePreference } from "@/lib/settings/SettingsProvid
 import { accountsAvailable } from "@/lib/supabase";
 import { isNative } from "@/services/device";
 import { historyStore } from "@/services/historyStore";
+import { entryPhotoBytes, FULL_PHOTOS_KEPT } from "@/services/photoStorage";
 import {
   getNotificationPermission,
   notify,
@@ -30,7 +31,7 @@ import { getPermission, requestPermission, type PermissionKind, type PermissionS
 import styles from "@/styles/Settings.module.scss";
 
 export default function SettingsPage() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const router = useRouter();
   const toast = useToast();
   const { settings, update } = useSettings();
@@ -207,7 +208,11 @@ export default function SettingsPage() {
         </Group>
 
         <Group title={t("settings.data")}>
-          <Row icon={<Smartphone />} label={t("settings.storage", { count: entries.length })} />
+          <Row
+            icon={<Smartphone />}
+            label={t("settings.storage", { count: entries.length, size: formatBytes(entries.reduce((total, entry) => total + entryPhotoBytes(entry), 0), locale) })}
+            hint={t("settings.storageHint", { count: FULL_PHOTOS_KEPT })}
+          />
           <div className={styles.rowAction}>
             <Button
               variant="danger"
@@ -267,6 +272,14 @@ function Group({ id, title, children }: { id?: string; title: string; children: 
 }
 
 const noSubscribe = () => () => {};
+
+function formatBytes(bytes: number, locale: string) {
+  const [kb, mb] = locale === "fr" ? ["Ko", "Mo"] : ["KB", "MB"];
+  const megabytes = bytes / (1024 * 1024);
+  return megabytes >= 1
+    ? `${megabytes.toLocaleString(locale, { maximumFractionDigits: 1 })} ${mb}`
+    : `${Math.max(0, Math.round(bytes / 1024)).toLocaleString(locale)} ${kb}`;
+}
 
 type RowProps = {
   icon: ReactNode;

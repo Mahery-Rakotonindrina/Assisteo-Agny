@@ -27,4 +27,6 @@ export type HistoryEntry = {
   dirty?: boolean;
   /** Paths of the photos in the account's storage, once uploaded. */
   remote?: { preview: string; thumbnail: string };
+  /** The preview was reduced to the thumbnail here; the account's copy still has to be. */
+  compactRemote?: boolean;
 };
