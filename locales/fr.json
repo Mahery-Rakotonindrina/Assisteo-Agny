@@ -251,7 +251,7 @@
       "network": "Pas de connexion au serveur.",
       "overloaded": "Le service est saturé en ce moment. Ta clé n’est pas en cause : réessaie dans quelques instants, ou choisis un modèle plus léger (par exemple Flash-Lite)."
     },
-    "aiKeyPrivacy": "Ta clé reste sur cet appareil (stockage sécurisé du téléphone). Elle n’est envoyée qu’au moment d’une analyse et n’est jamais conservée sur le serveur.",
+    "aiKeyPrivacy": "Ta clé est gardée dans le stockage sécurisé du téléphone. Si tu es connecté, elle est aussi synchronisée chiffrée avec ton compte. Elle ne sert qu’à tes analyses.",
     "aiCustom": "Autre",
     "aiFree": "gratuit",
     "aiBaseUrl": "Adresse de l’API",
@@ -259,7 +259,15 @@
     "aiLoadModels": "Charger les modèles",
     "aiModelPlaceholder": "nom du modèle",
     "aiModelHint": "Choisis un modèle qui comprend les images (vision). « Charger les modèles » liste ceux de ta clé.",
-    "aiModelsLoaded": "{count} modèles disponibles avec cette clé. Tape pour filtrer."
+    "aiModelsLoaded": "{count} modèles disponibles avec cette clé. Tape pour filtrer.",
+    "aiDefaultTitle": "IA Assisteo",
+    "aiDefaultLeft": "{remaining} analyse(s) gratuite(s) restante(s) sur {limit}",
+    "aiDefaultOver": "Essai gratuit terminé : ajoute ta propre clé pour continuer.",
+    "aiDefaultIncluded": "Incluse avec l’app",
+    "aiOwnKeyTitle": "Ta clé {name}",
+    "aiUseOwnKey": "Utiliser ma propre clé IA",
+    "aiChangeKey": "Changer de clé ou de fournisseur",
+    "aiUseOwnKeyHint": "Avancé · Gemini propose des clés gratuites"
   },
   "notifications": {
     "readyTitle": "Analyse prête ✨"

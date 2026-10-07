@@ -148,7 +148,7 @@ export default function SettingsPage() {
         )}
 
         <Group id="ai-engine" title={t("settings.aiEngine")}>
-          <AiKeySettings />
+          <AiKeySettings requestOpen={section === "ai"} />
         </Group>
 
         <Group title={t("settings.permissions")}>

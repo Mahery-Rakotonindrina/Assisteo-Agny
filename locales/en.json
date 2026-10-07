@@ -251,7 +251,7 @@
       "network": "Can’t reach the server.",
       "overloaded": "The service is overloaded right now. Your key isn’t the problem: try again in a moment, or pick a lighter model (for example Flash-Lite)."
     },
-    "aiKeyPrivacy": "Your key stays on this device (the phone’s secure storage). It’s only sent when you run an analysis and never kept on the server.",
+    "aiKeyPrivacy": "Your key is kept in the phone’s secure storage. When you’re signed in, it’s also synced, encrypted, with your account. It’s only used for your analyses.",
     "aiCustom": "Other",
     "aiFree": "free",
     "aiBaseUrl": "API address",
@@ -259,7 +259,15 @@
     "aiLoadModels": "Load models",
     "aiModelPlaceholder": "model name",
     "aiModelHint": "Pick a model that understands images (vision). “Load models” lists the ones your key can use.",
-    "aiModelsLoaded": "{count} models available with this key. Type to filter."
+    "aiModelsLoaded": "{count} models available with this key. Type to filter.",
+    "aiDefaultTitle": "Assisteo AI",
+    "aiDefaultLeft": "{remaining} of {limit} free analyses left",
+    "aiDefaultOver": "Free trial over: add your own key to continue.",
+    "aiDefaultIncluded": "Included with the app",
+    "aiOwnKeyTitle": "Your {name} key",
+    "aiUseOwnKey": "Use my own AI key",
+    "aiChangeKey": "Change key or provider",
+    "aiUseOwnKeyHint": "Advanced · Gemini offers free keys"
   },
   "notifications": {
     "readyTitle": "Analysis ready ✨"
