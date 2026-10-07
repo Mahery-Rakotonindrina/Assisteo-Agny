@@ -14,7 +14,9 @@
     "cap:android": "npm run cap:sync && cap open android",
     "cap:ios": "npm run cap:sync && cap open ios",
     "db:migrate": "node scripts/db-migrate.mjs",
-    "icons": "node scripts/generate-icons.mjs"
+    "icons": "node scripts/generate-icons.mjs",
+    "test": "vitest run",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.131.0",
@@ -44,6 +46,7 @@
   },
   "devDependencies": {
     "@capacitor/cli": "^8.5.2",
+    "@playwright/test": "^1.63.0",
     "@types/node": "^20",
     "@types/pg": "^8.23.1",
     "@types/react": "^19",
@@ -54,7 +57,8 @@
     "pg": "^8.23.1",
     "sass": "^1.104.0",
     "sharp": "^0.35.5",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.11"
   },
   "engines": {
     "node": ">=22"
