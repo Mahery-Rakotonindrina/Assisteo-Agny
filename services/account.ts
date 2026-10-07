@@ -1,5 +1,6 @@
 import type { Session } from "@supabase/supabase-js";
 import { accountsAvailable, supabase } from "@/lib/supabase";
+import { httpClient } from "./httpClient";
 
 // Passwordless sign-in: the user receives a one-time code by e-mail and types
 // it in the app. Works the same on the web and in the Capacitor app (no
@@ -56,4 +57,9 @@ export async function signOutAccount() {
 export async function authHeaders(): Promise<Record<string, string>> {
   const session = await getSession();
   return session ? { Authorization: `Bearer ${session.access_token}` } : {};
+}
+
+/** Deletes the account and everything it holds on the server. Irreversible. */
+export async function deleteAccountOnServer() {
+  await httpClient.delete<void>("/api/account", { headers: await authHeaders() });
 }

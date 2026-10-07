@@ -334,6 +334,13 @@
     "signOut": "Se déconnecter",
     "confirmSignOut": "Confirmer la déconnexion",
     "signOutHint": "Cet appareil sera vidé (historique et clé API). Tout reste dans ton compte et revient quand tu te reconnectes.",
+    "delete": "Supprimer mon compte",
+    "deleteTitle": "Supprimer définitivement ton compte ?",
+    "deleteBody": "Ton historique, tes photos, tes réglages et ta clé API seront effacés de nos serveurs et de cet appareil. C’est irréversible.",
+    "deleteConfirm": "Supprimer définitivement",
+    "deleting": "Suppression…",
+    "deleted": "Ton compte et tes données ont été supprimés.",
+    "deleteFailed": "La suppression a échoué. Vérifie ta connexion et réessaie.",
     "errors": {
       "invalid_email": "Cette adresse e-mail n’est pas valide.",
       "rate_limited": "Trop de demandes. Patiente une minute avant de redemander un code.",

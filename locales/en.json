@@ -334,6 +334,13 @@
     "signOut": "Sign out",
     "confirmSignOut": "Confirm sign-out",
     "signOutHint": "This device will be cleared (history and API key). Everything stays in your account and comes back when you sign in again.",
+    "delete": "Delete my account",
+    "deleteTitle": "Permanently delete your account?",
+    "deleteBody": "Your history, photos, settings and API key will be erased from our servers and from this device. This can't be undone.",
+    "deleteConfirm": "Delete permanently",
+    "deleting": "Deleting…",
+    "deleted": "Your account and data have been deleted.",
+    "deleteFailed": "Deletion failed. Check your connection and try again.",
     "errors": {
       "invalid_email": "This e-mail address isn’t valid.",
       "rate_limited": "Too many requests. Wait a minute before asking for a new code.",
