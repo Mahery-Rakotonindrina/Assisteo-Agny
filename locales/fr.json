@@ -86,6 +86,13 @@
         "Une étiquette ou une marque visible rend la réponse plus précise.",
         "Pour une plante, photographie les feuilles de près."
       ]
+    },
+    "framing": {
+      "auto": "Bonne lumière, sujet bien centré.",
+      "food": "Vue de dessus, assiette entière.",
+      "document": "À plat, page entière, sans reflet.",
+      "vehicle": "De trois quarts avant, en entier.",
+      "object": "En entier, sur un fond simple."
     }
   },
   "errors": {

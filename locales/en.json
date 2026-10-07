@@ -86,6 +86,13 @@
         "A visible label or brand makes the answer more precise.",
         "For a plant, photograph the leaves up close."
       ]
+    },
+    "framing": {
+      "auto": "Good light, subject centred.",
+      "food": "From above, the whole plate.",
+      "document": "Flat, whole page, no glare.",
+      "vehicle": "Front three-quarters, all of it.",
+      "object": "All of it, on a plain background."
     }
   },
   "errors": {

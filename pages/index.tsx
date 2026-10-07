@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { Apple, ArrowRight, Box, Car, FileText, FlaskConical, ImageUp, KeyRound, RotateCcw, Sparkles, X } from "lucide-react";
+import { Apple, ArrowRight, Box, Car, FileText, FlaskConical, ImageUp, KeyRound, Lightbulb, RotateCcw, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/Button";
 import { CaptureOrb } from "@/components/CaptureOrb";
 import { DropZone } from "@/components/DropZone";
@@ -141,6 +141,20 @@ export default function ScanPage() {
                     transition={{ duration: 0.22, ease: easeOut }}
                   >
                     {picking ? t("scan.pickHint") : t(`scan.modeHints.${mode}`)}
+                  </motion.p>
+                </AnimatePresence>
+                {/* How to frame the photo for this mode, before taking it. */}
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.p
+                    key={`framing-${mode}`}
+                    className={styles.framing}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2, ease: easeOut }}
+                  >
+                    <Lightbulb aria-hidden />
+                    {t(`scan.framing.${mode}`)}
                   </motion.p>
                 </AnimatePresence>
               </motion.div>
