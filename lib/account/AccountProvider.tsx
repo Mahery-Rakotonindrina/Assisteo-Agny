@@ -1,12 +1,16 @@
 import type { Session } from "@supabase/supabase-js";
+import Router from "next/router";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { pick } from "@/lib/account/pick";
 import { syncedSettingKeys, useSettings, type SyncedSettings } from "@/lib/settings/SettingsProvider";
 import { accountsAvailable, supabase } from "@/lib/supabase";
-import { onSessionChange, signOutAccount } from "@/services/account";
+import { deleteAccountOnServer, onSessionChange, signOutAccount } from "@/services/account";
 import { aiKeyStore } from "@/services/aiKeyStore";
 import { accountKeyApi } from "@/services/accountKeyApi";
+import { cancelAllNotifications } from "@/services/notifications";
+import { registerPush, unregisterPush } from "@/services/push";
 import { sync, type SyncStatus } from "@/services/sync";
+import { trialStore } from "@/services/trial";
 
 type AccountContextValue = {
   /** Accounts are configured for this build (Supabase env present). */
@@ -17,6 +21,8 @@ type AccountContextValue = {
   syncStatus: SyncStatus;
   syncNow: () => void;
   signOut: () => Promise<void>;
+  /** Deletes the account on the server, then wipes this device. Throws if the server refuses. */
+  deleteAccount: () => Promise<void>;
 };
 
 const AccountContext = createContext<AccountContextValue | null>(null);
@@ -40,7 +46,19 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   }, [settings]);
 
   useEffect(() => onSessionChange(setSession), []);
+
+  // The free trial is also counted per account: refresh it on sign-in and sign-out.
+  const sessionKnown = session !== undefined;
+  useEffect(() => {
+    if (sessionKnown) void trialStore.refresh();
+  }, [userId, sessionKnown]);
   useEffect(() => sync.subscribe(() => setSyncStatus(sync.status())), []);
+
+  // Reminder pushes on this device (Android builds with Firebase only).
+  useEffect(() => {
+    if (!userId) return;
+    void registerPush((entryId) => void Router.push({ pathname: "/result", query: { id: entryId } })).catch(() => undefined);
+  }, [userId]);
 
   // History.
   useEffect(() => {
@@ -114,11 +132,29 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   }, [userId]);
 
   const signOut = useCallback(async () => {
+    await unregisterPush().catch(() => undefined);
     await sync.now()?.catch(() => undefined);
     await sync.stop({ wipe: true });
     await aiKeyStore.clear({ fromSync: true });
     await signOutAccount();
   }, []);
+
+  const deleteAccount = useCallback(async () => {
+    // Stop pushing first so nothing is re-uploaded while the server deletes.
+    await sync.stop({ wipe: false });
+    await unregisterPush().catch(() => undefined);
+    try {
+      await deleteAccountOnServer();
+    } catch (error) {
+      if (userId) sync.start(userId);
+      throw error;
+    }
+    await sync.stop({ wipe: true });
+    await aiKeyStore.clear({ fromSync: true });
+    await cancelAllNotifications();
+    // The user no longer exists on the server: only forget the session here.
+    await signOutAccount().catch(() => undefined);
+  }, [userId]);
 
   const value = useMemo<AccountContextValue>(
     () => ({
@@ -128,8 +164,9 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       syncStatus,
       syncNow: () => void sync.now(),
       signOut,
+      deleteAccount,
     }),
-    [session, signOut, syncStatus],
+    [session, signOut, deleteAccount, syncStatus],
   );
 
   return <AccountContext.Provider value={value}>{children}</AccountContext.Provider>;

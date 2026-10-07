@@ -146,3 +146,25 @@
     }
   }
 }
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+
+  small {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+}
+
+.cardTitle {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.cardSubtitle {
+  margin-top: 0.2rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}

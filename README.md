@@ -149,6 +149,14 @@ Les origines Capacitor (`capacitor://localhost`, `https://localhost`) sont autor
 | `npm run cap:android` / `cap:ios` | Build mobile + `cap sync` + ouverture de l'IDE natif |
 | `npm run lint` / `typecheck` | ESLint / TypeScript |
 
+## E-mails de connexion
+
+Le modèle d’e-mail (code à 6 chiffres) est dans [`supabase/templates/sign-in-code.html`](supabase/templates/sign-in-code.html). Pour envoyer depuis ton propre domaine avec Resend au lieu de Gmail : [docs/emails.md](docs/emails.md).
+
+## Rappels en push
+
+Les rappels sont des notifications locales ; sur Android, un push serveur (Firebase) les livre aussi aux téléphones qui ne les ont pas encore programmés. Mise en place : [docs/push.md](docs/push.md).
+
 ## Confidentialité
 
 Les photos sont ré-encodées côté client (métadonnées EXIF supprimées), envoyées uniquement pour l'analyse, et ne sont pas stockées par le serveur. L'historique et les réglages restent sur l'appareil.

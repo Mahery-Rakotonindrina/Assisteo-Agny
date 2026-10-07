@@ -5,7 +5,9 @@ import { activeModel, activeProvider, analyzeImage, readOverride } from "@/lib/a
 import { AnalyzeRequestSchema, InstallIdSchema, installIdHeader, type AnalyzeResponse, type TrialState } from "@/lib/ai/schema";
 import { applyCors, clientIp, sendError } from "@/lib/server/http";
 import { rateLimit } from "@/lib/server/rateLimit";
-import { releaseTrialScan, reserveTrialScan } from "@/lib/server/trialStore";
+import { reportError } from "@/lib/server/reportError";
+import { verifyUser } from "@/lib/server/supabaseAdmin";
+import { releaseServerCall, releaseTrialScan, reserveServerCall, reserveTrialScan, type TrialSubject } from "@/lib/server/trialStore";
 
 export const config = {
   api: {
@@ -26,7 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     return sendError(res, 405, "method_not_allowed", "Use POST.");
   }
 
-  const limit = rateLimit(`analyze:${clientIp(req)}`, RATE_LIMIT.requests, RATE_LIMIT.windowMs);
+  const limit = await rateLimit(`analyze:${clientIp(req)}`, RATE_LIMIT.requests, RATE_LIMIT.windowMs);
   if (!limit.ok) {
     res.setHeader("Retry-After", String(limit.retryAfterS));
     return sendError(res, 429, "rate_limited", "Too many analyses, try again in a moment.");
@@ -54,18 +56,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   }
 
   // Without their own key, the user spends one of the free trial scans.
-  let trial: (TrialState & { installId: string; ip: string }) | null = null;
+  let trial: (TrialState & { subject: TrialSubject; ip: string }) | null = null;
   if (!override) {
     const installId = InstallIdSchema.safeParse(req.headers[installIdHeader]);
     if (!installId.success) {
       return sendError(res, 400, "invalid_request", "Missing install id: update the app.");
     }
     const ip = clientIp(req);
-    const usage = await reserveTrialScan(installId.data, ip);
+    // Signed in: the account's count applies too (an invalid token just counts as signed out).
+    const subject: TrialSubject = { installId: installId.data, userId: await verifyUser(req).catch(() => null) };
+    const usage = await reserveTrialScan(subject, ip);
     if (usage === null) {
       return sendError(res, 403, "trial_exhausted", "The free trial is over: add your own API key in Settings.");
     }
-    trial = { installId: installId.data, ip, ...usage };
+    if (!(await reserveServerCall())) {
+      await releaseTrialScan(subject, ip).catch(() => undefined);
+      return sendError(res, 503, "server_busy", "The free AI has reached today's limit: add your own API key or come back tomorrow.");
+    }
+    trial = { subject, ip, ...usage };
   }
 
   // Stop paying for tokens if the user cancels or leaves the screen.
@@ -87,19 +95,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     } satisfies AnalyzeResponse);
   } catch (error) {
     // A failed or cancelled analysis doesn't consume a trial scan.
-    if (trial) await releaseTrialScan(trial.installId, trial.ip).catch(() => undefined);
+    if (trial) await Promise.all([releaseTrialScan(trial.subject, trial.ip), releaseServerCall()]).catch(() => undefined);
     if (abort.signal.aborted) return;
     const engine = override ? `user-${override.provider}` : activeProvider;
     if (error instanceof AnalysisError) {
       // A rejected server key is a deployment problem, not something the user can fix.
       if (!override && error.code === "invalid_key") {
         console.error(`[analyze:${engine}] server key rejected`);
+        await reportError(error, { route: "analyze", engine, kind: "server_key_rejected" });
         return sendError(res, 503, "unavailable", "The AI service is not configured correctly.");
       }
-      if (error.status >= 500 || error.code === "billing") console.error(`[analyze:${engine}]`, error.message);
+      if (error.status >= 500 || error.code === "billing") {
+        console.error(`[analyze:${engine}]`, error.message);
+        // The user's own key failing is their business; the server's is ours.
+        if (!override) await reportError(error, { route: "analyze", engine, code: error.code });
+      }
       return sendError(res, error.status, error.code, error.message);
     }
     console.error(`[analyze:${engine}] unexpected`, error instanceof Error ? error.message : error);
+    await reportError(error, { route: "analyze", engine, kind: "unexpected" });
     return sendError(res, 500, "upstream_error", `Something went wrong (${activeModel}).`);
   }
 }

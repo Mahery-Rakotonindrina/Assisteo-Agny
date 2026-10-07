@@ -14,6 +14,8 @@ export type HistoryEntry = {
   meta: { model: string; demo: boolean; durationMs: number };
   /** Id of a scheduled local notification, if the user asked for a reminder. */
   reminderId?: number;
+  /** When this device's local notification fires (device-local, like reminderId). */
+  reminderScheduledAt?: number;
   reminderAt?: number;
   /** Follow-up conversation about this scan. */
   chat?: ChatEntry[];
@@ -27,4 +29,6 @@ export type HistoryEntry = {
   dirty?: boolean;
   /** Paths of the photos in the account's storage, once uploaded. */
   remote?: { preview: string; thumbnail: string };
+  /** The preview was reduced to the thumbnail here; the account's copy still has to be. */
+  compactRemote?: boolean;
 };

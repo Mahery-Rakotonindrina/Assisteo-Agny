@@ -5,4 +5,6 @@ export const config = {
   // Injected at build time by next.config.ts (see there for the sources).
   appVersion: process.env.NEXT_PUBLIC_APP_VERSION ?? "dev",
   appCommit: process.env.NEXT_PUBLIC_APP_COMMIT ?? "",
+  // Shown on the privacy policy and terms (required by the app stores).
+  contactEmail: process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "",
 } as const;

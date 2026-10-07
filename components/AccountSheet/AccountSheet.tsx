@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { ArrowLeft, Cloud, Loader2, Mail, X } from "lucide-react";
 import { Button } from "@/components/Button";
+import { LegalConsent } from "@/components/LegalConsent";
 import { useToast } from "@/components/Toast";
 import { useTranslation } from "@/hooks/useTranslation";
 import { easeOut, spring } from "@/lib/motion";
@@ -158,6 +159,7 @@ export function AccountSheet({ open, onClose }: AccountSheetProps) {
                     {t("account.sendCode")}
                   </Button>
                   <p className={styles.small}>{t("account.noPassword")}</p>
+                  <LegalConsent onNavigate={close} />
                 </motion.form>
               ) : (
                 <motion.div

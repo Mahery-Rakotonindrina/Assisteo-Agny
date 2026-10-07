@@ -72,7 +72,8 @@
     "billing": "The AI account has no credit left. Add credit at console.anthropic.com or switch back to demo mode.",
     "notImage": "This file isn’t an image.",
     "invalid_key": "Your API key was rejected. Check it in Settings → AI engine.",
-    "trial_exhausted": "Your free trial is over. Add your own API key in Settings → AI engine to continue."
+    "trial_exhausted": "Your free trial is over. Add your own API key in Settings → AI engine to continue.",
+    "server_busy": "The free AI has reached today's limit. Add your own key (Gemini is free) or come back tomorrow."
   },
   "categories": {
     "food": "Food",
@@ -175,7 +176,8 @@
     "haptics": "Haptic feedback",
     "hapticsHint": "Light vibrations on actions.",
     "data": "Data",
-    "storage": "{count} analyses stored locally",
+    "storage": "{count} analyses · {size} of photos on this device",
+    "storageHint": "To save space, only the {count} most recent analyses keep their full-size photo; older ones keep a smaller one.",
     "clearHistory": "Clear history",
     "clearConfirm": "Permanently delete every analysis?",
     "cleared": "History cleared",
@@ -185,7 +187,7 @@
     "aiDemo": "Demo (no API key)",
     "aiOffline": "Offline",
     "version": "Version",
-    "privacy": "Photos are sent only to be analysed and are not kept on the server. Your history stays on your device.",
+    "privacy": "Photos are sent to the AI for analysis and are not kept on our server. Without an account, history stays on your device.",
     "aiProvider": "Provider",
     "permissions": "Permissions",
     "permissionCamera": "Camera and photos",
@@ -302,7 +304,17 @@
     "saved": "Settings saved",
     "logout": "Log out",
     "askLimit": "Questions per day per device",
-    "askLimitHint": "Questions about a scan on the server’s AI. Unlimited with an own key."
+    "askLimitHint": "Questions about a scan on the server’s AI. Unlimited with an own key.",
+    "dailyLimit": "Global daily cap",
+    "dailyLimitHint": "Scans + questions on the server's key, all users together (0 = no cap). Today: {used}.",
+    "appTitle": "App versions",
+    "appSubtitle": "Block incompatible old versions or suggest the update.",
+    "minimum": "Minimum version",
+    "minimumHint": "Below it, the app is blocked until updated. Empty = none.",
+    "latest": "Latest version",
+    "latestHint": "Below it, a banner suggests updating. Empty = nothing.",
+    "downloadUrl": "Download link (https)",
+    "invalidVersion": "Expected format: 1.0.12"
   },
   "account": {
     "section": "Account",
@@ -334,6 +346,13 @@
     "signOut": "Sign out",
     "confirmSignOut": "Confirm sign-out",
     "signOutHint": "This device will be cleared (history and API key). Everything stays in your account and comes back when you sign in again.",
+    "delete": "Delete my account",
+    "deleteTitle": "Permanently delete your account?",
+    "deleteBody": "Your history, photos, settings and API key will be erased from our servers and from this device. This can't be undone.",
+    "deleteConfirm": "Delete permanently",
+    "deleting": "Deleting…",
+    "deleted": "Your account and data have been deleted.",
+    "deleteFailed": "Deletion failed. Check your connection and try again.",
     "errors": {
       "invalid_email": "This e-mail address isn’t valid.",
       "rate_limited": "Too many requests. Wait a minute before asking for a new code.",
@@ -409,5 +428,22 @@
         "What should I know?"
       ]
     }
+  },
+  "legal": {
+    "updated": "Last updated {date}",
+    "contactTitle": "Contact us",
+    "privacy": "Privacy policy",
+    "terms": "Terms of use",
+    "consent": "By continuing, you accept the {terms} and the {privacy}."
+  },
+  "update": {
+    "requiredTitle": "Update required",
+    "requiredBody": "This version of Assisteo Agny is no longer compatible. Install the new version to continue: your history is kept.",
+    "download": "Download the update",
+    "noLink": "Download the latest version from where you installed the app.",
+    "availableTitle": "Version {version} available",
+    "availableBody": "Improvements are waiting for you.",
+    "update": "Update",
+    "later": "Later"
   }
 }

@@ -26,7 +26,7 @@
   }
 }
 
-.group h2 {
+.group > h2 {
   @include eyebrow;
   margin: 0 0 0.6rem 0.25rem;
 }
@@ -166,4 +166,27 @@
     background: var(--danger-soft);
     color: var(--danger);
   }
+}
+
+.linkRow {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 1rem;
+  border-top: 1px solid var(--border);
+  color: var(--text);
+  transition: background 0.2s var(--ease-out);
+
+  > svg {
+    color: var(--text-subtle);
+  }
+
+  &:hover {
+    background: var(--surface);
+  }
+}
+
+.linkLabel {
+  flex: 1;
+  font-weight: 500;
 }

@@ -72,7 +72,8 @@
     "billing": "Le compte IA n’a plus de crédit. Ajoute du crédit sur console.anthropic.com ou repasse en mode démo.",
     "notImage": "Ce fichier n’est pas une image.",
     "invalid_key": "Ta clé API a été refusée. Vérifie-la dans Réglages → Moteur IA.",
-    "trial_exhausted": "Ton essai gratuit est terminé. Ajoute ta propre clé API dans Réglages → Moteur IA pour continuer."
+    "trial_exhausted": "Ton essai gratuit est terminé. Ajoute ta propre clé API dans Réglages → Moteur IA pour continuer.",
+    "server_busy": "L’IA gratuite a atteint sa limite du jour. Ajoute ta propre clé (Gemini est gratuit) ou reviens demain."
   },
   "categories": {
     "food": "Aliment",
@@ -175,7 +176,8 @@
     "haptics": "Retour haptique",
     "hapticsHint": "Vibrations légères lors des actions.",
     "data": "Données",
-    "storage": "{count} analyses stockées localement",
+    "storage": "{count} analyses · {size} de photos sur cet appareil",
+    "storageHint": "Pour gagner de la place, seules les {count} analyses les plus récentes gardent leur photo en grand ; les plus anciennes gardent une photo réduite.",
     "clearHistory": "Effacer l'historique",
     "clearConfirm": "Effacer définitivement toutes les analyses ?",
     "cleared": "Historique effacé",
@@ -185,7 +187,7 @@
     "aiDemo": "Démo (sans clé API)",
     "aiOffline": "Hors ligne",
     "version": "Version",
-    "privacy": "Les photos sont envoyées uniquement pour l'analyse et ne sont pas conservées sur le serveur. L'historique reste sur ton appareil.",
+    "privacy": "Les photos sont envoyées à l’IA pour l’analyse et ne sont pas conservées sur notre serveur. Sans compte, l’historique reste sur ton appareil.",
     "aiProvider": "Fournisseur",
     "permissions": "Autorisations",
     "permissionCamera": "Appareil photo et photos",
@@ -302,7 +304,17 @@
     "saved": "Réglages enregistrés",
     "logout": "Se déconnecter",
     "askLimit": "Questions par jour et par appareil",
-    "askLimitHint": "Questions sur un scan avec l’IA du serveur. Illimité avec sa propre clé."
+    "askLimitHint": "Questions sur un scan avec l’IA du serveur. Illimité avec sa propre clé.",
+    "dailyLimit": "Plafond global par jour",
+    "dailyLimitHint": "Scans + questions sur la clé du serveur, tous utilisateurs confondus (0 = illimité). Aujourd’hui : {used}.",
+    "appTitle": "Versions de l’app",
+    "appSubtitle": "Bloque les vieilles versions incompatibles ou propose la mise à jour.",
+    "minimum": "Version minimale",
+    "minimumHint": "En dessous, l’app est bloquée jusqu’à la mise à jour. Vide = aucune.",
+    "latest": "Dernière version",
+    "latestHint": "En dessous, un bandeau propose la mise à jour. Vide = rien.",
+    "downloadUrl": "Lien de téléchargement (https)",
+    "invalidVersion": "Format attendu : 1.0.12"
   },
   "account": {
     "section": "Compte",
@@ -334,6 +346,13 @@
     "signOut": "Se déconnecter",
     "confirmSignOut": "Confirmer la déconnexion",
     "signOutHint": "Cet appareil sera vidé (historique et clé API). Tout reste dans ton compte et revient quand tu te reconnectes.",
+    "delete": "Supprimer mon compte",
+    "deleteTitle": "Supprimer définitivement ton compte ?",
+    "deleteBody": "Ton historique, tes photos, tes réglages et ta clé API seront effacés de nos serveurs et de cet appareil. C’est irréversible.",
+    "deleteConfirm": "Supprimer définitivement",
+    "deleting": "Suppression…",
+    "deleted": "Ton compte et tes données ont été supprimés.",
+    "deleteFailed": "La suppression a échoué. Vérifie ta connexion et réessaie.",
     "errors": {
       "invalid_email": "Cette adresse e-mail n’est pas valide.",
       "rate_limited": "Trop de demandes. Patiente une minute avant de redemander un code.",
@@ -409,5 +428,22 @@
         "Qu’est-ce que je dois savoir ?"
       ]
     }
+  },
+  "legal": {
+    "updated": "Mise à jour le {date}",
+    "contactTitle": "Nous contacter",
+    "privacy": "Politique de confidentialité",
+    "terms": "Conditions d’utilisation",
+    "consent": "En continuant, tu acceptes les {terms} et la {privacy}."
+  },
+  "update": {
+    "requiredTitle": "Mise à jour nécessaire",
+    "requiredBody": "Cette version d’Assisteo Agny n’est plus compatible. Installe la nouvelle version pour continuer : ton historique est conservé.",
+    "download": "Télécharger la mise à jour",
+    "noLink": "Télécharge la dernière version depuis l’endroit où tu as installé l’app.",
+    "availableTitle": "Version {version} disponible",
+    "availableBody": "Des améliorations t’attendent.",
+    "update": "Mettre à jour",
+    "later": "Plus tard"
   }
 }

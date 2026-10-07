@@ -1,8 +1,9 @@
 import Head from "next/head";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { motion } from "motion/react";
 import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
-import { BellRing, Camera, Check, Cpu, Globe, Info, Moon, Monitor, Palette, RotateCcw, Send, Smartphone, Sun, Trash2, Vibrate, X } from "lucide-react";
+import { BellRing, Camera, Check, ChevronRight, Cpu, FileText, Globe, Info, Moon, Monitor, Palette, RotateCcw, Send, ShieldCheck, Smartphone, Sun, Trash2, Vibrate, X } from "lucide-react";
 import { AccountSettings } from "@/components/AccountSettings";
 import { AiKeySettings } from "@/components/AiKeySettings";
 import { Button } from "@/components/Button";
@@ -19,6 +20,7 @@ import { useSettings, type ThemePreference } from "@/lib/settings/SettingsProvid
 import { accountsAvailable } from "@/lib/supabase";
 import { isNative } from "@/services/device";
 import { historyStore } from "@/services/historyStore";
+import { entryPhotoBytes, FULL_PHOTOS_KEPT } from "@/services/photoStorage";
 import {
   getNotificationPermission,
   notify,
@@ -29,7 +31,7 @@ import { getPermission, requestPermission, type PermissionKind, type PermissionS
 import styles from "@/styles/Settings.module.scss";
 
 export default function SettingsPage() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const router = useRouter();
   const toast = useToast();
   const { settings, update } = useSettings();
@@ -206,7 +208,11 @@ export default function SettingsPage() {
         </Group>
 
         <Group title={t("settings.data")}>
-          <Row icon={<Smartphone />} label={t("settings.storage", { count: entries.length })} />
+          <Row
+            icon={<Smartphone />}
+            label={t("settings.storage", { count: entries.length, size: formatBytes(entries.reduce((total, entry) => total + entryPhotoBytes(entry), 0), locale) })}
+            hint={t("settings.storageHint", { count: FULL_PHOTOS_KEPT })}
+          />
           <div className={styles.rowAction}>
             <Button
               variant="danger"
@@ -235,6 +241,20 @@ export default function SettingsPage() {
           <Row icon={<Info />} label={t("settings.version")}>
             <span className={styles.value}>{appVersion}</span>
           </Row>
+          <Link href="/privacy" className={styles.linkRow}>
+            <span className={styles.rowIcon}>
+              <ShieldCheck />
+            </span>
+            <span className={styles.linkLabel}>{t("legal.privacy")}</span>
+            <ChevronRight size={16} />
+          </Link>
+          <Link href="/terms" className={styles.linkRow}>
+            <span className={styles.rowIcon}>
+              <FileText />
+            </span>
+            <span className={styles.linkLabel}>{t("legal.terms")}</span>
+            <ChevronRight size={16} />
+          </Link>
           <p className={styles.privacy}>{t("settings.privacy")}</p>
         </Group>
       </motion.div>
@@ -252,6 +272,14 @@ function Group({ id, title, children }: { id?: string; title: string; children: 
 }
 
 const noSubscribe = () => () => {};
+
+function formatBytes(bytes: number, locale: string) {
+  const [kb, mb] = locale === "fr" ? ["Ko", "Mo"] : ["KB", "MB"];
+  const megabytes = bytes / (1024 * 1024);
+  return megabytes >= 1
+    ? `${megabytes.toLocaleString(locale, { maximumFractionDigits: 1 })} ${mb}`
+    : `${Math.max(0, Math.round(bytes / 1024)).toLocaleString(locale)} ${kb}`;
+}
 
 type RowProps = {
   icon: ReactNode;

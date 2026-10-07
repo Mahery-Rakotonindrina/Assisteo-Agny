@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CloudOff, LogOut, RefreshCw, UserRound } from "lucide-react";
+import { CloudOff, LogOut, RefreshCw, Trash2, UserRound } from "lucide-react";
 import { AccountSheet } from "@/components/AccountSheet";
 import { Button } from "@/components/Button";
 import { useToast } from "@/components/Toast";
@@ -17,9 +17,11 @@ export function AccountSettings() {
   const { t } = useTranslation();
   const toast = useToast();
   const now = useNow(30_000);
-  const { session, email, syncStatus, syncNow, signOut } = useAccount();
+  const { session, email, syncStatus, syncNow, signOut, deleteAccount } = useAccount();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [confirmOut, setConfirmOut] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   if (session === undefined) return <div className={styles.wrap} aria-busy />;
 
@@ -97,6 +99,41 @@ export function AccountSettings() {
         </Button>
       </div>
       {confirmOut && <p className={styles.hint}>{t("account.signOutHint")}</p>}
+
+      {confirmDelete ? (
+        <div className={styles.danger} role="alertdialog" aria-labelledby="delete-account-title">
+          <strong id="delete-account-title">{t("account.deleteTitle")}</strong>
+          <p>{t("account.deleteBody")}</p>
+          <div className={styles.actions}>
+            <Button
+              variant="danger"
+              icon={<Trash2 />}
+              disabled={deleting}
+              onClick={async () => {
+                setDeleting(true);
+                try {
+                  await deleteAccount();
+                  toast(t("account.deleted"));
+                } catch {
+                  toast(t("account.deleteFailed"), "error");
+                } finally {
+                  setDeleting(false);
+                  setConfirmDelete(false);
+                }
+              }}
+            >
+              {deleting ? t("account.deleting") : t("account.deleteConfirm")}
+            </Button>
+            <Button variant="ghost" disabled={deleting} onClick={() => setConfirmDelete(false)}>
+              {t("common.cancel")}
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <button type="button" className={styles.deleteLink} onClick={() => setConfirmDelete(true)}>
+          {t("account.delete")}
+        </button>
+      )}
     </div>
   );
 }

@@ -91,3 +91,34 @@
     transform: rotate(360deg);
   }
 }
+
+.deleteLink {
+  align-self: flex-start;
+  font-size: 0.8rem;
+  color: var(--text-subtle);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+
+  &:hover {
+    color: var(--danger);
+  }
+}
+
+.danger {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.9rem;
+  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in srgb, var(--danger) 45%, transparent);
+  background: var(--danger-soft);
+
+  strong {
+    color: var(--danger);
+  }
+
+  p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+}

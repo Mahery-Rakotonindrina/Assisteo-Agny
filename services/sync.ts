@@ -104,9 +104,12 @@ async function applyRemote(row: Row) {
       chat: Array.isArray(row.chat) && row.chat.length > 0 ? row.chat : undefined,
       // Notifications are scheduled per device: keep this device's own one.
       reminderId: local?.reminderId,
+      reminderScheduledAt: local?.reminderScheduledAt,
       ...photos,
       updatedAt: remoteUpdated,
-      dirty: false,
+      // A pending remote shrink (see photoStorage) must survive this pull.
+      dirty: Boolean(local?.compactRemote),
+      compactRemote: local?.compactRemote,
       remote: { preview: row.preview_path!, thumbnail: row.thumbnail_path! },
     },
     { silent: true },
@@ -160,6 +163,13 @@ async function pushEntry(uid: string, entry: HistoryEntry) {
   }
 
   let remote = entry.remote;
+  if (remote && entry.compactRemote) {
+    // Old scan whose preview was reduced on this device: shrink the account's copy too.
+    const { error } = await db.storage
+      .from(BUCKET)
+      .upload(remote.preview, await dataUrlToBlob(entry.thumbnail), { contentType: "image/jpeg", upsert: true });
+    if (error) throw error;
+  }
   if (!remote) {
     const folder = `${uid}/${entry.id}`;
     remote = { preview: `${folder}/preview.jpg`, thumbnail: `${folder}/thumbnail.jpg` };
@@ -190,9 +200,9 @@ async function pushEntry(uid: string, entry: HistoryEntry) {
   // Only clear the flag if nothing changed locally while uploading.
   const latest = await historyStore.rawGet(entry.id);
   if (latest && (latest.updatedAt ?? 0) === (entry.updatedAt ?? 0)) {
-    await historyStore.rawPut({ ...latest, dirty: false, remote }, { silent: true });
+    await historyStore.rawPut({ ...latest, dirty: false, remote, compactRemote: undefined }, { silent: true });
   } else if (latest) {
-    await historyStore.rawPut({ ...latest, remote }, { silent: true });
+    await historyStore.rawPut({ ...latest, remote, compactRemote: undefined }, { silent: true });
   }
 }
 

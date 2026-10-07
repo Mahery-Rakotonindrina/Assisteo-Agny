@@ -195,7 +195,7 @@ export default function ScanPage() {
             )}
 
             <div className={styles.actions}>
-              {state.phase === "error" && state.error === "trial_exhausted" ? (
+              {state.phase === "error" && (state.error === "trial_exhausted" || state.error === "server_busy") ? (
                 <>
                   <Button size="lg" href={AI_SETTINGS_HREF} icon={<KeyRound />}>
                     {t("trial.addKey")}

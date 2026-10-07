@@ -6,6 +6,7 @@ import { useRouter } from "next/router";
 import { useEffect, useRef } from "react";
 import { useSettings } from "@/lib/settings/SettingsProvider";
 import { onNotificationTap } from "@/services/notifications";
+import { compactOldPhotos } from "@/services/photoStorage";
 
 /** One-time platform wiring: splash, status bar, Android back button, notification taps. */
 export function useNativeBootstrap() {
@@ -31,6 +32,9 @@ export function useNativeBootstrap() {
       // Web fallback UI for Camera.takePhoto (in-page camera modal).
       void import("@ionic/pwa-elements/loader").then(({ defineCustomElements }) => defineCustomElements(window));
     }
+
+    // Shrink the photos of old scans once per launch (see photoStorage).
+    void compactOldPhotos().catch(() => undefined);
 
     void onNotificationTap((entryId) => {
       void routerRef.current.push({ pathname: "/result", query: { id: entryId } });

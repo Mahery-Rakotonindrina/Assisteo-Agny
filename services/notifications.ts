@@ -58,6 +58,13 @@ export async function cancelNotification(id: number) {
   await LocalNotifications.cancel({ notifications: [{ id }] }).catch(() => undefined);
 }
 
+/** Cancels every pending notification (account deleted). */
+export async function cancelAllNotifications() {
+  if (!isSupported()) return;
+  const { notifications } = await LocalNotifications.getPending().catch(() => ({ notifications: [] }));
+  if (notifications.length) await LocalNotifications.cancel({ notifications: notifications.map(({ id }) => ({ id })) }).catch(() => undefined);
+}
+
 /** Calls back with the history entry id when a notification is tapped. */
 export async function onNotificationTap(handler: (entryId: string) => void) {
   const listener = await LocalNotifications.addListener("localNotificationActionPerformed", (action) => {

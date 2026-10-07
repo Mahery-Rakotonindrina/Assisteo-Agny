@@ -13,7 +13,9 @@ export const stagger: Variants = {
 
 export const rise: Variants = {
   hidden: { opacity: 0, y: 18, filter: "blur(6px)" },
-  show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.55, ease: easeOut } },
+  // Drop the filter once done: any filter makes position:fixed descendants
+  // (sheets opened from a section) position against the section, not the screen.
+  show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.55, ease: easeOut }, transitionEnd: { filter: "none" } },
 };
 
 export const pop: Variants = {

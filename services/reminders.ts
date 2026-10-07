@@ -2,6 +2,7 @@ import type { Analysis } from "@/lib/ai/schema";
 import type { HistoryEntry } from "@/types/history";
 import { historyStore } from "./historyStore";
 import { cancelNotification, getNotificationPermission, notify, requestNotificationPermission } from "./notifications";
+import { reportScheduledReminders } from "./push";
 
 // Reminders are local notifications, scheduled per device. The history keeps
 // the intended time (reminderAt, synced with the account); each device keeps
@@ -61,13 +62,13 @@ export async function scheduleReminder(entry: HistoryEntry, at: number, texts: T
   if (entry.reminderId) await cancelNotification(entry.reminderId);
   const reminderId = await notify({ ...texts, at: new Date(at), entryId: entry.id });
   if (reminderId === null) return false;
-  await historyStore.update(entry.id, { reminderId, reminderAt: at });
+  await historyStore.update(entry.id, { reminderId, reminderAt: at, reminderScheduledAt: at });
   return true;
 }
 
 export async function cancelReminder(entry: HistoryEntry) {
   if (entry.reminderId) await cancelNotification(entry.reminderId);
-  await historyStore.update(entry.id, { reminderId: undefined, reminderAt: undefined });
+  await historyStore.update(entry.id, { reminderId: undefined, reminderAt: undefined, reminderScheduledAt: undefined });
 }
 
 let reconciling: Promise<void> | null = null;
@@ -75,7 +76,7 @@ let reconciling: Promise<void> | null = null;
 /**
  * Brings this device's notifications in line with the history:
  * - insurance documents always get their 5-day notice;
- * - a reminder set on another device gets scheduled here too;
+ * - a reminder set (or moved) on another device gets scheduled here too;
  * - a reminder removed elsewhere is cancelled here.
  * Never prompts for permission: it only acts where notifications are allowed.
  */
@@ -91,17 +92,21 @@ export function reconcileReminders(texts: { insurance: (entry: HistoryEntry) => 
           continue;
         }
         const wanted = entry.reminderAt && entry.reminderAt > now ? entry.reminderAt : null;
-        if (wanted && !entry.reminderId) {
-          const reminderId = await notify({ ...texts.other(entry), at: new Date(wanted), entryId: entry.id });
-          // Device-local id only: rawPut keeps the entry's sync state untouched.
+        if (wanted && (!entry.reminderId || entry.reminderScheduledAt !== wanted)) {
+          if (entry.reminderId) await cancelNotification(entry.reminderId);
+          const text = forcedAt !== null ? texts.insurance(entry) : texts.other(entry);
+          const reminderId = await notify({ ...text, at: new Date(wanted), entryId: entry.id });
+          // Device-local fields only: rawPut keeps the entry's sync state untouched.
           const latest = await historyStore.rawGet(entry.id);
-          if (latest && reminderId !== null) await historyStore.rawPut({ ...latest, reminderId }, { silent: true });
+          if (latest && reminderId !== null) await historyStore.rawPut({ ...latest, reminderId, reminderScheduledAt: wanted }, { silent: true });
         } else if (!wanted && entry.reminderId) {
           await cancelNotification(entry.reminderId);
           const latest = await historyStore.rawGet(entry.id);
-          if (latest) await historyStore.rawPut({ ...latest, reminderId: undefined }, { silent: true });
+          if (latest) await historyStore.rawPut({ ...latest, reminderId: undefined, reminderScheduledAt: undefined }, { silent: true });
         }
       }
+      // The server pushes only the reminders this device doesn't hold.
+      await reportScheduledReminders().catch(() => undefined);
     } finally {
       reconciling = null;
     }

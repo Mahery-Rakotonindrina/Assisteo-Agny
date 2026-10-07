@@ -21,7 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   if (applyCors(req, res, ["GET", "PUT", "DELETE"])) return;
   if (!accountsEnabled) return sendError(res, 503, "unavailable", "Accounts are not configured.");
 
-  const limit = rateLimit(`account-key:${clientIp(req)}`, 30, 60_000);
+  const limit = await rateLimit(`account-key:${clientIp(req)}`, 30, 60_000);
   if (!limit.ok) return sendError(res, 429, "rate_limited", "Too many requests.");
 
   const userId = await verifyUser(req);

@@ -11,7 +11,8 @@ import {
 } from "@/lib/ai/schema";
 import { applyCors, clientIp, sendError } from "@/lib/server/http";
 import { rateLimit } from "@/lib/server/rateLimit";
-import { releaseAsk, reserveAsk } from "@/lib/server/trialStore";
+import { reportError } from "@/lib/server/reportError";
+import { releaseAsk, releaseServerCall, reserveAsk, reserveServerCall } from "@/lib/server/trialStore";
 
 export const config = {
   api: { bodyParser: { sizeLimit: "7mb" } },
@@ -31,7 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     return sendError(res, 405, "method_not_allowed", "Use POST.");
   }
 
-  const limit = rateLimit(`ask:${clientIp(req)}`, 30, 60_000);
+  const limit = await rateLimit(`ask:${clientIp(req)}`, 30, 60_000);
   if (!limit.ok) return sendError(res, 429, "rate_limited", "Too many questions, slow down a little.");
 
   const parsed = AskRequestSchema.safeParse(req.body);
@@ -54,6 +55,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     if (!(await reserveAsk(id.data))) {
       return sendError(res, 403, "ask_limit", "Today's questions on the server's AI are used up: add your own API key to continue.");
     }
+    if (!(await reserveServerCall())) {
+      await releaseAsk(id.data).catch(() => undefined);
+      return sendError(res, 503, "server_busy", "The free AI has reached today's limit: add your own API key or come back tomorrow.");
+    }
     installId = id.data;
   }
 
@@ -66,14 +71,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const { answer, model } = await askQuestion({ ...parsed.data, analysis: analysis.data }, abort.signal, override);
     return res.status(200).json({ answer, model, demo: false } satisfies AskResponse);
   } catch (error) {
-    if (installId) await releaseAsk(installId).catch(() => undefined);
+    if (installId) await Promise.all([releaseAsk(installId), releaseServerCall()]).catch(() => undefined);
     if (abort.signal.aborted) return;
     if (error instanceof AnalysisError) {
       if (!override && error.code === "invalid_key") return sendError(res, 503, "unavailable", "The AI service is not configured correctly.");
-      if (error.status >= 500) console.error(`[ask:${override ? `user-${override.provider}` : activeProvider}]`, error.message);
+      if (error.status >= 500) {
+        console.error(`[ask:${override ? `user-${override.provider}` : activeProvider}]`, error.message);
+        if (!override) await reportError(error, { route: "ask", engine: activeProvider, code: error.code });
+      }
       return sendError(res, error.status, error.code, error.message);
     }
     console.error("[ask] unexpected", error instanceof Error ? error.message : error);
+    await reportError(error, { route: "ask", kind: "unexpected" });
     return sendError(res, 500, "upstream_error", "Something went wrong.");
   }
 }

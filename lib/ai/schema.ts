@@ -251,6 +251,8 @@ export type ApiErrorCode =
   | "invalid_key"
   | "trial_exhausted"
   | "ask_limit"
+  /** The server's daily AI budget is spent (all users together). */
+  | "server_busy"
   | "method_not_allowed";
 
 export type ApiErrorBody = {
