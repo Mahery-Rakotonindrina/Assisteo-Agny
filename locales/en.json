@@ -21,12 +21,14 @@
       "auto": "Auto",
       "food": "Food",
       "document": "Document",
+      "vehicle": "Vehicle",
       "object": "Object"
     },
     "modeHints": {
       "auto": "The AI figures out what's in the photo on its own.",
       "food": "Estimated nutrition, storage tips and recipe ideas.",
       "document": "Key points, important dates and things to do.",
+      "vehicle": "Prices, specs, maintenance and what to watch for.",
       "object": "Identification, care, usage and value."
     },
     "capture": "Take a photo",
@@ -77,7 +79,8 @@
     "document": "Document",
     "object": "Object",
     "plant": "Plant",
-    "other": "Other"
+    "other": "Other",
+    "vehicle": "Vehicle"
   },
   "result": {
     "confidence": "Confidence",
@@ -129,7 +132,15 @@
       "easy": "Easy",
       "medium": "Medium",
       "hard": "Hard"
-    }
+    },
+    "vehicle": "Vehicle",
+    "vehiclePriceNew": "New price",
+    "vehiclePriceUsed": "Used",
+    "vehiclePriceNote": "Rough ranges estimated by the AI: prices vary with country, year and condition.",
+    "vehicleSpecs": "Specs",
+    "vehicleMaintenance": "Maintenance",
+    "vehicleTips": "Tips",
+    "vehicleWatchOuts": "Watch out for"
   },
   "history": {
     "title": "History",
@@ -289,7 +300,9 @@
     "ipLimitHint": "Over 30 days, against abuse (repeated reinstalls).",
     "save": "Save",
     "saved": "Settings saved",
-    "logout": "Log out"
+    "logout": "Log out",
+    "askLimit": "Questions per day per device",
+    "askLimitHint": "Questions about a scan on the server’s AI. Unlimited with an own key."
   },
   "account": {
     "section": "Account",
@@ -328,6 +341,73 @@
       "expired_code": "This code has expired. Ask for a new one.",
       "network": "No connection. Check your network.",
       "unavailable": "Sign-in isn’t available right now."
+    }
+  },
+  "reminders": {
+    "title": "Set a reminder",
+    "editTitle": "Change the reminder",
+    "inOneHour": "In 1 hour",
+    "tonight": "Tonight",
+    "tomorrowEvening": "Tomorrow evening",
+    "tomorrowMorning": "Tomorrow morning",
+    "nextWeek": "In a week",
+    "aiSuggestion": "AI suggestion",
+    "date": "Date",
+    "time": "Time",
+    "willFire": "The reminder will arrive on {date}.",
+    "past": "Pick a moment in the future.",
+    "invalid": "Invalid date or time.",
+    "schedule": "Set reminder",
+    "update": "Update reminder",
+    "cancel": "Remove reminder",
+    "defaultBody": "You asked to be reminded about this.",
+    "insuranceTitle": "Insurance: {name}",
+    "insuranceBody": "Your insurance expires on {date}, in {days} days. Remember to renew it.",
+    "insuranceNotice": "Automatic reminder on {date}, {days} days before the {expiry} expiry. It can’t be turned off.",
+    "enableInsurance": "Turn on the insurance reminder",
+    "forcedLabel": "Automatic insurance reminder on {date}"
+  },
+  "chat": {
+    "title": "A question about this scan?",
+    "intro": "Ask anything: the AI looks at the photo and its analysis again to answer.",
+    "placeholder": "Ask your question…",
+    "send": "Send",
+    "thinking": "The AI is thinking",
+    "retry": "Try again",
+    "clear": "Clear the conversation",
+    "confirmClear": "Confirm clearing",
+    "limit": "You’ve used all of today’s questions on the server’s AI. Add your own API key to continue, or come back tomorrow.",
+    "suggestions": {
+      "food": [
+        "How long does it keep?",
+        "A lighter version?",
+        "What goes well with it?"
+      ],
+      "document": [
+        "Summarise this document",
+        "What do I need to do, and by when?",
+        "Is anything unusual?"
+      ],
+      "vehicle": [
+        "How much is maintenance per year?",
+        "What should I check before buying?",
+        "What’s the fuel use in town?"
+      ],
+      "object": [
+        "How do I take care of it?",
+        "What’s it worth second-hand?",
+        "How do I use it?"
+      ],
+      "plant": [
+        "How often should I water it?",
+        "Why are its leaves turning yellow?",
+        "Is it toxic to my cat?"
+      ],
+      "other": [
+        "What is it exactly?",
+        "How does it work?",
+        "What should I know?"
+      ]
     }
   }
 }

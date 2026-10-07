@@ -21,12 +21,14 @@
       "auto": "Auto",
       "food": "Aliment",
       "document": "Document",
+      "vehicle": "Véhicule",
       "object": "Objet"
     },
     "modeHints": {
       "auto": "L'IA détecte toute seule ce qu'il y a sur la photo.",
       "food": "Nutrition estimée, conservation et idées de recettes.",
       "document": "Points clés, dates importantes et actions à faire.",
+      "vehicle": "Prix, caractéristiques, entretien et points à surveiller.",
       "object": "Identification, entretien, usage et valeur."
     },
     "capture": "Prendre une photo",
@@ -77,7 +79,8 @@
     "document": "Document",
     "object": "Objet",
     "plant": "Plante",
-    "other": "Autre"
+    "other": "Autre",
+    "vehicle": "Véhicule"
   },
   "result": {
     "confidence": "Confiance",
@@ -129,7 +132,15 @@
       "easy": "Facile",
       "medium": "Moyen",
       "hard": "Difficile"
-    }
+    },
+    "vehicle": "Véhicule",
+    "vehiclePriceNew": "Prix neuf",
+    "vehiclePriceUsed": "Occasion",
+    "vehiclePriceNote": "Ordres de grandeur estimés par l’IA : les prix varient selon le pays, l’année et l’état.",
+    "vehicleSpecs": "Caractéristiques",
+    "vehicleMaintenance": "Entretien",
+    "vehicleTips": "Conseils",
+    "vehicleWatchOuts": "Points à surveiller"
   },
   "history": {
     "title": "Historique",
@@ -289,7 +300,9 @@
     "ipLimitHint": "Sur 30 jours, contre les abus (réinstallations en boucle).",
     "save": "Enregistrer",
     "saved": "Réglages enregistrés",
-    "logout": "Se déconnecter"
+    "logout": "Se déconnecter",
+    "askLimit": "Questions par jour et par appareil",
+    "askLimitHint": "Questions sur un scan avec l’IA du serveur. Illimité avec sa propre clé."
   },
   "account": {
     "section": "Compte",
@@ -328,6 +341,73 @@
       "expired_code": "Ce code a expiré. Demande-en un nouveau.",
       "network": "Pas de connexion. Vérifie ton réseau.",
       "unavailable": "La connexion n’est pas disponible pour le moment."
+    }
+  },
+  "reminders": {
+    "title": "Programmer un rappel",
+    "editTitle": "Modifier le rappel",
+    "inOneHour": "Dans 1 heure",
+    "tonight": "Ce soir",
+    "tomorrowEvening": "Demain soir",
+    "tomorrowMorning": "Demain matin",
+    "nextWeek": "Dans une semaine",
+    "aiSuggestion": "Suggestion de l’IA",
+    "date": "Date",
+    "time": "Heure",
+    "willFire": "Le rappel arrivera le {date}.",
+    "past": "Choisis un moment dans le futur.",
+    "invalid": "Date ou heure invalide.",
+    "schedule": "Programmer le rappel",
+    "update": "Modifier le rappel",
+    "cancel": "Supprimer le rappel",
+    "defaultBody": "Tu m’as demandé de te le rappeler.",
+    "insuranceTitle": "Assurance : {name}",
+    "insuranceBody": "Ton assurance arrive à échéance le {date}, dans {days} jours. Pense à la renouveler.",
+    "insuranceNotice": "Rappel automatique le {date}, {days} jours avant l’échéance du {expiry}. Il ne peut pas être désactivé.",
+    "enableInsurance": "Activer le rappel d’assurance",
+    "forcedLabel": "Rappel d’assurance automatique le {date}"
+  },
+  "chat": {
+    "title": "Une question sur ce scan ?",
+    "intro": "Demande ce que tu veux : l’IA revoit la photo et son analyse pour te répondre.",
+    "placeholder": "Pose ta question…",
+    "send": "Envoyer",
+    "thinking": "L’IA réfléchit",
+    "retry": "Réessayer",
+    "clear": "Effacer la conversation",
+    "confirmClear": "Confirmer l’effacement",
+    "limit": "Tu as utilisé toutes tes questions du jour avec l’IA du serveur. Ajoute ta propre clé API pour continuer, ou reviens demain.",
+    "suggestions": {
+      "food": [
+        "Combien de temps ça se conserve ?",
+        "Une version plus légère ?",
+        "Avec quoi l’accompagner ?"
+      ],
+      "document": [
+        "Résume-moi ce document",
+        "Qu’est-ce que je dois faire et avant quand ?",
+        "Y a-t-il quelque chose d’inhabituel ?"
+      ],
+      "vehicle": [
+        "Combien coûte l’entretien par an ?",
+        "Quoi vérifier avant de l’acheter ?",
+        "Quelle consommation en ville ?"
+      ],
+      "object": [
+        "Comment l’entretenir ?",
+        "Combien ça vaut d’occasion ?",
+        "Comment s’en servir ?"
+      ],
+      "plant": [
+        "À quelle fréquence l’arroser ?",
+        "Pourquoi ses feuilles jaunissent ?",
+        "Est-ce toxique pour mon chat ?"
+      ],
+      "other": [
+        "Qu’est-ce que c’est exactement ?",
+        "Comment ça marche ?",
+        "Qu’est-ce que je dois savoir ?"
+      ]
     }
   }
 }

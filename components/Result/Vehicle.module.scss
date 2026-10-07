@@ -1,0 +1,161 @@
+@use "../../styles/mixins" as *;
+
+.vehicle {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  h3 {
+    @include display(1.6rem);
+  }
+
+  p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+}
+
+.icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--cat-vehicle) 16%, transparent);
+  color: var(--cat-vehicle);
+}
+
+.prices {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.5rem;
+}
+
+.price {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--cat-vehicle) 10%, transparent);
+
+  small {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--cat-vehicle);
+  }
+
+  strong {
+    font-size: 1.05rem;
+    line-height: 1.3;
+  }
+}
+
+.estimate {
+  margin-top: -0.6rem;
+  font-size: 0.75rem;
+  color: var(--text-subtle);
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+
+  h4 {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0;
+    font-size: 0.95rem;
+
+    svg {
+      color: var(--cat-vehicle);
+    }
+  }
+}
+
+.specs {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+
+  div {
+    padding: 0.6rem 0.75rem;
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+  }
+
+  dt {
+    font-size: 0.72rem;
+    color: var(--text-subtle);
+  }
+
+  dd {
+    margin: 0.1rem 0 0;
+    font-weight: 600;
+  }
+}
+
+.maintenance {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  overflow: hidden;
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.65rem 0.85rem;
+    font-size: 0.92rem;
+
+    & + li {
+      border-top: 1px solid var(--border);
+    }
+  }
+}
+
+.interval {
+  flex-shrink: 0;
+  max-width: 50%;
+  text-align: right;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.bullets {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.92rem;
+
+  li::marker {
+    color: var(--cat-vehicle);
+  }
+}
+
+.watch {
+  padding: 0.75rem 0.85rem;
+  border-radius: var(--radius-sm);
+  background: var(--danger-soft);
+
+  h4 svg,
+  li::marker {
+    color: var(--danger);
+  }
+}

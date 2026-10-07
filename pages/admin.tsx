@@ -1,7 +1,7 @@
 import Head from "next/head";
 import { motion } from "motion/react";
 import { useEffect, useState, type FormEvent } from "react";
-import { Gift, LockKeyhole, LogOut, Minus, Plus, Save, ShieldAlert, Wifi } from "lucide-react";
+import { Gift, LockKeyhole, LogOut, MessageCircle, Minus, Plus, Save, ShieldAlert, Wifi } from "lucide-react";
 import { Button } from "@/components/Button";
 import { useToast } from "@/components/Toast";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -30,6 +30,7 @@ export default function AdminPage() {
   const [config, setConfig] = useState<AdminTrialResponse | null>(null);
   const [limit, setLimit] = useState(7);
   const [ipLimit, setIpLimit] = useState(20);
+  const [askLimit, setAskLimit] = useState(20);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -42,6 +43,7 @@ export default function AdminPage() {
     setConfig(result);
     setLimit(result.limit);
     setIpLimit(result.ipLimit);
+    setAskLimit(result.askLimit);
     setToken(value);
     try {
       sessionStorage.setItem(TOKEN_KEY, value);
@@ -80,7 +82,7 @@ export default function AdminPage() {
     event.preventDefault();
     setSaving(true);
     try {
-      const result = await httpClient.put<AdminTrialResponse>("/api/admin/trial", { limit, ipLimit }, { headers: headers(token) });
+      const result = await httpClient.put<AdminTrialResponse>("/api/admin/trial", { limit, ipLimit, askLimit }, { headers: headers(token) });
       setConfig(result);
       toast(t("admin.saved"));
     } catch {
@@ -101,7 +103,7 @@ export default function AdminPage() {
     setDraftToken("");
   };
 
-  const dirty = config !== null && (config.limit !== limit || config.ipLimit !== ipLimit);
+  const dirty = config !== null && (config.limit !== limit || config.ipLimit !== ipLimit || config.askLimit !== askLimit);
 
   return (
     <>
@@ -166,6 +168,16 @@ export default function AdminPage() {
               min={1}
               max={100000}
               onChange={setIpLimit}
+            />
+
+            <Stepper
+              icon={<MessageCircle size={18} />}
+              label={t("admin.askLimit")}
+              hint={t("admin.askLimitHint")}
+              value={askLimit}
+              min={0}
+              max={1000}
+              onChange={setAskLimit}
             />
 
             <Button type="submit" block icon={<Save />} disabled={!dirty || saving}>

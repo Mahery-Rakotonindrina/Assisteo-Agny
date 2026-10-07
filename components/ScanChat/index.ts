@@ -1,0 +1,1 @@
+export { ScanChat } from "./ScanChat";

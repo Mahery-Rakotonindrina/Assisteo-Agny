@@ -52,6 +52,7 @@ const food: Record<Locale, Analysis> = {
       tip: "Prépare les pois chiches en double : ils se gardent 3 jours en bocal et font un super snack.",
     },
     document: null,
+    vehicle: null,
     reminder: { title: "Salade au frigo", body: "Pense à finir ta salade avant demain soir.", delayHours: 24 },
   },
   en: {
@@ -100,6 +101,7 @@ const food: Record<Locale, Analysis> = {
       tip: "Make a double batch of chickpeas: they keep for 3 days in a jar and make a great snack.",
     },
     document: null,
+    vehicle: null,
     reminder: { title: "Salad in the fridge", body: "Remember to finish your salad before tomorrow night.", delayHours: 24 },
   },
 };
@@ -128,7 +130,10 @@ const documentScan: Record<Locale, Analysis> = {
       keyPoints: ["Paiement par prélèvement", "Consommation en légère baisse", "Abonnement 6 kVA"],
       dates: [{ label: "Échéance", date: "15 octobre" }],
       actionItems: ["Vérifier le solde du compte avant le prélèvement"],
+      expiresOn: null,
+      isInsurance: false,
     },
+    vehicle: null,
     reminder: { title: "Facture d'électricité", body: "Le prélèvement de 84,20 € arrive bientôt.", delayHours: 72 },
   },
   en: {
@@ -154,7 +159,10 @@ const documentScan: Record<Locale, Analysis> = {
       keyPoints: ["Paid by direct debit", "Usage slightly down", "6 kVA subscription"],
       dates: [{ label: "Due date", date: "October 15" }],
       actionItems: ["Check the account balance before the debit"],
+      expiresOn: null,
+      isInsurance: false,
     },
+    vehicle: null,
     reminder: { title: "Electricity bill", body: "The €84.20 direct debit is coming up.", delayHours: 72 },
   },
 };
@@ -180,6 +188,7 @@ const objectScan: Record<Locale, Analysis> = {
     nutrition: null,
     recipe: null,
     document: null,
+    vehicle: null,
     reminder: { title: "Arroser le Monstera", body: "Vérifie la terre et arrose si elle est sèche.", delayHours: 168 },
   },
   en: {
@@ -202,13 +211,120 @@ const objectScan: Record<Locale, Analysis> = {
     nutrition: null,
     recipe: null,
     document: null,
+    vehicle: null,
     reminder: { title: "Water the Monstera", body: "Check the soil and water if it is dry.", delayHours: 168 },
+  },
+};
+
+const vehicleScan: Record<Locale, Analysis> = {
+  fr: {
+    category: "vehicle",
+    title: "Toyota Corolla Hybride",
+    summary:
+      "Une berline compacte Toyota Corolla hybride de 12e génération, reconnaissable à sa calandre et ses optiques. C'est une voiture réputée fiable et sobre en ville. Les prix ci-dessous sont des ordres de grandeur.",
+    confidence: 0.84,
+    tags: ["voiture", "hybride", "toyota", "berline"],
+    facts: [
+      { label: "Génération", value: "E210 (2019–2024)" },
+      { label: "Carburant", value: "Essence hybride" },
+      { label: "Consommation", value: "≈ 4,5 L/100 km" },
+    ],
+    suggestions: [
+      { kind: "tip", title: "Roule souvent en ville", detail: "C'est là que l'hybride consomme le moins : le moteur électrique prend le relais." },
+      { kind: "warning", title: "Contrôle la batterie auxiliaire", detail: "Une batterie 12 V faible empêche le démarrage du système hybride." },
+    ],
+    nutrition: null,
+    recipe: null,
+    document: null,
+    vehicle: {
+      make: "Toyota",
+      model: "Corolla Hybride",
+      generation: "E210 (2019–2024)",
+      kind: "Berline compacte",
+      priceNew: "30 000 – 38 000 €",
+      priceUsed: "15 000 – 24 000 € selon l'année et le kilométrage",
+      specs: [
+        { label: "Moteur", value: "1.8 L hybride" },
+        { label: "Puissance", value: "122 ch" },
+        { label: "Boîte", value: "Automatique e-CVT" },
+        { label: "Consommation", value: "4,3 – 5 L/100 km" },
+        { label: "Places", value: "5" },
+        { label: "Coffre", value: "361 L" },
+      ],
+      maintenance: [
+        { task: "Vidange moteur", interval: "15 000 km ou 1 an" },
+        { task: "Filtre à air d'habitacle", interval: "15 000 km ou 1 an" },
+        { task: "Liquide de frein", interval: "Tous les 2 ans" },
+        { task: "Contrôle du système hybride", interval: "À chaque révision" },
+      ],
+      tips: [
+        "Garde la garantie hybride active en faisant les révisions dans le réseau.",
+        "Nettoie la grille d'aération de la batterie hybride sous la banquette arrière.",
+      ],
+      watchOuts: [
+        "Avant d'acheter, demande l'historique d'entretien complet.",
+        "Vérifie l'état de la batterie 12 V et l'absence de voyant hybride.",
+      ],
+    },
+    reminder: { title: "Révision de la Corolla", body: "Pense à vérifier la date de ta prochaine révision.", delayHours: 720 },
+  },
+  en: {
+    category: "vehicle",
+    title: "Toyota Corolla Hybrid",
+    summary:
+      "A 12th-generation Toyota Corolla hybrid compact saloon, recognisable by its grille and lights. It has a reputation for reliability and low fuel use in town. Prices below are rough ranges.",
+    confidence: 0.84,
+    tags: ["car", "hybrid", "toyota", "saloon"],
+    facts: [
+      { label: "Generation", value: "E210 (2019–2024)" },
+      { label: "Fuel", value: "Petrol hybrid" },
+      { label: "Consumption", value: "≈ 4.5 L/100 km" },
+    ],
+    suggestions: [
+      { kind: "tip", title: "Drive in town", detail: "That's where the hybrid uses the least fuel: the electric motor takes over." },
+      { kind: "warning", title: "Check the auxiliary battery", detail: "A weak 12 V battery stops the hybrid system from starting." },
+    ],
+    nutrition: null,
+    recipe: null,
+    document: null,
+    vehicle: {
+      make: "Toyota",
+      model: "Corolla Hybrid",
+      generation: "E210 (2019–2024)",
+      kind: "Compact saloon",
+      priceNew: "€30,000 – €38,000",
+      priceUsed: "€15,000 – €24,000 depending on year and mileage",
+      specs: [
+        { label: "Engine", value: "1.8 L hybrid" },
+        { label: "Power", value: "122 hp" },
+        { label: "Gearbox", value: "Automatic e-CVT" },
+        { label: "Consumption", value: "4.3 – 5 L/100 km" },
+        { label: "Seats", value: "5" },
+        { label: "Boot", value: "361 L" },
+      ],
+      maintenance: [
+        { task: "Oil change", interval: "15,000 km or 1 year" },
+        { task: "Cabin air filter", interval: "15,000 km or 1 year" },
+        { task: "Brake fluid", interval: "Every 2 years" },
+        { task: "Hybrid system check", interval: "At every service" },
+      ],
+      tips: [
+        "Keep the hybrid warranty active by servicing at the dealer network.",
+        "Clean the hybrid battery air vent under the rear seat.",
+      ],
+      watchOuts: [
+        "Before buying, ask for the full service history.",
+        "Check the 12 V battery and that no hybrid warning light is on.",
+      ],
+    },
+    reminder: { title: "Corolla service", body: "Remember to check when your next service is due.", delayHours: 720 },
   },
 };
 
 const byMode: Record<Exclude<ScanMode, "auto">, Record<Locale, Analysis>> = {
   food,
   document: documentScan,
+  vehicle: vehicleScan,
   object: objectScan,
 };
 
@@ -216,7 +332,7 @@ let autoCursor = 0;
 
 export function mockAnalysis(mode: ScanMode, locale: Locale): Analysis {
   if (mode !== "auto") return byMode[mode][locale];
-  const pool = [food, documentScan, objectScan];
+  const pool = [food, documentScan, vehicleScan, objectScan];
   const pick = pool[autoCursor % pool.length];
   autoCursor += 1;
   return pick[locale];

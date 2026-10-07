@@ -7,11 +7,19 @@ import { Redis } from "@upstash/redis";
 // The limits are runtime settings (editable from /admin without redeploying);
 // the environment only provides their defaults.
 
-export type TrialConfig = { limit: number; ipLimit: number };
+export type TrialConfig = {
+  /** Free scans per install on the server's key. */
+  limit: number;
+  /** Ceiling per IP over 30 days, against repeated reinstalls. */
+  ipLimit: number;
+  /** Follow-up questions per install per day on the server's key. */
+  askLimit: number;
+};
 
 const defaults: TrialConfig = {
   limit: Number(process.env.TRIAL_SCANS ?? 7),
   ipLimit: Number(process.env.TRIAL_SCANS_PER_IP ?? 20),
+  askLimit: Number(process.env.ASK_PER_DAY ?? 20),
 };
 const IP_WINDOW_S = 30 * 24 * 3600;
 const CONFIG_KEY = "config:trial";
@@ -116,6 +124,24 @@ export async function reserveTrialScan(installId: string, ip: string) {
     return null;
   }
   return { used, limit };
+}
+
+// Questions about a scan: a daily allowance per install, reset at midnight UTC.
+const askKey = (installId: string) => `ask:${installId}:${new Date().toISOString().slice(0, 10)}`;
+
+/** Books one follow-up question; null when today's allowance is used up. */
+export async function reserveAsk(installId: string) {
+  const { askLimit } = await getTrialConfig();
+  const used = await store.incr(askKey(installId), 2 * 24 * 3600);
+  if (used > askLimit) {
+    await store.decr(askKey(installId));
+    return null;
+  }
+  return { used, limit: askLimit };
+}
+
+export async function releaseAsk(installId: string) {
+  await store.decr(askKey(installId));
 }
 
 export async function releaseTrialScan(installId: string, ip: string) {

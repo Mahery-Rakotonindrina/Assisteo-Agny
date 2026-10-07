@@ -1,7 +1,7 @@
 import type { IncomingHttpHeaders } from "node:http";
-import { analyzeWithClaude, CLAUDE_MODEL, listClaudeModels, verifyClaudeKey, type EngineOptions } from "./claude";
-import { analyzeWithGemini, GEMINI_MODEL, listGeminiModels, verifyGeminiKey } from "./gemini";
-import { analyzeWithOpenAICompatible, listOpenAICompatibleModels, verifyOpenAICompatibleKey } from "./openaiCompatible";
+import { analyzeWithClaude, askWithClaude, CLAUDE_MODEL, listClaudeModels, verifyClaudeKey, type EngineOptions } from "./claude";
+import { analyzeWithGemini, askWithGemini, GEMINI_MODEL, listGeminiModels, verifyGeminiKey } from "./gemini";
+import { analyzeWithOpenAICompatible, askWithOpenAICompatible, listOpenAICompatibleModels, verifyOpenAICompatibleKey } from "./openaiCompatible";
 import {
   AiOverrideSchema,
   overrideHeaders,
@@ -9,6 +9,7 @@ import {
   type AiProvider,
   type Analysis,
   type AnalyzeRequest,
+  type AskRequest,
   type ListModelsRequest,
 } from "./schema";
 
@@ -78,6 +79,23 @@ export function analyzeImage(input: AnalyzeRequest, signal?: AbortSignal, overri
   }
   if (activeProvider === "demo") throw new Error("analyzeImage called in demo mode.");
   return serverEngines[activeProvider].analyze(input, signal);
+}
+
+/** Answers a follow-up question with the user's own key when given, else the server's engine. */
+export function askQuestion(input: AskRequest, signal?: AbortSignal, override?: AiOverride | null) {
+  if (override) {
+    switch (override.provider) {
+      case "claude":
+        return askWithClaude(input, signal, override);
+      case "gemini":
+        return askWithGemini(input, signal, override);
+      case "openai":
+        return askWithOpenAICompatible(input, signal, override);
+    }
+  }
+  if (activeProvider === "claude") return askWithClaude(input, signal);
+  if (activeProvider === "gemini") return askWithGemini(input, signal);
+  throw new Error("askQuestion called in demo mode.");
 }
 
 export function verifyKey(override: AiOverride) {

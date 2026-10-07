@@ -41,7 +41,8 @@
     height: 3.6rem;
     padding: 0 0.25rem;
     border-radius: 18px;
-    font-size: 0.78rem;
+    // Five options must still fit a 360 px phone.
+    font-size: clamp(0.7rem, 2.3vw, 0.78rem);
   }
 
   .label {

@@ -1,8 +1,8 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { AnalysisError } from "./errors";
-import { buildUserPrompt, SYSTEM_PROMPT } from "./prompt";
-import { AnalysisSchema, type Analysis, type AnalyzeRequest } from "./schema";
+import { ASK_SYSTEM_PROMPT, buildAskContext, buildUserPrompt, SYSTEM_PROMPT } from "./prompt";
+import { AnalysisSchema, type Analysis, type AnalyzeRequest, type AskRequest } from "./schema";
 
 export const CLAUDE_MODEL = process.env.ANTHROPIC_MODEL ?? "claude-opus-5-5";
 
@@ -90,6 +90,54 @@ export async function verifyClaudeKey(apiKey: string, model: string) {
   } catch (error) {
     throw toAnalysisError(error, model);
   }
+}
+
+/** Answers a follow-up question about a scan; the photo goes with the first question. */
+export async function askWithClaude(
+  input: AskRequest,
+  signal?: AbortSignal,
+  options: EngineOptions = {},
+): Promise<{ answer: string; model: string }> {
+  const model = options.model ?? CLAUDE_MODEL;
+  const messages: Anthropic.Beta.BetaMessageParam[] = input.messages.map((message, index) =>
+    index === 0
+      ? {
+          role: "user",
+          content: [
+            { type: "image", source: { type: "base64", media_type: input.mediaType, data: input.image } },
+            { type: "text", text: buildAskContext(input.analysis, input.locale) + message.content },
+          ],
+        }
+      : { role: message.role, content: message.content },
+  );
+
+  let response;
+  try {
+    response = await getClient(options.apiKey).beta.messages.create(
+      {
+        model,
+        max_tokens: 4000,
+        ...(supportsFallbacks(model) && { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const }),
+        // Conversation replies favour speed over depth.
+        ...(supportsEffort(model) && { output_config: { effort: "low" as const } }),
+        system: [{ type: "text", text: ASK_SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
+        messages,
+      },
+      { signal },
+    );
+  } catch (error) {
+    throw toAnalysisError(error, model);
+  }
+
+  if (response.stop_reason === "refusal") {
+    throw new AnalysisError("refused", 422, response.stop_details?.explanation ?? "The model declined this question.");
+  }
+  const answer = response.content
+    .map((block) => (block.type === "text" ? block.text : ""))
+    .join("")
+    .trim();
+  if (!answer) throw new AnalysisError("upstream_error", 502, `Empty answer (stop_reason: ${response.stop_reason}).`);
+  return { answer, model: response.model };
 }
 
 export async function listClaudeModels(apiKey: string) {
