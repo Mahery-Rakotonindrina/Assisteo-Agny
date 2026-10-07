@@ -1,9 +1,10 @@
 // Shared mixins, imported with `@use "../../styles/mixins" as *;`.
 
 @mixin card {
-  background: var(--surface);
+  background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
+  box-shadow: var(--card-shadow);
 }
 
 @mixin glass {

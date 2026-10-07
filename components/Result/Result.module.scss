@@ -24,7 +24,7 @@
 // ---- Confidence -----------------------------------------------------------
 
 .confidenceBadge {
-  --level: var(--accent);
+  --level: var(--accent-mark);
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
@@ -124,7 +124,7 @@
   width: 0.4rem;
   height: 0.4rem;
   border-radius: 50%;
-  background: var(--accent);
+  background: var(--accent-mark);
 
   .tabActive & {
     background: var(--accent-ink);

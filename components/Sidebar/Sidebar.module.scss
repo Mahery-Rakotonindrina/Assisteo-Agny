@@ -138,7 +138,7 @@
   color: var(--text-muted);
 
   &[data-status="live"] {
-    --dot: var(--accent);
+    --dot: var(--accent-mark);
   }
 
   &[data-status="demo"] {

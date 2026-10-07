@@ -41,7 +41,7 @@
   transition: border-color 0.2s var(--ease-out);
 
   &:focus-within {
-    border-color: var(--accent);
+    border-color: var(--accent-mark);
   }
 
   input {
@@ -254,7 +254,7 @@
   color: var(--text-muted);
 
   &:hover {
-    border-color: var(--accent);
+    border-color: var(--accent-mark);
     color: var(--text);
   }
 }

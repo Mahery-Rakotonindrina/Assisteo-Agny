@@ -93,7 +93,7 @@
   color: var(--text-subtle);
 
   &:focus-within {
-    border-color: var(--accent);
+    border-color: var(--accent-mark);
   }
 
   input {
@@ -123,7 +123,7 @@
   padding-left: 0.45em;
 
   &:focus {
-    border-color: var(--accent);
+    border-color: var(--accent-mark);
   }
 }
 
