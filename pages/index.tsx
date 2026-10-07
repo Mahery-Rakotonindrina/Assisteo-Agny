@@ -9,6 +9,7 @@ import { CaptureOrb } from "@/components/CaptureOrb";
 import { DropZone } from "@/components/DropZone";
 import { HistoryItem } from "@/components/HistoryItem";
 import { ScanStage } from "@/components/ScanStage";
+import { ScanWait } from "@/components/ScanWait";
 import { SegmentedControl } from "@/components/SegmentedControl";
 import { AI_SETTINGS_HREF, TrialOver, TrialPill } from "@/components/Trial";
 import { useAiStatus } from "@/hooks/useAiStatus";
@@ -53,6 +54,7 @@ export default function ScanPage() {
   const trial = useTrial();
   const recent = entries.slice(0, isDesktop ? 4 : 3);
   const busy = state.phase === "preparing" || state.phase === "analyzing";
+  const ModeIcon = modeIcons[mode];
 
   // Pasting an image anywhere on the screen starts an analysis.
   useEffect(() => {
@@ -199,6 +201,10 @@ export default function ScanPage() {
                 scanning={busy}
               />
             ) : null}
+
+            {state.phase === "analyzing" && (
+              <ScanWait mode={mode} modeIcon={<ModeIcon />} startedAt={state.startedAt} />
+            )}
 
             {state.phase === "error" && (
               <motion.div

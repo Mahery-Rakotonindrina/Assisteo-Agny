@@ -57,7 +57,36 @@
     "how1": "Pick the kind of subject, or let the AI guess.",
     "how2": "Drop, paste or snap your image.",
     "how3": "Get facts, tips and reminders, saved to your history.",
-    "pickHint": "First choose what you’re photographing, then retake the photo."
+    "pickHint": "First choose what you’re photographing, then retake the photo.",
+    "elapsed": "{seconds} seconds elapsed",
+    "slow": "The AI is in high demand right now: a few more seconds…",
+    "tips": {
+      "auto": [
+        "A well-lit photo gets better answers: avoid shooting against the light.",
+        "Fill the frame with the subject, with little background.",
+        "After the analysis, ask your questions in the Question tab."
+      ],
+      "food": [
+        "Photograph the whole plate, from above.",
+        "A fork or a hand next to it helps the AI estimate the portion.",
+        "Every food analysis comes with a recipe."
+      ],
+      "document": [
+        "Lay the document flat, well lit, without glare.",
+        "Frame the whole page: due dates are often at the bottom.",
+        "For insurance, a reminder is set 5 days before it expires."
+      ],
+      "vehicle": [
+        "From the front three-quarters, the grille and lights help recognise the model.",
+        "The badge and headlight shape are the best clues.",
+        "From the result, you can set a maintenance reminder."
+      ],
+      "object": [
+        "Show the whole object, on a plain background.",
+        "A visible label or brand makes the answer more precise.",
+        "For a plant, photograph the leaves up close."
+      ]
+    }
   },
   "errors": {
     "title": "The analysis didn't go through",

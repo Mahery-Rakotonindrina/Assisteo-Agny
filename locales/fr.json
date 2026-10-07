@@ -57,7 +57,36 @@
     "how1": "Choisis le type de sujet, ou laisse l’IA deviner.",
     "how2": "Dépose, colle ou photographie ton image.",
     "how3": "Reçois infos, conseils et rappels, gardés dans ton historique.",
-    "pickHint": "Choisis d’abord ce que tu photographies, puis reprends la photo."
+    "pickHint": "Choisis d’abord ce que tu photographies, puis reprends la photo.",
+    "elapsed": "{seconds} secondes écoulées",
+    "slow": "L’IA est très demandée en ce moment : encore quelques secondes…",
+    "tips": {
+      "auto": [
+        "Une photo bien éclairée donne de meilleures réponses : évite le contre-jour.",
+        "Remplis le cadre avec le sujet, sans trop d’arrière-plan.",
+        "Après l’analyse, pose tes questions dans l’onglet Question."
+      ],
+      "food": [
+        "Photographie l’assiette entière, vue de dessus.",
+        "Une fourchette ou une main à côté aide l’IA à estimer la portion.",
+        "Chaque aliment analysé est accompagné d’une recette."
+      ],
+      "document": [
+        "Pose le document à plat, bien éclairé, sans reflet.",
+        "Cadre la page entière : les dates d’échéance sont souvent en bas.",
+        "Pour une assurance, un rappel est programmé 5 jours avant l’échéance."
+      ],
+      "vehicle": [
+        "De trois quarts avant, la calandre et les feux aident à reconnaître le modèle.",
+        "Le logo et la forme des phares sont les meilleurs indices.",
+        "Depuis le résultat, tu peux programmer un rappel d’entretien."
+      ],
+      "object": [
+        "Montre l’objet en entier, sur un fond simple.",
+        "Une étiquette ou une marque visible rend la réponse plus précise.",
+        "Pour une plante, photographie les feuilles de près."
+      ]
+    }
   },
   "errors": {
     "title": "L'analyse n'a pas abouti",
