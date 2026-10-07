@@ -200,7 +200,8 @@
     "uncertainTitle": "The AI isn’t sure",
     "uncertainBody": "A sharper, well-lit photo, or the right scan type, gives a better answer.",
     "retake": "Retake the photo",
-    "pickType": "Choose the type"
+    "pickType": "Choose the type",
+    "openPhoto": "Enlarge the photo"
   },
   "history": {
     "title": "History",
@@ -562,5 +563,9 @@
     "skip": "Send without saying",
     "thanks": "Thanks! Your feedback helps improve the answers.",
     "error": "Couldn’t send your feedback right now. Try again later."
+  },
+  "photo": {
+    "close": "Close the photo",
+    "hint": "Pinch or double-tap to zoom · swipe down to close"
   }
 }

@@ -15,6 +15,7 @@ import {
   Hash,
   ListChecks,
   Lock,
+  Maximize2,
   MessageCircle,
   Plus,
   Share2,
@@ -26,6 +27,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/Button";
 import { CategoryBadge } from "@/components/CategoryBadge";
+import { PhotoViewer } from "@/components/PhotoViewer";
 import { ReminderSheet } from "@/components/ReminderSheet";
 import { ScanChat } from "@/components/ScanChat";
 import {
@@ -118,6 +120,25 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
   const barRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
+  // The full-screen photo is part of the URL (?photo=1), so the phone's back
+  // button closes it instead of leaving the page.
+  const photoOpen = router.query.photo === "1";
+  const openedPhotoHere = useRef(false);
+  const openPhoto = () => {
+    haptics.tap();
+    openedPhotoHere.current = true;
+    void router.push({ pathname: router.pathname, query: { ...router.query, photo: "1" } }, undefined, { shallow: true, scroll: false });
+  };
+  const closePhoto = () => {
+    if (openedPhotoHere.current) {
+      openedPhotoHere.current = false;
+      router.back();
+      return;
+    }
+    const query = { ...router.query };
+    delete query.photo;
+    void router.replace({ pathname: router.pathname, query }, undefined, { shallow: true, scroll: false });
+  };
   const titleRef = useRef<HTMLHeadingElement>(null);
 
   // Mobile top bar: see-through over the photo, solid once the photo has
@@ -292,8 +313,13 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element -- local data URL */}
-            <img src={entry.preview} alt={analysis.title} />
+            <button type="button" className={styles.heroOpen} onClick={openPhoto} aria-label={t("result.openPhoto")}>
+              {/* eslint-disable-next-line @next/next/no-img-element -- local data URL */}
+              <img src={entry.preview} alt={analysis.title} />
+            </button>
+            <span className={styles.heroZoom} aria-hidden>
+              <Maximize2 size={16} />
+            </span>
             <motion.div className={styles.heroBadge} variants={pop}>
               <CategoryBadge category={analysis.category} variant="glass" />
             </motion.div>
@@ -407,6 +433,8 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
           </motion.div>
         )}
       </AnimatePresence>
+
+      <PhotoViewer src={entry.preview} alt={analysis.title} open={photoOpen} onClose={closePhoto} />
 
       <ReminderSheet
         key={sheetKey}

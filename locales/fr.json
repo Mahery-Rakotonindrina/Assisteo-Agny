@@ -200,7 +200,8 @@
     "uncertainTitle": "L’IA n’est pas sûre d’elle",
     "uncertainBody": "Une photo plus nette et bien éclairée, ou le bon type de scan, donne une meilleure réponse.",
     "retake": "Reprendre la photo",
-    "pickType": "Préciser le type"
+    "pickType": "Préciser le type",
+    "openPhoto": "Agrandir la photo"
   },
   "history": {
     "title": "Historique",
@@ -562,5 +563,9 @@
     "skip": "Envoyer sans préciser",
     "thanks": "Merci ! Ton avis aide à améliorer les réponses.",
     "error": "Impossible d’envoyer ton avis pour l’instant. Réessaie plus tard."
+  },
+  "photo": {
+    "close": "Fermer la photo",
+    "hint": "Pince ou touche deux fois pour zoomer · glisse vers le bas pour fermer"
   }
 }
