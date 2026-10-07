@@ -1,0 +1,12 @@
+.consent {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--text-subtle);
+  text-align: center;
+
+  a {
+    color: var(--text-muted);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+}

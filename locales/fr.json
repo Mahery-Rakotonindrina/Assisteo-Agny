@@ -185,7 +185,7 @@
     "aiDemo": "Démo (sans clé API)",
     "aiOffline": "Hors ligne",
     "version": "Version",
-    "privacy": "Les photos sont envoyées uniquement pour l'analyse et ne sont pas conservées sur le serveur. L'historique reste sur ton appareil.",
+    "privacy": "Les photos sont envoyées à l’IA pour l’analyse et ne sont pas conservées sur notre serveur. Sans compte, l’historique reste sur ton appareil.",
     "aiProvider": "Fournisseur",
     "permissions": "Autorisations",
     "permissionCamera": "Appareil photo et photos",
@@ -416,5 +416,12 @@
         "Qu’est-ce que je dois savoir ?"
       ]
     }
+  },
+  "legal": {
+    "updated": "Mise à jour le {date}",
+    "contactTitle": "Nous contacter",
+    "privacy": "Politique de confidentialité",
+    "terms": "Conditions d’utilisation",
+    "consent": "En continuant, tu acceptes les {terms} et la {privacy}."
   }
 }

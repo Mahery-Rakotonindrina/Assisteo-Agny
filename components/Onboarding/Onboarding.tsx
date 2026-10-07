@@ -1,3 +1,4 @@
+import { useRouter } from "next/router";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState, type ReactNode } from "react";
 import { BellRing, Camera, Check, ShieldCheck, Sparkles, X } from "lucide-react";
@@ -17,6 +18,8 @@ const permissionIcons: Record<PermissionKind, ReactNode> = {
   notifications: <BellRing size={40} strokeWidth={1.8} />,
 };
 
+const legalRoutes = new Set(["/privacy", "/terms"]);
+
 /**
  * First-run walkthrough on phones: explains each device permission and asks
  * for it before the app ever needs it. Skips what is already granted or what
@@ -25,7 +28,9 @@ const permissionIcons: Record<PermissionKind, ReactNode> = {
 export function Onboarding() {
   const { settings, ready, update } = useSettings();
   const isDesktop = useIsDesktop();
-  const active = ready && !settings.onboardingDone && !isDesktop;
+  const { pathname } = useRouter();
+  // Legal pages are opened from the stores and links: never cover them.
+  const active = ready && !settings.onboardingDone && !isDesktop && !legalRoutes.has(pathname);
   const [steps, setSteps] = useState<Step[] | null>(null);
 
   useEffect(() => {

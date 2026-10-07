@@ -63,7 +63,7 @@
     @include display(2rem);
   }
 
-  > p:not(.error):not(.small) {
+  > p:not([class]) {
     color: var(--text-muted);
     font-size: 0.92rem;
   }

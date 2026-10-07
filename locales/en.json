@@ -185,7 +185,7 @@
     "aiDemo": "Demo (no API key)",
     "aiOffline": "Offline",
     "version": "Version",
-    "privacy": "Photos are sent only to be analysed and are not kept on the server. Your history stays on your device.",
+    "privacy": "Photos are sent to the AI for analysis and are not kept on our server. Without an account, history stays on your device.",
     "aiProvider": "Provider",
     "permissions": "Permissions",
     "permissionCamera": "Camera and photos",
@@ -416,5 +416,12 @@
         "What should I know?"
       ]
     }
+  },
+  "legal": {
+    "updated": "Last updated {date}",
+    "contactTitle": "Contact us",
+    "privacy": "Privacy policy",
+    "terms": "Terms of use",
+    "consent": "By continuing, you accept the {terms} and the {privacy}."
   }
 }

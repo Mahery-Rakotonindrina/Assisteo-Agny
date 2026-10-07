@@ -1,0 +1,1 @@
+export { LegalConsent } from "./LegalConsent";
