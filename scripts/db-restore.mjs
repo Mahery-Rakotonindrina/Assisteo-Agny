@@ -48,7 +48,7 @@ if (jsonIndex >= 0) {
 if (flags.includes("--apply")) {
   const url = process.env.POSTGRES_URL_NON_POOLING ?? process.env.POSTGRES_URL;
   if (!url) throw new Error("Set POSTGRES_URL_NON_POOLING to apply.");
-  const keys = { analyses: ["user_id", "id"], user_settings: ["user_id"], user_ai_keys: ["user_id"], push_devices: ["user_id", "device_id"] };
+  const keys = { analyses: ["user_id", "id"], user_settings: ["user_id"], user_ai_keys: ["user_id"], push_devices: ["user_id", "device_id"], parcels: ["user_id", "id"] };
   const client = new pg.Client({ connectionString: url.replace(/[?&]sslmode=[^&]*/, ""), ssl: { rejectUnauthorized: false } });
   await client.connect();
   try {
