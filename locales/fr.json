@@ -519,7 +519,9 @@
     "contactTitle": "Nous contacter",
     "privacy": "Politique de confidentialité",
     "terms": "Conditions d’utilisation",
-    "consent": "En continuant, tu acceptes les {terms} et la {privacy}."
+    "consent": "En continuant, tu acceptes les {terms} et la {privacy}.",
+    "publisherTitle": "Éditeur et contact",
+    "publishedBy": "Assisteo Agny est édité à titre personnel par {name}."
   },
   "update": {
     "requiredTitle": "Mise à jour nécessaire",

@@ -519,7 +519,9 @@
     "contactTitle": "Contact us",
     "privacy": "Privacy policy",
     "terms": "Terms of use",
-    "consent": "By continuing, you accept the {terms} and the {privacy}."
+    "consent": "By continuing, you accept the {terms} and the {privacy}.",
+    "publisherTitle": "Publisher and contact",
+    "publishedBy": "Assisteo Agny is published privately by {name}."
   },
   "update": {
     "requiredTitle": "Update required",
