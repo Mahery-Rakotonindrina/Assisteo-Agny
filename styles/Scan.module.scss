@@ -257,3 +257,39 @@
 .trial {
   margin-top: 1rem;
 }
+
+// Coming back from an uncertain result: point at the type picker.
+.modesPick :global([role="radiogroup"]) {
+  animation: pick-pulse 1.6s var(--ease-out) 3;
+}
+
+@keyframes pick-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+  40% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 45%, transparent);
+  }
+}
+
+.modeHintPick {
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+// Most phones, and especially when a trial or demo banner takes room: keep
+// the photo and import buttons above the tab bar. Tall phones keep the big orb.
+@media (max-width: 1023px) and (max-height: 900px) {
+  .idle {
+    gap: 1.2rem;
+  }
+
+  .headline {
+    font-size: 2.2rem;
+  }
+
+  .orb {
+    --orb-size: 140px;
+  }
+}

@@ -1,11 +1,12 @@
-$size: 176px;
+// Overridable by the page (smaller on short phones).
+$size: var(--orb-size, 176px);
 
 .wrap {
   position: relative;
   display: grid;
   place-items: center;
-  width: $size + 80px;
-  height: $size + 80px;
+  width: calc(#{$size} + 80px);
+  height: calc(#{$size} + 80px);
 }
 
 .halo {

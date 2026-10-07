@@ -56,7 +56,8 @@
     "how": "Comment ça marche",
     "how1": "Choisis le type de sujet, ou laisse l’IA deviner.",
     "how2": "Dépose, colle ou photographie ton image.",
-    "how3": "Reçois infos, conseils et rappels, gardés dans ton historique."
+    "how3": "Reçois infos, conseils et rappels, gardés dans ton historique.",
+    "pickHint": "Choisis d’abord ce que tu photographies, puis reprends la photo."
   },
   "errors": {
     "title": "L'analyse n'a pas abouti",
@@ -109,7 +110,6 @@
     "delete": "Supprimer",
     "deleted": "Analyse supprimée",
     "newScan": "Nouvelle analyse",
-    "demo": "Exemple · démo",
     "analyzedIn": "Analysé en {seconds} s",
     "notFound": "Analyse introuvable",
     "notFoundHint": "Elle a peut-être été supprimée de cet appareil.",
@@ -141,7 +141,30 @@
     "vehicleSpecs": "Caractéristiques",
     "vehicleMaintenance": "Entretien",
     "vehicleTips": "Conseils",
-    "vehicleWatchOuts": "Points à surveiller"
+    "vehicleWatchOuts": "Points à surveiller",
+    "tabs": {
+      "label": "Sections de l’analyse",
+      "overview": "Résumé",
+      "nutrition": "Nutrition",
+      "recipe": "Recette",
+      "vehicle": "Véhicule",
+      "document": "Document",
+      "chat": "Question"
+    },
+    "ask": "Poser une question",
+    "askShort": "Question",
+    "remindShort": "Rappel",
+    "remindMaintenance": "Rappel d’entretien",
+    "deleteConfirm": "Supprimer ?",
+    "confidenceLevels": {
+      "high": "Identification sûre",
+      "medium": "Identification probable",
+      "low": "Identification incertaine"
+    },
+    "uncertainTitle": "L’IA n’est pas sûre d’elle",
+    "uncertainBody": "Une photo plus nette et bien éclairée, ou le bon type de scan, donne une meilleure réponse.",
+    "retake": "Reprendre la photo",
+    "pickType": "Préciser le type"
   },
   "history": {
     "title": "Historique",

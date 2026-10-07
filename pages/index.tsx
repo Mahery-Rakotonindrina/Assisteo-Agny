@@ -1,5 +1,6 @@
 import Head from "next/head";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { Apple, ArrowRight, Box, Car, FileText, FlaskConical, ImageUp, KeyRound, RotateCcw, Sparkles, X } from "lucide-react";
@@ -27,9 +28,24 @@ function greetingKey() {
   return hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening";
 }
 
+function isMode(value: unknown): value is ScanMode {
+  return typeof value === "string" && value in modeIcons;
+}
+
 export default function ScanPage() {
   const { t, list } = useTranslation();
+  const router = useRouter();
   const [mode, setMode] = useState<ScanMode>("auto");
+  // "Retake the photo" from an uncertain result comes back with ?mode=…, and
+  // "Choose the type" with ?pick=1 (the mode picker is highlighted until used).
+  const queryMode = router.isReady && isMode(router.query.mode) ? router.query.mode : null;
+  const [appliedQueryMode, setAppliedQueryMode] = useState<ScanMode | null>(null);
+  if (queryMode && queryMode !== appliedQueryMode) {
+    setAppliedQueryMode(queryMode);
+    setMode(queryMode);
+  }
+  const [picked, setPicked] = useState(false);
+  const picking = router.isReady && router.query.pick === "1" && !picked;
   const { state, start, startWithFile, retry, reset, canRetry } = useScan(mode);
   const { entries } = useHistory();
   const aiStatus = useAiStatus();
@@ -94,12 +110,15 @@ export default function ScanPage() {
                 </motion.div>
               )}
 
-              <motion.div variants={rise} className={styles.modes}>
+              <motion.div variants={rise} className={`${styles.modes} ${picking ? styles.modesPick : ""}`}>
                 <SegmentedControl
                   size="lg"
                   ariaLabel="Mode"
                   value={mode}
-                  onChange={setMode}
+                  onChange={(next) => {
+                    setMode(next);
+                    setPicked(true);
+                  }}
                   options={(Object.keys(modeIcons) as ScanMode[]).map((value) => {
                     const Icon = modeIcons[value];
                     return { value, label: t(`scan.modes.${value}`), icon: <Icon /> };
@@ -107,14 +126,14 @@ export default function ScanPage() {
                 />
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.p
-                    key={mode}
-                    className={styles.modeHint}
+                    key={picking ? "pick" : mode}
+                    className={`${styles.modeHint} ${picking ? styles.modeHintPick : ""}`}
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}
                     transition={{ duration: 0.22, ease: easeOut }}
                   >
-                    {t(`scan.modeHints.${mode}`)}
+                    {picking ? t("scan.pickHint") : t(`scan.modeHints.${mode}`)}
                   </motion.p>
                 </AnimatePresence>
               </motion.div>

@@ -71,30 +71,18 @@
   }
 }
 
+// Wraps onto a second line rather than hiding filters off-screen.
 .filters {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.4rem;
-  margin: 0 -1.25rem;
-  padding: 0 1.25rem;
-  overflow-x: auto;
-  scrollbar-width: none;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
-
-  @include desktop {
-    margin: 0;
-    padding: 0;
-    flex-wrap: wrap;
-  }
 }
 
 .chip {
   position: relative;
   flex-shrink: 0;
-  height: 2.2rem;
-  padding: 0 0.9rem;
+  height: 2.1rem;
+  padding: 0 0.8rem;
   border-radius: var(--radius-pill);
   border: 1px solid var(--border);
   font-size: 0.85rem;

@@ -1,12 +1,13 @@
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { motion } from "motion/react";
-import { useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import {
   ArrowLeft,
   Bell,
   BellRing,
   CalendarDays,
+  Camera,
   Car,
   ClipboardList,
   CookingPot,
@@ -17,15 +18,27 @@ import {
   MessageCircle,
   Plus,
   Share2,
+  SlidersHorizontal,
   Sparkles,
   Trash2,
+  TriangleAlert,
   Utensils,
 } from "lucide-react";
 import { Button } from "@/components/Button";
 import { CategoryBadge } from "@/components/CategoryBadge";
 import { ReminderSheet } from "@/components/ReminderSheet";
 import { ScanChat } from "@/components/ScanChat";
-import { ConfidenceMeter, NutritionCard, RecipeCard, Section, SuggestionList, VehicleCard } from "@/components/Result";
+import {
+  ConfidenceBadge,
+  confidenceLevel,
+  NutritionCard,
+  RecipeCard,
+  ResultTabs,
+  Section,
+  SuggestionList,
+  VehicleCard,
+  type ResultTab,
+} from "@/components/Result";
 import { useToast } from "@/components/Toast";
 import { useHistoryEntry } from "@/hooks/useHistory";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
@@ -33,13 +46,19 @@ import { useNow } from "@/hooks/useNow";
 import { useReminderTexts } from "@/hooks/useReminderTexts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDateTime, formatDay } from "@/lib/format";
-import { pop, rise, spring, stagger } from "@/lib/motion";
+import { easeOut, pop, rise, spring, stagger } from "@/lib/motion";
 import { haptics, shareText } from "@/services/device";
 import { historyStore } from "@/services/historyStore";
 import { cancelNotification } from "@/services/notifications";
 import { cancelReminder, expiryDate, INSURANCE_NOTICE_DAYS, insuranceReminderAt, scheduleReminder } from "@/services/reminders";
 import type { HistoryEntry } from "@/types/history";
 import styles from "@/styles/Result.module.scss";
+
+type TabId = "overview" | "nutrition" | "recipe" | "vehicle" | "document" | "chat";
+type Action = "reminder" | "question";
+
+/** Gap between the header and the tabs (the .content flex gap). */
+const CONTENT_GAP = 16;
 
 export default function ResultPage() {
   const router = useRouter();
@@ -80,9 +99,88 @@ function ResultView({ entry, onBack }: { entry: HistoryEntry; onBack: () => void
   const forcedAt = insuranceReminderAt(analysis, now);
   const isDesktop = useIsDesktop();
   const reminderTexts = useReminderTexts();
+  const level = confidenceLevel(analysis.confidence);
+  const tabsId = useId();
+
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetKey, setSheetKey] = useState(0);
-  const hasReminder = true;
+  const [tab, setTab] = useState<TabId>("overview");
+  const [composerFocused, setComposerFocused] = useState(false);
+  const [barSolid, setBarSolid] = useState(false);
+  const [barTitled, setBarTitled] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const barRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+
+  // Mobile top bar: see-through over the photo, solid once the photo has
+  // scrolled away (so its buttons never sit on text), and showing the title
+  // once the page title has passed under it.
+  useEffect(() => {
+    const hero = heroRef.current;
+    const title = titleRef.current;
+    if (!hero || !title || isDesktop) return;
+    const barHeight = barRef.current?.offsetHeight ?? 64;
+    const above = (item: IntersectionObserverEntry) => !item.isIntersecting && item.boundingClientRect.top < barHeight;
+    // The photo counts as gone a little before it fully leaves: its bottom fades into the page.
+    const heroObserver = new IntersectionObserver(([item]) => setBarSolid(above(item)), {
+      rootMargin: `-${barHeight + 48}px 0px 0px 0px`,
+    });
+    const titleObserver = new IntersectionObserver(([item]) => setBarTitled(above(item)), { rootMargin: `-${barHeight}px 0px 0px 0px` });
+    heroObserver.observe(hero);
+    titleObserver.observe(title);
+    return () => {
+      heroObserver.disconnect();
+      titleObserver.disconnect();
+    };
+  }, [isDesktop]);
+
+  // A tap on delete asks for a second tap; the question goes away on its own.
+  useEffect(() => {
+    if (!confirmDelete) return;
+    const timer = setTimeout(() => setConfirmDelete(false), 4000);
+    return () => clearTimeout(timer);
+  }, [confirmDelete]);
+
+  const tabs = [
+    { id: "overview", label: t("result.tabs.overview"), icon: <Sparkles /> },
+    analysis.nutrition && { id: "nutrition", label: t("result.tabs.nutrition"), icon: <Utensils /> },
+    analysis.recipe && { id: "recipe", label: t("result.tabs.recipe"), icon: <CookingPot /> },
+    analysis.vehicle && { id: "vehicle", label: t("result.tabs.vehicle"), icon: <Car /> },
+    analysis.document && { id: "document", label: t("result.tabs.document"), icon: <FileText /> },
+    { id: "chat", label: t("result.tabs.chat"), icon: <MessageCircle />, dot: (entry.chat?.length ?? 0) > 0 },
+  ].filter(Boolean) as ResultTab[];
+
+  const changeTab = (next: TabId) => {
+    setTab(next);
+    // Once the tabs are stuck at the top, show the new panel from its start.
+    const header = headerRef.current;
+    if (!header) return;
+    const offset = isDesktop ? 16 : (barRef.current?.offsetHeight ?? 64);
+    const top = header.getBoundingClientRect().bottom + window.scrollY + CONTENT_GAP - offset;
+    if (window.scrollY > top) window.scrollTo({ top, behavior: "instant" });
+  };
+
+  const openQuestion = () => {
+    haptics.tap();
+    changeTab("chat");
+    // After the panel has mounted.
+    setTimeout(() => document.getElementById(`chat-${entry.id}`)?.focus({ preventScroll: false }), 320);
+  };
+
+  // What people most likely want next: a reminder for documents, vehicles and
+  // plants that need care; otherwise asking about what they just scanned.
+  const reminderFirst =
+    forcedAt !== null ||
+    reminderActive ||
+    analysis.category === "document" ||
+    analysis.category === "vehicle" ||
+    (analysis.category === "plant" && analysis.reminder !== null);
+  const actions = ((reminderFirst ? ["reminder", "question"] : ["question", "reminder"]) as Action[]).filter(
+    // The question tab has its own composer.
+    (action) => !(action === "question" && tab === "chat"),
+  );
 
   const share = async () => {
     haptics.tap();
@@ -144,16 +242,42 @@ function ResultView({ entry, onBack }: { entry: HistoryEntry; onBack: () => void
         <title>{`${analysis.title} · ${t("meta.title")}`}</title>
       </Head>
 
-      <div className={styles.topBar}>
+      <div ref={barRef} className={[styles.topBar, barSolid && styles.topBarSolid, barTitled && styles.topBarTitled].filter(Boolean).join(" ")}>
         <Button variant="secondary" size="icon" className={styles.glassButton} onClick={onBack} aria-label={t("nav.back")}>
           <ArrowLeft />
         </Button>
-        {meta.demo && <span className={styles.demo}>{t("result.demo")}</span>}
+        <span className={styles.barTitle} aria-hidden={!barTitled}>
+          {analysis.title}
+        </span>
+        <div className={styles.barActions}>
+          <Button variant="secondary" size="icon" className={styles.glassButton} onClick={() => void share()} aria-label={t("result.share")}>
+            <Share2 />
+          </Button>
+          {confirmDelete ? (
+            <Button variant="danger" icon={<Trash2 />} onClick={() => void remove()}>
+              {t("result.deleteConfirm")}
+            </Button>
+          ) : (
+            <Button
+              variant="secondary"
+              size="icon"
+              className={styles.glassButton}
+              onClick={() => {
+                haptics.tap();
+                setConfirmDelete(true);
+              }}
+              aria-label={t("result.delete")}
+            >
+              <Trash2 />
+            </Button>
+          )}
+        </div>
       </div>
 
       <motion.div className={styles.page} variants={stagger} initial="hidden" animate="show">
         <div className={styles.media}>
           <motion.div
+            ref={heroRef}
             className={styles.hero}
             initial={{ opacity: 0, scale: 1.04 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -168,7 +292,7 @@ function ResultView({ entry, onBack }: { entry: HistoryEntry; onBack: () => void
 
           {isDesktop && (
             <motion.div variants={rise} className={styles.panel}>
-              {renderReminder(styles.panelButton)}
+              {actions.map((action, index) => renderAction(action, index === 0 ? "primary" : "panel"))}
               <Button variant="secondary" icon={<Share2 />} onClick={() => void share()} block>
                 {t("result.share")}
               </Button>
@@ -185,129 +309,52 @@ function ResultView({ entry, onBack }: { entry: HistoryEntry; onBack: () => void
         </div>
 
         <div className={styles.content}>
-          <motion.header variants={rise} className={styles.header}>
-            <h1>{analysis.title}</h1>
+          <motion.header ref={headerRef} variants={rise} className={styles.header}>
+            <h1 ref={titleRef}>{analysis.title}</h1>
             <p className={styles.meta}>
               {formatDateTime(entry.createdAt, locale)}
               {!meta.demo && <> · {t("result.analyzedIn", { seconds: (meta.durationMs / 1000).toFixed(1) })}</>}
             </p>
-            <ConfidenceMeter value={analysis.confidence} label={t("result.confidence")} />
+            <ConfidenceBadge value={analysis.confidence} label={t(`result.confidenceLevels.${level}`)} />
+            {level === "low" && (
+              <div className={styles.uncertain} role="note">
+                <TriangleAlert size={18} />
+                <div>
+                  <strong>{t("result.uncertainTitle")}</strong>
+                  <p>{t("result.uncertainBody")}</p>
+                  <div className={styles.uncertainActions}>
+                    <Button variant="secondary" icon={<Camera />} href={`/?mode=${entry.mode}`}>
+                      {t("result.retake")}
+                    </Button>
+                    <Button variant="ghost" icon={<SlidersHorizontal />} href="/?pick=1">
+                      {t("result.pickType")}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
             {meta.demo && <p className={styles.demoNote}>{t("result.demoNote")}</p>}
           </motion.header>
 
-          <Section title={t("result.summary")} icon={<Sparkles />}>
-            <p className={styles.summary}>{analysis.summary}</p>
-          </Section>
+          <div className={styles.tabsSticky}>
+            <ResultTabs tabs={tabs} value={tab} onChange={(next) => changeTab(next as TabId)} idPrefix={tabsId} label={t("result.tabs.label")} />
+          </div>
 
-          {analysis.nutrition && (
-            <Section title={t("result.nutrition")} icon={<Utensils />}>
-              <NutritionCard nutrition={analysis.nutrition} />
-            </Section>
-          )}
-
-          {analysis.vehicle && (
-            <Section title={t("result.vehicle")} icon={<Car />}>
-              <VehicleCard vehicle={analysis.vehicle} />
-            </Section>
-          )}
-
-          {analysis.recipe && (
-            <Section title={t("result.recipe")} icon={<CookingPot />}>
-              <RecipeCard recipe={analysis.recipe} />
-            </Section>
-          )}
-
-          {analysis.document && (
-            <Section title={`${t("result.document")} · ${analysis.document.type}`} icon={<FileText />}>
-              <div className={styles.doc}>
-                {analysis.document.keyPoints.length > 0 && (
-                  <ul className={styles.bullets}>
-                    {analysis.document.keyPoints.map((point) => (
-                      <li key={point}>{point}</li>
-                    ))}
-                  </ul>
-                )}
-                {analysis.document.dates.length > 0 && (
-                  <div className={styles.dates}>
-                    {analysis.document.dates.map((date) => (
-                      <span key={`${date.label}-${date.date}`} className={styles.date}>
-                        <CalendarDays size={15} />
-                        <span>
-                          <small>{date.label}</small>
-                          {date.date}
-                        </span>
-                      </span>
-                    ))}
-                  </div>
-                )}
-                {forcedAt !== null && (
-                <p className={styles.insurance}>
-                  <Lock size={15} />
-                  <span>
-                    {t("reminders.insuranceNotice", {
-                      days: INSURANCE_NOTICE_DAYS,
-                      expiry: formatDay(expiryDate(analysis)!, locale),
-                      date: formatDateTime(entry.reminderAt && reminderActive ? entry.reminderAt : forcedAt, locale),
-                    })}
-                  </span>
-                </p>
-              )}
-              {analysis.document.actionItems.length > 0 && (
-                  <div>
-                    <h3 className={styles.subTitle}>
-                      <ListChecks size={14} /> {t("result.actionItems")}
-                    </h3>
-                    <ul className={styles.checklist}>
-                      {analysis.document.actionItems.map((item) => (
-                        <li key={item}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            </Section>
-          )}
-
-          {analysis.facts.length > 0 && (
-            <Section title={t("result.facts")} icon={<ClipboardList />}>
-              <dl className={styles.facts}>
-                {analysis.facts.map((fact) => (
-                  <div key={fact.label} className={styles.fact}>
-                    <dt>{fact.label}</dt>
-                    <dd>{fact.value}</dd>
-                  </div>
-                ))}
-              </dl>
-            </Section>
-          )}
-
-          {analysis.suggestions.length > 0 && (
-            <Section title={t("result.suggestions")} icon={<Sparkles />}>
-              <SuggestionList suggestions={analysis.suggestions} />
-            </Section>
-          )}
-
-          <Section title={t("chat.title")} icon={<MessageCircle />}>
-            <ScanChat entry={entry} />
-          </Section>
-
-          {analysis.tags.length > 0 && (
-            <motion.div variants={rise} className={styles.tags} aria-label={t("result.tags")}>
-              {analysis.tags.map((tag, index) => (
-                <motion.span
-                  key={tag}
-                  className={styles.tag}
-                  initial={{ opacity: 0, scale: 0.6 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ ...spring, delay: index * 0.05 }}
-                >
-                  <Hash size={12} />
-                  {tag}
-                </motion.span>
-              ))}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={tab}
+              id={`${tabsId}-panel`}
+              role="tabpanel"
+              aria-labelledby={`${tabsId}-tab-${tab}`}
+              className={styles.panelContent}
+              variants={stagger}
+              initial="hidden"
+              animate="show"
+              exit={{ opacity: 0, transition: { duration: 0.12, ease: easeOut } }}
+            >
+              {renderPanel()}
             </motion.div>
-          )}
+          </AnimatePresence>
 
           {!isDesktop && (
             <motion.div variants={rise} className={styles.footer}>
@@ -319,30 +366,20 @@ function ResultView({ entry, onBack }: { entry: HistoryEntry; onBack: () => void
         </div>
       </motion.div>
 
-      {!isDesktop && (
-        <motion.div
-          className={styles.actionBar}
-          initial={{ y: 100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ ...spring, delay: 0.35 }}
-        >
-          {hasReminder ? (
-            <>
-              <Button variant="secondary" size="icon" onClick={() => void share()} aria-label={t("result.share")}>
-                <Share2 />
-              </Button>
-              {renderReminder(styles.grow)}
-            </>
-          ) : (
-            <Button variant="secondary" icon={<Share2 />} onClick={() => void share()} className={styles.grow}>
-              {t("result.share")}
-            </Button>
-          )}
-          <Button variant="danger" size="icon" onClick={() => void remove()} aria-label={t("result.delete")}>
-            <Trash2 />
-          </Button>
-        </motion.div>
-      )}
+      <AnimatePresence>
+        {!isDesktop && !composerFocused && actions.length > 0 && (
+          <motion.div
+            className={styles.actionBar}
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0, transition: { duration: 0.18 } }}
+            transition={{ ...spring, delay: 0.2 }}
+          >
+            {actions.map((action, index) => renderAction(action, index === 0 ? "primary" : "secondary"))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <ReminderSheet
         key={sheetKey}
         open={sheetOpen}
@@ -357,29 +394,201 @@ function ResultView({ entry, onBack }: { entry: HistoryEntry; onBack: () => void
     </>
   );
 
-  function renderReminder(className: string) {
-    if (forcedAt !== null) {
-      // Scheduled automatically; the button only appears if notifications are off.
+  function renderPanel(): ReactNode {
+    switch (tab) {
+      case "nutrition":
+        return (
+          analysis.nutrition && (
+            <Section title={t("result.nutrition")} icon={<Utensils />}>
+              <NutritionCard nutrition={analysis.nutrition} />
+            </Section>
+          )
+        );
+      case "recipe":
+        return (
+          analysis.recipe && (
+            <Section title={t("result.recipe")} icon={<CookingPot />}>
+              <RecipeCard recipe={analysis.recipe} />
+            </Section>
+          )
+        );
+      case "vehicle":
+        return (
+          analysis.vehicle && (
+            <Section title={t("result.vehicle")} icon={<Car />}>
+              <VehicleCard vehicle={analysis.vehicle} />
+            </Section>
+          )
+        );
+      case "document":
+        return analysis.document && renderDocument(analysis.document);
+      case "chat":
+        return (
+          <div
+            // Hide the action bar while typing: it would sit on the keyboard.
+            onFocus={() => setComposerFocused(true)}
+            onBlur={(event) => {
+              if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setComposerFocused(false);
+            }}
+          >
+            <Section title={t("chat.title")} icon={<MessageCircle />}>
+              <ScanChat entry={entry} />
+            </Section>
+          </div>
+        );
+      default:
+        return (
+          <>
+            <Section title={t("result.summary")} icon={<Sparkles />}>
+              <p className={styles.summary}>{analysis.summary}</p>
+            </Section>
+
+            {analysis.facts.length > 0 && (
+              <Section title={t("result.facts")} icon={<ClipboardList />}>
+                <dl className={styles.facts}>
+                  {analysis.facts.map((fact) => (
+                    <div key={fact.label} className={styles.fact}>
+                      <dt>{fact.label}</dt>
+                      <dd>{fact.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </Section>
+            )}
+
+            {analysis.suggestions.length > 0 && (
+              <Section title={t("result.suggestions")} icon={<Sparkles />}>
+                <SuggestionList suggestions={analysis.suggestions} />
+              </Section>
+            )}
+
+            {analysis.tags.length > 0 && (
+              <motion.div variants={rise} className={styles.tags} aria-label={t("result.tags")}>
+                {analysis.tags.map((tag, index) => (
+                  <motion.span
+                    key={tag}
+                    className={styles.tag}
+                    initial={{ opacity: 0, scale: 0.6 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ ...spring, delay: 0.2 + index * 0.05 }}
+                  >
+                    <Hash size={12} />
+                    {tag}
+                  </motion.span>
+                ))}
+              </motion.div>
+            )}
+          </>
+        );
+    }
+  }
+
+  function renderDocument(document: NonNullable<HistoryEntry["analysis"]["document"]>) {
+    return (
+      <Section title={`${t("result.document")} · ${document.type}`} icon={<FileText />}>
+        <div className={styles.doc}>
+          {document.keyPoints.length > 0 && (
+            <ul className={styles.bullets}>
+              {document.keyPoints.map((point) => (
+                <li key={point}>{point}</li>
+              ))}
+            </ul>
+          )}
+          {document.dates.length > 0 && (
+            <div className={styles.dates}>
+              {document.dates.map((date) => (
+                <span key={`${date.label}-${date.date}`} className={styles.date}>
+                  <CalendarDays size={15} />
+                  <span>
+                    <small>{date.label}</small>
+                    {date.date}
+                  </span>
+                </span>
+              ))}
+            </div>
+          )}
+          {forcedAt !== null && (
+            <p className={styles.insurance}>
+              <Lock size={15} />
+              <span>
+                {t("reminders.insuranceNotice", {
+                  days: INSURANCE_NOTICE_DAYS,
+                  expiry: formatDay(expiryDate(analysis)!, locale),
+                  date: formatDateTime(entry.reminderAt && reminderActive ? entry.reminderAt : forcedAt, locale),
+                })}
+              </span>
+            </p>
+          )}
+          {document.actionItems.length > 0 && (
+            <div>
+              <h3 className={styles.subTitle}>
+                <ListChecks size={14} /> {t("result.actionItems")}
+              </h3>
+              <ul className={styles.checklist}>
+                {document.actionItems.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      </Section>
+    );
+  }
+
+  /**
+   * "primary": the main button (grows). "secondary": compact button next to it
+   * in the mobile bar. "panel": full-width secondary button on desktop.
+   */
+  function renderAction(action: Action, slot: "primary" | "secondary" | "panel") {
+    const className = slot === "primary" ? (isDesktop ? styles.panelButton : styles.grow) : slot === "panel" ? styles.panelButton : styles.compact;
+    if (action === "question") {
       return (
-        <Button
-          variant={reminderActive ? "secondary" : "primary"}
-          icon={reminderActive ? <Lock /> : <Bell />}
-          onClick={reminderActive ? undefined : () => void scheduleAt(forcedAt, reminderTexts.insurance(entry))}
-          className={className}
-          aria-label={reminderActive ? t("reminders.forcedLabel", { date: formatDateTime(entry.reminderAt!, locale) }) : undefined}
-        >
-          {reminderActive ? formatDateTime(entry.reminderAt!, locale) : t("reminders.enableInsurance")}
+        <Button key="question" variant={slot === "primary" ? "primary" : "secondary"} icon={<MessageCircle />} onClick={openQuestion} className={className}>
+          {slot === "secondary" ? t("result.askShort") : t("result.ask")}
         </Button>
       );
     }
+    return renderReminder(className, slot);
+  }
+
+  function renderReminder(className: string, slot: "primary" | "secondary" | "panel") {
+    const compact = slot === "secondary";
+    if (forcedAt !== null) {
+      // Scheduled automatically; the button only acts if notifications are off.
+      return (
+        <Button
+          key="reminder"
+          variant={reminderActive || slot !== "primary" ? "secondary" : "primary"}
+          icon={reminderActive ? <Lock /> : <Bell />}
+          onClick={
+            reminderActive
+              ? () => toast(t("reminders.forcedLabel", { date: formatDateTime(entry.reminderAt!, locale) }))
+              : () => void scheduleAt(forcedAt, reminderTexts.insurance(entry))
+          }
+          className={`${className} ${reminderActive ? styles.reminderOn : ""}`}
+          aria-label={reminderActive ? t("reminders.forcedLabel", { date: formatDateTime(entry.reminderAt!, locale) }) : undefined}
+        >
+          {compact ? t("result.remindShort") : reminderActive ? formatDateTime(entry.reminderAt!, locale) : t("reminders.enableInsurance")}
+        </Button>
+      );
+    }
+    const label = compact
+      ? t("result.remindShort")
+      : reminderActive
+        ? formatDateTime(entry.reminderAt!, locale)
+        : analysis.category === "vehicle"
+          ? t("result.remindMaintenance")
+          : t("result.remind");
     return (
       <Button
-        variant={reminderActive ? "secondary" : "primary"}
+        key="reminder"
+        variant={reminderActive || slot !== "primary" ? "secondary" : "primary"}
         icon={reminderActive ? <BellRing /> : <Bell />}
         onClick={openReminder}
-        className={className}
+        className={`${className} ${reminderActive ? styles.reminderOn : ""}`}
       >
-        {reminderActive ? formatDateTime(entry.reminderAt!, locale) : t("result.remind")}
+        {label}
       </Button>
     );
   }

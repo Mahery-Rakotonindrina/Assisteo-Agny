@@ -56,7 +56,8 @@
     "how": "How it works",
     "how1": "Pick the kind of subject, or let the AI guess.",
     "how2": "Drop, paste or snap your image.",
-    "how3": "Get facts, tips and reminders, saved to your history."
+    "how3": "Get facts, tips and reminders, saved to your history.",
+    "pickHint": "First choose what you’re photographing, then retake the photo."
   },
   "errors": {
     "title": "The analysis didn't go through",
@@ -109,7 +110,6 @@
     "delete": "Delete",
     "deleted": "Analysis deleted",
     "newScan": "New analysis",
-    "demo": "Sample · demo",
     "analyzedIn": "Analysed in {seconds} s",
     "notFound": "Analysis not found",
     "notFoundHint": "It may have been deleted from this device.",
@@ -141,7 +141,30 @@
     "vehicleSpecs": "Specs",
     "vehicleMaintenance": "Maintenance",
     "vehicleTips": "Tips",
-    "vehicleWatchOuts": "Watch out for"
+    "vehicleWatchOuts": "Watch out for",
+    "tabs": {
+      "label": "Analysis sections",
+      "overview": "Summary",
+      "nutrition": "Nutrition",
+      "recipe": "Recipe",
+      "vehicle": "Vehicle",
+      "document": "Document",
+      "chat": "Question"
+    },
+    "ask": "Ask a question",
+    "askShort": "Question",
+    "remindShort": "Reminder",
+    "remindMaintenance": "Maintenance reminder",
+    "deleteConfirm": "Delete?",
+    "confidenceLevels": {
+      "high": "Confident identification",
+      "medium": "Likely identification",
+      "low": "Uncertain identification"
+    },
+    "uncertainTitle": "The AI isn’t sure",
+    "uncertainBody": "A sharper, well-lit photo, or the right scan type, gives a better answer.",
+    "retake": "Retake the photo",
+    "pickType": "Choose the type"
   },
   "history": {
     "title": "History",

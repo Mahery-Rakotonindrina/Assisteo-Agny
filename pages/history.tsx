@@ -1,6 +1,6 @@
 import Head from "next/head";
 import { AnimatePresence, motion } from "motion/react";
-import { useDeferredValue, useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useState, useSyncExternalStore } from "react";
 import { ScanLine, Search } from "lucide-react";
 import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
@@ -21,6 +21,45 @@ import styles from "@/styles/History.module.scss";
 
 type Filter = Category | "all";
 
+// The "swipe left to delete" hint: shown on the first few visits, and never
+// again once the user has deleted something by swiping. Decided once per
+// app launch so it doesn't vanish while being read.
+const SWIPE_HINT_KEY = "hint.history-swipe";
+const SWIPE_HINT_VISITS = 3;
+let swipeHintVisible: boolean | undefined;
+const swipeHintListeners = new Set<() => void>();
+
+function readSwipeHint() {
+  if (swipeHintVisible === undefined) {
+    let shown = SWIPE_HINT_VISITS;
+    try {
+      shown = Number(localStorage.getItem(SWIPE_HINT_KEY) ?? 0);
+      if (shown < SWIPE_HINT_VISITS) localStorage.setItem(SWIPE_HINT_KEY, String(shown + 1));
+    } catch {
+      // Storage unavailable: don't show the hint.
+    }
+    swipeHintVisible = shown < SWIPE_HINT_VISITS;
+  }
+  return swipeHintVisible;
+}
+
+function dismissSwipeHint() {
+  swipeHintVisible = false;
+  try {
+    localStorage.setItem(SWIPE_HINT_KEY, String(SWIPE_HINT_VISITS));
+  } catch {
+    // Nothing to remember.
+  }
+  swipeHintListeners.forEach((listener) => listener());
+}
+
+function subscribeSwipeHint(listener: () => void) {
+  swipeHintListeners.add(listener);
+  return () => {
+    swipeHintListeners.delete(listener);
+  };
+}
+
 export default function HistoryPage() {
   const { t, locale } = useTranslation();
   const toast = useToast();
@@ -28,6 +67,7 @@ export default function HistoryPage() {
   const [filter, setFilter] = useState<Filter>("all");
   const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query);
+  const showSwipeHint = useSyncExternalStore(subscribeSwipeHint, readSwipeHint, () => false);
   const now = useNow();
   const isDesktop = useIsDesktop();
 
@@ -61,6 +101,7 @@ export default function HistoryPage() {
   }, [deferredQuery, entries, filter, locale, now, t]);
 
   const remove = async (entry: HistoryEntry) => {
+    dismissSwipeHint();
     if (entry.reminderId) await cancelNotification(entry.reminderId);
     await historyStore.remove(entry.id);
     toast(t("result.deleted"));
@@ -131,7 +172,7 @@ export default function HistoryPage() {
                   );
                 })}
               </div>
-              <p className={styles.hint}>{t("history.swipeHint")}</p>
+              {showSwipeHint && <p className={styles.hint}>{t("history.swipeHint")}</p>}
             </motion.div>
 
             {groups.length === 0 && !isLoading ? (

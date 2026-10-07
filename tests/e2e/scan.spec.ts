@@ -11,6 +11,9 @@ test.describe("scan", () => {
 
     await expect(page).toHaveURL(/\/result\?id=/, { timeout: 20_000 });
     await expect(page.getByRole("heading", { level: 1 })).not.toBeEmpty();
+    // The analysis is split into tabs, starting on the summary.
+    await expect(page.getByRole("tab", { name: "Résumé" })).toHaveAttribute("aria-selected", "true");
+    await page.getByRole("tab", { name: "Question" }).click();
     await expect(page.getByRole("heading", { name: /Une question/ })).toBeVisible();
 
     await page.goto("/history");
@@ -23,6 +26,9 @@ test.describe("scan", () => {
     await page.locator('input[type="file"]').setInputFiles("tests/e2e/fixtures/apple.jpg");
     await expect(page).toHaveURL(/\/result\?id=/, { timeout: 20_000 });
 
+    // "Ask a question" opens the question tab with the composer focused.
+    await page.getByRole("button", { name: "Poser une question" }).first().click();
+    await expect(page.getByPlaceholder(/question/i)).toBeFocused();
     await page.getByPlaceholder(/question/i).fill("Ça se garde combien de temps ?");
     await page.getByRole("button", { name: /envoyer/i }).click();
     await expect(page.getByText(/mode démo/)).toBeVisible({ timeout: 15_000 });
