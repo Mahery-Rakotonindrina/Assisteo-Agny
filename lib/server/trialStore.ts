@@ -14,12 +14,18 @@ export type TrialConfig = {
   ipLimit: number;
   /** Follow-up questions per install per day on the server's key. */
   askLimit: number;
+  /**
+   * All requests (scans + questions) on the server's key per day, for every
+   * user together. Keeps the shared AI quota or bill under control. 0 = no cap.
+   */
+  dailyLimit: number;
 };
 
 const defaults: TrialConfig = {
   limit: Number(process.env.TRIAL_SCANS ?? 7),
   ipLimit: Number(process.env.TRIAL_SCANS_PER_IP ?? 20),
   askLimit: Number(process.env.ASK_PER_DAY ?? 20),
+  dailyLimit: Number(process.env.SERVER_DAILY_LIMIT ?? 200),
 };
 const IP_WINDOW_S = 30 * 24 * 3600;
 const CONFIG_KEY = "config:trial";
@@ -146,4 +152,28 @@ export async function releaseAsk(installId: string) {
 
 export async function releaseTrialScan(installId: string, ip: string) {
   await Promise.all([store.decr(installKey(installId)), store.decr(ipKey(ip))]);
+}
+
+// Every call on the server's key, all users together, reset at midnight UTC.
+const dayKey = () => `server:day:${new Date().toISOString().slice(0, 10)}`;
+
+/** Requests made on the server's key today. */
+export async function getServerUsage() {
+  const [{ dailyLimit }, used] = await Promise.all([getTrialConfig(), store.get(dayKey())]);
+  return { dailyLimit, used };
+}
+
+/** Books one call on the server's AI key; false once today's global cap is reached. */
+export async function reserveServerCall() {
+  const { dailyLimit } = await getTrialConfig();
+  const used = await store.incr(dayKey(), 2 * 24 * 3600);
+  if (dailyLimit > 0 && used > dailyLimit) {
+    await store.decr(dayKey());
+    return false;
+  }
+  return true;
+}
+
+export async function releaseServerCall() {
+  await store.decr(dayKey());
 }

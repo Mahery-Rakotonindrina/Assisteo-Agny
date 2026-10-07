@@ -72,7 +72,8 @@
     "billing": "The AI account has no credit left. Add credit at console.anthropic.com or switch back to demo mode.",
     "notImage": "This file isn’t an image.",
     "invalid_key": "Your API key was rejected. Check it in Settings → AI engine.",
-    "trial_exhausted": "Your free trial is over. Add your own API key in Settings → AI engine to continue."
+    "trial_exhausted": "Your free trial is over. Add your own API key in Settings → AI engine to continue.",
+    "server_busy": "The free AI has reached today's limit. Add your own key (Gemini is free) or come back tomorrow."
   },
   "categories": {
     "food": "Food",
@@ -302,7 +303,9 @@
     "saved": "Settings saved",
     "logout": "Log out",
     "askLimit": "Questions per day per device",
-    "askLimitHint": "Questions about a scan on the server’s AI. Unlimited with an own key."
+    "askLimitHint": "Questions about a scan on the server’s AI. Unlimited with an own key.",
+    "dailyLimit": "Global daily cap",
+    "dailyLimitHint": "Scans + questions on the server's key, all users together (0 = no cap). Today: {used}."
   },
   "account": {
     "section": "Account",

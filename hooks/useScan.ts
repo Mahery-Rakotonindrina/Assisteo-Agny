@@ -23,6 +23,7 @@ export type ScanErrorKind =
   | "billing"
   | "invalid_key"
   | "trial_exhausted"
+  | "server_busy"
   | "invalid_request"
   | "upstream_error"
   | "image"

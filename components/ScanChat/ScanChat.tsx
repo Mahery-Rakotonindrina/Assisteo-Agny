@@ -43,7 +43,7 @@ function renderAnswer(text: string) {
   return blocks;
 }
 
-type ErrorKind = "network" | "rate_limited" | "refused" | "unavailable" | "ask_limit" | "invalid_key" | "billing" | "unknown";
+type ErrorKind = "network" | "rate_limited" | "refused" | "unavailable" | "ask_limit" | "server_busy" | "invalid_key" | "billing" | "unknown";
 
 /** A conversation about one scan: the AI sees the photo and its own analysis. */
 export function ScanChat({ entry }: { entry: HistoryEntry }) {
@@ -75,7 +75,7 @@ export function ScanChat({ entry }: { entry: HistoryEntry }) {
     } catch (err) {
       haptics.error();
       const code = err instanceof ApiError ? err.code : "unknown";
-      const known: ErrorKind[] = ["network", "rate_limited", "refused", "unavailable", "ask_limit", "invalid_key", "billing"];
+      const known: ErrorKind[] = ["network", "rate_limited", "refused", "unavailable", "ask_limit", "server_busy", "invalid_key", "billing"];
       setError(known.includes(code as ErrorKind) ? (code as ErrorKind) : "unknown");
     } finally {
       setSending(false);
@@ -154,7 +154,7 @@ export function ScanChat({ entry }: { entry: HistoryEntry }) {
         <div className={styles.error} role="alert">
           <p>{error === "ask_limit" ? t("chat.limit") : t(`errors.${error}`)}</p>
           <div className={styles.errorActions}>
-            {error === "ask_limit" ? (
+            {error === "ask_limit" || error === "server_busy" ? (
               <Link href={AI_SETTINGS_HREF}>{t("trial.addKey")}</Link>
             ) : (
               awaitingAnswer && (

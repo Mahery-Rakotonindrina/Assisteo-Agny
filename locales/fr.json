@@ -72,7 +72,8 @@
     "billing": "Le compte IA n’a plus de crédit. Ajoute du crédit sur console.anthropic.com ou repasse en mode démo.",
     "notImage": "Ce fichier n’est pas une image.",
     "invalid_key": "Ta clé API a été refusée. Vérifie-la dans Réglages → Moteur IA.",
-    "trial_exhausted": "Ton essai gratuit est terminé. Ajoute ta propre clé API dans Réglages → Moteur IA pour continuer."
+    "trial_exhausted": "Ton essai gratuit est terminé. Ajoute ta propre clé API dans Réglages → Moteur IA pour continuer.",
+    "server_busy": "L’IA gratuite a atteint sa limite du jour. Ajoute ta propre clé (Gemini est gratuit) ou reviens demain."
   },
   "categories": {
     "food": "Aliment",
@@ -302,7 +303,9 @@
     "saved": "Réglages enregistrés",
     "logout": "Se déconnecter",
     "askLimit": "Questions par jour et par appareil",
-    "askLimitHint": "Questions sur un scan avec l’IA du serveur. Illimité avec sa propre clé."
+    "askLimitHint": "Questions sur un scan avec l’IA du serveur. Illimité avec sa propre clé.",
+    "dailyLimit": "Plafond global par jour",
+    "dailyLimitHint": "Scans + questions sur la clé du serveur, tous utilisateurs confondus (0 = illimité). Aujourd’hui : {used}."
   },
   "account": {
     "section": "Compte",

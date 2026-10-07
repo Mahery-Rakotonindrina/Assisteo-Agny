@@ -1,7 +1,7 @@
 import Head from "next/head";
 import { motion } from "motion/react";
 import { useEffect, useState, type FormEvent } from "react";
-import { Gift, LockKeyhole, LogOut, MessageCircle, Minus, Plus, Save, ShieldAlert, Wifi } from "lucide-react";
+import { Gauge, Gift, LockKeyhole, LogOut, MessageCircle, Minus, Plus, Save, ShieldAlert, Wifi } from "lucide-react";
 import { Button } from "@/components/Button";
 import { useToast } from "@/components/Toast";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -31,6 +31,7 @@ export default function AdminPage() {
   const [limit, setLimit] = useState(7);
   const [ipLimit, setIpLimit] = useState(20);
   const [askLimit, setAskLimit] = useState(20);
+  const [dailyLimit, setDailyLimit] = useState(200);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -44,6 +45,7 @@ export default function AdminPage() {
     setLimit(result.limit);
     setIpLimit(result.ipLimit);
     setAskLimit(result.askLimit);
+    setDailyLimit(result.dailyLimit);
     setToken(value);
     try {
       sessionStorage.setItem(TOKEN_KEY, value);
@@ -82,7 +84,7 @@ export default function AdminPage() {
     event.preventDefault();
     setSaving(true);
     try {
-      const result = await httpClient.put<AdminTrialResponse>("/api/admin/trial", { limit, ipLimit, askLimit }, { headers: headers(token) });
+      const result = await httpClient.put<AdminTrialResponse>("/api/admin/trial", { limit, ipLimit, askLimit, dailyLimit }, { headers: headers(token) });
       setConfig(result);
       toast(t("admin.saved"));
     } catch {
@@ -103,7 +105,7 @@ export default function AdminPage() {
     setDraftToken("");
   };
 
-  const dirty = config !== null && (config.limit !== limit || config.ipLimit !== ipLimit || config.askLimit !== askLimit);
+  const dirty = config !== null && (config.limit !== limit || config.ipLimit !== ipLimit || config.askLimit !== askLimit || config.dailyLimit !== dailyLimit);
 
   return (
     <>
@@ -178,6 +180,16 @@ export default function AdminPage() {
               min={0}
               max={1000}
               onChange={setAskLimit}
+            />
+
+            <Stepper
+              icon={<Gauge size={18} />}
+              label={t("admin.dailyLimit")}
+              hint={t("admin.dailyLimitHint", { used: config.todayUsed })}
+              value={dailyLimit}
+              min={0}
+              max={1000000}
+              onChange={setDailyLimit}
             />
 
             <Button type="submit" block icon={<Save />} disabled={!dirty || saving}>

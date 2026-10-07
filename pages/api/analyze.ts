@@ -5,7 +5,7 @@ import { activeModel, activeProvider, analyzeImage, readOverride } from "@/lib/a
 import { AnalyzeRequestSchema, InstallIdSchema, installIdHeader, type AnalyzeResponse, type TrialState } from "@/lib/ai/schema";
 import { applyCors, clientIp, sendError } from "@/lib/server/http";
 import { rateLimit } from "@/lib/server/rateLimit";
-import { releaseTrialScan, reserveTrialScan } from "@/lib/server/trialStore";
+import { releaseServerCall, releaseTrialScan, reserveServerCall, reserveTrialScan } from "@/lib/server/trialStore";
 
 export const config = {
   api: {
@@ -65,6 +65,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     if (usage === null) {
       return sendError(res, 403, "trial_exhausted", "The free trial is over: add your own API key in Settings.");
     }
+    if (!(await reserveServerCall())) {
+      await releaseTrialScan(installId.data, ip).catch(() => undefined);
+      return sendError(res, 503, "server_busy", "The free AI has reached today's limit: add your own API key or come back tomorrow.");
+    }
     trial = { installId: installId.data, ip, ...usage };
   }
 
@@ -87,7 +91,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     } satisfies AnalyzeResponse);
   } catch (error) {
     // A failed or cancelled analysis doesn't consume a trial scan.
-    if (trial) await releaseTrialScan(trial.installId, trial.ip).catch(() => undefined);
+    if (trial) await Promise.all([releaseTrialScan(trial.installId, trial.ip), releaseServerCall()]).catch(() => undefined);
     if (abort.signal.aborted) return;
     const engine = override ? `user-${override.provider}` : activeProvider;
     if (error instanceof AnalysisError) {
