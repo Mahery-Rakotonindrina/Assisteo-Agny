@@ -14,7 +14,8 @@
 
   --text: #f3f4f6;
   --text-muted: #a2a7b3;
-  --text-subtle: #6c7280;
+  // Secondary text stays at 4.5:1 or more on the background (WCAG AA).
+  --text-subtle: #8b919d;
 
   --accent: #c6ff4d;
   --accent-ink: #0b0c10;
@@ -66,7 +67,7 @@
 
   --text: #111317;
   --text-muted: #555b66;
-  --text-subtle: #868c97;
+  --text-subtle: #6a707b;
 
   --accent: #c6ff4d;
   --accent-ink: #111317;
@@ -116,7 +117,7 @@ body {
   color: var(--text);
   font-family: var(--font-sans);
   font-size: 16px;
-  line-height: 1.5;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-tap-highlight-color: transparent;

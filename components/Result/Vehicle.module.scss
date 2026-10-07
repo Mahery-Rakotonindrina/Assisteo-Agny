@@ -47,7 +47,7 @@
   background: color-mix(in srgb, var(--cat-vehicle) 10%, transparent);
 
   small {
-    font-size: 0.72rem;
+    font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -62,7 +62,7 @@
 
 .estimate {
   margin-top: -0.6rem;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   color: var(--text-subtle);
 }
 
@@ -97,7 +97,7 @@
   }
 
   dt {
-    font-size: 0.72rem;
+    font-size: 0.8rem;
     color: var(--text-subtle);
   }
 

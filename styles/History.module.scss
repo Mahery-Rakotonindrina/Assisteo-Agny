@@ -117,13 +117,13 @@
 }
 
 .chipCount {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   opacity: 0.6;
   font-variant-numeric: tabular-nums;
 }
 
 .hint {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   color: var(--text-subtle);
 
   @include desktop {

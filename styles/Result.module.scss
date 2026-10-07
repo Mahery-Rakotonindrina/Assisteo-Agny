@@ -276,7 +276,7 @@ $bar-height: calc(var(--safe-top) + 3.95rem);
   }
 
   small {
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     font-weight: 500;
     color: var(--text-muted);
   }
@@ -329,7 +329,7 @@ $bar-height: calc(var(--safe-top) + 3.95rem);
   background: var(--surface);
 
   dt {
-    font-size: 0.72rem;
+    font-size: 0.8rem;
     color: var(--text-subtle);
   }
 
@@ -431,7 +431,7 @@ $bar-height: calc(var(--safe-top) + 3.95rem);
   padding: 0.1rem 0.45rem;
   border-radius: var(--radius-pill);
   background: rgba(0, 0, 0, 0.12);
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-variant-numeric: tabular-nums;
 }
 

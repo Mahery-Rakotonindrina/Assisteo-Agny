@@ -107,7 +107,7 @@
 
   small {
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     color: var(--text-muted);
   }
 }
@@ -132,7 +132,7 @@
 }
 
 .privacy {
-  font-size: 0.76rem;
+  font-size: 0.8rem;
   color: var(--text-subtle);
 }
 
@@ -204,7 +204,7 @@
   border-radius: var(--radius-pill);
   background: color-mix(in srgb, var(--cat-plant) 18%, transparent);
   color: var(--cat-plant);
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -250,7 +250,7 @@
   background: var(--surface);
   border: 1px solid var(--border);
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   color: var(--text-muted);
 
   &:hover {
