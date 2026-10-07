@@ -53,6 +53,7 @@ const food: Record<Locale, Analysis> = {
     },
     document: null,
     vehicle: null,
+    parcel: null,
     reminder: { title: "Salade au frigo", body: "Pense à finir ta salade avant demain soir.", delayHours: 24 },
   },
   en: {
@@ -102,6 +103,7 @@ const food: Record<Locale, Analysis> = {
     },
     document: null,
     vehicle: null,
+    parcel: null,
     reminder: { title: "Salad in the fridge", body: "Remember to finish your salad before tomorrow night.", delayHours: 24 },
   },
 };
@@ -134,6 +136,7 @@ const documentScan: Record<Locale, Analysis> = {
       isInsurance: false,
     },
     vehicle: null,
+    parcel: null,
     reminder: { title: "Facture d'électricité", body: "Le prélèvement de 84,20 € arrive bientôt.", delayHours: 72 },
   },
   en: {
@@ -163,6 +166,7 @@ const documentScan: Record<Locale, Analysis> = {
       isInsurance: false,
     },
     vehicle: null,
+    parcel: null,
     reminder: { title: "Electricity bill", body: "The €84.20 direct debit is coming up.", delayHours: 72 },
   },
 };
@@ -189,6 +193,7 @@ const objectScan: Record<Locale, Analysis> = {
     recipe: null,
     document: null,
     vehicle: null,
+    parcel: null,
     reminder: { title: "Arroser le Monstera", body: "Vérifie la terre et arrose si elle est sèche.", delayHours: 168 },
   },
   en: {
@@ -212,6 +217,7 @@ const objectScan: Record<Locale, Analysis> = {
     recipe: null,
     document: null,
     vehicle: null,
+    parcel: null,
     reminder: { title: "Water the Monstera", body: "Check the soil and water if it is dry.", delayHours: 168 },
   },
 };
@@ -266,6 +272,7 @@ const vehicleScan: Record<Locale, Analysis> = {
         "Vérifie l'état de la batterie 12 V et l'absence de voyant hybride.",
       ],
     },
+    parcel: null,
     reminder: { title: "Révision de la Corolla", body: "Pense à vérifier la date de ta prochaine révision.", delayHours: 720 },
   },
   en: {
@@ -317,6 +324,7 @@ const vehicleScan: Record<Locale, Analysis> = {
         "Check the 12 V battery and that no hybrid warning light is on.",
       ],
     },
+    parcel: null,
     reminder: { title: "Corolla service", body: "Remember to check when your next service is due.", delayHours: 720 },
   },
 };
@@ -330,9 +338,88 @@ const byMode: Record<Exclude<ScanMode, "auto">, Record<Locale, Analysis>> = {
 
 let autoCursor = 0;
 
+
+// Fictional order (numbers made up) for demo mode.
+const parcelScan: Record<Locale, Analysis> = {
+  fr: {
+    category: "parcel",
+    title: "Casque moto effet carbone",
+    summary: "Une commande Pinduoduo en transit avec STO Express. Le colis a été pris en charge par l'agence de Zhaoqing et se dirige vers Foshan.",
+    confidence: 0.93,
+    tags: ["colis", "commande", "suivi"],
+    facts: [
+      { label: "Transporteur", value: "STO Express" },
+      { label: "Statut", value: "En transit" },
+      { label: "Montant payé", value: "¥221,45" },
+    ],
+    suggestions: [
+      { kind: "tip", title: "Suis le colis en ligne", detail: "Le numéro de suivi fonctionne aussi sur les sites de suivi multi-transporteurs." },
+      { kind: "action", title: "Vérifie à la réception", detail: "Retours gratuits sous 7 jours : ouvre le colis rapidement pour vérifier la taille et l'état." },
+    ],
+    nutrition: null,
+    recipe: null,
+    document: null,
+    vehicle: null,
+    parcel: {
+      platform: "Pinduoduo",
+      orderNumber: "260101-000000000000001",
+      trackingNumber: "770000000000001",
+      carrier: "STO Express",
+      status: "in_transit",
+      statusLabel: "En transit",
+      lastEvent: { description: "Pris en charge par l'agence de Zhaoqing", location: "Zhaoqing, Guangdong", at: "2026-10-07 17:21" },
+      items: [{ name: "Casque moto effet carbone avec visière", variant: "Noir brillant, visière bleue, taille M", quantity: 1, price: "¥215" }],
+      total: "¥221,45",
+      seller: "Boutique Équipement Moto",
+      orderedAt: "2026-10-06",
+      shippedAt: "2026-10-07",
+      estimatedDelivery: null,
+      destinationCity: "Foshan",
+    },
+    reminder: null,
+  },
+  en: {
+    category: "parcel",
+    title: "Carbon-look motorbike helmet",
+    summary: "A Pinduoduo order in transit with STO Express. The parcel was picked up by the Zhaoqing depot and is heading to Foshan.",
+    confidence: 0.93,
+    tags: ["parcel", "order", "tracking"],
+    facts: [
+      { label: "Carrier", value: "STO Express" },
+      { label: "Status", value: "In transit" },
+      { label: "Paid", value: "¥221.45" },
+    ],
+    suggestions: [
+      { kind: "tip", title: "Track it online", detail: "The tracking number also works on multi-carrier tracking sites." },
+      { kind: "action", title: "Check it on arrival", detail: "Free returns within 7 days: open the parcel quickly to check the size and condition." },
+    ],
+    nutrition: null,
+    recipe: null,
+    document: null,
+    vehicle: null,
+    parcel: {
+      platform: "Pinduoduo",
+      orderNumber: "260101-000000000000001",
+      trackingNumber: "770000000000001",
+      carrier: "STO Express",
+      status: "in_transit",
+      statusLabel: "In transit",
+      lastEvent: { description: "Picked up by the Zhaoqing depot", location: "Zhaoqing, Guangdong", at: "2026-10-07 17:21" },
+      items: [{ name: "Carbon-look motorbike helmet with visor", variant: "Gloss black, blue visor, size M", quantity: 1, price: "¥215" }],
+      total: "¥221.45",
+      seller: "Moto Gear Shop",
+      orderedAt: "2026-10-06",
+      shippedAt: "2026-10-07",
+      estimatedDelivery: null,
+      destinationCity: "Foshan",
+    },
+    reminder: null,
+  },
+};
+
 export function mockAnalysis(mode: ScanMode, locale: Locale): Analysis {
   if (mode !== "auto") return byMode[mode][locale];
-  const pool = [food, documentScan, vehicleScan, objectScan];
+  const pool = [food, documentScan, vehicleScan, objectScan, parcelScan];
   const pick = pool[autoCursor % pool.length];
   autoCursor += 1;
   return pick[locale];

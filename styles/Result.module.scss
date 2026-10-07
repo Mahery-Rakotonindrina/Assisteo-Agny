@@ -533,3 +533,44 @@ $bar-height: calc(var(--safe-top) + 3.95rem);
   -webkit-backdrop-filter: blur(10px);
   pointer-events: none;
 }
+
+// Parcel already followed, or scanned before.
+.parcelNote {
+  display: flex;
+  gap: 0.65rem;
+  padding: 0.8rem 0.95rem;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--cat-parcel) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--cat-parcel) 30%, transparent);
+  font-size: 0.9rem;
+
+  > svg {
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+    color: var(--cat-parcel);
+  }
+
+  &[data-news] {
+    background: var(--accent-soft);
+    border-color: color-mix(in srgb, var(--accent-mark) 40%, transparent);
+
+    > svg {
+      color: var(--accent-text);
+    }
+  }
+
+  p + p {
+    margin-top: 0.3rem;
+  }
+
+  a {
+    font-weight: 600;
+    color: var(--accent-text);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+}
+
+.parcelEarlier {
+  color: var(--text-muted);
+}

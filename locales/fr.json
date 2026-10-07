@@ -6,6 +6,7 @@
   "nav": {
     "scan": "Scanner",
     "history": "Historique",
+    "parcels": "Colis",
     "settings": "Réglages",
     "back": "Retour"
   },
@@ -115,6 +116,7 @@
   "categories": {
     "food": "Aliment",
     "document": "Document",
+    "parcel": "Colis",
     "object": "Objet",
     "plant": "Plante",
     "other": "Autre",
@@ -185,7 +187,8 @@
       "recipe": "Recette",
       "vehicle": "Véhicule",
       "document": "Document",
-      "chat": "Question"
+      "chat": "Question",
+      "parcel": "Colis"
     },
     "ask": "Poser une question",
     "askShort": "Question",
@@ -201,7 +204,8 @@
     "uncertainBody": "Une photo plus nette et bien éclairée, ou le bon type de scan, donne une meilleure réponse.",
     "retake": "Reprendre la photo",
     "pickType": "Préciser le type",
-    "openPhoto": "Agrandir la photo"
+    "openPhoto": "Agrandir la photo",
+    "parcel": "Suivi du colis"
   },
   "history": {
     "title": "Historique",
@@ -567,5 +571,64 @@
   "photo": {
     "close": "Fermer la photo",
     "hint": "Pince ou touche deux fois pour zoomer · glisse vers le bas pour fermer"
+  },
+  "parcel": {
+    "statuses": {
+      "ordered": "Commandé",
+      "shipped": "Expédié",
+      "in_transit": "En transit",
+      "out_for_delivery": "En cours de livraison",
+      "pickup_ready": "À retirer",
+      "delivered": "Livré",
+      "exception": "Problème de livraison",
+      "returned": "Retourné",
+      "unknown": "Statut inconnu"
+    },
+    "progress": "Avancement de la livraison",
+    "carrier": "Transporteur",
+    "platform": "Boutique",
+    "seller": "Vendeur",
+    "orderedAt": "Commandé le",
+    "shippedAt": "Expédié le",
+    "estimatedDelivery": "Livraison prévue",
+    "destination": "Destination",
+    "total": "Montant payé",
+    "trackingNumber": "N° de suivi",
+    "orderNumber": "N° de commande",
+    "copyTracking": "Copier le numéro de suivi",
+    "copyOrder": "Copier le numéro de commande",
+    "copied": "Copié",
+    "copyFailed": "Copie impossible",
+    "trackOnline": "Suivre en ligne",
+    "add": "Ajouter à mes colis",
+    "addShort": "Suivre",
+    "added": "Ajouté à tes colis",
+    "update": "Mettre à jour mes colis",
+    "updateShort": "Mettre à jour",
+    "updated": "Colis mis à jour : {status}",
+    "view": "Voir mes colis",
+    "viewShort": "Mes colis",
+    "newStatus": "Ce colis est déjà dans ta liste. Nouveau statut : {from} → {to}.",
+    "inList": "Ce colis est dans ta liste ({status}).",
+    "earlierUpdated": "Tu l’avais déjà scanné le {date} : ce scan a été mis à jour avec le dernier statut.",
+    "openEarlier": "Voir l’ancien scan"
+  },
+  "parcels": {
+    "title": "Mes colis",
+    "count": "{ongoing} en cours · {received} reçu(s)",
+    "ongoing": "En cours",
+    "received": "Reçus",
+    "receivedLabel": "Reçu",
+    "emptyTitle": "Aucun colis suivi",
+    "emptyBody": "Scanne la page de suivi d’une commande (Pinduoduo, Temu, AliExpress, Shein…) puis touche « Ajouter à mes colis ». Rescanne-la plus tard pour mettre le statut à jour.",
+    "emptyCta": "Scanner une commande",
+    "timeline": "Historique du colis",
+    "scannedOn": "Scan du {date}",
+    "openScan": "Voir le dernier scan",
+    "markReceived": "Marquer comme reçu",
+    "markOngoing": "Pas encore reçu",
+    "remove": "Retirer",
+    "confirmRemove": "Retirer de la liste ?",
+    "removed": "Colis retiré de la liste"
   }
 }

@@ -11,7 +11,21 @@ z.config({ jitless: true });
 export const scanModes = ["auto", "food", "document", "vehicle", "object"] as const;
 export type ScanMode = (typeof scanModes)[number];
 
-export const categories = ["food", "document", "vehicle", "object", "plant", "other"] as const;
+export const categories = ["food", "document", "parcel", "vehicle", "object", "plant", "other"] as const;
+
+/** Where a parcel is, normalised from whatever the shop or carrier app says. */
+export const parcelStatuses = [
+  "ordered",
+  "shipped",
+  "in_transit",
+  "out_for_delivery",
+  "pickup_ready",
+  "delivered",
+  "exception",
+  "returned",
+  "unknown",
+] as const;
+export type ParcelStatus = (typeof parcelStatuses)[number];
 export type Category = (typeof categories)[number];
 
 export const AnalysisSchema = z.object({
@@ -92,6 +106,44 @@ export const AnalysisSchema = z.object({
     })
     .nullable()
     .describe("Only for vehicles (car, motorbike, scooter, truck…), null otherwise."),
+  parcel: z
+    .object({
+      platform: z.string().nullable().describe("Shop or app, e.g. Pinduoduo, Temu, AliExpress, Shein, Amazon, Jumia; null if unknown."),
+      orderNumber: z.string().nullable().describe("Order number exactly as shown, or null."),
+      trackingNumber: z.string().nullable().describe("Carrier tracking number exactly as shown, or null."),
+      carrier: z.string().nullable().describe("Delivery company in Latin letters, e.g. 'STO Express' for 申通快递; null if not shown."),
+      status: z.enum(parcelStatuses).describe("Normalised delivery status."),
+      statusLabel: z.string().describe("The status as a short phrase in the user's language, e.g. 'En transit'."),
+      lastEvent: z
+        .object({
+          description: z.string().describe("What happened, translated into the user's language."),
+          location: z.string().nullable().describe("City or hub, in Latin letters, or null."),
+          at: z.string().nullable().describe("Date and time as 'YYYY-MM-DD HH:mm', or null if not shown."),
+        })
+        .nullable()
+        .describe("The most recent tracking event shown, or null."),
+      items: z
+        .array(
+          z.object({
+            name: z.string().describe("Short product name, translated into the user's language."),
+            variant: z.string().nullable().describe("Colour, size or option chosen, or null."),
+            quantity: z.number(),
+            price: z.string().nullable().describe("Unit price with currency, or null."),
+          }),
+        )
+        .describe("Items in the order."),
+      total: z.string().nullable().describe("Amount paid with currency, e.g. '¥221.45', or null."),
+      seller: z.string().nullable().describe("Shop or seller name, or null."),
+      orderedAt: z.string().nullable().describe("Order date as YYYY-MM-DD, or null."),
+      shippedAt: z.string().nullable().describe("Shipping date as YYYY-MM-DD, or null."),
+      estimatedDelivery: z.string().nullable().describe("Expected delivery date as YYYY-MM-DD, or null if not shown."),
+      destinationCity: z
+        .string()
+        .nullable()
+        .describe("Destination city or region only. Never the recipient's name, phone number or street address."),
+    })
+    .nullable()
+    .describe("Only for parcels (order, shipping or tracking screens and shipping labels), null otherwise."),
   reminder: z
     .object({
       title: z.string(),
@@ -115,6 +167,7 @@ export function normalizeStoredAnalysis(raw: unknown): unknown {
   return {
     recipe: null,
     vehicle: null,
+    parcel: null,
     ...analysis,
     document: document ? { expiresOn: null, isInsurance: false, ...document } : null,
   };

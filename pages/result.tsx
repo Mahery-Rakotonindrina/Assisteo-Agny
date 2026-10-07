@@ -1,4 +1,5 @@
 import Head from "next/head";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
@@ -17,7 +18,11 @@ import {
   Lock,
   Maximize2,
   MessageCircle,
+  Package,
+  PackageCheck,
+  PackagePlus,
   Plus,
+  RefreshCw,
   Share2,
   SlidersHorizontal,
   Sparkles,
@@ -35,6 +40,7 @@ import {
   ConfidenceBadge,
   confidenceLevel,
   NutritionCard,
+  ParcelCard,
   RecipeCard,
   ResultTabs,
   Section,
@@ -43,23 +49,26 @@ import {
   type ResultTab,
 } from "@/components/Result";
 import { useToast } from "@/components/Toast";
-import { useHistoryEntry } from "@/hooks/useHistory";
+import { useHistory, useHistoryEntry } from "@/hooks/useHistory";
+import { useParcels } from "@/hooks/useParcels";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import { useNow } from "@/hooks/useNow";
 import { useReminderTexts } from "@/hooks/useReminderTexts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { exampleEntry, isExampleId } from "@/lib/examples";
+import { sameParcel } from "@/lib/parcels";
 import { formatDateTime, formatDay } from "@/lib/format";
 import { easeOut, pop, rise, spring, stagger } from "@/lib/motion";
 import { haptics, shareText } from "@/services/device";
 import { historyStore } from "@/services/historyStore";
+import { hasNewStatus, parcelStore } from "@/services/parcelStore";
 import { cancelNotification } from "@/services/notifications";
 import { cancelReminder, expiryDate, INSURANCE_NOTICE_DAYS, insuranceReminderAt, scheduleReminder } from "@/services/reminders";
 import type { HistoryEntry } from "@/types/history";
 import styles from "@/styles/Result.module.scss";
 
-type TabId = "overview" | "nutrition" | "recipe" | "vehicle" | "document" | "chat";
-type Action = "reminder" | "question";
+type TabId = "overview" | "parcel" | "nutrition" | "recipe" | "vehicle" | "document" | "chat";
+type Action = "reminder" | "question" | "parcel";
 
 /** Gap between the header and the tabs (the .content flex gap). */
 const CONTENT_GAP = 16;
@@ -112,7 +121,8 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
 
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetKey, setSheetKey] = useState(0);
-  const [tab, setTab] = useState<TabId>("overview");
+  // A parcel opens on its tracking details.
+  const [tab, setTab] = useState<TabId>(analysis.parcel ? "parcel" : "overview");
   const [composerFocused, setComposerFocused] = useState(false);
   const [barSolid, setBarSolid] = useState(false);
   const [barTitled, setBarTitled] = useState(false);
@@ -172,6 +182,7 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
 
   const tabs = [
     { id: "overview", label: t("result.tabs.overview"), icon: <Sparkles /> },
+    analysis.parcel && { id: "parcel", label: t("result.tabs.parcel"), icon: <Package /> },
     analysis.nutrition && { id: "nutrition", label: t("result.tabs.nutrition"), icon: <Utensils /> },
     analysis.recipe && { id: "recipe", label: t("result.tabs.recipe"), icon: <CookingPot /> },
     analysis.vehicle && { id: "vehicle", label: t("result.tabs.vehicle"), icon: <Car /> },
@@ -199,13 +210,36 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
 
   // What people most likely want next: a reminder for documents, vehicles and
   // plants that need care; otherwise asking about what they just scanned.
+  // Parcels: the followed list ("Mes colis") and earlier scans of the same parcel.
+  const { parcels } = useParcels();
+  const { entries } = useHistory();
+  const trackedParcel = analysis.parcel ? parcels.find((parcel) => sameParcel(parcel.info, analysis.parcel)) : undefined;
+  const parcelHasNews = trackedParcel ? hasNewStatus(trackedParcel, analysis.parcel) : false;
+  const earlierScans = analysis.parcel
+    ? entries.filter((other) => other.id !== entry.id && other.createdAt < entry.createdAt && sameParcel(other.analysis.parcel, analysis.parcel))
+    : [];
+
+  const addParcel = async () => {
+    haptics.success();
+    await parcelStore.add(entry);
+    toast(t("parcel.added"));
+  };
+  const updateParcel = async () => {
+    if (!trackedParcel) return;
+    haptics.success();
+    await parcelStore.applyScan(trackedParcel, entry);
+    toast(t("parcel.updated", { status: t(`parcel.statuses.${analysis.parcel!.status}`) }));
+  };
+
   const reminderFirst =
     forcedAt !== null ||
     reminderActive ||
     analysis.category === "document" ||
     analysis.category === "vehicle" ||
     (analysis.category === "plant" && analysis.reminder !== null);
-  const actions = (example ? [] : ((reminderFirst ? ["reminder", "question"] : ["question", "reminder"]) as Action[])).filter(
+  const actions = (
+    example ? [] : ((analysis.parcel ? ["parcel", "question"] : reminderFirst ? ["reminder", "question"] : ["question", "reminder"]) as Action[])
+  ).filter(
     // The question tab has its own composer.
     (action) => !(action === "question" && tab === "chat"),
   );
@@ -452,6 +486,8 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
 
   function renderPanel(): ReactNode {
     switch (tab) {
+      case "parcel":
+        return analysis.parcel && renderParcel(analysis.parcel);
       case "nutrition":
         return (
           analysis.nutrition && (
@@ -598,8 +634,64 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
    * "primary": the main button (grows). "secondary": compact button next to it
    * in the mobile bar. "panel": full-width secondary button on desktop.
    */
+  function renderParcel(parcel: NonNullable<HistoryEntry["analysis"]["parcel"]>) {
+    const firstEarlier = earlierScans[earlierScans.length - 1];
+    return (
+      <>
+        {!example && (trackedParcel || firstEarlier) && (
+          <motion.div variants={rise} className={styles.parcelNote} data-news={parcelHasNews || undefined}>
+            <PackageCheck size={18} />
+            <div>
+              {trackedParcel && parcelHasNews ? (
+                <p>
+                  {t("parcel.newStatus", {
+                    from: t(`parcel.statuses.${trackedParcel.info.status}`),
+                    to: t(`parcel.statuses.${parcel.status}`),
+                  })}
+                </p>
+              ) : trackedParcel ? (
+                <p>{t("parcel.inList", { status: t(`parcel.statuses.${trackedParcel.info.status}`) })}</p>
+              ) : null}
+              {firstEarlier && (
+                <p className={styles.parcelEarlier}>
+                  {t("parcel.earlierUpdated", { date: formatDateTime(firstEarlier.createdAt, locale) })}{" "}
+                  <Link href={{ pathname: "/result", query: { id: firstEarlier.id } }}>{t("parcel.openEarlier")}</Link>
+                </p>
+              )}
+            </div>
+          </motion.div>
+        )}
+        <Section title={t("result.parcel")} icon={<Package />}>
+          <ParcelCard parcel={parcel} />
+        </Section>
+      </>
+    );
+  }
+
   function renderAction(action: Action, slot: "primary" | "secondary" | "panel") {
     const className = slot === "primary" ? (isDesktop ? styles.panelButton : styles.grow) : slot === "panel" ? styles.panelButton : styles.compact;
+    if (action === "parcel") {
+      const variant = slot === "primary" ? "primary" : "secondary";
+      if (!trackedParcel) {
+        return (
+          <Button key="parcel" variant={variant} icon={<PackagePlus />} onClick={() => void addParcel()} className={className}>
+            {slot === "secondary" ? t("parcel.addShort") : t("parcel.add")}
+          </Button>
+        );
+      }
+      if (parcelHasNews) {
+        return (
+          <Button key="parcel" variant={variant} icon={<RefreshCw />} onClick={() => void updateParcel()} className={className}>
+            {slot === "secondary" ? t("parcel.updateShort") : t("parcel.update")}
+          </Button>
+        );
+      }
+      return (
+        <Button key="parcel" variant="secondary" icon={<PackageCheck />} href="/parcels" className={className}>
+          {slot === "secondary" ? t("parcel.viewShort") : t("parcel.view")}
+        </Button>
+      );
+    }
     if (action === "question") {
       return (
         <Button key="question" variant={slot === "primary" ? "primary" : "secondary"} icon={<MessageCircle />} onClick={openQuestion} className={className}>

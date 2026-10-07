@@ -6,6 +6,7 @@
   "nav": {
     "scan": "Scan",
     "history": "History",
+    "parcels": "Parcels",
     "settings": "Settings",
     "back": "Back"
   },
@@ -115,6 +116,7 @@
   "categories": {
     "food": "Food",
     "document": "Document",
+    "parcel": "Parcel",
     "object": "Object",
     "plant": "Plant",
     "other": "Other",
@@ -185,7 +187,8 @@
       "recipe": "Recipe",
       "vehicle": "Vehicle",
       "document": "Document",
-      "chat": "Question"
+      "chat": "Question",
+      "parcel": "Parcel"
     },
     "ask": "Ask a question",
     "askShort": "Question",
@@ -201,7 +204,8 @@
     "uncertainBody": "A sharper, well-lit photo, or the right scan type, gives a better answer.",
     "retake": "Retake the photo",
     "pickType": "Choose the type",
-    "openPhoto": "Enlarge the photo"
+    "openPhoto": "Enlarge the photo",
+    "parcel": "Parcel tracking"
   },
   "history": {
     "title": "History",
@@ -567,5 +571,64 @@
   "photo": {
     "close": "Close the photo",
     "hint": "Pinch or double-tap to zoom · swipe down to close"
+  },
+  "parcel": {
+    "statuses": {
+      "ordered": "Ordered",
+      "shipped": "Shipped",
+      "in_transit": "In transit",
+      "out_for_delivery": "Out for delivery",
+      "pickup_ready": "Ready for pickup",
+      "delivered": "Delivered",
+      "exception": "Delivery problem",
+      "returned": "Returned",
+      "unknown": "Unknown status"
+    },
+    "progress": "Delivery progress",
+    "carrier": "Carrier",
+    "platform": "Shop",
+    "seller": "Seller",
+    "orderedAt": "Ordered on",
+    "shippedAt": "Shipped on",
+    "estimatedDelivery": "Expected delivery",
+    "destination": "Destination",
+    "total": "Paid",
+    "trackingNumber": "Tracking no.",
+    "orderNumber": "Order no.",
+    "copyTracking": "Copy the tracking number",
+    "copyOrder": "Copy the order number",
+    "copied": "Copied",
+    "copyFailed": "Couldn’t copy",
+    "trackOnline": "Track online",
+    "add": "Add to my parcels",
+    "addShort": "Follow",
+    "added": "Added to your parcels",
+    "update": "Update my parcels",
+    "updateShort": "Update",
+    "updated": "Parcel updated: {status}",
+    "view": "See my parcels",
+    "viewShort": "My parcels",
+    "newStatus": "This parcel is already in your list. New status: {from} → {to}.",
+    "inList": "This parcel is in your list ({status}).",
+    "earlierUpdated": "You scanned it before on {date}: that scan now shows the latest status.",
+    "openEarlier": "See the earlier scan"
+  },
+  "parcels": {
+    "title": "My parcels",
+    "count": "{ongoing} on the way · {received} received",
+    "ongoing": "On the way",
+    "received": "Received",
+    "receivedLabel": "Received",
+    "emptyTitle": "No parcels followed",
+    "emptyBody": "Scan an order’s tracking page (Pinduoduo, Temu, AliExpress, Shein…) and tap “Add to my parcels”. Scan it again later to update its status.",
+    "emptyCta": "Scan an order",
+    "timeline": "Parcel history",
+    "scannedOn": "Scanned {date}",
+    "openScan": "See the latest scan",
+    "markReceived": "Mark as received",
+    "markOngoing": "Not received yet",
+    "remove": "Remove",
+    "confirmRemove": "Remove from the list?",
+    "removed": "Parcel removed from the list"
   }
 }

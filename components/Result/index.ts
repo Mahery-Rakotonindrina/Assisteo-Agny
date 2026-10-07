@@ -2,6 +2,7 @@ export { ConfidenceBadge, confidenceLevel } from "./ConfidenceBadge";
 export { AnswerFeedback } from "./AnswerFeedback";
 export { CountUp } from "./CountUp";
 export { NutritionCard } from "./NutritionCard";
+export { ParcelCard } from "./ParcelCard";
 export { RecipeCard } from "./RecipeCard";
 export { Section } from "./Section";
 export { SuggestionList } from "./SuggestionList";
