@@ -29,3 +29,15 @@ export function startOfDay(timestamp: number) {
 export function formatNumber(value: number, locale: Locale) {
   return new Intl.NumberFormat(localeTags[locale], { maximumFractionDigits: 0 }).format(value);
 }
+
+/**
+ * Short reminder time for lists: "14:30" today, "demain 09:00" / "tomorrow
+ * 09:00", else "lun. 14 oct., 09:00".
+ */
+export function formatReminder(timestamp: number, now: number, locale: Locale) {
+  const time = formatTime(timestamp, locale);
+  const days = Math.round((startOfDay(timestamp) - startOfDay(now)) / 86_400_000);
+  if (days === 0) return time;
+  if (days === 1) return `${locale === "fr" ? "demain" : "tomorrow"} ${time}`;
+  return formatDateTime(timestamp, locale);
+}

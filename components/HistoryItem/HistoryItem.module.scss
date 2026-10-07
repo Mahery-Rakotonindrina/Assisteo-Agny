@@ -107,8 +107,20 @@
   color: var(--text-subtle);
 }
 
-.bell {
+// Active reminder: the date at a glance, without opening the scan.
+.reminder {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  align-self: flex-start;
+  margin-top: 0.3rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
   color: var(--accent-text);
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 // ---- Tile variant (desktop grids) -----------------------------------------

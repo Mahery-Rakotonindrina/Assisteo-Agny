@@ -206,7 +206,8 @@
     "emptyBody": "Tes analyses apparaîtront ici. Elles restent stockées uniquement sur ton appareil.",
     "emptyCta": "Faire une première analyse",
     "noMatch": "Aucune analyse ne correspond à ta recherche.",
-    "swipeHint": "Glisse vers la gauche pour supprimer"
+    "swipeHint": "Glisse vers la gauche pour supprimer",
+    "reminderOn": "Rappel le {date}"
   },
   "settings": {
     "title": "Réglages",

@@ -206,7 +206,8 @@
     "emptyBody": "Your analyses will show up here. They are only stored on your device.",
     "emptyCta": "Run your first analysis",
     "noMatch": "No analysis matches your search.",
-    "swipeHint": "Swipe left to delete"
+    "swipeHint": "Swipe left to delete",
+    "reminderOn": "Reminder on {date}"
   },
   "settings": {
     "title": "Settings",
