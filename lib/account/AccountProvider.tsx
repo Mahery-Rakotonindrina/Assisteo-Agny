@@ -8,6 +8,8 @@ import { deleteAccountOnServer, onSessionChange, signOutAccount } from "@/servic
 import { aiKeyStore } from "@/services/aiKeyStore";
 import { accountKeyApi } from "@/services/accountKeyApi";
 import { cancelAllNotifications } from "@/services/notifications";
+import { parcelStore } from "@/services/parcelStore";
+import { startParcelSync, syncParcels } from "@/services/parcelSync";
 import { registerPush, unregisterPush } from "@/services/push";
 import { sync, type SyncStatus } from "@/services/sync";
 import { trialStore } from "@/services/trial";
@@ -58,6 +60,12 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!userId) return;
     void registerPush((entryId) => void Router.push({ pathname: "/result", query: { id: entryId } })).catch(() => undefined);
+  }, [userId]);
+
+  // "Mes colis".
+  useEffect(() => {
+    if (!userId) return;
+    return startParcelSync(userId);
   }, [userId]);
 
   // History.
@@ -135,9 +143,11 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await unregisterPush().catch(() => undefined);
     await sync.now()?.catch(() => undefined);
     await sync.stop({ wipe: true });
+    if (userId) await syncParcels(userId).catch(() => undefined);
+    await parcelStore.wipe();
     await aiKeyStore.clear({ fromSync: true });
     await signOutAccount();
-  }, []);
+  }, [userId]);
 
   const deleteAccount = useCallback(async () => {
     // Stop pushing first so nothing is re-uploaded while the server deletes.
@@ -150,6 +160,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       throw error;
     }
     await sync.stop({ wipe: true });
+    await parcelStore.wipe();
     await aiKeyStore.clear({ fromSync: true });
     await cancelAllNotifications();
     // The user no longer exists on the server: only forget the session here.

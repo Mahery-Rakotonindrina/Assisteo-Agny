@@ -58,3 +58,7 @@ skills-lock.json
 # Firebase config (per developer / CI secret, see docs/push.md)
 android/app/google-services.json
 ios/App/App/GoogleService-Info.plist
+
+# Database backups (encrypted, see docs/backups.md)
+/backups/
+*.agny

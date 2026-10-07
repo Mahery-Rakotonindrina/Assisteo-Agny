@@ -1,0 +1,271 @@
+@use "mixins" as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 720px;
+}
+
+.header {
+  padding-top: 1.25rem;
+
+  @include desktop {
+    padding-top: 0;
+  }
+
+  h1 {
+    @include display(2.6rem);
+  }
+
+  p {
+    margin-top: 0.3rem;
+    color: var(--text-muted);
+  }
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+
+  > h2 {
+    @include eyebrow;
+    margin-left: 0.25rem;
+  }
+}
+
+.card {
+  @include card;
+  --tone: var(--cat-parcel);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+
+  &[data-tone="done"] {
+    --tone: var(--accent-mark);
+  }
+
+  &[data-tone="problem"] {
+    --tone: var(--danger);
+  }
+}
+
+.summary {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  width: 100%;
+  padding: 0.75rem 0.85rem 0.6rem;
+  text-align: left;
+}
+
+.thumb {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--surface-strong);
+  color: var(--text-muted);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+
+  strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+}
+
+.status {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--tone);
+}
+
+.chevron {
+  flex-shrink: 0;
+  color: var(--text-subtle);
+  transition: transform 0.25s var(--ease-out);
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.bar {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.25rem;
+  padding: 0 0.85rem 0.8rem;
+
+  span {
+    height: 5px;
+    border-radius: 3px;
+    background: var(--surface-strong);
+  }
+}
+
+.barDone {
+  background: var(--tone) !important;
+}
+
+.more {
+  overflow: hidden;
+}
+
+.moreInner {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0.25rem 0.85rem 1rem;
+  border-top: 1px solid var(--border);
+  padding-top: 0.9rem;
+}
+
+.tracking {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+
+  button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    text-align: left;
+
+    span {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    small {
+      font-size: 0.78rem;
+      color: var(--text-subtle);
+    }
+
+    strong {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      overflow-wrap: anywhere;
+    }
+
+    > svg {
+      flex-shrink: 0;
+      color: var(--text-muted);
+    }
+  }
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--accent-text);
+  }
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    position: relative;
+    display: flex;
+    gap: 0.75rem;
+
+    // The line joining the dots.
+    &:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      left: 0.3rem;
+      top: 1rem;
+      bottom: -0.85rem;
+      width: 2px;
+      background: var(--border-strong);
+    }
+  }
+
+  div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+  }
+
+  strong {
+    font-size: 0.92rem;
+  }
+
+  small {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 0.3rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+
+    svg {
+      flex-shrink: 0;
+      margin-top: 0.2rem;
+    }
+  }
+}
+
+.dot {
+  flex-shrink: 0;
+  width: 0.65rem;
+  height: 0.65rem;
+  margin-top: 0.35rem;
+  border-radius: 50%;
+  background: var(--border-strong);
+
+  li:first-child & {
+    background: var(--tone);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--tone) 25%, transparent);
+  }
+}
+
+.scanLink {
+  font-size: 0.8rem;
+  color: var(--text-subtle);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}

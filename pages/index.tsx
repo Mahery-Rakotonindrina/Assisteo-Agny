@@ -3,11 +3,12 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { Apple, ArrowRight, Box, Car, FileText, FlaskConical, ImageUp, KeyRound, RotateCcw, Sparkles, X } from "lucide-react";
+import { Apple, ArrowRight, Box, Car, FileText, FlaskConical, ImageUp, KeyRound, Lightbulb, RotateCcw, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/Button";
 import { CaptureOrb } from "@/components/CaptureOrb";
 import { DropZone } from "@/components/DropZone";
 import { HistoryItem } from "@/components/HistoryItem";
+import { NextReminder } from "@/components/NextReminder";
 import { ScanStage } from "@/components/ScanStage";
 import { ScanWait } from "@/components/ScanWait";
 import { SegmentedControl } from "@/components/SegmentedControl";
@@ -15,6 +16,7 @@ import { AI_SETTINGS_HREF, TrialOver, TrialPill } from "@/components/Trial";
 import { useAiStatus } from "@/hooks/useAiStatus";
 import { useHistory } from "@/hooks/useHistory";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
+import { useNow } from "@/hooks/useNow";
 import { useScan } from "@/hooks/useScan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTrial } from "@/hooks/useTrial";
@@ -56,6 +58,8 @@ export default function ScanPage() {
   const recent = entries.slice(0, isDesktop ? 4 : 3);
   const busy = state.phase === "preparing" || state.phase === "analyzing";
   const ModeIcon = modeIcons[mode];
+  const now = useNow(60_000);
+  const hasReminder = entries.some((entry) => entry.reminderAt && entry.reminderAt > now);
 
   // Pasting an image anywhere on the screen starts an analysis.
   useEffect(() => {
@@ -81,7 +85,7 @@ export default function ScanPage() {
         {state.phase === "idle" ? (
           <motion.div
             key="idle"
-            className={styles.idle}
+            className={`${styles.idle} ${hasReminder ? styles.idleWithReminder : ""}`}
             variants={stagger}
             initial="hidden"
             animate="show"
@@ -139,6 +143,20 @@ export default function ScanPage() {
                     {picking ? t("scan.pickHint") : t(`scan.modeHints.${mode}`)}
                   </motion.p>
                 </AnimatePresence>
+                {/* How to frame the photo for this mode, before taking it. */}
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.p
+                    key={`framing-${mode}`}
+                    className={styles.framing}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2, ease: easeOut }}
+                  >
+                    <Lightbulb aria-hidden />
+                    {t(`scan.framing.${mode}`)}
+                  </motion.p>
+                </AnimatePresence>
               </motion.div>
 
               <motion.ol variants={rise} className={styles.how} aria-label={t("scan.how")}>
@@ -169,6 +187,12 @@ export default function ScanPage() {
                 </>
               )}
             </motion.div>
+
+            {hasReminder && (
+              <motion.div variants={rise} className={styles.reminderSlot}>
+                <NextReminder entries={entries} />
+              </motion.div>
+            )}
 
             {!historyLoading && recent.length === 0 && (
               <motion.section variants={rise} className={styles.recent}>

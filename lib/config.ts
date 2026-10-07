@@ -7,4 +7,6 @@ export const config = {
   appCommit: process.env.NEXT_PUBLIC_APP_COMMIT ?? "",
   // Shown on the privacy policy and terms (required by the app stores).
   contactEmail: process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "",
+  // Who publishes the app, as it should appear publicly (e.g. "Jane Doe, Antananarivo, Madagascar").
+  publisher: process.env.NEXT_PUBLIC_PUBLISHER ?? "",
 } as const;

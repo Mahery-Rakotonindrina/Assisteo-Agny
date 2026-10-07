@@ -35,3 +35,21 @@ test("new users can open example results before their first scan", async ({ page
   await page.getByRole("link", { name: "Faire mon premier scan" }).first().click();
   await expect(page).toHaveURL(/\/$/);
 });
+
+test("the scanned photo opens full screen and closes with Escape or back", async ({ page }) => {
+  await prepare(page);
+  await page.goto("/result?example=food");
+  await page.getByRole("button", { name: "Agrandir la photo" }).click();
+  const viewer = page.getByRole("dialog", { name: "Bol de salade composée" });
+  await expect(viewer).toBeVisible();
+  await expect(page).toHaveURL(/photo=1/);
+  await page.keyboard.press("Escape");
+  await expect(viewer).toHaveCount(0);
+  await expect(page).toHaveURL(/\/result\?example=food$/);
+
+  await page.getByRole("button", { name: "Agrandir la photo" }).click();
+  await expect(viewer).toBeVisible();
+  await page.goBack();
+  await expect(viewer).toHaveCount(0);
+  await expect(page).toHaveURL(/\/result\?example=food$/);
+});

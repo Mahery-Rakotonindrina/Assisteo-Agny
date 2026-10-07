@@ -2,6 +2,7 @@ import Head from "next/head";
 import { motion } from "motion/react";
 import { useEffect, useState, type FormEvent } from "react";
 import { Download, Gauge, Gift, LockKeyhole, Smartphone, LogOut, MessageCircle, Minus, Plus, Save, ShieldAlert, Wifi } from "lucide-react";
+import { AdminStats } from "@/components/AdminStats";
 import { Button } from "@/components/Button";
 import { useToast } from "@/components/Toast";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -120,6 +121,8 @@ export default function AdminPage() {
           <h1>{t("admin.title")}</h1>
           <p>{t("admin.subtitle")}</p>
         </motion.header>
+
+        {config && <AdminStats token={token} />}
 
         {!config ? (
           <motion.form

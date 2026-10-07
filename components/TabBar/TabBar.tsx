@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { motion } from "motion/react";
-import { History, ScanLine, Settings2 } from "lucide-react";
+import { History, Package, ScanLine, Settings2 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { spring } from "@/lib/motion";
 import { haptics } from "@/services/device";
@@ -10,6 +10,7 @@ import styles from "./TabBar.module.scss";
 const tabs = [
   { href: "/", key: "scan", Icon: ScanLine },
   { href: "/history", key: "history", Icon: History },
+  { href: "/parcels", key: "parcels", Icon: Package },
   { href: "/settings", key: "settings", Icon: Settings2 },
 ] as const;
 

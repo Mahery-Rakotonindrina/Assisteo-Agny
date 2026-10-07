@@ -157,6 +157,10 @@ Le modèle d’e-mail (code à 6 chiffres) est dans [`supabase/templates/sign-in
 
 Les rappels sont des notifications locales ; sur Android, un push serveur (Firebase) les livre aussi aux téléphones qui ne les ont pas encore programmés. Mise en place : [docs/push.md](docs/push.md).
 
+## Sauvegardes
+
+Une sauvegarde chiffrée de la base part chaque semaine via GitHub Actions : [docs/backups.md](docs/backups.md).
+
 ## Confidentialité
 
 Les photos sont ré-encodées côté client (métadonnées EXIF supprimées), envoyées uniquement pour l'analyse, et ne sont pas stockées par le serveur. L'historique et les réglages restent sur l'appareil.

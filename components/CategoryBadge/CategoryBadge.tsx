@@ -1,4 +1,4 @@
-import { Apple, Box, Car, FileText, Leaf, Shapes } from "lucide-react";
+import { Apple, Box, Car, FileText, Leaf, Package, Shapes } from "lucide-react";
 import type { Category } from "@/lib/ai/schema";
 import { useTranslation } from "@/hooks/useTranslation";
 import styles from "./CategoryBadge.module.scss";
@@ -6,6 +6,7 @@ import styles from "./CategoryBadge.module.scss";
 export const categoryIcons = {
   food: Apple,
   document: FileText,
+  parcel: Package,
   vehicle: Car,
   object: Box,
   plant: Leaf,

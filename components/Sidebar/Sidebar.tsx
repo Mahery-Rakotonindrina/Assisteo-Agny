@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { motion } from "motion/react";
-import { Download, History, ScanLine, Settings2, Smartphone, UserRound } from "lucide-react";
+import { Download, History, Package, ScanLine, Settings2, Smartphone, UserRound } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { useAiStatus } from "@/hooks/useAiStatus";
 import { useInstallPrompt } from "@/hooks/useInstallPrompt";
@@ -13,6 +13,7 @@ import styles from "./Sidebar.module.scss";
 const links = [
   { href: "/", key: "scan", Icon: ScanLine },
   { href: "/history", key: "history", Icon: History },
+  { href: "/parcels", key: "parcels", Icon: Package },
   { href: "/settings", key: "settings", Icon: Settings2 },
 ] as const;
 

@@ -59,12 +59,15 @@ export function LegalPage({ kind }: { kind: LegalKind }) {
           </motion.section>
         ))}
 
-        {config.contactEmail && (
+        {(config.publisher || config.contactEmail) && (
           <motion.section variants={rise} className={styles.section}>
-            <h2>{t("legal.contactTitle")}</h2>
-            <a className={styles.contact} href={`mailto:${config.contactEmail}`}>
-              <Mail size={16} /> {config.contactEmail}
-            </a>
+            <h2>{config.publisher ? t("legal.publisherTitle") : t("legal.contactTitle")}</h2>
+            {config.publisher && <p>{t("legal.publishedBy", { name: config.publisher })}</p>}
+            {config.contactEmail && (
+              <a className={styles.contact} href={`mailto:${config.contactEmail}`}>
+                <Mail size={16} /> {config.contactEmail}
+              </a>
+            )}
           </motion.section>
         )}
 

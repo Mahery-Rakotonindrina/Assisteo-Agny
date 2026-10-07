@@ -1,0 +1,54 @@
+name: Database backup
+
+# Weekly encrypted backup of the account data (history, settings, keys).
+# Needs the repository secrets POSTGRES_URL_NON_POOLING and BACKUP_PASSPHRASE
+# (docs/backups.md). The file is encrypted: the passphrase never leaves the
+# secrets, so the artifact is safe to keep even on a public repository.
+on:
+  schedule:
+    - cron: "0 3 * * 0"
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check secrets
+        id: check
+        env:
+          DB: ${{ secrets.POSTGRES_URL_NON_POOLING }}
+          PASS: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          if [ -z "$DB" ] || [ -z "$PASS" ]; then
+            echo "::notice::POSTGRES_URL_NON_POOLING or BACKUP_PASSPHRASE missing: no backup."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v5
+        if: steps.check.outputs.run == 'true'
+
+      - uses: actions/setup-node@v5
+        if: steps.check.outputs.run == 'true'
+        with:
+          node-version: 22
+          cache: npm
+
+      - if: steps.check.outputs.run == 'true'
+        run: npm ci --ignore-scripts
+
+      - name: Export and encrypt
+        if: steps.check.outputs.run == 'true'
+        env:
+          POSTGRES_URL_NON_POOLING: ${{ secrets.POSTGRES_URL_NON_POOLING }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: node scripts/db-backup.mjs backups
+
+      - uses: actions/upload-artifact@v4
+        if: steps.check.outputs.run == 'true'
+        with:
+          name: database-backup
+          path: backups/*.agny
+          retention-days: 90

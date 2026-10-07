@@ -12,6 +12,7 @@ import {
 import { applyCors, clientIp, sendError } from "@/lib/server/http";
 import { rateLimit } from "@/lib/server/rateLimit";
 import { reportError } from "@/lib/server/reportError";
+import { track } from "@/lib/server/stats";
 import { releaseAsk, releaseServerCall, reserveAsk, reserveServerCall } from "@/lib/server/trialStore";
 
 export const config = {
@@ -47,6 +48,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     return res.status(200).json({ answer: demoAnswers[parsed.data.locale], model: "demo", demo: true } satisfies AskResponse);
   }
 
+  const statsDevice = InstallIdSchema.safeParse(req.headers[installIdHeader]).data ?? null;
+
   // On the server's key, questions draw on a daily allowance per install.
   let installId: string | null = null;
   if (!override) {
@@ -69,10 +72,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
   try {
     const { answer, model } = await askQuestion({ ...parsed.data, analysis: analysis.data }, abort.signal, override);
+    await track({ type: "question", ownKey: Boolean(override) }, statsDevice);
     return res.status(200).json({ answer, model, demo: false } satisfies AskResponse);
   } catch (error) {
     if (installId) await Promise.all([releaseAsk(installId), releaseServerCall()]).catch(() => undefined);
     if (abort.signal.aborted) return;
+    await track({ type: "error", route: "ask", code: error instanceof AnalysisError ? error.code : "upstream_error" }, statsDevice);
     if (error instanceof AnalysisError) {
       if (!override && error.code === "invalid_key") return sendError(res, 503, "unavailable", "The AI service is not configured correctly.");
       if (error.status >= 500) {

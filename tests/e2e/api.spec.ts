@@ -30,4 +30,13 @@ test.describe("api", () => {
     const response = await request.get("/api/admin/trial", { headers: { Authorization: "Bearer nope" } });
     expect([401, 503]).toContain(response.status());
   });
+
+  test("feedback is validated and accepted", async ({ request }) => {
+    const ok = await request.post("/api/feedback", {
+      data: { vote: "down", reason: "wrong_info", category: "food", mode: "food", model: "demo", confidence: 0.8, title: "Salade" },
+    });
+    expect(ok.status()).toBe(204);
+    const bad = await request.post("/api/feedback", { data: { vote: "maybe" } });
+    expect(bad.status()).toBe(400);
+  });
 });

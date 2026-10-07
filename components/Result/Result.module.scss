@@ -272,3 +272,95 @@
   text-transform: uppercase;
   color: var(--kind);
 }
+
+// ---- Answer feedback ------------------------------------------------------
+
+.feedback {
+  @include card;
+  padding: 1rem 1.1rem;
+}
+
+.feedbackAsk {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+
+  strong {
+    font-size: 0.95rem;
+  }
+}
+
+.feedbackVotes {
+  display: flex;
+  gap: 0.5rem;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    height: 2.4rem;
+    padding: 0 0.95rem;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border-strong);
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: background 0.2s var(--ease-out);
+
+    &:hover:not(:disabled) {
+      background: var(--surface-strong);
+    }
+  }
+}
+
+.feedbackBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+
+  strong {
+    font-size: 0.95rem;
+  }
+}
+
+.feedbackReasons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+
+  button {
+    padding: 0.5rem 0.85rem;
+    border-radius: var(--radius-pill);
+    background: var(--surface-strong);
+    font-size: 0.88rem;
+    font-weight: 600;
+
+    &:hover:not(:disabled) {
+      background: var(--accent-soft);
+    }
+  }
+}
+
+.feedbackSkip {
+  align-self: flex-start;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.feedbackThanks {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.92rem;
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+.feedbackError {
+  margin-top: 0.6rem;
+  font-size: 0.85rem;
+  color: var(--danger);
+}

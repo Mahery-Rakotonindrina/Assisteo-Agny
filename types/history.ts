@@ -2,6 +2,9 @@ import type { Analysis, ChatMessage, ScanMode } from "@/lib/ai/schema";
 
 export type ChatEntry = ChatMessage & { at: number };
 
+/** Why an answer was wrong (see pages/api/feedback.ts). */
+export type FeedbackReason = "wrong_subject" | "wrong_info" | "other";
+
 export type HistoryEntry = {
   id: string;
   createdAt: number;
@@ -19,6 +22,8 @@ export type HistoryEntry = {
   reminderAt?: number;
   /** Follow-up conversation about this scan. */
   chat?: ChatEntry[];
+  /** The user's "was this right?" vote, kept on this device. */
+  feedback?: { vote: "up" | "down"; reason?: FeedbackReason; at: number };
 
   // ---- Sync bookkeeping (accounts) ----
   /** Last local change, used to settle edits made on two devices. */

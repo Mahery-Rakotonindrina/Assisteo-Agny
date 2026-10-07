@@ -17,7 +17,9 @@
     "icons": "node scripts/generate-icons.mjs",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "examples": "node scripts/generate-examples.mjs"
+    "examples": "node scripts/generate-examples.mjs",
+    "db:backup": "node scripts/db-backup.mjs",
+    "db:restore": "node scripts/db-restore.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.131.0",

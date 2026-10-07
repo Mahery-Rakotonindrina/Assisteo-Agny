@@ -9,6 +9,7 @@ import { haptics } from "@/services/device";
 import { createId, historyStore } from "@/services/historyStore";
 import { notify } from "@/services/notifications";
 import { ensureCameraAccess } from "@/services/permissions";
+import { updateEarlierParcelScans } from "@/services/parcelLinking";
 import { compactOldPhotos } from "@/services/photoStorage";
 import { trialStore } from "@/services/trial";
 import { insuranceReminderAt, scheduleReminder } from "@/services/reminders";
@@ -93,6 +94,12 @@ export function useScan(mode: ScanMode) {
         if (forcedAt !== null) {
           const saved = await historyStore.get(id);
           if (saved) await scheduleReminder(saved, forcedAt, reminderTexts.insurance(saved));
+        }
+
+        // A parcel scanned before: the earlier scans take the new status.
+        if (analysis.parcel) {
+          const saved = await historyStore.get(id);
+          if (saved) await updateEarlierParcelScans(saved).catch(() => undefined);
         }
 
         haptics.success();
