@@ -6,7 +6,8 @@ import { AnalyzeRequestSchema, InstallIdSchema, installIdHeader, type AnalyzeRes
 import { applyCors, clientIp, sendError } from "@/lib/server/http";
 import { rateLimit } from "@/lib/server/rateLimit";
 import { reportError } from "@/lib/server/reportError";
-import { releaseServerCall, releaseTrialScan, reserveServerCall, reserveTrialScan } from "@/lib/server/trialStore";
+import { verifyUser } from "@/lib/server/supabaseAdmin";
+import { releaseServerCall, releaseTrialScan, reserveServerCall, reserveTrialScan, type TrialSubject } from "@/lib/server/trialStore";
 
 export const config = {
   api: {
@@ -55,22 +56,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   }
 
   // Without their own key, the user spends one of the free trial scans.
-  let trial: (TrialState & { installId: string; ip: string }) | null = null;
+  let trial: (TrialState & { subject: TrialSubject; ip: string }) | null = null;
   if (!override) {
     const installId = InstallIdSchema.safeParse(req.headers[installIdHeader]);
     if (!installId.success) {
       return sendError(res, 400, "invalid_request", "Missing install id: update the app.");
     }
     const ip = clientIp(req);
-    const usage = await reserveTrialScan(installId.data, ip);
+    // Signed in: the account's count applies too (an invalid token just counts as signed out).
+    const subject: TrialSubject = { installId: installId.data, userId: await verifyUser(req).catch(() => null) };
+    const usage = await reserveTrialScan(subject, ip);
     if (usage === null) {
       return sendError(res, 403, "trial_exhausted", "The free trial is over: add your own API key in Settings.");
     }
     if (!(await reserveServerCall())) {
-      await releaseTrialScan(installId.data, ip).catch(() => undefined);
+      await releaseTrialScan(subject, ip).catch(() => undefined);
       return sendError(res, 503, "server_busy", "The free AI has reached today's limit: add your own API key or come back tomorrow.");
     }
-    trial = { installId: installId.data, ip, ...usage };
+    trial = { subject, ip, ...usage };
   }
 
   // Stop paying for tokens if the user cancels or leaves the screen.
@@ -92,7 +95,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     } satisfies AnalyzeResponse);
   } catch (error) {
     // A failed or cancelled analysis doesn't consume a trial scan.
-    if (trial) await Promise.all([releaseTrialScan(trial.installId, trial.ip), releaseServerCall()]).catch(() => undefined);
+    if (trial) await Promise.all([releaseTrialScan(trial.subject, trial.ip), releaseServerCall()]).catch(() => undefined);
     if (abort.signal.aborted) return;
     const engine = override ? `user-${override.provider}` : activeProvider;
     if (error instanceof AnalysisError) {

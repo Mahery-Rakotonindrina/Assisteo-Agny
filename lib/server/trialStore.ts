@@ -3,7 +3,9 @@ import { redis } from "./redis";
 
 // Free trial on the server's own AI key: a few analyses per install, then the
 // user must add their own key. Counted server-side so clearing the app's data
-// doesn't reset it, with a per-IP ceiling against scripted abuse.
+// doesn't reset it, with a per-IP ceiling against scripted abuse. Signed-in
+// users are also counted per account, so a new device doesn't bring the
+// trial back.
 //
 // The limits are runtime settings (editable from /admin without redeploying);
 // the environment only provides their defaults.
@@ -33,6 +35,7 @@ const CONFIG_KEY = "config:trial";
 
 type Store = {
   incr(key: string, ttlSeconds?: number): Promise<number>;
+  incrBy(key: string, amount: number): Promise<number>;
   decr(key: string): Promise<void>;
   get(key: string): Promise<number>;
   readConfig(): Promise<Partial<TrialConfig> | null>;
@@ -46,6 +49,7 @@ function redisStore(redis: Redis): Store {
       if (ttlSeconds && value === 1) await redis.expire(key, ttlSeconds);
       return value;
     },
+    incrBy: (key, amount) => redis.incrby(key, amount),
     async decr(key) {
       await redis.decr(key);
     },
@@ -67,6 +71,11 @@ function memoryStore(): Store {
   return {
     async incr(key) {
       const value = (values.get(key) ?? 0) + 1;
+      values.set(key, value);
+      return value;
+    },
+    async incrBy(key, amount) {
+      const value = (values.get(key) ?? 0) + amount;
       values.set(key, value);
       return value;
     },
@@ -105,29 +114,47 @@ export async function setTrialConfig(config: TrialConfig) {
 
 const installKey = (installId: string) => `trial:install:${installId}`;
 const ipKey = (ip: string) => `trial:ip:${ip}`;
+const userKey = (userId: string) => `trial:user:${userId}`;
 
-export async function getTrialUsage(installId: string) {
-  const [{ limit }, used] = await Promise.all([getTrialConfig(), store.get(installKey(installId))]);
-  return { limit, used: Math.min(limit, used) };
+/** Who is scanning: always an install, plus the account when signed in. */
+export type TrialSubject = { installId: string; userId?: string | null };
+
+export async function getTrialUsage({ installId, userId }: TrialSubject) {
+  const [{ limit }, installUsed, userUsed] = await Promise.all([
+    getTrialConfig(),
+    store.get(installKey(installId)),
+    userId ? store.get(userKey(userId)) : 0,
+  ]);
+  return { limit, used: Math.min(limit, Math.max(installUsed, userUsed)) };
 }
 
 /**
  * Books one trial scan before calling the AI. Returns the usage after booking,
  * or null when the trial is over. Call releaseTrialScan if the analysis fails.
  */
-export async function reserveTrialScan(installId: string, ip: string) {
+export async function reserveTrialScan({ installId, userId }: TrialSubject, ip: string) {
   const { limit, ipLimit } = await getTrialConfig();
   const used = await store.incr(installKey(installId));
   if (used > limit) {
     await store.decr(installKey(installId));
     return null;
   }
+  let accountUsed = 0;
+  if (userId) {
+    accountUsed = await store.incr(userKey(userId));
+    // Scans made on this device before signing in count for the account too.
+    if (accountUsed < used) accountUsed = await store.incrBy(userKey(userId), used - accountUsed);
+    if (accountUsed > limit) {
+      await Promise.all([store.decr(installKey(installId)), store.decr(userKey(userId))]);
+      return null;
+    }
+  }
   const ipUsed = await store.incr(ipKey(ip), IP_WINDOW_S);
   if (ipUsed > ipLimit) {
-    await Promise.all([store.decr(installKey(installId)), store.decr(ipKey(ip))]);
+    await Promise.all([store.decr(installKey(installId)), store.decr(ipKey(ip)), userId ? store.decr(userKey(userId)) : null]);
     return null;
   }
-  return { used, limit };
+  return { used: Math.max(used, accountUsed), limit };
 }
 
 // Questions about a scan: a daily allowance per install, reset at midnight UTC.
@@ -148,8 +175,8 @@ export async function releaseAsk(installId: string) {
   await store.decr(askKey(installId));
 }
 
-export async function releaseTrialScan(installId: string, ip: string) {
-  await Promise.all([store.decr(installKey(installId)), store.decr(ipKey(ip))]);
+export async function releaseTrialScan({ installId, userId }: TrialSubject, ip: string) {
+  await Promise.all([store.decr(installKey(installId)), store.decr(ipKey(ip)), userId ? store.decr(userKey(userId)) : null]);
 }
 
 // Every call on the server's key, all users together, reset at midnight UTC.

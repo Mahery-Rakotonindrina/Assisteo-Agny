@@ -1,5 +1,6 @@
 import { SecureStorage } from "@aparajita/capacitor-secure-storage";
 import { installIdHeader, type TrialResponse, type TrialState } from "@/lib/ai/schema";
+import { authHeaders } from "./account";
 import { httpClient } from "./httpClient";
 
 // Anonymous per-install id the server counts free trial scans against. Kept in
@@ -25,8 +26,10 @@ export function getInstallId() {
   return installId;
 }
 
+/** Install id, plus the session when signed in so the trial is also counted per account. */
 export async function installIdHeaders() {
-  return { [installIdHeader]: await getInstallId() };
+  const [id, auth] = await Promise.all([getInstallId(), authHeaders().catch(() => ({}))]);
+  return { [installIdHeader]: id, ...auth };
 }
 
 // ---- Trial state, shared by every screen that shows it -------------------
