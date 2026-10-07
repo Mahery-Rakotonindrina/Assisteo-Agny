@@ -20,7 +20,8 @@ const modeHints: Record<ScanMode, string> = {
   document: "The user says this is a document. Focus on reading and structuring its content.",
   vehicle:
     "The user says this is a vehicle. Set the category to vehicle and always fill the vehicle block: identify the closest real make and model (if the photo is a drawing, a toy or too unclear, say so in the summary and give your best guess with a low confidence), then prices, specs, maintenance and what to know as an owner or buyer.",
-  object: "The user says this is an object. Focus on identification, usage, care and value.",
+  object:
+    "The user says this is an object or a plant. Focus on identification, usage, care (for a plant: light, watering, health) and value.",
 };
 
 const languageNames = { fr: "French", en: "English" } as const;
