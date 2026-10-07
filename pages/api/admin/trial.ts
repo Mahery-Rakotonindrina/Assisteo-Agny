@@ -20,7 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     return sendError(res, 503, "unavailable", "Admin is disabled: set ADMIN_TOKEN on the server.");
   }
   // Slow down token guessing.
-  const limit = rateLimit(`admin:${clientIp(req)}`, 20, 60_000);
+  const limit = await rateLimit(`admin:${clientIp(req)}`, 20, 60_000);
   if (!limit.ok) return sendError(res, 429, "rate_limited", "Too many attempts.");
   if (!isAdmin(req)) return sendError(res, 401, "invalid_key", "Invalid admin token.");
 

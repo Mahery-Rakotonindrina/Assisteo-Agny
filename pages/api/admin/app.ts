@@ -7,7 +7,7 @@ import { rateLimit } from "@/lib/server/rateLimit";
 /** Admin-only: read or change the minimum / latest app versions. */
 export default async function handler(req: NextApiRequest, res: NextApiResponse<AppVersionConfig | unknown>) {
   if (!process.env.ADMIN_TOKEN) return sendError(res, 503, "unavailable", "Admin is disabled: set ADMIN_TOKEN on the server.");
-  const limit = rateLimit(`admin:${clientIp(req)}`, 20, 60_000);
+  const limit = await rateLimit(`admin:${clientIp(req)}`, 20, 60_000);
   if (!limit.ok) return sendError(res, 429, "rate_limited", "Too many attempts.");
   if (!isAdmin(req)) return sendError(res, 401, "invalid_key", "Invalid admin token.");
   res.setHeader("Cache-Control", "no-store");

@@ -1,4 +1,5 @@
-import { Redis } from "@upstash/redis";
+import type { Redis } from "@upstash/redis";
+import { redis } from "./redis";
 
 // Free trial on the server's own AI key: a few analyses per install, then the
 // user must add their own key. Counted server-side so clearing the app's data
@@ -82,12 +83,9 @@ function memoryStore(): Store {
   };
 }
 
-const hasRedis = Boolean(
-  (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) ||
-    (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN),
-);
+const hasRedis = redis !== null;
 
-const store: Store = hasRedis ? redisStore(Redis.fromEnv()) : memoryStore();
+const store: Store = redis ? redisStore(redis) : memoryStore();
 
 if (!hasRedis && process.env.VERCEL) {
   console.warn("[trial] No Upstash Redis configured: trial counts and settings reset on cold starts.");

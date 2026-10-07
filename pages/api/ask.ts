@@ -31,7 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     return sendError(res, 405, "method_not_allowed", "Use POST.");
   }
 
-  const limit = rateLimit(`ask:${clientIp(req)}`, 30, 60_000);
+  const limit = await rateLimit(`ask:${clientIp(req)}`, 30, 60_000);
   if (!limit.ok) return sendError(res, 429, "rate_limited", "Too many questions, slow down a little.");
 
   const parsed = AskRequestSchema.safeParse(req.body);

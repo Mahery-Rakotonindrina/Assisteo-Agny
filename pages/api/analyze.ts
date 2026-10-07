@@ -26,7 +26,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     return sendError(res, 405, "method_not_allowed", "Use POST.");
   }
 
-  const limit = rateLimit(`analyze:${clientIp(req)}`, RATE_LIMIT.requests, RATE_LIMIT.windowMs);
+  const limit = await rateLimit(`analyze:${clientIp(req)}`, RATE_LIMIT.requests, RATE_LIMIT.windowMs);
   if (!limit.ok) {
     res.setHeader("Retry-After", String(limit.retryAfterS));
     return sendError(res, 429, "rate_limited", "Too many analyses, try again in a moment.");
