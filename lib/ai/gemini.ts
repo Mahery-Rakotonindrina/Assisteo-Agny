@@ -1,6 +1,6 @@
 import { ApiError, createPartFromBase64, FinishReason, GoogleGenAI, ThinkingLevel } from "@google/genai";
 import { z } from "zod";
-import type { EngineOptions } from "./claude";
+import type { AiUsage, EngineOptions } from "./claude";
 import { AnalysisError } from "./errors";
 import { ASK_SYSTEM_PROMPT, buildAskContext, buildUserPrompt, SYSTEM_PROMPT } from "./prompt";
 import { AnalysisSchema, type Analysis, type AnalyzeRequest, type AskRequest } from "./schema";
@@ -57,7 +57,7 @@ export async function analyzeWithGemini(
   input: AnalyzeRequest,
   signal?: AbortSignal,
   options: EngineOptions = {},
-): Promise<{ analysis: Analysis; model: string }> {
+): Promise<{ analysis: Analysis; model: string; usage?: AiUsage }> {
   const client = getClient(options.apiKey);
   // Only fall back to Flash-Lite from the default model: a model the user
   // picked by name is what they asked for.
@@ -83,7 +83,7 @@ async function analyzeOnce(
   input: AnalyzeRequest,
   signal?: AbortSignal,
   timeoutMs = ATTEMPT_TIMEOUT_MS,
-): Promise<{ analysis: Analysis; model: string }> {
+): Promise<{ analysis: Analysis; model: string; usage?: AiUsage }> {
   const response = await client.models.generateContent({
     model,
     contents: [createPartFromBase64(input.image, input.mediaType), buildUserPrompt(input.mode, input.locale)],
@@ -106,7 +106,7 @@ async function analyzeOnce(
     throw new AnalysisError("upstream_error", 502, `Unusable Gemini output (finishReason: ${candidate?.finishReason}).`);
   }
 
-  return { analysis: parsed.data, model: response.modelVersion ?? model };
+  return { analysis: parsed.data, model: response.modelVersion ?? model, usage: geminiUsage(response.usageMetadata) };
 }
 
 function safeJson(text: string | undefined) {
@@ -122,7 +122,7 @@ export async function askWithGemini(
   input: AskRequest,
   signal?: AbortSignal,
   options: EngineOptions = {},
-): Promise<{ answer: string; model: string }> {
+): Promise<{ answer: string; model: string; usage?: AiUsage }> {
   const client = getClient(options.apiKey);
   const model = options.model ?? GEMINI_MODEL;
   // Replies start on Flash-Lite (about 1 s) and only use Flash if it fails.
@@ -155,7 +155,7 @@ export async function askWithGemini(
       }
       const answer = response.text?.trim();
       if (!answer) throw new AnalysisError("upstream_error", 502, `Empty Gemini answer (finishReason: ${finish}).`);
-      return { answer, model: response.modelVersion ?? candidate };
+      return { answer, model: response.modelVersion ?? candidate, usage: geminiUsage(response.usageMetadata) };
     } catch (error) {
       lastError = error;
       const retryable = canFallBack(error, signal);
@@ -214,4 +214,12 @@ function toAnalysisError(error: unknown): unknown {
     return new AnalysisError("unavailable", 404, "This Gemini model isn't available for this key.");
   }
   return new AnalysisError("upstream_error", 502, `Gemini API error ${error.status}: ${error.message}`);
+}
+
+/** Thinking tokens are billed as output. */
+function geminiUsage(metadata: { promptTokenCount?: number; candidatesTokenCount?: number; thoughtsTokenCount?: number } | undefined): AiUsage {
+  return {
+    inputTokens: metadata?.promptTokenCount ?? 0,
+    outputTokens: (metadata?.candidatesTokenCount ?? 0) + (metadata?.thoughtsTokenCount ?? 0),
+  };
 }

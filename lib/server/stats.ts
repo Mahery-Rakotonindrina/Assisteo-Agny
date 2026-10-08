@@ -18,7 +18,9 @@ export type StatsEvent =
   | { type: "scan"; mode: string; category: string; ownKey: boolean; durationMs: number }
   | { type: "question"; ownKey: boolean }
   | { type: "error"; route: "analyze" | "ask"; code: string }
-  | { type: "feedback"; vote: "up" | "down"; category: string };
+  | { type: "feedback"; vote: "up" | "down"; category: string }
+  /** Tokens spent on the server's AI key, per kind of call and model. */
+  | { type: "ai"; kind: "scan" | "deep" | "question"; model: string; inputTokens: number; outputTokens: number };
 
 export type FeedbackRecord = {
   at: number;
@@ -53,6 +55,10 @@ function fieldsFor(event: StatsEvent): Record<string, number> {
       return { [`errors:${event.route}:${event.code}`]: 1 };
     case "feedback":
       return { [`feedback:${event.vote}`]: 1, [`feedback:${event.vote}:${event.category}`]: 1 };
+    case "ai": {
+      const field = `ai:${event.kind}:${event.model.replace(/:/g, "_")}`;
+      return { [`${field}:calls`]: 1, [`${field}:in`]: Math.round(event.inputTokens), [`${field}:out`]: Math.round(event.outputTokens) };
+    }
   }
 }
 

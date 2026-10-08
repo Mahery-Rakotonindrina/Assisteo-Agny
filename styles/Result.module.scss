@@ -574,3 +574,63 @@ $bar-height: calc(var(--safe-top) + 3.95rem);
 .parcelEarlier {
   color: var(--text-muted);
 }
+
+// A list read on the photo (before it is kept in "Mes listes").
+.readList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-size: 0.95rem;
+
+    small {
+      margin-left: auto;
+      padding: 0.1rem 0.5rem;
+      border-radius: var(--radius-pill);
+      background: var(--surface-strong);
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    &[data-done] > span:nth-child(2) {
+      color: var(--text-subtle);
+      text-decoration: line-through;
+    }
+  }
+}
+
+.readBox {
+  flex-shrink: 0;
+  width: 1.05rem;
+  height: 1.05rem;
+  border-radius: 6px;
+  border: 1.5px solid var(--border-strong);
+
+  [data-done] > & {
+    border-color: var(--cat-list);
+    background: var(--cat-list);
+  }
+}
+
+.readListNote {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.9rem;
+  font-size: 0.86rem;
+  color: var(--text-muted);
+
+  a {
+    font-weight: 700;
+    color: var(--accent-text);
+  }
+}

@@ -135,7 +135,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   });
 
   try {
-    const { analysis, model } = await analyzeImage(parsed.data, abort.signal, override, deep);
+    const { analysis, model, usage } = await analyzeImage(parsed.data, abort.signal, override, deep);
+    // What the server's key spent (an own key costs us nothing).
+    if (!override && usage) await track({ type: "ai", kind: deep ? "deep" : "scan", model, ...usage });
     await track(
       { type: "scan", mode: parsed.data.mode, category: analysis.category, ownKey: Boolean(override), durationMs: Date.now() - startedAt },
       statsDevice,

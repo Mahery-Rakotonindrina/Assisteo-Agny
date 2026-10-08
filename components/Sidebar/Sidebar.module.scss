@@ -196,3 +196,12 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.mobileLink {
+  font-weight: 700;
+  color: var(--accent-text);
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

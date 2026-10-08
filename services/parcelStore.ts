@@ -48,6 +48,9 @@ export type Parcel = {
   priceMga?: number;
   /** Extra costs in ariary: freight, customs, local delivery… */
   fees?: ParcelFee[];
+  /** Resellers (Pro): what the client is charged, and what they have paid so far, in ariary. */
+  salePriceMga?: number;
+  paidMga?: number;
   /** Sync bookkeeping, like the history. */
   deletedAt?: number;
   dirty?: boolean;
@@ -183,6 +186,13 @@ export const parcelStore = {
     await write({ ...current, thumbnail });
   },
 
+  /** Saves what the client is charged and has paid (resellers). */
+  async setSale(id: string, sale: { salePriceMga?: number; paidMga?: number }) {
+    const current = await get<Parcel>(id, db());
+    if (!current) return;
+    await write({ ...current, salePriceMga: sale.salePriceMga, paidMga: sale.paidMga });
+  },
+
   /** Saves the price and fees in ariary. */
   async setCosts(id: string, costs: { priceMga?: number; fees: ParcelFee[] }) {
     const current = await get<Parcel>(id, db());
@@ -229,4 +239,14 @@ export function hasNewStatus(parcel: Parcel, info: ParcelInfo | null | undefined
 /** Everything spent on a parcel, in ariary: price plus fees. */
 export function parcelTotalMga(parcel: Pick<Parcel, "priceMga" | "fees">) {
   return (parcel.priceMga ?? 0) + (parcel.fees ?? []).reduce((total, fee) => total + (fee.amountMga || 0), 0);
+}
+
+/** What the client still owes, in ariary (0 without a sale price). */
+export function parcelDueMga(parcel: Pick<Parcel, "salePriceMga" | "paidMga">) {
+  return parcel.salePriceMga ? Math.max(0, parcel.salePriceMga - (parcel.paidMga ?? 0)) : 0;
+}
+
+/** The sale price minus everything spent, or null without a sale price. */
+export function parcelProfitMga(parcel: Pick<Parcel, "salePriceMga" | "priceMga" | "fees">) {
+  return parcel.salePriceMga ? parcel.salePriceMga - parcelTotalMga(parcel) : null;
 }

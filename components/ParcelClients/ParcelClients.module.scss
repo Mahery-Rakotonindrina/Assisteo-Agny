@@ -166,3 +166,38 @@
   font-size: 0.82rem;
   color: var(--danger);
 }
+
+.money {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.45rem;
+
+  span {
+    padding: 0.25rem 0.6rem;
+    border-radius: var(--radius-pill);
+    font-size: 0.8rem;
+    font-weight: 800;
+
+    &[data-tone="ok"] {
+      background: var(--accent-soft);
+      color: var(--accent-text);
+    }
+
+    &[data-tone="due"] {
+      background: color-mix(in srgb, var(--cat-food) 16%, transparent);
+      color: var(--cat-food);
+    }
+
+    &[data-tone="loss"] {
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+  }
+}
+
+.text em {
+  font-style: normal;
+  font-weight: 700;
+  color: var(--cat-food);
+}

@@ -8,6 +8,8 @@ import { deleteAccountOnServer, onSessionChange, signOutAccount } from "@/servic
 import { aiKeyStore } from "@/services/aiKeyStore";
 import { accountKeyApi } from "@/services/accountKeyApi";
 import { cancelAllNotifications } from "@/services/notifications";
+import { listStore } from "@/services/listStore";
+import { startListSync, syncLists } from "@/services/listSync";
 import { parcelStore } from "@/services/parcelStore";
 import { startParcelSync, syncParcels } from "@/services/parcelSync";
 import { registerPush, unregisterPush } from "@/services/push";
@@ -60,13 +62,21 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   // Reminder pushes on this device (Android builds with Firebase only).
   useEffect(() => {
     if (!userId) return;
-    void registerPush((entryId) => void Router.push({ pathname: "/result", query: { id: entryId } })).catch(() => undefined);
+    void registerPush((target) =>
+      void Router.push("entryId" in target ? { pathname: "/result", query: { id: target.entryId } } : target.route),
+    ).catch(() => undefined);
   }, [userId]);
 
   // "Mes colis".
   useEffect(() => {
     if (!userId) return;
     return startParcelSync(userId);
+  }, [userId]);
+
+  // "Mes listes".
+  useEffect(() => {
+    if (!userId) return;
+    return startListSync(userId);
   }, [userId]);
 
   // History.
@@ -144,8 +154,9 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await unregisterPush().catch(() => undefined);
     await sync.now()?.catch(() => undefined);
     await sync.stop({ wipe: true });
-    if (userId) await syncParcels(userId).catch(() => undefined);
+    if (userId) await Promise.all([syncParcels(userId).catch(() => undefined), syncLists(userId).catch(() => undefined)]);
     await parcelStore.wipe();
+    await listStore.wipe();
     await aiKeyStore.clear({ fromSync: true });
     await signOutAccount();
   }, [userId]);
@@ -162,6 +173,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     }
     await sync.stop({ wipe: true });
     await parcelStore.wipe();
+    await listStore.wipe();
     await aiKeyStore.clear({ fromSync: true });
     await cancelAllNotifications();
     // The user no longer exists on the server: only forget the session here.

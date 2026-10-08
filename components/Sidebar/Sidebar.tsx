@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { motion } from "motion/react";
-import { Download, History, Package, ScanLine, Settings2, ShieldCheck, Smartphone, UserRound } from "lucide-react";
+import { Download, History, ListChecks, Package, ScanLine, Settings2, ShieldCheck, Smartphone, UserRound } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { useAiStatus } from "@/hooks/useAiStatus";
+import { useAndroidDownload } from "@/hooks/useAndroidDownload";
 import { useInstallPrompt } from "@/hooks/useInstallPrompt";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -15,6 +16,7 @@ const links = [
   { href: "/", key: "scan", Icon: ScanLine },
   { href: "/history", key: "history", Icon: History },
   { href: "/parcels", key: "parcels", Icon: Package },
+  { href: "/lists", key: "lists", Icon: ListChecks },
   { href: "/settings", key: "settings", Icon: Settings2 },
 ] as const;
 
@@ -25,6 +27,7 @@ const adminLink = { href: "/admin", key: "admin", Icon: ShieldCheck } as const;
 export function Sidebar() {
   const { pathname } = useRouter();
   const { isAdmin } = usePlan();
+  const android = useAndroidDownload();
   const { t } = useTranslation();
   const aiStatus = useAiStatus();
   const account = useAccount();
@@ -68,10 +71,17 @@ export function Sidebar() {
               {t("sidebar.installCta")}
             </button>
           )}
-          <p className={styles.mobile}>
-            <Smartphone size={14} />
-            {t("sidebar.mobileApps")}
-          </p>
+          {android ? (
+            <a className={`${styles.mobile} ${styles.mobileLink}`} href={android.url}>
+              <Smartphone size={14} />
+              {t("sidebar.androidDownload")}
+            </a>
+          ) : (
+            <p className={styles.mobile}>
+              <Smartphone size={14} />
+              {t("sidebar.mobileApps")}
+            </p>
+          )}
         </div>
 
         {account.available && account.session !== undefined && (

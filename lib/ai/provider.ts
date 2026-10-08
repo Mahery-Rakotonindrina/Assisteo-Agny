@@ -1,5 +1,5 @@
 import type { IncomingHttpHeaders } from "node:http";
-import { analyzeWithClaude, askWithClaude, CLAUDE_MODEL, listClaudeModels, verifyClaudeKey, type EngineOptions } from "./claude";
+import { analyzeWithClaude, askWithClaude, CLAUDE_MODEL, listClaudeModels, verifyClaudeKey, type AiUsage, type EngineOptions } from "./claude";
 import { analyzeWithGemini, askWithGemini, GEMINI_DEEP_MODEL, GEMINI_MODEL, listGeminiModels, verifyGeminiKey } from "./gemini";
 import { analyzeWithOpenAICompatible, askWithOpenAICompatible, listOpenAICompatibleModels, verifyOpenAICompatibleKey } from "./openaiCompatible";
 import {
@@ -13,7 +13,7 @@ import {
   type ListModelsRequest,
 } from "./schema";
 
-type Engine = (input: AnalyzeRequest, signal?: AbortSignal, options?: EngineOptions) => Promise<{ analysis: Analysis; model: string }>;
+type Engine = (input: AnalyzeRequest, signal?: AbortSignal, options?: EngineOptions) => Promise<{ analysis: Analysis; model: string; usage?: AiUsage }>;
 
 const serverEngines: Record<Exclude<AiProvider, "demo">, { analyze: Engine; model: string; deepModel: string; configured: boolean }> = {
   claude: {

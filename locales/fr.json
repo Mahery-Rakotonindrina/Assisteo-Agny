@@ -9,7 +9,8 @@
     "parcels": "Colis",
     "settings": "Réglages",
     "back": "Retour",
-    "admin": "Admin"
+    "admin": "Admin",
+    "lists": "Listes"
   },
   "scan": {
     "greeting": {
@@ -123,7 +124,8 @@
     "object": "Objet",
     "plant": "Plante",
     "other": "Autre",
-    "vehicle": "Véhicule"
+    "vehicle": "Véhicule",
+    "list": "Liste"
   },
   "result": {
     "confidence": "Confiance",
@@ -191,7 +193,8 @@
       "vehicle": "Véhicule",
       "document": "Document",
       "chat": "Question",
-      "parcel": "Colis"
+      "parcel": "Colis",
+      "list": "Liste"
     },
     "ask": "Poser une question",
     "askShort": "Question",
@@ -317,7 +320,12 @@
     "aiDefaultOverMonth": "Scans du mois épuisés : passe à l’offre supérieure, ou utilise ta clé.",
     "aiLocked": "Utiliser ta propre clé IA, sans limite, est réservé aux abonnés (dès l’offre Lite).",
     "aiLockedSaved": "Ta clé est enregistrée, mais elle ne sert qu’avec un abonnement : en attendant, c’est l’IA de l’app qui analyse.",
-    "aiLockedHint": "Réservé aux abonnés"
+    "aiLockedHint": "Réservé aux abonnés",
+    "androidApp": "Application Android",
+    "androidAppLabel": "App Android",
+    "androidAppHint": "Version {version} · à installer sur un téléphone Android",
+    "androidAppHintNoVersion": "À installer sur un téléphone Android",
+    "androidAppDownload": "Télécharger"
   },
   "notifications": {
     "readyTitle": "Analyse prête ✨"
@@ -330,7 +338,8 @@
     "installTitle": "Installer l’app",
     "installBody": "Ajoute Assisteo Agny à ton ordinateur pour l’ouvrir comme une application.",
     "installCta": "Installer",
-    "mobileApps": "Aussi disponible sur Android et iOS."
+    "mobileApps": "Aussi disponible sur Android et iOS.",
+    "androidDownload": "Télécharger l’app Android"
   },
   "onboarding": {
     "welcomeTitle": "Bienvenue !",
@@ -489,6 +498,16 @@
         "split": "Abonnés actifs par offre",
         "monthly": "Encaissé par mois, par offre",
         "noPayments": "Pas encore de paiement enregistré."
+      },
+      "remind": {
+        "email": "Relancer par e-mail",
+        "copy": "Copier le message",
+        "copied": "Message copié : colle-le dans WhatsApp ou un SMS.",
+        "auto": "Relance automatique : les abonnés reçoivent une notification 3 jours avant la fin, le dernier jour et à la fin (app Android), en plus du bandeau dans l’app.",
+        "subject": "Ton offre {plan} Assisteo Agny se termine le {date}",
+        "body": "Bonjour,\n\nTon offre {plan} sur Assisteo Agny se termine le {date}. Pour la renouveler et garder tes avantages, tout est expliqué ici : {link}\n\nMerci et à bientôt !",
+        "subjectEnded": "Ton offre {plan} Assisteo Agny est terminée",
+        "bodyEnded": "Bonjour,\n\nTon offre {plan} sur Assisteo Agny est terminée. Pour la renouveler et retrouver tes avantages, tout est expliqué ici : {link}\n\nMerci et à bientôt !"
       }
     },
     "plans": {
@@ -509,7 +528,39 @@
       "contact": "Contact pour envoyer la référence",
       "contactHint": "Un numéro de téléphone, ou un lien (WhatsApp : https://wa.me/261…, Messenger…)."
     },
-    "adminAccount": "Ton compte est administrateur : saisis le jeton pour ouvrir l’espace admin."
+    "adminAccount": "Ton compte est administrateur : saisis le jeton pour ouvrir l’espace admin.",
+    "ai": {
+      "title": "Coût de l’IA · {days} derniers jours",
+      "subtitle": "Ce que la clé IA du serveur a coûté, et ce que chaque offre coûterait utilisée à fond.",
+      "empty": "Pas encore de données : les coûts apparaissent après les premiers scans sur l’IA du serveur.",
+      "kinds": {
+        "scan": "Scan",
+        "deep": "Analyse approfondie",
+        "question": "Question"
+      },
+      "perCall": "par appel · {calls} appel(s), {total} en tout",
+      "noCalls": "aucun appel",
+      "unpriced": "Sans prix : {models}",
+      "plansTitle": "Chaque offre utilisée à fond, sur un mois",
+      "planLine": "{price} / mois · IA au plus {cost}",
+      "unlimitedScans": "(scans sans limite : non comptés)",
+      "margin": "Marge {amount} ({percent} %)",
+      "model": "Modèle",
+      "calls": "Appels",
+      "tokens": "Jetons moyens (entrée / sortie)",
+      "costPerCall": "Coût par appel",
+      "noPrice": "prix manquant",
+      "pricesTitle": "Prix de l’IA ($ par million de jetons)",
+      "pricesHint": "Un modèle prend le prix de la ligne dont le texte apparaît dans son nom (la plus précise l’emporte). Prix indicatifs : vérifie-les sur les pages tarifs de Google et d’Anthropic.",
+      "match": "Le nom contient",
+      "input": "Entrée ($)",
+      "output": "Sortie ($)",
+      "removePrice": "Retirer ce prix",
+      "addPrice": "Ajouter un prix",
+      "rate": "Taux du jour : 1 $ = {rate} Ar",
+      "noRate": "Taux du dollar indisponible : les coûts sont en $.",
+      "partial": "Pas encore mesuré, donc compté à 0 : {kinds}."
+    }
   },
   "account": {
     "section": "Compte",
@@ -809,7 +860,10 @@
       "empty": "Aucun colis sur cette période.",
       "from": "Du",
       "to": "Au",
-      "badRange": "La date de début doit être avant la date de fin."
+      "badRange": "La date de début doit être avant la date de fin.",
+      "due": "À encaisser : {amount}",
+      "profit": "Bénéfice : {amount}",
+      "dueShort": "reste {amount}"
     },
     "export": {
       "button": "Exporter pour Excel",
@@ -830,7 +884,11 @@
         "priceMga": "Prix de l’article",
         "feesMga": "Frais",
         "feesDetail": "Détail des frais",
-        "totalMga": "Total"
+        "totalMga": "Total",
+        "salePriceMga": "Prix de vente",
+        "paidMga": "Payé par le client",
+        "dueMga": "Reste à payer",
+        "profitMga": "Bénéfice"
       },
       "working": "Préparation du fichier…",
       "sheetParcels": "Colis",
@@ -844,8 +902,27 @@
         "parcels": "Colis",
         "ongoing": "En cours",
         "received": "Reçus",
-        "total": "Total dépensé"
+        "total": "Total dépensé",
+        "due": "Reste à payer",
+        "profit": "Bénéfice"
       }
+    },
+    "fx": {
+      "rate": "Taux : combien d’ariary pour 1 {symbol}",
+      "market": "Taux du jour : 1 {symbol} = {rate} Ar",
+      "noMarket": "Taux du jour indisponible : saisis le tien",
+      "use": "Utiliser ce prix"
+    },
+    "sale": {
+      "title": "Vente au client",
+      "price": "Prix de vente",
+      "paid": "Payé par le client",
+      "due": "Reste à payer : {amount}",
+      "allPaid": "Tout est payé",
+      "profit": "Bénéfice : {amount}",
+      "loss": "Perte : {amount}",
+      "locked": "Prix de vente, paiement du client et bénéfice : avec l’offre Pro.",
+      "dueShort": "Reste {amount}"
     }
   },
   "plans": {
@@ -953,5 +1030,49 @@
     "finished": "Analyse approfondie terminée",
     "done": "Analyse approfondie",
     "unavailable": "L’analyse approfondie est indisponible pour le moment. Rien n’a été décompté de ton offre."
+  },
+  "lists": {
+    "title": "Mes listes",
+    "summary": "{ongoing} en cours · {done} terminée(s)",
+    "emptyTitle": "Aucune liste pour l’instant",
+    "emptyBody": "Prends en photo une liste de courses ou de tâches, même écrite à la main, ou crée-en une ici.",
+    "scan": "Scanner une liste",
+    "new": "Nouvelle liste",
+    "newTitle": "Nom de la liste",
+    "newPlaceholder": "Ex. Courses du samedi",
+    "kind": "Type de liste",
+    "kinds": {
+      "shopping": "Courses",
+      "todo": "Tâches",
+      "other": "Liste"
+    },
+    "create": "Créer",
+    "count": "{count} élément(s)",
+    "progress": "{done}/{total} fait(s)",
+    "allDone": "tout est fait",
+    "noItems": "Aucun élément : ajoute le premier ci-dessous.",
+    "addItem": "Ajouter un élément",
+    "quantity": "Quantité",
+    "itemText": "Élément",
+    "editItem": "Modifier « {item} »",
+    "removeItem": "Retirer « {item} »",
+    "save": "Enregistrer",
+    "share": "Partager",
+    "copied": "Liste copiée : colle-la dans WhatsApp ou un SMS.",
+    "rename": "Renommer",
+    "uncheckAll": "Tout décocher",
+    "clearDone": "Effacer les cochés",
+    "openScan": "Voir le scan",
+    "remove": "Supprimer",
+    "confirmRemove": "Supprimer la liste ?",
+    "removed": "Liste supprimée",
+    "add": "Ajouter à mes listes",
+    "addShort": "Garder",
+    "added": "Ajoutée à Mes listes",
+    "view": "Voir dans Mes listes",
+    "viewShort": "Mes listes",
+    "inList": "Gardée dans Mes listes.",
+    "open": "Ouvrir",
+    "addItemButton": "Ajouter l’élément"
   }
 }

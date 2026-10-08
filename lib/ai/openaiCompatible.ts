@@ -1,3 +1,4 @@
+import type { AiUsage } from "./claude";
 import { z } from "zod";
 import { assertPublicHttpsUrl, UnsafeUrlError } from "@/lib/server/safeUrl";
 import { AnalysisError } from "./errors";
@@ -87,7 +88,7 @@ export async function analyzeWithOpenAICompatible(
   input: AnalyzeRequest,
   signal: AbortSignal | undefined,
   { apiKey, model, baseUrl }: Options,
-): Promise<{ analysis: Analysis; model: string }> {
+): Promise<{ analysis: Analysis; model: string; usage?: AiUsage }> {
   await checkUrl(baseUrl);
   const image = `data:${input.mediaType};base64,${input.image}`;
 
@@ -134,7 +135,7 @@ export async function askWithOpenAICompatible(
   input: AskRequest,
   signal: AbortSignal | undefined,
   { apiKey, model, baseUrl }: Options,
-): Promise<{ answer: string; model: string }> {
+): Promise<{ answer: string; model: string; usage?: AiUsage }> {
   await checkUrl(baseUrl);
   const image = `data:${input.mediaType};base64,${input.image}`;
   const messages = [

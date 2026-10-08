@@ -2,6 +2,7 @@ import Head from "next/head";
 import { motion } from "motion/react";
 import { useEffect, useState, type FormEvent } from "react";
 import { Download, Gauge, Gift, LockKeyhole, Smartphone, LogOut, MessageCircle, Minus, Plus, Save, ShieldAlert, Wifi } from "lucide-react";
+import { AdminAiCost } from "@/components/AdminAiCost";
 import { AdminPlans } from "@/components/AdminPlans";
 import { AdminStats } from "@/components/AdminStats";
 import { AdminSubscriptions } from "@/components/AdminSubscriptions";
@@ -128,6 +129,7 @@ export default function AdminPage() {
 
         {config && <AdminSubscriptions token={token} />}
         {config && <AdminPlans token={token} />}
+        {config && <AdminAiCost token={token} />}
         {config && <AdminStats token={token} />}
 
         {!config ? (

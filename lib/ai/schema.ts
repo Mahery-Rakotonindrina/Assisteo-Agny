@@ -11,7 +11,10 @@ z.config({ jitless: true });
 export const scanModes = ["auto", "food", "document", "vehicle", "object"] as const;
 export type ScanMode = (typeof scanModes)[number];
 
-export const categories = ["food", "document", "parcel", "vehicle", "object", "plant", "other"] as const;
+export const categories = ["food", "document", "list", "parcel", "vehicle", "object", "plant", "other"] as const;
+
+/** What a list is for: things to buy, things to do, or anything else. */
+export const listKinds = ["shopping", "todo", "other"] as const;
 
 /** Where a parcel is, normalised from whatever the shop or carrier app says. */
 export const parcelStatuses = [
@@ -144,6 +147,21 @@ export const AnalysisSchema = z.object({
     })
     .nullable()
     .describe("Only for parcels (order, shipping or tracking screens and shipping labels), null otherwise."),
+  list: z
+    .object({
+      kind: z.enum(listKinds).describe("shopping: things to buy; todo: tasks to do; other: any other list."),
+      items: z
+        .array(
+          z.object({
+            text: z.string().describe("The item as written (translated into the user's language if needed), without its quantity."),
+            quantity: z.string().nullable().describe("Quantity with its unit when written, e.g. '2 kg', 'x3', or null."),
+            done: z.boolean().describe("True when the item is ticked or crossed out on the photo."),
+          }),
+        )
+        .describe("Every item, in the order written."),
+    })
+    .nullable()
+    .describe("Only for lists (shopping lists, to-do lists, checklists), null otherwise."),
   reminder: z
     .object({
       title: z.string(),
@@ -168,6 +186,7 @@ export function normalizeStoredAnalysis(raw: unknown): unknown {
     recipe: null,
     vehicle: null,
     parcel: null,
+    list: null,
     ...analysis,
     document: document ? { expiresOn: null, isInsurance: false, ...document } : null,
   };

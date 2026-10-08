@@ -9,7 +9,8 @@
     "parcels": "Parcels",
     "settings": "Settings",
     "back": "Back",
-    "admin": "Admin"
+    "admin": "Admin",
+    "lists": "Lists"
   },
   "scan": {
     "greeting": {
@@ -123,7 +124,8 @@
     "object": "Object",
     "plant": "Plant",
     "other": "Other",
-    "vehicle": "Vehicle"
+    "vehicle": "Vehicle",
+    "list": "List"
   },
   "result": {
     "confidence": "Confidence",
@@ -191,7 +193,8 @@
       "vehicle": "Vehicle",
       "document": "Document",
       "chat": "Question",
-      "parcel": "Parcel"
+      "parcel": "Parcel",
+      "list": "List"
     },
     "ask": "Ask a question",
     "askShort": "Question",
@@ -317,7 +320,12 @@
     "aiDefaultOverMonth": "This month’s scans are used up: move to a bigger plan, or use your key.",
     "aiLocked": "Using your own AI key, with no limit, is for subscribers (from the Lite plan).",
     "aiLockedSaved": "Your key is saved, but it only works with a subscription: meanwhile, the app’s AI does the analyses.",
-    "aiLockedHint": "For subscribers"
+    "aiLockedHint": "For subscribers",
+    "androidApp": "Android app",
+    "androidAppLabel": "Android app",
+    "androidAppHint": "Version {version} · to install on an Android phone",
+    "androidAppHintNoVersion": "To install on an Android phone",
+    "androidAppDownload": "Download"
   },
   "notifications": {
     "readyTitle": "Analysis ready ✨"
@@ -330,7 +338,8 @@
     "installTitle": "Install the app",
     "installBody": "Add Assisteo Agny to your computer and open it like an app.",
     "installCta": "Install",
-    "mobileApps": "Also available on Android and iOS."
+    "mobileApps": "Also available on Android and iOS.",
+    "androidDownload": "Download the Android app"
   },
   "onboarding": {
     "welcomeTitle": "Welcome!",
@@ -489,6 +498,16 @@
         "split": "Active subscribers by plan",
         "monthly": "Received per month, by plan",
         "noPayments": "No payment recorded yet."
+      },
+      "remind": {
+        "email": "Remind by e-mail",
+        "copy": "Copy the message",
+        "copied": "Message copied: paste it into WhatsApp or a text.",
+        "auto": "Automatic reminders: subscribers get a notification three days before the end, on the last day and when it ends (Android app), on top of the banner in the app.",
+        "subject": "Your Assisteo Agny {plan} plan ends on {date}",
+        "body": "Hello,\n\nYour {plan} plan on Assisteo Agny ends on {date}. To renew it and keep your perks, everything is explained here: {link}\n\nThank you, see you soon!",
+        "subjectEnded": "Your Assisteo Agny {plan} plan has ended",
+        "bodyEnded": "Hello,\n\nYour {plan} plan on Assisteo Agny has ended. To renew it and get your perks back, everything is explained here: {link}\n\nThank you, see you soon!"
       }
     },
     "plans": {
@@ -509,7 +528,39 @@
       "contact": "Contact to send the reference",
       "contactHint": "A phone number, or a link (WhatsApp: https://wa.me/261…, Messenger…)."
     },
-    "adminAccount": "Your account is an administrator: enter the token to open the admin."
+    "adminAccount": "Your account is an administrator: enter the token to open the admin.",
+    "ai": {
+      "title": "AI cost · last {days} days",
+      "subtitle": "What the server's AI key cost, and what each plan would cost used to the full.",
+      "empty": "No data yet: costs appear after the first scans on the server's AI.",
+      "kinds": {
+        "scan": "Scan",
+        "deep": "Deep analysis",
+        "question": "Question"
+      },
+      "perCall": "per call · {calls} call(s), {total} in all",
+      "noCalls": "no call",
+      "unpriced": "No price: {models}",
+      "plansTitle": "Each plan used to the full, for a month",
+      "planLine": "{price} / month · AI at most {cost}",
+      "unlimitedScans": "(unlimited scans: not counted)",
+      "margin": "Margin {amount} ({percent} %)",
+      "model": "Model",
+      "calls": "Calls",
+      "tokens": "Average tokens (in / out)",
+      "costPerCall": "Cost per call",
+      "noPrice": "missing price",
+      "pricesTitle": "AI prices ($ per million tokens)",
+      "pricesHint": "A model takes the price of the line whose text is in its name (the most precise wins). Indicative prices: check them on Google's and Anthropic's pricing pages.",
+      "match": "Name contains",
+      "input": "Input ($)",
+      "output": "Output ($)",
+      "removePrice": "Remove this price",
+      "addPrice": "Add a price",
+      "rate": "Today's rate: $1 = {rate} Ar",
+      "noRate": "No dollar rate: costs are in $.",
+      "partial": "Not measured yet, so counted as 0: {kinds}."
+    }
   },
   "account": {
     "section": "Account",
@@ -809,7 +860,10 @@
       "empty": "No parcel in this period.",
       "from": "From",
       "to": "To",
-      "badRange": "The start date must be before the end date."
+      "badRange": "The start date must be before the end date.",
+      "due": "To collect: {amount}",
+      "profit": "Profit: {amount}",
+      "dueShort": "{amount} due"
     },
     "export": {
       "button": "Export for Excel",
@@ -830,7 +884,11 @@
         "priceMga": "Item price",
         "feesMga": "Fees",
         "feesDetail": "Fee details",
-        "totalMga": "Total"
+        "totalMga": "Total",
+        "salePriceMga": "Sale price",
+        "paidMga": "Paid by the client",
+        "dueMga": "Still to pay",
+        "profitMga": "Profit"
       },
       "working": "Preparing the file…",
       "sheetParcels": "Parcels",
@@ -844,8 +902,27 @@
         "parcels": "Parcels",
         "ongoing": "In progress",
         "received": "Received",
-        "total": "Total spent"
+        "total": "Total spent",
+        "due": "Still to pay",
+        "profit": "Profit"
       }
+    },
+    "fx": {
+      "rate": "Rate: how many ariary for 1 {symbol}",
+      "market": "Today's rate: 1 {symbol} = {rate} Ar",
+      "noMarket": "No rate today: type yours",
+      "use": "Use this price"
+    },
+    "sale": {
+      "title": "Sale to the client",
+      "price": "Sale price",
+      "paid": "Paid by the client",
+      "due": "Still to pay: {amount}",
+      "allPaid": "All paid",
+      "profit": "Profit: {amount}",
+      "loss": "Loss: {amount}",
+      "locked": "Sale price, client payment and profit: with the Pro plan.",
+      "dueShort": "{amount} due"
     }
   },
   "plans": {
@@ -953,5 +1030,49 @@
     "finished": "Deep analysis done",
     "done": "Deep analysis",
     "unavailable": "Deep analysis is unavailable right now. Nothing was taken from your plan."
+  },
+  "lists": {
+    "title": "My lists",
+    "summary": "{ongoing} in progress · {done} done",
+    "emptyTitle": "No list yet",
+    "emptyBody": "Take a photo of a shopping or to-do list, even handwritten, or create one here.",
+    "scan": "Scan a list",
+    "new": "New list",
+    "newTitle": "List name",
+    "newPlaceholder": "e.g. Saturday shopping",
+    "kind": "Kind of list",
+    "kinds": {
+      "shopping": "Shopping",
+      "todo": "Tasks",
+      "other": "List"
+    },
+    "create": "Create",
+    "count": "{count} item(s)",
+    "progress": "{done}/{total} done",
+    "allDone": "all done",
+    "noItems": "No item: add the first one below.",
+    "addItem": "Add an item",
+    "quantity": "Quantity",
+    "itemText": "Item",
+    "editItem": "Edit “{item}”",
+    "removeItem": "Remove “{item}”",
+    "save": "Save",
+    "share": "Share",
+    "copied": "List copied: paste it into WhatsApp or a text.",
+    "rename": "Rename",
+    "uncheckAll": "Untick all",
+    "clearDone": "Clear ticked",
+    "openScan": "See the scan",
+    "remove": "Delete",
+    "confirmRemove": "Delete the list?",
+    "removed": "List deleted",
+    "add": "Add to my lists",
+    "addShort": "Keep",
+    "added": "Added to My lists",
+    "view": "See in My lists",
+    "viewShort": "My lists",
+    "inList": "Kept in My lists.",
+    "open": "Open",
+    "addItemButton": "Add the item"
   }
 }

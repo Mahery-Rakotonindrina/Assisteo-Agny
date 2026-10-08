@@ -363,3 +363,14 @@
   font-size: 0.88rem;
   font-weight: 700;
 }
+
+.due {
+  align-self: flex-start;
+  margin-top: 0.15rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--cat-food) 16%, transparent);
+  color: var(--cat-food);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
