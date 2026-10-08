@@ -27,10 +27,10 @@ jobs:
             echo "run=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         if: steps.check.outputs.run == 'true'
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         if: steps.check.outputs.run == 'true'
         with:
           node-version: 22
@@ -46,7 +46,7 @@ jobs:
           BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
         run: node scripts/db-backup.mjs backups
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: steps.check.outputs.run == 'true'
         with:
           name: database-backup
