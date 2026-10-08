@@ -795,21 +795,26 @@
       "periods": {
         "all": "Tout",
         "month": "Ce mois",
-        "lastMonth": "Mois dernier"
+        "lastMonth": "Mois dernier",
+        "custom": "Dates…"
       },
       "totalOf": {
         "all": "Total dépensé",
         "month": "Dépensé ce mois",
-        "lastMonth": "Dépensé le mois dernier"
+        "lastMonth": "Dépensé le mois dernier",
+        "custom": "Dépensé du {from} au {to}"
       },
       "count": "{parcels} colis · {ongoing} en cours",
       "none": "Sans client",
-      "empty": "Aucun colis sur cette période."
+      "empty": "Aucun colis sur cette période.",
+      "from": "Du",
+      "to": "Au",
+      "badRange": "La date de début doit être avant la date de fin."
     },
     "export": {
       "button": "Exporter pour Excel",
       "title": "Mes colis",
-      "downloaded": "Fichier téléchargé : ouvre-le avec Excel ou Google Sheets.",
+      "downloaded": "Fichier Excel téléchargé.",
       "failed": "L’export n’a pas pu être créé.",
       "columns": {
         "client": "Client",
@@ -822,10 +827,24 @@
         "orderedAt": "Commandé le",
         "receivedAt": "Reçu le",
         "items": "Articles",
-        "priceMga": "Prix de l’article (Ar)",
-        "feesMga": "Frais (Ar)",
+        "priceMga": "Prix de l’article",
+        "feesMga": "Frais",
         "feesDetail": "Détail des frais",
-        "totalMga": "Total (Ar)"
+        "totalMga": "Total"
+      },
+      "working": "Préparation du fichier…",
+      "sheetParcels": "Colis",
+      "sheetClients": "Par client",
+      "total": "Total",
+      "exportedOn": "Exporté le {date}",
+      "allParcels": "tous les colis",
+      "range": "du {from} au {to}",
+      "clientColumns": {
+        "client": "Client",
+        "parcels": "Colis",
+        "ongoing": "En cours",
+        "received": "Reçus",
+        "total": "Total dépensé"
       }
     }
   },

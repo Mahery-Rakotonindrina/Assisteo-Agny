@@ -1,14 +1,24 @@
 import { Capacitor } from "@capacitor/core";
-import { Directory, Encoding, Filesystem } from "@capacitor/filesystem";
+import { Directory, Filesystem } from "@capacitor/filesystem";
 import { Share } from "@capacitor/share";
 
+/** A file's bytes as base64, for the native file system. */
+function toBase64(bytes: ArrayBuffer) {
+  let binary = "";
+  const view = new Uint8Array(bytes);
+  for (let index = 0; index < view.length; index += 0x8000) binary += String.fromCharCode(...view.subarray(index, index + 0x8000));
+  return btoa(binary);
+}
+
 /**
- * Hands a text file to the user: the share sheet in the app and on phones
- * (to save it, or send it by e-mail or WhatsApp), a download on computers.
+ * Hands a file to the user: the share sheet in the app and on phones (to
+ * save it, or send it by e-mail or WhatsApp), a download on computers. In
+ * the Android and iOS apps the file is written to the app's cache first,
+ * which the share sheet may read (android/app/src/main/res/xml/file_paths.xml).
  */
-export async function shareTextFile(name: string, content: string, mimeType: string, title: string): Promise<"shared" | "downloaded" | "cancelled"> {
+export async function shareFile(name: string, bytes: ArrayBuffer, mimeType: string, title: string): Promise<"shared" | "downloaded" | "cancelled"> {
   if (Capacitor.isNativePlatform()) {
-    const { uri } = await Filesystem.writeFile({ path: name, data: content, directory: Directory.Cache, encoding: Encoding.UTF8 });
+    const { uri } = await Filesystem.writeFile({ path: name, data: toBase64(bytes), directory: Directory.Cache });
     try {
       await Share.share({ title, files: [uri], dialogTitle: title });
       return "shared";
@@ -17,7 +27,7 @@ export async function shareTextFile(name: string, content: string, mimeType: str
     }
   }
 
-  const file = new File([content], name, { type: mimeType });
+  const file = new File([bytes], name, { type: mimeType });
   const touch = window.matchMedia?.("(pointer: coarse)").matches;
   if (touch && navigator.canShare?.({ files: [file] })) {
     try {

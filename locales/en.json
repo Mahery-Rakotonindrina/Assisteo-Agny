@@ -795,21 +795,26 @@
       "periods": {
         "all": "All",
         "month": "This month",
-        "lastMonth": "Last month"
+        "lastMonth": "Last month",
+        "custom": "Dates…"
       },
       "totalOf": {
         "all": "Total spent",
         "month": "Spent this month",
-        "lastMonth": "Spent last month"
+        "lastMonth": "Spent last month",
+        "custom": "Spent from {from} to {to}"
       },
       "count": "{parcels} parcel(s) · {ongoing} in progress",
       "none": "No client",
-      "empty": "No parcel in this period."
+      "empty": "No parcel in this period.",
+      "from": "From",
+      "to": "To",
+      "badRange": "The start date must be before the end date."
     },
     "export": {
       "button": "Export for Excel",
       "title": "My parcels",
-      "downloaded": "File downloaded: open it with Excel or Google Sheets.",
+      "downloaded": "Excel file downloaded.",
       "failed": "The export could not be created.",
       "columns": {
         "client": "Client",
@@ -822,10 +827,24 @@
         "orderedAt": "Ordered on",
         "receivedAt": "Received on",
         "items": "Items",
-        "priceMga": "Item price (Ar)",
-        "feesMga": "Fees (Ar)",
+        "priceMga": "Item price",
+        "feesMga": "Fees",
         "feesDetail": "Fee details",
-        "totalMga": "Total (Ar)"
+        "totalMga": "Total"
+      },
+      "working": "Preparing the file…",
+      "sheetParcels": "Parcels",
+      "sheetClients": "By client",
+      "total": "Total",
+      "exportedOn": "Exported on {date}",
+      "allParcels": "all parcels",
+      "range": "from {from} to {to}",
+      "clientColumns": {
+        "client": "Client",
+        "parcels": "Parcels",
+        "ongoing": "In progress",
+        "received": "Received",
+        "total": "Total spent"
       }
     }
   },

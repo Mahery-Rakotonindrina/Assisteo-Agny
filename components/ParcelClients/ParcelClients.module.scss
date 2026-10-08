@@ -124,3 +124,45 @@
   flex-shrink: 0;
   color: var(--text-subtle);
 }
+
+.range {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 0;
+
+    span {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+  }
+
+  input {
+    width: 100%;
+    min-width: 0;
+    height: 2.75rem;
+    padding: 0 0.75rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    font: inherit;
+    outline: none;
+
+    &:focus {
+      border-color: var(--accent-mark);
+    }
+  }
+}
+
+.rangeError {
+  grid-column: 1 / -1;
+  font-size: 0.82rem;
+  color: var(--danger);
+}

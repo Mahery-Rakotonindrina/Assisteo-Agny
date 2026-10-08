@@ -15,13 +15,13 @@ import { useNow } from "@/hooks/useNow";
 import { useParcels } from "@/hooks/useParcels";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
-import { formatAriary, formatDate, formatDateTime, toDateInput } from "@/lib/format";
+import { formatAriary, formatDate, formatDateTime, formatMonthYear, toDateInput } from "@/lib/format";
 import { easeOut, rise, stagger } from "@/lib/motion";
-import { parcelsCsv } from "@/lib/parcelExport";
-import { inPeriod, isForClient, parcelDate, type Period } from "@/lib/parcelReport";
+import { exportFileName, parcelsWorkbook, XLSX_TYPE } from "@/lib/parcelExport";
+import { inPeriod, isForClient, isValidRange, parcelDate, type DayRange, type Period } from "@/lib/parcelReport";
 import { compareParcels, matchesSearch, parcelStep, parcelSteps, parcelTone, trackingUrl } from "@/lib/parcels";
 import { haptics } from "@/services/device";
-import { shareTextFile } from "@/services/fileShare";
+import { shareFile } from "@/services/fileShare";
 import { keepParcelThumbnails } from "@/services/parcelLinking";
 import { parcelStore, parcelTotalMga, type Parcel } from "@/services/parcelStore";
 import styles from "@/styles/Parcels.module.scss";
@@ -30,6 +30,12 @@ import styles from "@/styles/Parcels.module.scss";
  * "Mes colis": the parcels being followed. In progress first, problems then
  * along the journey (delivered last); then received, the last one first.
  */
+/** From the 1st of this month to today, as date input values. */
+const thisMonthSoFar = (): DayRange => {
+  const today = toDateInput(Date.now());
+  return { from: `${today.slice(0, 7)}-01`, to: today };
+};
+
 export default function ParcelsPage() {
   const { t, locale } = useTranslation();
   const { parcels, isLoading } = useParcels();
@@ -53,14 +59,19 @@ export default function ParcelsPage() {
   const now = useNow(60_000);
   const [view, setView] = useState<"parcels" | "clients">("parcels");
   const [period, setPeriod] = useState<Period>("month");
+  // Chosen days: this month so far, to start with.
+  const [range, setRange] = useState<DayRange>(thisMonthSoFar);
+  const [exporting, setExporting] = useState(false);
   const [clientFilter, setClientFilter] = useState<{ name: string | null } | null>(null);
   const showClients = reseller && view === "clients";
   const toast = useToast();
-  const periodParcels = parcels.filter((parcel) => inPeriod(parcel, period, now));
+  const periodParcels = parcels.filter((parcel) => inPeriod(parcel, period, now, range));
 
-  // The period's parcels as a spreadsheet, client by client, oldest first.
+  // The period's parcels as an Excel workbook, client by client, oldest first.
   const exportParcels = async () => {
+    if (exporting) return;
     haptics.tap();
+    setExporting(true);
     const sorted = [...periodParcels].sort(
       (a, b) =>
         Number(!a.client?.trim()) - Number(!b.client?.trim()) ||
@@ -71,12 +82,31 @@ export default function ParcelsPage() {
       const date = new Date(now);
       return toDateInput(new Date(date.getFullYear(), date.getMonth() - offset, 1).getTime()).slice(0, 7);
     };
-    const suffix = period === "all" ? toDateInput(now) : month(period === "month" ? 0 : 1);
+    const day = (value: string) => {
+      const [year, monthIndex, date] = value.split("-").map(Number);
+      return new Date(year, monthIndex - 1, date).getTime();
+    };
+    const monthStart = (offset: number) => {
+      const date = new Date(now);
+      return new Date(date.getFullYear(), date.getMonth() - offset, 1).getTime();
+    };
+    const { suffix, label } =
+      period === "custom"
+        ? { suffix: `${range.from}_au_${range.to}`, label: t("parcels.export.range", { from: formatDate(day(range.from), locale), to: formatDate(day(range.to), locale) }) }
+        : period === "all"
+          ? { suffix: `tout-${toDateInput(now)}`, label: t("parcels.export.allParcels") }
+          : { suffix: month(period === "month" ? 0 : 1), label: formatMonthYear(monthStart(period === "month" ? 0 : 1), locale) };
     try {
-      const result = await shareTextFile(`colis-${suffix}.csv`, parcelsCsv(sorted, t), "text/csv", t("parcels.export.title"));
+      const bytes = await parcelsWorkbook(sorted, t, locale, {
+        title: `${t("parcels.export.title")} · ${label}`,
+        subtitle: t("parcels.export.exportedOn", { date: formatDate(now, locale) }),
+      });
+      const result = await shareFile(exportFileName(suffix), bytes, XLSX_TYPE, t("parcels.export.title"));
       if (result === "downloaded") toast(t("parcels.export.downloaded"));
     } catch {
       toast(t("parcels.export.failed"), "error");
+    } finally {
+      setExporting(false);
     }
   };
   const clients = [...new Set(parcels.map((parcel) => parcel.client?.trim()).filter((name): name is string => Boolean(name)))].sort((a, b) =>
@@ -167,10 +197,14 @@ export default function ParcelsPage() {
                   parcels={periodParcels}
                   period={period}
                   onPeriod={setPeriod}
+                  range={range}
+                  onRange={setRange}
+                  today={toDateInput(now)}
                   actions={
-                    periodParcels.length > 0 && (
-                      <Button variant="secondary" icon={<FileSpreadsheet />} onClick={() => void exportParcels()}>
-                        {t("parcels.export.button")}
+                    periodParcels.length > 0 &&
+                    (period !== "custom" || isValidRange(range)) && (
+                      <Button variant="secondary" icon={<FileSpreadsheet />} onClick={() => void exportParcels()} disabled={exporting}>
+                        {exporting ? t("parcels.export.working") : t("parcels.export.button")}
                       </Button>
                     )
                   }
