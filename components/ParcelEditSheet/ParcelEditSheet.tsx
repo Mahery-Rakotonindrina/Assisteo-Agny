@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 import { Plus, Save, X } from "lucide-react";
 import { Button } from "@/components/Button";
 import { useTranslation } from "@/hooks/useTranslation";
+import { toDateInput } from "@/lib/format";
 import { parcelStatuses, type ParcelStatus } from "@/lib/ai/schema";
 import { spring } from "@/lib/motion";
 import type { ParcelInfo } from "@/lib/parcels";
@@ -26,6 +27,14 @@ const orNull = (value: string) => (value.trim() ? value.trim() : null);
 /** "YYYY-MM-DD HH:mm" ⇄ the value of a datetime-local input. */
 const toInput = (at: string | null | undefined) => (at ? at.replace(" ", "T").slice(0, 16) : "");
 const fromInput = (value: string) => (value ? value.replace("T", " ") : null);
+const todayInput = () => toDateInput(Date.now());
+/** The pick-up day as a time: now when it is today, else midday that day. */
+const pickedUpAt = (day: string) => {
+  const now = Date.now();
+  if (day >= toDateInput(now)) return now;
+  const [year, month, date] = day.split("-").map(Number);
+  return new Date(year, month - 1, date, 12).getTime();
+};
 
 /** Lets the user correct or complete everything about a parcel. */
 export function ParcelEditSheet({ parcel, open, onClose, clients }: Props) {
@@ -43,6 +52,9 @@ function Form({ parcel, onClose, clients }: Omit<Props, "open">) {
   const [title, setTitle] = useState(parcel.title);
   const [client, setClient] = useState(parcel.client ?? "");
   const [status, setStatus] = useState<ParcelStatus>(info.status);
+  const initialReceivedDay = parcel.receivedAt ? toDateInput(parcel.receivedAt) : "";
+  const [receivedDay, setReceivedDay] = useState(initialReceivedDay);
+  const [today] = useState(todayInput);
   const [fields, setFields] = useState({
     carrier: info.carrier ?? "",
     trackingNumber: info.trackingNumber ?? "",
@@ -88,7 +100,9 @@ function Form({ parcel, onClose, clients }: Omit<Props, "open">) {
         .filter((item) => item.name.trim())
         .map((item) => ({ name: item.name.trim(), variant: orNull(item.variant), quantity: Math.max(1, Number(item.quantity) || 1), price: orNull(item.price) })),
     };
-    await parcelStore.edit(parcel.id, { title, client, info: next });
+    // An untouched day keeps the exact time it was marked received.
+    const receivedAt = receivedDay === initialReceivedDay ? undefined : receivedDay ? pickedUpAt(receivedDay) : null;
+    await parcelStore.edit(parcel.id, { title, client, info: next, receivedAt });
     haptics.success();
     setSaving(false);
     onClose();
@@ -137,6 +151,9 @@ function Form({ parcel, onClose, clients }: Omit<Props, "open">) {
               </option>
             ))}
           </select>
+        </Field>
+        <Field label={t("parcels.fields.receivedAt")} hint={t("parcels.fields.receivedHint")}>
+          <input type="date" value={receivedDay} max={today} onChange={(event) => setReceivedDay(event.target.value)} />
         </Field>
 
         <h3 className={styles.group}>{t("parcels.fields.shipping")}</h3>

@@ -70,6 +70,40 @@ export function isNewerParcel(current: ParcelInfo, next: ParcelInfo) {
   return next.status === "exception" || next.status === "returned" || parcelStep(next.status) > parcelStep(current.status);
 }
 
+/** Order of "Mes colis" in progress: problems first, then along the journey, delivered last. */
+const listRank: Record<ParcelStatus, number> = {
+  exception: 0,
+  returned: 1,
+  unknown: 2,
+  ordered: 3,
+  shipped: 4,
+  in_transit: 5,
+  out_for_delivery: 6,
+  pickup_ready: 7,
+  delivered: 8,
+};
+
+type Sortable = { id: string; info: ParcelInfo; timeline: Array<{ at: number }>; createdAt: number; receivedAt?: number };
+
+/** When the parcel last moved: the carrier's last event, else the last scan or edit. */
+export function parcelActivity(parcel: Sortable) {
+  return eventTime(parcel.info.lastEvent?.at) ?? parcel.timeline.at(-1)?.at ?? parcel.createdAt;
+}
+
+/**
+ * Order of "Mes colis": in progress by status then latest activity first,
+ * then the received ones, the last received first.
+ */
+export function compareParcels(a: Sortable, b: Sortable) {
+  if (Boolean(a.receivedAt) !== Boolean(b.receivedAt)) return a.receivedAt ? 1 : -1;
+  if (a.receivedAt && b.receivedAt && a.receivedAt !== b.receivedAt) return b.receivedAt - a.receivedAt;
+  if (!a.receivedAt) {
+    const byStatus = listRank[a.info.status] - listRank[b.info.status];
+    if (byStatus) return byStatus;
+  }
+  return parcelActivity(b) - parcelActivity(a) || b.createdAt - a.createdAt || a.id.localeCompare(b.id);
+}
+
 /** Public multi-carrier tracking page for a tracking number. */
 export function trackingUrl(trackingNumber: string, locale: string) {
   return `https://t.17track.net/${locale === "fr" ? "fr" : "en"}#nums=${encodeURIComponent(trackingNumber.replace(/\s/g, ""))}`;

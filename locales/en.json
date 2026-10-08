@@ -674,7 +674,10 @@
       "itemQuantity": "Quantity",
       "itemPrice": "Price (e.g. ¥215)",
       "removeItem": "Remove the item",
-      "addItem": "Add an item"
-    }
+      "addItem": "Add an item",
+      "receivedAt": "Pick-up date",
+      "receivedHint": "Set to today when you mark it received. Correct it if you marked it late; clear it to put the parcel back in progress."
+    },
+    "receivedOn": "Received on {date}"
   }
 }

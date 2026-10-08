@@ -11,14 +11,17 @@ import { useToast } from "@/components/Toast";
 import { useHistory } from "@/hooks/useHistory";
 import { useParcels } from "@/hooks/useParcels";
 import { useTranslation } from "@/hooks/useTranslation";
-import { formatAriary, formatDateTime } from "@/lib/format";
+import { formatAriary, formatDate, formatDateTime } from "@/lib/format";
 import { easeOut, rise, stagger } from "@/lib/motion";
-import { matchesSearch, parcelStep, parcelSteps, parcelTone, trackingUrl } from "@/lib/parcels";
+import { compareParcels, matchesSearch, parcelStep, parcelSteps, parcelTone, trackingUrl } from "@/lib/parcels";
 import { haptics } from "@/services/device";
 import { parcelStore, parcelTotalMga, type Parcel } from "@/services/parcelStore";
 import styles from "@/styles/Parcels.module.scss";
 
-/** "Mes colis": the parcels being followed, in progress first, then received. */
+/**
+ * "Mes colis": the parcels being followed. In progress first, problems then
+ * along the journey (delivered last); then received, the last one first.
+ */
 export default function ParcelsPage() {
   const { t, locale } = useTranslation();
   const { parcels, isLoading } = useParcels();
@@ -44,6 +47,7 @@ export default function ParcelsPage() {
       t(`parcel.statuses.${info.status}`),
       info.statusLabel,
       isReceived(parcel) ? t("parcels.receivedLabel") : t("parcels.ongoing"),
+      parcel.receivedAt ? formatDate(parcel.receivedAt, locale) : null,
       info.carrier,
       info.trackingNumber,
       info.orderNumber,
@@ -65,7 +69,7 @@ export default function ParcelsPage() {
       total ? formatAriary(total, locale) : null,
     ];
   };
-  const visible = parcels.filter((parcel) => matchesSearch(searchTexts(parcel), deferredQuery));
+  const visible = parcels.filter((parcel) => matchesSearch(searchTexts(parcel), deferredQuery)).sort(compareParcels);
   const ongoing = visible.filter((parcel) => !isReceived(parcel));
   const received = visible.filter(isReceived);
   const allOngoing = parcels.filter((parcel) => !isReceived(parcel)).length;
@@ -149,7 +153,9 @@ function ParcelRow({ parcel, thumbnail, clients, received = false }: { parcel: P
   const lastScan = parcel.scanIds[parcel.scanIds.length - 1];
   const total = parcelTotalMga(parcel);
   const statusText = received
-    ? t("parcels.receivedLabel")
+    ? parcel.receivedAt
+      ? t("parcels.receivedOn", { date: formatDate(parcel.receivedAt, locale) })
+      : t("parcels.receivedLabel")
     : info.status === "delivered"
       ? t("parcels.deliveredWaiting")
       : t(`parcel.statuses.${info.status}`);
