@@ -63,6 +63,7 @@ import { formatDateTime, formatDay } from "@/lib/format";
 import { easeOut, pop, rise, spring, stagger } from "@/lib/motion";
 import { haptics, shareText } from "@/services/device";
 import { historyStore } from "@/services/historyStore";
+import { keepParcelThumbnails } from "@/services/parcelLinking";
 import { hasNewStatus, parcelStore } from "@/services/parcelStore";
 import { cancelNotification } from "@/services/notifications";
 import { cancelReminder, expiryDate, INSURANCE_NOTICE_DAYS, insuranceReminderAt, scheduleReminder } from "@/services/reminders";
@@ -303,6 +304,7 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
   const remove = async () => {
     haptics.press();
     if (entry.reminderId) await cancelNotification(entry.reminderId);
+    await keepParcelThumbnails([entry.id]).catch(() => undefined);
     await historyStore.remove(entry.id);
     toast(t("result.deleted"));
     void router.replace("/history");

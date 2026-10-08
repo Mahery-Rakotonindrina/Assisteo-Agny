@@ -1,7 +1,7 @@
 import Head from "next/head";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
-import { useDeferredValue, useState } from "react";
+import { useDeferredValue, useEffect, useState } from "react";
 import { Check, ChevronDown, Copy, ExternalLink, FileSpreadsheet, MapPin, Package, Pencil, RotateCcw, ScanLine, Search, Trash2, UserRound, Users, X } from "lucide-react";
 import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
@@ -22,6 +22,7 @@ import { inPeriod, isForClient, parcelDate, type Period } from "@/lib/parcelRepo
 import { compareParcels, matchesSearch, parcelStep, parcelSteps, parcelTone, trackingUrl } from "@/lib/parcels";
 import { haptics } from "@/services/device";
 import { shareTextFile } from "@/services/fileShare";
+import { keepParcelThumbnails } from "@/services/parcelLinking";
 import { parcelStore, parcelTotalMga, type Parcel } from "@/services/parcelStore";
 import styles from "@/styles/Parcels.module.scss";
 
@@ -32,7 +33,14 @@ import styles from "@/styles/Parcels.module.scss";
 export default function ParcelsPage() {
   const { t, locale } = useTranslation();
   const { parcels, isLoading } = useParcels();
-  const { entries } = useHistory();
+  const { entries, isLoading: historyLoading } = useHistory();
+  // Parcels followed before they kept their own photo: copy it from their scans.
+  useEffect(() => {
+    void keepParcelThumbnails().catch(() => undefined);
+  }, []);
+  // A scan deleted from the history can no longer be opened from its parcel.
+  const scanIds = new Set(entries.map((entry) => entry.id));
+  const hasScan = (id: string) => historyLoading || scanIds.has(id);
   const thumbnails = new Map(entries.map((entry) => [entry.id, entry.thumbnail]));
   // Received = in the user's hands, set by hand: the carrier's "delivered"
   // often means a forwarding warehouse abroad, not Madagascar.
@@ -203,7 +211,13 @@ export default function ParcelsPage() {
               <motion.section variants={rise} className={styles.group}>
                 <h2>{t("parcels.ongoing")}</h2>
                 {ongoing.map((parcel) => (
-                  <ParcelRow key={parcel.id} parcel={parcel} thumbnail={thumbnails.get(parcel.scanIds[0])} clients={clients} />
+                  <ParcelRow
+                    key={parcel.id}
+                    parcel={parcel}
+                    thumbnail={parcel.thumbnail ?? thumbnails.get(parcel.scanIds[0])}
+                    clients={clients}
+                    hasScan={hasScan}
+                  />
                 ))}
               </motion.section>
             )}
@@ -211,7 +225,14 @@ export default function ParcelsPage() {
               <motion.section variants={rise} className={styles.group}>
                 <h2>{t("parcels.received")}</h2>
                 {received.map((parcel) => (
-                  <ParcelRow key={parcel.id} parcel={parcel} thumbnail={thumbnails.get(parcel.scanIds[0])} clients={clients} received />
+                  <ParcelRow
+                    key={parcel.id}
+                    parcel={parcel}
+                    thumbnail={parcel.thumbnail ?? thumbnails.get(parcel.scanIds[0])}
+                    clients={clients}
+                    hasScan={hasScan}
+                    received
+                  />
                 ))}
               </motion.section>
             )}
@@ -222,7 +243,16 @@ export default function ParcelsPage() {
   );
 }
 
-function ParcelRow({ parcel, thumbnail, clients, received = false }: { parcel: Parcel; thumbnail?: string; clients: string[]; received?: boolean }) {
+type ParcelRowProps = {
+  parcel: Parcel;
+  thumbnail?: string;
+  clients: string[];
+  /** Whether a scan still exists in the history (to open it). */
+  hasScan: (id: string) => boolean;
+  received?: boolean;
+};
+
+function ParcelRow({ parcel, thumbnail, clients, hasScan, received = false }: ParcelRowProps) {
   const { t, locale } = useTranslation();
   const toast = useToast();
   const [open, setOpen] = useState(false);
@@ -230,7 +260,8 @@ function ParcelRow({ parcel, thumbnail, clients, received = false }: { parcel: P
   const [editing, setEditing] = useState(false);
   const { info } = parcel;
   const step = parcelStep(info.status);
-  const lastScan = parcel.scanIds[parcel.scanIds.length - 1];
+  // The latest scan still in the history; deleted ones can't be opened.
+  const lastScan = [...parcel.scanIds].reverse().find(hasScan);
   const total = parcelTotalMga(parcel);
   const statusText = received
     ? parcel.receivedAt
@@ -318,10 +349,12 @@ function ParcelRow({ parcel, thumbnail, clients, received = false }: { parcel: P
                           <MapPin size={12} /> {[item.event.description, item.event.location, item.event.at].filter(Boolean).join(" · ")}
                         </small>
                       )}
-                      {item.scanId ? (
+                      {item.scanId && hasScan(item.scanId) ? (
                         <Link href={{ pathname: "/result", query: { id: item.scanId } }} className={styles.scanLink}>
                           {t("parcels.scannedOn", { date: formatDateTime(item.at, locale) })}
                         </Link>
+                      ) : item.scanId ? (
+                        <span className={styles.manual}>{t("parcels.scannedOn", { date: formatDateTime(item.at, locale) })}</span>
                       ) : (
                         <span className={styles.manual}>{t("parcels.editedOn", { date: formatDateTime(item.at, locale) })}</span>
                       )}

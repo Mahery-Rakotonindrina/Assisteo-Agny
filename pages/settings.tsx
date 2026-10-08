@@ -22,6 +22,7 @@ import { useSettings, type ThemePreference } from "@/lib/settings/SettingsProvid
 import { accountsAvailable } from "@/lib/supabase";
 import { isNative } from "@/services/device";
 import { historyStore } from "@/services/historyStore";
+import { keepParcelThumbnails } from "@/services/parcelLinking";
 import { entryPhotoBytes, FULL_PHOTOS_KEPT } from "@/services/photoStorage";
 import {
   getNotificationPermission,
@@ -100,6 +101,8 @@ export default function SettingsPage() {
       setConfirmClear(true);
       return;
     }
+    // The parcels keep their own photo: they stay recognisable without their scans.
+    await keepParcelThumbnails().catch(() => undefined);
     await historyStore.clear();
     setConfirmClear(false);
     toast(t("settings.cleared"));

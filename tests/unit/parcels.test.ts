@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { mockAnalysis } from "@/lib/ai/mock";
 import { compareParcels, isNewerParcel, sameParcel, type ParcelInfo } from "@/lib/parcels";
 import { historyStore } from "@/services/historyStore";
-import { updateEarlierParcelScans } from "@/services/parcelLinking";
+import { keepParcelThumbnails, updateEarlierParcelScans } from "@/services/parcelLinking";
 import { hasNewStatus, parcelStore, parcelTotalMga } from "@/services/parcelStore";
 import type { HistoryEntry } from "@/types/history";
 
@@ -80,6 +80,21 @@ describe("following a parcel", () => {
 
     // Re-scanning the old screenshot doesn't roll the status back.
     expect(await updateEarlierParcelScans(scan("again", info(), 3000))).toEqual([]);
+  });
+
+  it("keeps its own photo, so it stays recognisable once the scans are deleted", async () => {
+    await parcelStore.wipe();
+    await historyStore.clear();
+    const first = scan("photo-1", info(), 1000);
+    await historyStore.rawPut(first);
+    const parcel = await parcelStore.add(first);
+    expect(parcel.thumbnail).toBe(first.thumbnail);
+
+    // A parcel followed before parcels kept a photo catches up from its scans.
+    await parcelStore.rawPut({ ...parcel, thumbnail: undefined });
+    await keepParcelThumbnails(["photo-1"]);
+    await historyStore.clear();
+    expect((await parcelStore.list())[0].thumbnail).toBe(first.thumbnail);
   });
 });
 
