@@ -20,6 +20,17 @@ export function formatDay(timestamp: number, locale: Locale) {
   return new Intl.DateTimeFormat(localeTags[locale], { weekday: "long", day: "numeric", month: "long" }).format(timestamp);
 }
 
+/** A short date: "12 oct. 2026" / "12 Oct 2026". */
+export function formatDate(timestamp: number, locale: Locale) {
+  return new Intl.DateTimeFormat(localeTags[locale], { day: "numeric", month: "short", year: "numeric" }).format(timestamp);
+}
+
+/** Local day of a timestamp, as a date input value: "2026-10-12". */
+export function toDateInput(timestamp: number) {
+  const date = new Date(timestamp);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
 export function startOfDay(timestamp: number) {
   const date = new Date(timestamp);
   date.setHours(0, 0, 0, 0);

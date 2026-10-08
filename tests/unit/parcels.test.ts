@@ -1,7 +1,7 @@
 import "fake-indexeddb/auto";
 import { beforeEach, describe, expect, it } from "vitest";
 import { mockAnalysis } from "@/lib/ai/mock";
-import { isNewerParcel, sameParcel, type ParcelInfo } from "@/lib/parcels";
+import { compareParcels, isNewerParcel, sameParcel, type ParcelInfo } from "@/lib/parcels";
 import { historyStore } from "@/services/historyStore";
 import { updateEarlierParcelScans } from "@/services/parcelLinking";
 import { hasNewStatus, parcelStore, parcelTotalMga } from "@/services/parcelStore";
@@ -111,5 +111,52 @@ describe("parcel costs", () => {
     expect(received.receivedAt).toBeTypeOf("number");
     await parcelStore.markReceived(received, false);
     expect((await parcelStore.list())[0].receivedAt).toBeUndefined();
+  });
+
+  it("lets the pick-up date be corrected, cleared, or left alone", async () => {
+    const parcel = await parcelStore.add(scan("d1", delivered, 1000));
+    await parcelStore.markReceived(parcel, true);
+    const pickedUp = new Date(2026, 9, 5, 12).getTime();
+    await parcelStore.edit(parcel.id, { title: parcel.title, info: parcel.info, receivedAt: pickedUp });
+    expect((await parcelStore.list())[0].receivedAt).toBe(pickedUp);
+    await parcelStore.edit(parcel.id, { title: "Casque", info: parcel.info });
+    expect((await parcelStore.list())[0].receivedAt).toBe(pickedUp);
+    await parcelStore.edit(parcel.id, { title: "Casque", info: parcel.info, receivedAt: null });
+    expect((await parcelStore.list())[0].receivedAt).toBeUndefined();
+  });
+});
+
+describe("parcel list order", () => {
+  const row = (id: string, status: ParcelInfo["status"], at: string | null, receivedAt?: number) => ({
+    id,
+    info: info({ status, lastEvent: at ? { description: status, location: null, at } : null }),
+    timeline: [{ at: 1000 }],
+    createdAt: 1000,
+    receivedAt,
+  });
+
+  it("puts problems first, then follows the journey, delivered last, then received", () => {
+    const rows = [
+      row("received-old", "delivered", "2026-09-01 10:00", 1_000),
+      row("delivered", "delivered", "2026-10-09 10:00"),
+      row("transit-old", "in_transit", "2026-10-01 08:00"),
+      row("ordered", "ordered", null),
+      row("received-new", "delivered", "2026-09-20 10:00", 2_000),
+      row("transit-new", "in_transit", "2026-10-07 08:00"),
+      row("problem", "exception", "2026-10-02 08:00"),
+      row("pickup", "pickup_ready", "2026-10-03 08:00"),
+      row("shipped", "shipped", "2026-10-04 08:00"),
+    ];
+    expect(rows.sort(compareParcels).map((parcel) => parcel.id)).toEqual([
+      "problem",
+      "ordered",
+      "shipped",
+      "transit-new",
+      "transit-old",
+      "pickup",
+      "delivered",
+      "received-new",
+      "received-old",
+    ]);
   });
 });

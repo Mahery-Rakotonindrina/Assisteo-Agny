@@ -674,7 +674,10 @@
       "itemQuantity": "Quantité",
       "itemPrice": "Prix (ex. ¥215)",
       "removeItem": "Supprimer l’article",
-      "addItem": "Ajouter un article"
-    }
+      "addItem": "Ajouter un article",
+      "receivedAt": "Date de récupération",
+      "receivedHint": "Mise à la date du jour quand tu le marques comme reçu. Corrige-la si tu l’as marqué en retard ; vide-la pour le remettre en cours."
+    },
+    "receivedOn": "Reçu le {date}"
   }
 }
