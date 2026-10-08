@@ -2,19 +2,26 @@ import Head from "next/head";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { useDeferredValue, useState } from "react";
-import { Check, ChevronDown, Copy, ExternalLink, MapPin, Package, Pencil, RotateCcw, ScanLine, Search, Trash2, UserRound, X } from "lucide-react";
+import { Check, ChevronDown, Copy, ExternalLink, FileSpreadsheet, MapPin, Package, Pencil, RotateCcw, ScanLine, Search, Trash2, UserRound, Users, X } from "lucide-react";
 import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
+import { ParcelClients } from "@/components/ParcelClients";
 import { ParcelCosts } from "@/components/ParcelCosts";
 import { ParcelEditSheet } from "@/components/ParcelEditSheet";
+import { SegmentedControl } from "@/components/SegmentedControl";
 import { useToast } from "@/components/Toast";
 import { useHistory } from "@/hooks/useHistory";
+import { useNow } from "@/hooks/useNow";
 import { useParcels } from "@/hooks/useParcels";
+import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
-import { formatAriary, formatDate, formatDateTime } from "@/lib/format";
+import { formatAriary, formatDate, formatDateTime, toDateInput } from "@/lib/format";
 import { easeOut, rise, stagger } from "@/lib/motion";
+import { parcelsCsv } from "@/lib/parcelExport";
+import { inPeriod, isForClient, parcelDate, type Period } from "@/lib/parcelReport";
 import { compareParcels, matchesSearch, parcelStep, parcelSteps, parcelTone, trackingUrl } from "@/lib/parcels";
 import { haptics } from "@/services/device";
+import { shareTextFile } from "@/services/fileShare";
 import { parcelStore, parcelTotalMga, type Parcel } from "@/services/parcelStore";
 import styles from "@/styles/Parcels.module.scss";
 
@@ -33,6 +40,37 @@ export default function ParcelsPage() {
   const totalSpent = parcels.reduce((total, parcel) => total + parcelTotalMga(parcel), 0);
   const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query);
+  // Pro: the parcels by client, over a period, and one client's parcels.
+  const reseller = usePlan().has("reseller");
+  const now = useNow(60_000);
+  const [view, setView] = useState<"parcels" | "clients">("parcels");
+  const [period, setPeriod] = useState<Period>("month");
+  const [clientFilter, setClientFilter] = useState<{ name: string | null } | null>(null);
+  const showClients = reseller && view === "clients";
+  const toast = useToast();
+  const periodParcels = parcels.filter((parcel) => inPeriod(parcel, period, now));
+
+  // The period's parcels as a spreadsheet, client by client, oldest first.
+  const exportParcels = async () => {
+    haptics.tap();
+    const sorted = [...periodParcels].sort(
+      (a, b) =>
+        Number(!a.client?.trim()) - Number(!b.client?.trim()) ||
+        (a.client ?? "").localeCompare(b.client ?? "", locale) ||
+        parcelDate(a) - parcelDate(b),
+    );
+    const month = (offset: number) => {
+      const date = new Date(now);
+      return toDateInput(new Date(date.getFullYear(), date.getMonth() - offset, 1).getTime()).slice(0, 7);
+    };
+    const suffix = period === "all" ? toDateInput(now) : month(period === "month" ? 0 : 1);
+    try {
+      const result = await shareTextFile(`colis-${suffix}.csv`, parcelsCsv(sorted, t), "text/csv", t("parcels.export.title"));
+      if (result === "downloaded") toast(t("parcels.export.downloaded"));
+    } catch {
+      toast(t("parcels.export.failed"), "error");
+    }
+  };
   const clients = [...new Set(parcels.map((parcel) => parcel.client?.trim()).filter((name): name is string => Boolean(name)))].sort((a, b) =>
     a.localeCompare(b, locale),
   );
@@ -69,7 +107,9 @@ export default function ParcelsPage() {
       total ? formatAriary(total, locale) : null,
     ];
   };
-  const visible = parcels.filter((parcel) => matchesSearch(searchTexts(parcel), deferredQuery)).sort(compareParcels);
+  const visible = parcels
+    .filter((parcel) => matchesSearch(searchTexts(parcel), deferredQuery) && (!clientFilter || isForClient(parcel, clientFilter.name)))
+    .sort(compareParcels);
   const ongoing = visible.filter((parcel) => !isReceived(parcel));
   const received = visible.filter(isReceived);
   const allOngoing = parcels.filter((parcel) => !isReceived(parcel)).length;
@@ -100,7 +140,47 @@ export default function ParcelsPage() {
           </motion.div>
         ) : (
           <>
-            {parcels.length > 0 && (
+            {reseller && parcels.length > 0 && (
+              <motion.div variants={rise}>
+                <SegmentedControl
+                  ariaLabel={t("parcels.clients.view")}
+                  value={view}
+                  onChange={setView}
+                  options={[
+                    { value: "parcels", label: t("parcels.clients.parcelsTab"), icon: <Package size={16} /> },
+                    { value: "clients", label: t("parcels.clients.clientsTab"), icon: <Users size={16} /> },
+                  ]}
+                />
+              </motion.div>
+            )}
+            {showClients && (
+              <motion.div variants={rise}>
+                <ParcelClients
+                  parcels={periodParcels}
+                  period={period}
+                  onPeriod={setPeriod}
+                  actions={
+                    periodParcels.length > 0 && (
+                      <Button variant="secondary" icon={<FileSpreadsheet />} onClick={() => void exportParcels()}>
+                        {t("parcels.export.button")}
+                      </Button>
+                    )
+                  }
+                  onPick={(name) => {
+                    setClientFilter({ name });
+                    setQuery("");
+                    setView("parcels");
+                  }}
+                />
+              </motion.div>
+            )}
+            {!showClients && clientFilter && (
+              <motion.button variants={rise} type="button" className={styles.clientFilter} onClick={() => setClientFilter(null)}>
+                <UserRound size={14} /> {clientFilter.name ? t("parcels.forClient", { name: clientFilter.name }) : t("parcels.clients.none")}
+                <X size={14} aria-label={t("parcels.clearSearch")} />
+              </motion.button>
+            )}
+            {!showClients && parcels.length > 0 && (
               <motion.label variants={rise} className={styles.search}>
                 <Search size={18} />
                 <input
@@ -117,9 +197,9 @@ export default function ParcelsPage() {
                 )}
               </motion.label>
             )}
-            {deferredQuery && visible.length === 0 && <p className={styles.noMatch}>{t("parcels.noMatch")}</p>}
-            {deferredQuery && visible.length > 0 && <p className={styles.matchCount}>{t("parcels.matchCount", { count: visible.length })}</p>}
-            {ongoing.length > 0 && (
+            {!showClients && (deferredQuery || clientFilter) && visible.length === 0 && <p className={styles.noMatch}>{t("parcels.noMatch")}</p>}
+            {!showClients && deferredQuery && visible.length > 0 && <p className={styles.matchCount}>{t("parcels.matchCount", { count: visible.length })}</p>}
+            {!showClients && ongoing.length > 0 && (
               <motion.section variants={rise} className={styles.group}>
                 <h2>{t("parcels.ongoing")}</h2>
                 {ongoing.map((parcel) => (
@@ -127,7 +207,7 @@ export default function ParcelsPage() {
                 ))}
               </motion.section>
             )}
-            {received.length > 0 && (
+            {!showClients && received.length > 0 && (
               <motion.section variants={rise} className={styles.group}>
                 <h2>{t("parcels.received")}</h2>
                 {received.map((parcel) => (

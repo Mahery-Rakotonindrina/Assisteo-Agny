@@ -1,0 +1,126 @@
+@use "../../styles/mixins" as *;
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.periods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+
+  button {
+    padding: 0.45rem 0.85rem;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    font-weight: 600;
+
+    &[aria-pressed="true"] {
+      border-color: var(--accent-mark);
+      background: var(--accent-soft);
+      color: var(--accent-text);
+    }
+  }
+}
+
+.total {
+  @include card;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 1rem 1.1rem;
+  border-radius: var(--radius-md);
+
+  span {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  strong {
+    font-size: 1.7rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent-text);
+  }
+
+  small {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+}
+
+.empty {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0;
+  list-style: none;
+
+  button {
+    @include card;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.8rem 0.9rem;
+    border-radius: var(--radius-md);
+    text-align: left;
+  }
+}
+
+.avatar {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--cat-parcel) 18%, transparent);
+  color: var(--cat-parcel);
+  font-weight: 800;
+
+  &[data-none] {
+    background: var(--surface-strong);
+    color: var(--text-muted);
+  }
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+
+  strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  small {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+}
+
+.amount {
+  flex-shrink: 0;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.chevron {
+  flex-shrink: 0;
+  color: var(--text-subtle);
+}

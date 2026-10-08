@@ -350,3 +350,16 @@
   font-size: 0.8rem;
   color: var(--text-subtle);
 }
+
+.clientFilter {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.8rem;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--cat-parcel) 18%, transparent);
+  color: var(--cat-parcel);
+  font-size: 0.88rem;
+  font-weight: 700;
+}

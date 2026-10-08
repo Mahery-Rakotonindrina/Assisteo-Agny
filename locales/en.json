@@ -769,7 +769,48 @@
       "clientLocked": "With the Pro plan: note who each parcel is for."
     },
     "receivedOn": "Received on {date}",
-    "costsLocked": "Costs in ariary (price and fees) come with the Lite plan and up."
+    "costsLocked": "Costs in ariary (price and fees) come with the Lite plan and up.",
+    "clients": {
+      "view": "View",
+      "parcelsTab": "Parcels",
+      "clientsTab": "Clients",
+      "period": "Period",
+      "periods": {
+        "all": "All",
+        "month": "This month",
+        "lastMonth": "Last month"
+      },
+      "totalOf": {
+        "all": "Total spent",
+        "month": "Spent this month",
+        "lastMonth": "Spent last month"
+      },
+      "count": "{parcels} parcel(s) · {ongoing} in progress",
+      "none": "No client",
+      "empty": "No parcel in this period."
+    },
+    "export": {
+      "button": "Export for Excel",
+      "title": "My parcels",
+      "downloaded": "File downloaded: open it with Excel or Google Sheets.",
+      "failed": "The export could not be created.",
+      "columns": {
+        "client": "Client",
+        "title": "Parcel",
+        "platform": "Platform",
+        "orderNumber": "Order no.",
+        "trackingNumber": "Tracking no.",
+        "carrier": "Carrier",
+        "status": "Status",
+        "orderedAt": "Ordered on",
+        "receivedAt": "Received on",
+        "items": "Items",
+        "priceMga": "Item price (Ar)",
+        "feesMga": "Fees (Ar)",
+        "feesDetail": "Fee details",
+        "totalMga": "Total (Ar)"
+      }
+    }
   },
   "plans": {
     "names": {
@@ -815,7 +856,7 @@
       "allPremium": "Everything in Premium, plus:",
       "priority": "Priority when the AI is busy",
       "clients": "A client per parcel: who each parcel is for",
-      "reseller": "Totals per client and export (soon)"
+      "reseller": "Totals per client, monthly recap and Excel export"
     },
     "how": "How to subscribe",
     "step1": "Sign in",
