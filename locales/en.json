@@ -484,7 +484,12 @@
       },
       "noMatch": "Nobody in this filter.",
       "adminRole": "full access",
-      "adminHint": "For administrators only: everything unlimited, and the Admin menu in the app. The admin page still asks for the token."
+      "adminHint": "For administrators only: everything unlimited, and the Admin menu in the app. The admin page still asks for the token.",
+      "charts": {
+        "split": "Active subscribers by plan",
+        "monthly": "Received per month, by plan",
+        "noPayments": "No payment recorded yet."
+      }
     },
     "plans": {
       "title": "Plans",
@@ -898,7 +903,22 @@
       "trialScans": "{count} scans to try",
       "adminMenu": "The Admin menu (the page still asks for the token)"
     },
-    "openAdmin": "Open the admin"
+    "openAdmin": "Open the admin",
+    "welcome": {
+      "kicker": "Plan activated",
+      "title": "Welcome to {plan}",
+      "until": "Active until {date}",
+      "cta": "Let’s go"
+    },
+    "notice": {
+      "endingTitle": "Your {plan} plan ends soon",
+      "ending": "{days} days left: it stops after {date}.",
+      "endingTomorrow": "It stops after {date}.",
+      "endedTitle": "Your {plan} plan has ended",
+      "ended": "You’re back on the free trial. Renew to get your perks back.",
+      "renew": "Renew",
+      "dismiss": "Hide"
+    }
   },
   "deep": {
     "button": "Deep analysis",

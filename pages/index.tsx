@@ -10,6 +10,7 @@ import { DropZone } from "@/components/DropZone";
 import { HistoryItem } from "@/components/HistoryItem";
 import { NextReminder } from "@/components/NextReminder";
 import { PlanBadge } from "@/components/PlanBadge";
+import { PlanNotice } from "@/components/PlanWelcome";
 import { ScanStage } from "@/components/ScanStage";
 import { ScanWait } from "@/components/ScanWait";
 import { SegmentedControl } from "@/components/SegmentedControl";
@@ -122,6 +123,7 @@ export default function ScanPage() {
                       )}
                   </div>
                 )}
+                <PlanNotice />
               </motion.header>
 
               {aiStatus.status === "demo" && (

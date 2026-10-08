@@ -1,6 +1,8 @@
 import { useRouter } from "next/router";
 import { motion } from "motion/react";
 import { useEffect, useState, type ReactNode } from "react";
+import { PlanTheme } from "@/components/PlanTheme";
+import { PlanWelcome } from "@/components/PlanWelcome";
 import { Sidebar } from "@/components/Sidebar";
 import { TabBar } from "@/components/TabBar";
 import { easeOut } from "@/lib/motion";
@@ -49,6 +51,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         {children}
       </motion.main>
       {showTabBar && <TabBar />}
+      <PlanTheme />
+      <PlanWelcome />
     </div>
   );
 }

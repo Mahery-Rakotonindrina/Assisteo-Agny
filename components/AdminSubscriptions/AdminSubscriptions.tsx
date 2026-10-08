@@ -12,6 +12,7 @@ import { activePlan, durations, paidPlans, periodEnd, type ActivePlan, type Dura
 import type { AdminSubscriptionsResponse } from "@/pages/api/admin/subscriptions";
 import { httpClient } from "@/services/httpClient";
 import { ApiError } from "@/types/api";
+import { AdminCharts } from "./AdminCharts";
 import styles from "./AdminSubscriptions.module.scss";
 
 const timestamp = () => Date.now();
@@ -264,6 +265,8 @@ export function AdminSubscriptions({ token }: { token: string }) {
           </button>
         ))}
       </div>
+
+      <AdminCharts rows={rows} counts={perPlan} now={now} />
 
       <Button icon={<Plus />} block onClick={() => setDraft(newDraft(now))}>
         {t("admin.subs.add")}

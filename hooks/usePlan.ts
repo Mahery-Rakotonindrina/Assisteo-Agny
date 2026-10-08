@@ -10,6 +10,7 @@ let requested = false;
  */
 export function usePlan() {
   const plan = useSyncExternalStore(planStore.subscribe, planStore.get, () => null);
+  const fresh = useSyncExternalStore(planStore.subscribe, planStore.isFresh, () => false);
 
   useEffect(() => {
     if (requested) return;
@@ -24,5 +25,7 @@ export function usePlan() {
     has: (feature: PlanFeature) => hasFeature(id, feature),
     /** An administrator (full access): the Admin menu is shown. */
     isAdmin: isAdminPlan(id),
+    /** The plan was checked with the server since the app opened. */
+    fresh,
   };
 }

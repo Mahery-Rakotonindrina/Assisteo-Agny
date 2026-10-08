@@ -95,7 +95,10 @@
     font-size: 1.5rem;
     font-weight: 800;
     line-height: 1.15;
-    color: var(--plan);
+    background: var(--plan-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
     font-variant-numeric: tabular-nums;
   }
 

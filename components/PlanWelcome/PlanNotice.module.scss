@@ -1,0 +1,71 @@
+.banner {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding: 0.9rem 2.6rem 0.9rem 0.9rem;
+  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in srgb, var(--plan) 45%, transparent);
+  background: linear-gradient(135deg, var(--plan-soft), transparent 70%), var(--card);
+  box-shadow: 0 14px 34px -22px var(--plan);
+  text-align: left;
+}
+
+.icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 13px;
+  background: var(--plan-gradient);
+  color: var(--plan-ink);
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+
+  strong {
+    font-size: 0.95rem;
+  }
+
+  p {
+    font-size: 0.86rem;
+    color: var(--text-muted);
+  }
+}
+
+.renew {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--radius-pill);
+  background: var(--plan-gradient);
+  color: var(--plan-ink);
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.close {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.55rem;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  color: var(--text-muted);
+
+  &:hover {
+    background: var(--surface-strong);
+  }
+}

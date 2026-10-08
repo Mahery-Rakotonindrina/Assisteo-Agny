@@ -65,7 +65,7 @@
     position: absolute;
     inset: 0 0 auto;
     height: 4px;
-    background: var(--plan);
+    background: var(--plan-gradient);
   }
 
   &[data-current] {
@@ -103,7 +103,10 @@
   h2 {
     @include display(1.7rem);
     flex: 1;
-    color: var(--plan);
+    background: var(--plan-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
 }
 
@@ -113,9 +116,28 @@
   place-items: center;
   width: 2.4rem;
   height: 2.4rem;
+  position: relative;
+  overflow: hidden;
   border-radius: 13px;
-  background: var(--plan);
-  color: var(--bg);
+  background: var(--plan-gradient);
+  color: var(--plan-ink);
+  box-shadow: 0 8px 20px -10px var(--plan);
+}
+
+.offer[data-plan="premium"] .offerIcon::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 50%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  animation: plan-shine 4.5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .offer[data-plan="premium"] .offerIcon::after {
+    animation: none;
+    opacity: 0;
+  }
 }
 
 .tag {

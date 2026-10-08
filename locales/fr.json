@@ -484,7 +484,12 @@
       },
       "noMatch": "Personne dans ce filtre.",
       "adminRole": "accès complet",
-      "adminHint": "Réservé aux administrateurs : tout sans limite, et le menu Admin dans l’app. La page admin demande toujours le jeton."
+      "adminHint": "Réservé aux administrateurs : tout sans limite, et le menu Admin dans l’app. La page admin demande toujours le jeton.",
+      "charts": {
+        "split": "Abonnés actifs par offre",
+        "monthly": "Encaissé par mois, par offre",
+        "noPayments": "Pas encore de paiement enregistré."
+      }
     },
     "plans": {
       "title": "Offres",
@@ -898,7 +903,22 @@
       "trialScans": "{count} scans pour essayer",
       "adminMenu": "Le menu Admin (la page demande toujours le jeton)"
     },
-    "openAdmin": "Ouvrir l’admin"
+    "openAdmin": "Ouvrir l’admin",
+    "welcome": {
+      "kicker": "Offre activée",
+      "title": "Bienvenue dans {plan}",
+      "until": "Active jusqu’au {date}",
+      "cta": "C’est parti"
+    },
+    "notice": {
+      "endingTitle": "Ton offre {plan} se termine bientôt",
+      "ending": "Encore {days} jours : elle s’arrête après le {date}.",
+      "endingTomorrow": "Elle s’arrête après le {date}.",
+      "endedTitle": "Ton offre {plan} est terminée",
+      "ended": "Tu es repassé·e sur l’essai gratuit. Renouvelle pour retrouver tes avantages.",
+      "renew": "Renouveler",
+      "dismiss": "Masquer"
+    }
   },
   "deep": {
     "button": "Analyse approfondie",

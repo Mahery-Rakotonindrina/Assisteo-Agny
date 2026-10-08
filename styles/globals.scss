@@ -44,6 +44,12 @@
   --plan-premium: #fbbf24;
   --plan-pro: #a78bfa;
   --plan-unlimited: #e879f9;
+  // Second tone of each plan's gradient.
+  --plan-free-2: #64748b;
+  --plan-lite-2: #22d3ee;
+  --plan-premium-2: #f59e0b;
+  --plan-pro-2: #6366f1;
+  --plan-unlimited-2: #f472b6;
 
   --aurora-a: rgba(198, 255, 77, 0.16);
   --aurora-b: rgba(124, 92, 255, 0.2);
@@ -106,6 +112,11 @@
   --plan-premium: #a16207;
   --plan-pro: #6d28d9;
   --plan-unlimited: #a21caf;
+  --plan-free-2: #334155;
+  --plan-lite-2: #0e7490;
+  --plan-premium-2: #c2410c;
+  --plan-pro-2: #4338ca;
+  --plan-unlimited-2: #be185d;
 
   --aurora-a: rgba(170, 230, 40, 0.18);
   --aurora-b: rgba(124, 92, 255, 0.14);
@@ -124,26 +135,56 @@
   @include light-tokens;
 }
 
-// Any element with data-plan gets its plan colour as --plan, and a soft tint.
+// Any element with data-plan gets its plan colour as --plan, its gradient,
+// a soft tint, and an ink readable on the gradient.
 [data-plan] {
   --plan: var(--plan-free);
+  --plan-2: var(--plan-free-2);
   --plan-soft: color-mix(in srgb, var(--plan) 15%, transparent);
+  --plan-gradient: linear-gradient(135deg, var(--plan), var(--plan-2));
+  --plan-ink: var(--bg);
 }
 
 [data-plan="lite"] {
   --plan: var(--plan-lite);
+  --plan-2: var(--plan-lite-2);
 }
 
 [data-plan="premium"] {
   --plan: var(--plan-premium);
+  --plan-2: var(--plan-premium-2);
 }
 
 [data-plan="pro"] {
   --plan: var(--plan-pro);
+  --plan-2: var(--plan-pro-2);
 }
 
 [data-plan="unlimited"] {
   --plan: var(--plan-unlimited);
+  --plan-2: var(--plan-unlimited-2);
+}
+
+// A subscriber's app (PlanTheme sets data-plan on <html>): the background
+// glows and the scan button's light ring take the plan's colours. The main
+// buttons stay green, the app's own colour.
+:root[data-plan]:not([data-plan="free"]) {
+  --aurora-a: color-mix(in srgb, var(--plan) 20%, transparent);
+  --aurora-b: color-mix(in srgb, var(--plan-2) 22%, transparent);
+  --orb-ring-a: var(--plan);
+  --orb-ring-b: var(--plan-2);
+}
+
+// A light sweeping across, now and then (Premium's badge and icon).
+@keyframes plan-shine {
+  0%,
+  72% {
+    transform: translateX(-130%) skewX(-18deg);
+  }
+
+  100% {
+    transform: translateX(230%) skewX(-18deg);
+  }
 }
 
 * {

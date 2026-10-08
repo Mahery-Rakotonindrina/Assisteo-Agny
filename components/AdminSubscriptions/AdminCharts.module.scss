@@ -1,0 +1,164 @@
+@use "../../styles/mixins" as *;
+
+.charts {
+  display: grid;
+  gap: 0.6rem;
+
+  @include desktop {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.box {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  padding: 0.9rem;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+
+  figcaption {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-muted);
+  }
+}
+
+.ringRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.ring {
+  flex-shrink: 0;
+  width: 7.5rem;
+  height: 7.5rem;
+}
+
+.track {
+  fill: none;
+  stroke: var(--surface-strong);
+  stroke-width: 14;
+}
+
+.arc {
+  fill: none;
+  stroke: var(--plan);
+  stroke-width: 14;
+  transition: stroke-dasharray 0.6s var(--ease-out);
+}
+
+.ringTotal {
+  text-anchor: middle;
+  font-size: 26px;
+  font-weight: 800;
+  fill: var(--text);
+}
+
+.ringLabel {
+  text-anchor: middle;
+  font-size: 10px;
+  fill: var(--text-muted);
+}
+
+.legend {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.84rem;
+  }
+
+  i {
+    flex-shrink: 0;
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 4px;
+    background: var(--plan-gradient);
+  }
+
+  span {
+    flex: 1;
+    min-width: 0;
+    color: var(--text-muted);
+  }
+
+  strong {
+    font-variant-numeric: tabular-nums;
+  }
+
+  small {
+    width: 2.6rem;
+    text-align: right;
+    color: var(--text-subtle);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.none {
+  font-size: 0.84rem;
+  color: var(--text-subtle);
+}
+
+.bars {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.4rem;
+  align-items: end;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  min-width: 0;
+
+  small {
+    font-size: 0.72rem;
+    color: var(--text-subtle);
+  }
+}
+
+.amount {
+  min-height: 1em;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.track2 {
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  max-width: 2.4rem;
+  height: 7rem;
+  border-radius: 10px;
+  background: var(--surface-strong);
+  overflow: hidden;
+}
+
+.bar {
+  display: flex;
+  flex-direction: column-reverse;
+  width: 100%;
+  min-height: 3px;
+  transition: height 0.6s var(--ease-out);
+
+  span {
+    flex-basis: 0;
+    min-height: 3px;
+    background: var(--plan-gradient);
+  }
+}
