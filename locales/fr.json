@@ -8,7 +8,8 @@
     "history": "Historique",
     "parcels": "Colis",
     "settings": "Réglages",
-    "back": "Retour"
+    "back": "Retour",
+    "admin": "Admin"
   },
   "scan": {
     "greeting": {
@@ -475,14 +476,15 @@
       "note": "Note",
       "notePlaceholder": "Ex. payé par sa sœur",
       "saveMany": "Enregistrer pour {count} e-mails",
-      "offered": "offert",
       "cashed": "{amount} ce mois",
       "filter": "Filtrer",
       "filters": {
         "all": "Tous",
         "inactive": "Sans offre en cours"
       },
-      "noMatch": "Personne dans ce filtre."
+      "noMatch": "Personne dans ce filtre.",
+      "adminRole": "accès complet",
+      "adminHint": "Réservé aux administrateurs : tout sans limite, et le menu Admin dans l’app. La page admin demande toujours le jeton."
     },
     "plans": {
       "title": "Offres",
@@ -494,14 +496,15 @@
         "parcels": "Colis suivis",
         "deepPerMonth": "Analyses approfondies / mois"
       },
-      "zeroHint": "0 = sans limite. Accès complet (offert) : tout est sans limite.",
+      "zeroHint": "0 = sans limite. Admin : tout est sans limite.",
       "freeParcels": "Colis suivis sans offre",
       "freeParcelsHint": "Les scans et questions gratuits se règlent plus bas, dans l’essai gratuit.",
       "instructions": "Comment payer",
       "instructionsPlaceholder": "Ex. Envoie le montant par MVola au 034 00 000 00 (Nom Prénom), avec ton e-mail en motif.",
       "contact": "Contact pour envoyer la référence",
       "contactHint": "Un numéro de téléphone, ou un lien (WhatsApp : https://wa.me/261…, Messenger…)."
-    }
+    },
+    "adminAccount": "Ton compte est administrateur : saisis le jeton pour ouvrir l’espace admin."
   },
   "account": {
     "section": "Compte",
@@ -827,7 +830,7 @@
       "lite": "Lite",
       "premium": "Premium",
       "pro": "Pro",
-      "unlimited": "Accès complet"
+      "unlimited": "Admin"
     },
     "section": "Mon offre",
     "title": "Les offres",
@@ -892,8 +895,10 @@
     "includes": "Ce que comprend ton offre",
     "perks": {
       "everything": "Tout est inclus, sans limite",
-      "trialScans": "{count} scans pour essayer"
-    }
+      "trialScans": "{count} scans pour essayer",
+      "adminMenu": "Le menu Admin (la page demande toujours le jeton)"
+    },
+    "openAdmin": "Ouvrir l’admin"
   },
   "deep": {
     "button": "Analyse approfondie",

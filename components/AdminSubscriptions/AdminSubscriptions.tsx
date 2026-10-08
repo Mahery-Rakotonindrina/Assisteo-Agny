@@ -260,7 +260,7 @@ export function AdminSubscriptions({ token }: { token: string }) {
               <PlanIcon plan={plan} size={15} /> {t(`plans.names.${plan}`)}
             </span>
             <strong>{count}</strong>
-            <small>{plan === "unlimited" ? t("admin.subs.offered") : t("admin.subs.cashed", { amount: formatAriary(cashed, locale) })}</small>
+            <small>{plan === "unlimited" ? t("admin.subs.adminRole") : t("admin.subs.cashed", { amount: formatAriary(cashed, locale) })}</small>
           </button>
         ))}
       </div>
@@ -531,6 +531,11 @@ function SheetForm({ initial, now, onClose, onSave }: { initial: Draft; now: num
             ))}
           </div>
         </ChoiceGroup>
+        {draft.plan === "unlimited" && (
+          <p className={styles.adminWarning} data-plan="unlimited">
+            {t("admin.subs.adminHint")}
+          </p>
+        )}
 
         <div className={styles.grid}>
           <Field label={t("admin.subs.start")}>

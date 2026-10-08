@@ -6,7 +6,7 @@ type Translate = (key: string, params?: Record<string, string | number>) => stri
 
 /** What a plan includes, in plain words: its limits, then its features. */
 export function planPerks(plan: PlanId, limits: PlanLimits, t: Translate, locale: Locale): string[] {
-  if (plan === "unlimited") return [t("plans.perks.everything")];
+  if (plan === "unlimited") return [t("plans.perks.everything"), t("plans.perks.adminMenu")];
   const limit = (value: number, key: "scans" | "questions" | "parcels" | "deep") =>
     value === 0 ? t(`plans.features.${key}Unlimited`) : t(`plans.features.${key}`, { count: formatNumber(value, locale) });
   const perks =

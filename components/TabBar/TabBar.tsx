@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { motion } from "motion/react";
-import { History, Package, ScanLine, Settings2 } from "lucide-react";
+import { History, Package, ScanLine, Settings2, ShieldCheck } from "lucide-react";
+import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { spring } from "@/lib/motion";
 import { haptics } from "@/services/device";
@@ -14,14 +15,18 @@ const tabs = [
   { href: "/settings", key: "settings", Icon: Settings2 },
 ] as const;
 
+/** Shown to administrators (full access) only; the page still asks for the token. */
+const adminTab = { href: "/admin", key: "admin", Icon: ShieldCheck } as const;
+
 export function TabBar() {
   const { pathname } = useRouter();
   const { t } = useTranslation();
+  const { isAdmin } = usePlan();
 
   return (
     <nav className={styles.bar} aria-label="Main">
       <div className={styles.inner}>
-        {tabs.map(({ href, key, Icon }) => {
+        {(isAdmin ? [...tabs, adminTab] : tabs).map(({ href, key, Icon }) => {
           const active = pathname === href;
           return (
             <Link

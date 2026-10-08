@@ -1,5 +1,5 @@
-// Plans: free (the trial), the three sold ones, and an access offered by the
-// owner (family). They form a ladder: each plan includes everything below it.
+// Plans: free (the trial), the three sold ones, and full access for the
+// administrators. They form a ladder: each plan includes everything below it.
 // Payment happens outside the app; the owner records it in /admin as a
 // subscription (an email, a plan, a period).
 
@@ -24,6 +24,14 @@ export type PlanFeature =
 
 /** The lowest plan that includes each feature. */
 const featureFrom: Record<PlanFeature, PlanId> = { ownKey: "lite", parcelCosts: "lite", reseller: "pro", deepAnalysis: "premium" };
+
+/**
+ * Full access is the administrators' plan: it shows the Admin menu. The admin
+ * page and its API still ask for the admin token.
+ */
+export function isAdminPlan(plan: PlanId) {
+  return plan === "unlimited";
+}
 
 export function hasFeature(plan: PlanId, feature: PlanFeature) {
   return planRank[plan] >= planRank[featureFrom[feature]];

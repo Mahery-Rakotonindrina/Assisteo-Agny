@@ -8,7 +8,8 @@
     "history": "History",
     "parcels": "Parcels",
     "settings": "Settings",
-    "back": "Back"
+    "back": "Back",
+    "admin": "Admin"
   },
   "scan": {
     "greeting": {
@@ -475,14 +476,15 @@
       "note": "Note",
       "notePlaceholder": "e.g. paid by her sister",
       "saveMany": "Save for {count} e-mails",
-      "offered": "offered",
       "cashed": "{amount} this month",
       "filter": "Filter",
       "filters": {
         "all": "All",
         "inactive": "No plan running"
       },
-      "noMatch": "Nobody in this filter."
+      "noMatch": "Nobody in this filter.",
+      "adminRole": "full access",
+      "adminHint": "For administrators only: everything unlimited, and the Admin menu in the app. The admin page still asks for the token."
     },
     "plans": {
       "title": "Plans",
@@ -494,14 +496,15 @@
         "parcels": "Parcels followed",
         "deepPerMonth": "Deep analyses / month"
       },
-      "zeroHint": "0 = no limit. Full access (offered): everything is unlimited.",
+      "zeroHint": "0 = no limit. Admin: everything is unlimited.",
       "freeParcels": "Parcels followed without a plan",
       "freeParcelsHint": "Free scans and questions are set below, in the free trial.",
       "instructions": "How to pay",
       "instructionsPlaceholder": "e.g. Send the amount by MVola to 034 00 000 00 (Full Name), with your e-mail as the reason.",
       "contact": "Contact to send the reference",
       "contactHint": "A phone number, or a link (WhatsApp: https://wa.me/261…, Messenger…)."
-    }
+    },
+    "adminAccount": "Your account is an administrator: enter the token to open the admin."
   },
   "account": {
     "section": "Account",
@@ -827,7 +830,7 @@
       "lite": "Lite",
       "premium": "Premium",
       "pro": "Pro",
-      "unlimited": "Full access"
+      "unlimited": "Admin"
     },
     "section": "My plan",
     "title": "Plans",
@@ -892,8 +895,10 @@
     "includes": "What your plan includes",
     "perks": {
       "everything": "Everything included, no limit",
-      "trialScans": "{count} scans to try"
-    }
+      "trialScans": "{count} scans to try",
+      "adminMenu": "The Admin menu (the page still asks for the token)"
+    },
+    "openAdmin": "Open the admin"
   },
   "deep": {
     "button": "Deep analysis",

@@ -1,4 +1,4 @@
-import { Check, Sparkles } from "lucide-react";
+import { Check, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/Button";
 import { PlanIcon } from "@/components/PlanBadge";
 import { usePlan } from "@/hooks/usePlan";
@@ -46,7 +46,11 @@ export function PlanSettings() {
 
       {!plan.signedIn && <p className={styles.hint}>{t("plans.signInHint")}</p>}
 
-      {id !== "unlimited" && (
+      {id === "unlimited" ? (
+        <Button href="/admin" block variant="secondary" icon={<ShieldCheck />}>
+          {t("plans.openAdmin")}
+        </Button>
+      ) : (
         <Button href="/plans" block variant={paid ? "secondary" : "primary"} icon={<Sparkles />}>
           {paid ? t("plans.seeOffers") : t("plans.choose")}
         </Button>

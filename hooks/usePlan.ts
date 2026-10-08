@@ -1,5 +1,5 @@
 import { useEffect, useSyncExternalStore } from "react";
-import { hasFeature, type PlanFeature } from "@/lib/plans";
+import { hasFeature, isAdminPlan, type PlanFeature } from "@/lib/plans";
 import { planStore } from "@/services/plan";
 
 let requested = false;
@@ -22,5 +22,7 @@ export function usePlan() {
     plan,
     id,
     has: (feature: PlanFeature) => hasFeature(id, feature),
+    /** An administrator (full access): the Admin menu is shown. */
+    isAdmin: isAdminPlan(id),
   };
 }

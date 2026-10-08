@@ -6,7 +6,7 @@ import { TabBar } from "@/components/TabBar";
 import { easeOut } from "@/lib/motion";
 import styles from "./AppShell.module.scss";
 
-const tabRoutes = new Set(["/", "/history", "/parcels", "/settings"]);
+const tabRoutes = new Set(["/", "/history", "/parcels", "/settings", "/admin"]);
 
 /**
  * Mobile (and native apps): one column with a floating tab bar.

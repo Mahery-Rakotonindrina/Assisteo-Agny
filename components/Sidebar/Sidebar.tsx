@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { motion } from "motion/react";
-import { Download, History, Package, ScanLine, Settings2, Smartphone, UserRound } from "lucide-react";
+import { Download, History, Package, ScanLine, Settings2, ShieldCheck, Smartphone, UserRound } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { useAiStatus } from "@/hooks/useAiStatus";
 import { useInstallPrompt } from "@/hooks/useInstallPrompt";
+import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAccount } from "@/lib/account/AccountProvider";
 import { spring } from "@/lib/motion";
@@ -17,9 +18,13 @@ const links = [
   { href: "/settings", key: "settings", Icon: Settings2 },
 ] as const;
 
+/** Shown to administrators (full access) only; the page still asks for the token. */
+const adminLink = { href: "/admin", key: "admin", Icon: ShieldCheck } as const;
+
 /** Desktop navigation, replacing the mobile tab bar on wide screens. */
 export function Sidebar() {
   const { pathname } = useRouter();
+  const { isAdmin } = usePlan();
   const { t } = useTranslation();
   const aiStatus = useAiStatus();
   const account = useAccount();
@@ -41,7 +46,7 @@ export function Sidebar() {
       </Link>
 
       <nav className={styles.nav} aria-label="Main">
-        {links.map(({ href, key, Icon }) => {
+        {(isAdmin ? [...links, adminLink] : links).map(({ href, key, Icon }) => {
           const active = pathname === href || (href === "/history" && pathname === "/result");
           return (
             <Link key={key} href={href} className={`${styles.link} ${active ? styles.active : ""}`} aria-current={active ? "page" : undefined}>

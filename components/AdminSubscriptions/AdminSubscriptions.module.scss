@@ -504,3 +504,12 @@
   padding: 0.85rem 1.25rem calc(1rem + var(--safe-bottom));
   background: linear-gradient(to top, var(--bg-elevated) 70%, transparent);
 }
+
+.adminWarning {
+  padding: 0.65rem 0.8rem;
+  border-radius: var(--radius-sm);
+  border: 1px dashed color-mix(in srgb, var(--plan) 50%, transparent);
+  background: var(--plan-soft);
+  color: var(--text-muted);
+  font-size: 0.84rem;
+}
