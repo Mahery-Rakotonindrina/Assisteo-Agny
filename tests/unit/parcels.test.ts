@@ -4,7 +4,7 @@ import { mockAnalysis } from "@/lib/ai/mock";
 import { isNewerParcel, sameParcel, type ParcelInfo } from "@/lib/parcels";
 import { historyStore } from "@/services/historyStore";
 import { updateEarlierParcelScans } from "@/services/parcelLinking";
-import { hasNewStatus, parcelStore } from "@/services/parcelStore";
+import { hasNewStatus, parcelStore, parcelTotalMga } from "@/services/parcelStore";
 import type { HistoryEntry } from "@/types/history";
 
 // The demo parcel: in transit, last event 2026-10-07 17:21.
@@ -59,7 +59,8 @@ describe("following a parcel", () => {
     expect(updated.info.status).toBe("delivered");
     expect(updated.scanIds).toEqual(["s1", "s2"]);
     expect(updated.timeline.map((item) => item.status)).toEqual(["in_transit", "delivered"]);
-    expect(updated.receivedAt).toBeTypeOf("number");
+    // Delivered by the carrier is not received: only the user says so.
+    expect(updated.receivedAt).toBeUndefined();
     // Details missing from the new screenshot are kept.
     const sparse = await parcelStore.applyScan(updated, scan("s3", { ...delivered, total: null, items: [] }, 3000));
     expect(sparse.info.total).toBe(demoParcel.parcel!.total);
@@ -79,5 +80,36 @@ describe("following a parcel", () => {
 
     // Re-scanning the old screenshot doesn't roll the status back.
     expect(await updateEarlierParcelScans(scan("again", info(), 3000))).toEqual([]);
+  });
+});
+
+describe("parcel costs", () => {
+  beforeEach(async () => {
+    await parcelStore.wipe();
+  });
+
+  it("adds the price and every fee, in ariary", async () => {
+    expect(parcelTotalMga({})).toBe(0);
+    const parcel = await parcelStore.add(scan("c1", info(), 1000));
+    await parcelStore.setCosts(parcel.id, {
+      priceMga: 120000,
+      fees: [
+        { id: "f1", label: "Fret", amountMga: 45000 },
+        { id: "f2", label: "Douane", amountMga: 30000 },
+      ],
+    });
+    const [saved] = await parcelStore.list();
+    expect(parcelTotalMga(saved)).toBe(195000);
+    expect(saved.dirty).toBe(true);
+  });
+
+  it("keeps received and not received under the user's control", async () => {
+    const parcel = await parcelStore.add(scan("r1", delivered, 1000));
+    expect(parcel.receivedAt).toBeUndefined();
+    await parcelStore.markReceived(parcel, true);
+    const [received] = await parcelStore.list();
+    expect(received.receivedAt).toBeTypeOf("number");
+    await parcelStore.markReceived(received, false);
+    expect((await parcelStore.list())[0].receivedAt).toBeUndefined();
   });
 });

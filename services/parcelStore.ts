@@ -17,6 +17,9 @@ export type ParcelTimelineEntry = {
   scanId: string;
 };
 
+/** A cost paid in ariary on top of the item: freight, customs, delivery… */
+export type ParcelFee = { id: string; label: string; amountMga: number };
+
 export type Parcel = {
   id: string;
   title: string;
@@ -26,8 +29,16 @@ export type Parcel = {
   timeline: ParcelTimelineEntry[];
   createdAt: number;
   updatedAt: number;
-  /** Marked as received by hand (the shop may never say "delivered"). */
+  /**
+   * Marked as received by hand, i.e. in the user's hands (in Madagascar).
+   * Independent of the carrier's "delivered", which often means a
+   * forwarding warehouse abroad.
+   */
   receivedAt?: number;
+  /** What the item cost, in ariary (entered by the user). */
+  priceMga?: number;
+  /** Extra costs in ariary: freight, customs, local delivery… */
+  fees?: ParcelFee[];
   /** Sync bookkeeping, like the history. */
   deletedAt?: number;
   dirty?: boolean;
@@ -107,7 +118,6 @@ export const parcelStore = {
       } as ParcelInfo,
       scanIds: parcel.scanIds.includes(entry.id) ? parcel.scanIds : [...parcel.scanIds, entry.id],
       timeline: parcel.timeline.some((item) => item.scanId === entry.id) ? parcel.timeline : [...parcel.timeline, timelineEntry(entry, info)],
-      receivedAt: info.status === "delivered" ? (parcel.receivedAt ?? Date.now()) : parcel.receivedAt,
     };
     await write(next);
     return next;
@@ -115,6 +125,13 @@ export const parcelStore = {
 
   async markReceived(parcel: Parcel, received: boolean) {
     await write({ ...parcel, receivedAt: received ? Date.now() : undefined });
+  },
+
+  /** Saves the price and fees in ariary. */
+  async setCosts(id: string, costs: { priceMga?: number; fees: ParcelFee[] }) {
+    const current = await get<Parcel>(id, db());
+    if (!current) return;
+    await write({ ...current, priceMga: costs.priceMga, fees: costs.fees });
   },
 
   async remove(id: string) {
@@ -151,4 +168,9 @@ export const parcelStore = {
 /** Whether this scan shows a later state than what the followed parcel has. */
 export function hasNewStatus(parcel: Parcel, info: ParcelInfo | null | undefined) {
   return Boolean(info && isNewerParcel(parcel.info, info));
+}
+
+/** Everything spent on a parcel, in ariary: price plus fees. */
+export function parcelTotalMga(parcel: Pick<Parcel, "priceMga" | "fees">) {
+  return (parcel.priceMga ?? 0) + (parcel.fees ?? []).reduce((total, fee) => total + (fee.amountMga || 0), 0);
 }

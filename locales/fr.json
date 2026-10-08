@@ -629,6 +629,23 @@
     "markOngoing": "Pas encore reçu",
     "remove": "Retirer",
     "confirmRemove": "Retirer de la liste ?",
-    "removed": "Colis retiré de la liste"
+    "removed": "Colis retiré de la liste",
+    "deliveredWaiting": "Livré par le transporteur · pas encore reçu",
+    "cost": "Coût en ariary",
+    "price": "Prix de l’article",
+    "paidOnShop": "Payé sur la boutique : {amount}",
+    "feeName": "Nom du frais",
+    "feeAmount": "Montant de {name}",
+    "removeFee": "Supprimer {name}",
+    "fees": {
+      "freight": "Fret",
+      "customs": "Douane",
+      "delivery": "Livraison",
+      "commission": "Commission",
+      "other": "Autre frais"
+    },
+    "totalSpent": "Total dépensé",
+    "ofFees": "de frais",
+    "totalAll": "Total dépensé : {amount}"
   }
 }

@@ -5,24 +5,28 @@ import { useState } from "react";
 import { Check, ChevronDown, Copy, ExternalLink, MapPin, Package, RotateCcw, ScanLine, Trash2 } from "lucide-react";
 import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
+import { ParcelCosts } from "@/components/ParcelCosts";
 import { useToast } from "@/components/Toast";
 import { useHistory } from "@/hooks/useHistory";
 import { useParcels } from "@/hooks/useParcels";
 import { useTranslation } from "@/hooks/useTranslation";
-import { formatDateTime } from "@/lib/format";
+import { formatAriary, formatDateTime } from "@/lib/format";
 import { easeOut, rise, stagger } from "@/lib/motion";
 import { parcelStep, parcelSteps, parcelTone, trackingUrl } from "@/lib/parcels";
 import { haptics } from "@/services/device";
-import { parcelStore, type Parcel } from "@/services/parcelStore";
+import { parcelStore, parcelTotalMga, type Parcel } from "@/services/parcelStore";
 import styles from "@/styles/Parcels.module.scss";
 
 /** "Mes colis": the parcels being followed, in progress first, then received. */
 export default function ParcelsPage() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { parcels, isLoading } = useParcels();
   const { entries } = useHistory();
   const thumbnails = new Map(entries.map((entry) => [entry.id, entry.thumbnail]));
-  const isReceived = (parcel: Parcel) => Boolean(parcel.receivedAt) || parcel.info.status === "delivered";
+  // Received = in the user's hands, set by hand: the carrier's "delivered"
+  // often means a forwarding warehouse abroad, not Madagascar.
+  const isReceived = (parcel: Parcel) => Boolean(parcel.receivedAt);
+  const totalSpent = parcels.reduce((total, parcel) => total + parcelTotalMga(parcel), 0);
   const ongoing = parcels.filter((parcel) => !isReceived(parcel));
   const received = parcels.filter(isReceived);
 
@@ -35,6 +39,7 @@ export default function ParcelsPage() {
         <motion.header variants={rise} className={styles.header}>
           <h1>{t("parcels.title")}</h1>
           {parcels.length > 0 && <p>{t("parcels.count", { ongoing: ongoing.length, received: received.length })}</p>}
+          {totalSpent > 0 && <p className={styles.totalAll}>{t("parcels.totalAll", { amount: formatAriary(totalSpent, locale) })}</p>}
         </motion.header>
 
         {!isLoading && parcels.length === 0 ? (
@@ -82,6 +87,12 @@ function ParcelRow({ parcel, thumbnail, received = false }: { parcel: Parcel; th
   const { info } = parcel;
   const step = parcelStep(info.status);
   const lastScan = parcel.scanIds[parcel.scanIds.length - 1];
+  const total = parcelTotalMga(parcel);
+  const statusText = received
+    ? t("parcels.receivedLabel")
+    : info.status === "delivered"
+      ? t("parcels.deliveredWaiting")
+      : t(`parcel.statuses.${info.status}`);
 
   const copy = async (value: string) => {
     try {
@@ -94,7 +105,7 @@ function ParcelRow({ parcel, thumbnail, received = false }: { parcel: Parcel; th
   };
 
   return (
-    <article className={styles.card} data-tone={received ? "done" : parcelTone(info.status)}>
+    <article className={styles.card} data-tone={received ? "done" : info.status === "delivered" ? "ok" : parcelTone(info.status)}>
       <button type="button" className={styles.summary} onClick={() => setOpen((value) => !value)} aria-expanded={open}>
         <span className={styles.thumb}>
           {/* eslint-disable-next-line @next/next/no-img-element -- local data URL */}
@@ -102,8 +113,9 @@ function ParcelRow({ parcel, thumbnail, received = false }: { parcel: Parcel; th
         </span>
         <span className={styles.text}>
           <strong>{parcel.title}</strong>
-          <span className={styles.status}>{received && info.status !== "delivered" ? t("parcels.receivedLabel") : t(`parcel.statuses.${info.status}`)}</span>
+          <span className={styles.status}>{statusText}</span>
           {info.lastEvent && <small>{[info.lastEvent.description, info.lastEvent.at].filter(Boolean).join(" · ")}</small>}
+          {total > 0 && <span className={styles.cost}>{formatAriary(total, locale)}</span>}
         </span>
         <ChevronDown size={18} className={`${styles.chevron} ${open ? styles.chevronOpen : ""}`} />
       </button>
@@ -138,6 +150,11 @@ function ParcelRow({ parcel, thumbnail, received = false }: { parcel: Parcel; th
                   </a>
                 </div>
               )}
+
+              <section className={styles.block}>
+                <h3>{t("parcels.cost")}</h3>
+                <ParcelCosts parcel={parcel} />
+              </section>
 
               <ol className={styles.timeline} aria-label={t("parcels.timeline")}>
                 {[...parcel.timeline].reverse().map((item) => (
