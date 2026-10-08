@@ -467,6 +467,23 @@
       "note": "Note",
       "notePlaceholder": "Ex. payé par sa sœur",
       "saveMany": "Enregistrer pour {count} e-mails"
+    },
+    "plans": {
+      "title": "Offres",
+      "subtitle": "Prix et limites de chaque offre, et comment payer : affichés sur la page « Les offres » de l’app.",
+      "fields": {
+        "priceMga": "Prix (Ar / mois)",
+        "scans": "Scans / mois",
+        "questionsPerDay": "Questions / jour",
+        "parcels": "Colis suivis"
+      },
+      "zeroHint": "0 = sans limite. Accès complet (offert) : tout est sans limite.",
+      "freeParcels": "Colis suivis sans offre",
+      "freeParcelsHint": "Les scans et questions gratuits se règlent plus bas, dans l’essai gratuit.",
+      "instructions": "Comment payer",
+      "instructionsPlaceholder": "Ex. Envoie le montant par MVola au 034 00 000 00 (Nom Prénom), avec ton e-mail en motif.",
+      "contact": "Contact pour envoyer la référence",
+      "contactHint": "Un numéro de téléphone, ou un lien (WhatsApp : https://wa.me/261…, Messenger…)."
     }
   },
   "account": {
@@ -750,6 +767,62 @@
       "premium": "Premium",
       "pro": "Pro",
       "unlimited": "Accès complet"
-    }
+    },
+    "section": "Mon offre",
+    "title": "Les offres",
+    "subtitle": "Paie par Mobile Money : ton offre est activée sur ton compte, sur tous tes appareils.",
+    "trial": "Essai gratuit",
+    "noEnd": "Sans date de fin",
+    "until": "Jusqu’au {date}",
+    "scansMonth": "Scans ce mois",
+    "scansTrial": "Scans gratuits utilisés",
+    "questionsToday": "Questions aujourd’hui",
+    "unlimited": "Illimité",
+    "signInHint": "Connecte-toi avec l’e-mail de ton abonnement pour retrouver ton offre.",
+    "seeOffers": "Voir les offres",
+    "choose": "Choisir une offre",
+    "current": "Ton offre : {plan}, jusqu’au {date}",
+    "currentNoEnd": "Ton offre : {plan}, sans date de fin",
+    "yours": "Ton offre",
+    "included": "Incluse",
+    "perMonth": "/ mois",
+    "pitch": {
+      "lite": "Pour scanner régulièrement, au quotidien.",
+      "premium": "Pour toute la famille et les gros utilisateurs.",
+      "pro": "Pour celles et ceux qui achètent pour d’autres."
+    },
+    "features": {
+      "scans": "{count} scans par mois",
+      "scansUnlimited": "Scans illimités",
+      "questions": "{count} questions par jour sur tes scans",
+      "questionsUnlimited": "Questions illimitées",
+      "parcels": "Jusqu’à {count} colis suivis",
+      "parcelsUnlimited": "Colis suivis sans limite",
+      "parcelCosts": "Coûts des colis en ariary : prix et frais",
+      "ownKey": "Option : ta propre clé IA, sans limite",
+      "allLite": "Tout Lite, et :",
+      "allPremium": "Tout Premium, et :",
+      "priority": "Priorité quand l’IA est très demandée",
+      "clients": "Un client par colis : pour qui est chaque colis",
+      "reseller": "Totaux par client et export (bientôt)"
+    },
+    "how": "Comment s’abonner",
+    "step1": "Connecte-toi",
+    "step1Body": "Ton offre est liée à ton e-mail : crée ton compte ou connecte-toi d’abord.",
+    "signIn": "Se connecter",
+    "signedInAs": "Connecté avec {email}",
+    "step2": "Paie l’offre choisie",
+    "noInstructions": "Contacte-nous pour connaître les moyens de paiement.",
+    "step3": "Envoie la référence",
+    "step3Body": "Envoie la référence de la transaction, l’offre choisie et ton e-mail :",
+    "message": "Envoyer un message",
+    "copyNumber": "Copier le numéro",
+    "copyEmail": "Copier mon e-mail",
+    "copied": "Copié",
+    "step4": "C’est activé",
+    "step4Body": "Ton offre s’active dès que le paiement est vérifié. Actualise pour la voir.",
+    "refresh": "Actualiser mon offre",
+    "refreshed": "Offre à jour",
+    "noRenewal": "Les offres ne se renouvellent pas automatiquement : rien n’est prélevé sans toi."
   }
 }

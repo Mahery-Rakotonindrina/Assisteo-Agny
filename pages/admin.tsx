@@ -2,6 +2,7 @@ import Head from "next/head";
 import { motion } from "motion/react";
 import { useEffect, useState, type FormEvent } from "react";
 import { Download, Gauge, Gift, LockKeyhole, Smartphone, LogOut, MessageCircle, Minus, Plus, Save, ShieldAlert, Wifi } from "lucide-react";
+import { AdminPlans } from "@/components/AdminPlans";
 import { AdminStats } from "@/components/AdminStats";
 import { AdminSubscriptions } from "@/components/AdminSubscriptions";
 import { Button } from "@/components/Button";
@@ -124,6 +125,7 @@ export default function AdminPage() {
         </motion.header>
 
         {config && <AdminSubscriptions token={token} />}
+        {config && <AdminPlans token={token} />}
         {config && <AdminStats token={token} />}
 
         {!config ? (

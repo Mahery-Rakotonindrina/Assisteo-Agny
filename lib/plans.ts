@@ -90,3 +90,50 @@ export function periodEnd(start: Date, duration: Duration): Date | null {
   else end.setMonth(end.getMonth() + { month: 1, quarter: 3, half: 6, year: 12 }[duration]);
   return end;
 }
+
+// ---- Offers -------------------------------------------------------------------
+
+export type SoldPlanId = (typeof soldPlans)[number];
+
+/** What a plan allows; 0 means no limit. */
+export type PlanLimits = {
+  /** Free: scans in total (the trial). Paid: scans per calendar month. */
+  scans: number;
+  questionsPerDay: number;
+  /** Parcels followed at once. */
+  parcels: number;
+};
+
+export type PlanOffer = PlanLimits & { priceMga: number };
+
+/** Prices, limits and how to pay: editable from /admin. */
+export type PlansConfig = {
+  offers: Record<SoldPlanId, PlanOffer>;
+  /** Parcels followed at once without a plan. */
+  freeParcels: number;
+  /** Shown on the offers page: the payment happens outside the app. */
+  payment: { instructions: string; contact: string };
+};
+
+export const defaultPlansConfig: PlansConfig = {
+  offers: {
+    lite: { priceMga: 5000, scans: 60, questionsPerDay: 10, parcels: 15 },
+    premium: { priceMga: 15000, scans: 300, questionsPerDay: 50, parcels: 0 },
+    pro: { priceMga: 25000, scans: 600, questionsPerDay: 50, parcels: 0 },
+  },
+  freeParcels: 3,
+  payment: { instructions: "", contact: "" },
+};
+
+/** GET /api/plan: the user's plan, its limits and usage, and the offers. */
+export type PlanResponse = {
+  /** False in demo mode: nothing is counted. */
+  enabled: boolean;
+  signedIn: boolean;
+  plan: PlanId;
+  endsAt: number | null;
+  limits: PlanLimits;
+  usage: { scans: number; questionsToday: number };
+  offers: Array<PlanOffer & { id: SoldPlanId }>;
+  payment: PlansConfig["payment"];
+};

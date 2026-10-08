@@ -12,6 +12,7 @@ import { parcelStore } from "@/services/parcelStore";
 import { startParcelSync, syncParcels } from "@/services/parcelSync";
 import { registerPush, unregisterPush } from "@/services/push";
 import { sync, type SyncStatus } from "@/services/sync";
+import { planStore } from "@/services/plan";
 import { trialStore } from "@/services/trial";
 
 type AccountContextValue = {
@@ -52,7 +53,10 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   // The free trial is also counted per account: refresh it on sign-in and sign-out.
   const sessionKnown = session !== undefined;
   useEffect(() => {
-    if (sessionKnown) void trialStore.refresh();
+    if (!sessionKnown) return;
+    // The plan comes with the account: refresh both when it changes.
+    void trialStore.refresh();
+    void planStore.refresh();
   }, [userId, sessionKnown]);
   useEffect(() => sync.subscribe(() => setSyncStatus(sync.status())), []);
 

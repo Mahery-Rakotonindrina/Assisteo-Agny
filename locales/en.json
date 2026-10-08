@@ -467,6 +467,23 @@
       "note": "Note",
       "notePlaceholder": "e.g. paid by her sister",
       "saveMany": "Save for {count} e-mails"
+    },
+    "plans": {
+      "title": "Plans",
+      "subtitle": "Price and limits of each plan, and how to pay: shown on the app’s “Plans” page.",
+      "fields": {
+        "priceMga": "Price (Ar / month)",
+        "scans": "Scans / month",
+        "questionsPerDay": "Questions / day",
+        "parcels": "Parcels followed"
+      },
+      "zeroHint": "0 = no limit. Full access (offered): everything is unlimited.",
+      "freeParcels": "Parcels followed without a plan",
+      "freeParcelsHint": "Free scans and questions are set below, in the free trial.",
+      "instructions": "How to pay",
+      "instructionsPlaceholder": "e.g. Send the amount by MVola to 034 00 000 00 (Full Name), with your e-mail as the reason.",
+      "contact": "Contact to send the reference",
+      "contactHint": "A phone number, or a link (WhatsApp: https://wa.me/261…, Messenger…)."
     }
   },
   "account": {
@@ -750,6 +767,62 @@
       "premium": "Premium",
       "pro": "Pro",
       "unlimited": "Full access"
-    }
+    },
+    "section": "My plan",
+    "title": "Plans",
+    "subtitle": "Pay by Mobile Money: your plan is activated on your account, on all your devices.",
+    "trial": "Free trial",
+    "noEnd": "No end date",
+    "until": "Until {date}",
+    "scansMonth": "Scans this month",
+    "scansTrial": "Free scans used",
+    "questionsToday": "Questions today",
+    "unlimited": "Unlimited",
+    "signInHint": "Sign in with your subscription’s e-mail to get your plan.",
+    "seeOffers": "See the plans",
+    "choose": "Choose a plan",
+    "current": "Your plan: {plan}, until {date}",
+    "currentNoEnd": "Your plan: {plan}, no end date",
+    "yours": "Your plan",
+    "included": "Included",
+    "perMonth": "/ month",
+    "pitch": {
+      "lite": "To scan regularly, every day.",
+      "premium": "For the whole family and heavy users.",
+      "pro": "For those who buy for other people."
+    },
+    "features": {
+      "scans": "{count} scans a month",
+      "scansUnlimited": "Unlimited scans",
+      "questions": "{count} questions a day about your scans",
+      "questionsUnlimited": "Unlimited questions",
+      "parcels": "Up to {count} parcels followed",
+      "parcelsUnlimited": "No limit on parcels followed",
+      "parcelCosts": "Parcel costs in ariary: price and fees",
+      "ownKey": "Option: your own AI key, no limit",
+      "allLite": "Everything in Lite, plus:",
+      "allPremium": "Everything in Premium, plus:",
+      "priority": "Priority when the AI is busy",
+      "clients": "A client per parcel: who each parcel is for",
+      "reseller": "Totals per client and export (soon)"
+    },
+    "how": "How to subscribe",
+    "step1": "Sign in",
+    "step1Body": "Your plan is tied to your e-mail: create your account or sign in first.",
+    "signIn": "Sign in",
+    "signedInAs": "Signed in with {email}",
+    "step2": "Pay for the plan you chose",
+    "noInstructions": "Contact us to know the payment methods.",
+    "step3": "Send the reference",
+    "step3Body": "Send the transaction reference, the plan you chose and your e-mail:",
+    "message": "Send a message",
+    "copyNumber": "Copy the number",
+    "copyEmail": "Copy my e-mail",
+    "copied": "Copied",
+    "step4": "It’s on",
+    "step4Body": "Your plan is activated as soon as the payment is checked. Refresh to see it.",
+    "refresh": "Refresh my plan",
+    "refreshed": "Plan up to date",
+    "noRenewal": "Plans don’t renew automatically: nothing is charged without you."
   }
 }
