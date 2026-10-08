@@ -7,6 +7,7 @@ import { AdminStats } from "@/components/AdminStats";
 import { AdminSubscriptions } from "@/components/AdminSubscriptions";
 import { Button } from "@/components/Button";
 import { useToast } from "@/components/Toast";
+import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { rise, stagger } from "@/lib/motion";
 import { httpClient } from "@/services/httpClient";
@@ -29,6 +30,7 @@ function readToken() {
 export default function AdminPage() {
   const { t } = useTranslation();
   const toast = useToast();
+  const { isAdmin } = usePlan();
   const [token, setToken] = useState("");
   const [draftToken, setDraftToken] = useState("");
   const [config, setConfig] = useState<AdminTrialResponse | null>(null);
@@ -148,6 +150,7 @@ export default function AdminPage() {
               onChange={(event) => setDraftToken(event.target.value)}
               autoComplete="off"
             />
+            {isAdmin && !error && <p className={styles.hint}>{t("admin.adminAccount")}</p>}
             {error && <p className={styles.error}>{error}</p>}
             <Button type="submit" block disabled={!draftToken.trim()}>
               {t("admin.unlock")}

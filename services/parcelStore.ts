@@ -1,5 +1,6 @@
 import { clear, createStore, del, get, set, values } from "idb-keyval";
 import type { ParcelStatus } from "@/lib/ai/schema";
+import { encodeImage } from "@/lib/image";
 import { isNewerParcel, sameParcel, type ParcelInfo } from "@/lib/parcels";
 import type { HistoryEntry } from "@/types/history";
 import { createId } from "./historyStore";
@@ -26,6 +27,11 @@ export type Parcel = {
   title: string;
   /** Who the parcel is for (a family member, a customer…). */
   client?: string;
+  /**
+   * A small copy of its first scan's photo (JPEG data URL), kept with the
+   * parcel so it stays recognisable once the scans are deleted.
+   */
+  thumbnail?: string;
   info: ParcelInfo;
   /** Scans of this parcel, oldest first. */
   scanIds: string[];
@@ -64,6 +70,22 @@ const timelineEntry = (entry: HistoryEntry, info: ParcelInfo): ParcelTimelineEnt
   scanId: entry.id,
 });
 
+/** Edge of a parcel's own photo: a list thumbnail, a few kilobytes. */
+const MINIATURE_EDGE = 128;
+
+/**
+ * A parcel-sized copy of a scan's thumbnail. Only data URLs are kept (a
+ * remote link would expire); without a canvas (tests) the thumbnail is kept as is.
+ */
+export async function parcelMiniature(thumbnail: string | undefined) {
+  if (!thumbnail?.startsWith("data:")) return undefined;
+  try {
+    return (await encodeImage(thumbnail, MINIATURE_EDGE, 0.72)).dataUrl;
+  } catch {
+    return thumbnail;
+  }
+}
+
 async function write(parcel: Parcel) {
   await set(parcel.id, { ...parcel, updatedAt: Date.now(), dirty: true }, db());
   notify();
@@ -98,6 +120,7 @@ export const parcelStore = {
     const parcel: Parcel = {
       id: createId(),
       title: entry.analysis.title,
+      thumbnail: await parcelMiniature(entry.thumbnail),
       info,
       scanIds: [entry.id],
       timeline: [timelineEntry(entry, info)],
@@ -114,6 +137,7 @@ export const parcelStore = {
     if (!info) return parcel;
     const next: Parcel = {
       ...parcel,
+      thumbnail: parcel.thumbnail ?? (await parcelMiniature(entry.thumbnail)),
       // Fields missing on the new screenshot keep their earlier value.
       info: {
         ...parcel.info,
@@ -150,6 +174,13 @@ export const parcelStore = {
         ? [...current.timeline, { at: Date.now(), status: changes.info.status, statusLabel: changes.info.statusLabel, event: changes.info.lastEvent, scanId: "" }]
         : current.timeline,
     });
+  },
+
+  /** Gives a parcel its own photo (see keepParcelThumbnails). */
+  async setThumbnail(id: string, thumbnail: string) {
+    const current = await get<Parcel>(id, db());
+    if (!current || current.thumbnail) return;
+    await write({ ...current, thumbnail });
   },
 
   /** Saves the price and fees in ariary. */

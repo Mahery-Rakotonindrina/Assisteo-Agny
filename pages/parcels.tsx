@@ -1,7 +1,7 @@
 import Head from "next/head";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
-import { useDeferredValue, useState } from "react";
+import { useDeferredValue, useEffect, useState } from "react";
 import { Check, ChevronDown, Copy, ExternalLink, FileSpreadsheet, MapPin, Package, Pencil, RotateCcw, ScanLine, Search, Trash2, UserRound, Users, X } from "lucide-react";
 import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
@@ -15,13 +15,14 @@ import { useNow } from "@/hooks/useNow";
 import { useParcels } from "@/hooks/useParcels";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
-import { formatAriary, formatDate, formatDateTime, toDateInput } from "@/lib/format";
+import { formatAriary, formatDate, formatDateTime, formatMonthYear, toDateInput } from "@/lib/format";
 import { easeOut, rise, stagger } from "@/lib/motion";
-import { parcelsCsv } from "@/lib/parcelExport";
-import { inPeriod, isForClient, parcelDate, type Period } from "@/lib/parcelReport";
+import { exportFileName, parcelsWorkbook, XLSX_TYPE } from "@/lib/parcelExport";
+import { inPeriod, isForClient, isValidRange, parcelDate, type DayRange, type Period } from "@/lib/parcelReport";
 import { compareParcels, matchesSearch, parcelStep, parcelSteps, parcelTone, trackingUrl } from "@/lib/parcels";
 import { haptics } from "@/services/device";
-import { shareTextFile } from "@/services/fileShare";
+import { shareFile } from "@/services/fileShare";
+import { keepParcelThumbnails } from "@/services/parcelLinking";
 import { parcelStore, parcelTotalMga, type Parcel } from "@/services/parcelStore";
 import styles from "@/styles/Parcels.module.scss";
 
@@ -29,10 +30,23 @@ import styles from "@/styles/Parcels.module.scss";
  * "Mes colis": the parcels being followed. In progress first, problems then
  * along the journey (delivered last); then received, the last one first.
  */
+/** From the 1st of this month to today, as date input values. */
+const thisMonthSoFar = (): DayRange => {
+  const today = toDateInput(Date.now());
+  return { from: `${today.slice(0, 7)}-01`, to: today };
+};
+
 export default function ParcelsPage() {
   const { t, locale } = useTranslation();
   const { parcels, isLoading } = useParcels();
-  const { entries } = useHistory();
+  const { entries, isLoading: historyLoading } = useHistory();
+  // Parcels followed before they kept their own photo: copy it from their scans.
+  useEffect(() => {
+    void keepParcelThumbnails().catch(() => undefined);
+  }, []);
+  // A scan deleted from the history can no longer be opened from its parcel.
+  const scanIds = new Set(entries.map((entry) => entry.id));
+  const hasScan = (id: string) => historyLoading || scanIds.has(id);
   const thumbnails = new Map(entries.map((entry) => [entry.id, entry.thumbnail]));
   // Received = in the user's hands, set by hand: the carrier's "delivered"
   // often means a forwarding warehouse abroad, not Madagascar.
@@ -45,14 +59,19 @@ export default function ParcelsPage() {
   const now = useNow(60_000);
   const [view, setView] = useState<"parcels" | "clients">("parcels");
   const [period, setPeriod] = useState<Period>("month");
+  // Chosen days: this month so far, to start with.
+  const [range, setRange] = useState<DayRange>(thisMonthSoFar);
+  const [exporting, setExporting] = useState(false);
   const [clientFilter, setClientFilter] = useState<{ name: string | null } | null>(null);
   const showClients = reseller && view === "clients";
   const toast = useToast();
-  const periodParcels = parcels.filter((parcel) => inPeriod(parcel, period, now));
+  const periodParcels = parcels.filter((parcel) => inPeriod(parcel, period, now, range));
 
-  // The period's parcels as a spreadsheet, client by client, oldest first.
+  // The period's parcels as an Excel workbook, client by client, oldest first.
   const exportParcels = async () => {
+    if (exporting) return;
     haptics.tap();
+    setExporting(true);
     const sorted = [...periodParcels].sort(
       (a, b) =>
         Number(!a.client?.trim()) - Number(!b.client?.trim()) ||
@@ -63,12 +82,31 @@ export default function ParcelsPage() {
       const date = new Date(now);
       return toDateInput(new Date(date.getFullYear(), date.getMonth() - offset, 1).getTime()).slice(0, 7);
     };
-    const suffix = period === "all" ? toDateInput(now) : month(period === "month" ? 0 : 1);
+    const day = (value: string) => {
+      const [year, monthIndex, date] = value.split("-").map(Number);
+      return new Date(year, monthIndex - 1, date).getTime();
+    };
+    const monthStart = (offset: number) => {
+      const date = new Date(now);
+      return new Date(date.getFullYear(), date.getMonth() - offset, 1).getTime();
+    };
+    const { suffix, label } =
+      period === "custom"
+        ? { suffix: `${range.from}_au_${range.to}`, label: t("parcels.export.range", { from: formatDate(day(range.from), locale), to: formatDate(day(range.to), locale) }) }
+        : period === "all"
+          ? { suffix: `tout-${toDateInput(now)}`, label: t("parcels.export.allParcels") }
+          : { suffix: month(period === "month" ? 0 : 1), label: formatMonthYear(monthStart(period === "month" ? 0 : 1), locale) };
     try {
-      const result = await shareTextFile(`colis-${suffix}.csv`, parcelsCsv(sorted, t), "text/csv", t("parcels.export.title"));
+      const bytes = await parcelsWorkbook(sorted, t, locale, {
+        title: `${t("parcels.export.title")} · ${label}`,
+        subtitle: t("parcels.export.exportedOn", { date: formatDate(now, locale) }),
+      });
+      const result = await shareFile(exportFileName(suffix), bytes, XLSX_TYPE, t("parcels.export.title"));
       if (result === "downloaded") toast(t("parcels.export.downloaded"));
     } catch {
       toast(t("parcels.export.failed"), "error");
+    } finally {
+      setExporting(false);
     }
   };
   const clients = [...new Set(parcels.map((parcel) => parcel.client?.trim()).filter((name): name is string => Boolean(name)))].sort((a, b) =>
@@ -159,10 +197,14 @@ export default function ParcelsPage() {
                   parcels={periodParcels}
                   period={period}
                   onPeriod={setPeriod}
+                  range={range}
+                  onRange={setRange}
+                  today={toDateInput(now)}
                   actions={
-                    periodParcels.length > 0 && (
-                      <Button variant="secondary" icon={<FileSpreadsheet />} onClick={() => void exportParcels()}>
-                        {t("parcels.export.button")}
+                    periodParcels.length > 0 &&
+                    (period !== "custom" || isValidRange(range)) && (
+                      <Button variant="secondary" icon={<FileSpreadsheet />} onClick={() => void exportParcels()} disabled={exporting}>
+                        {exporting ? t("parcels.export.working") : t("parcels.export.button")}
                       </Button>
                     )
                   }
@@ -203,7 +245,13 @@ export default function ParcelsPage() {
               <motion.section variants={rise} className={styles.group}>
                 <h2>{t("parcels.ongoing")}</h2>
                 {ongoing.map((parcel) => (
-                  <ParcelRow key={parcel.id} parcel={parcel} thumbnail={thumbnails.get(parcel.scanIds[0])} clients={clients} />
+                  <ParcelRow
+                    key={parcel.id}
+                    parcel={parcel}
+                    thumbnail={parcel.thumbnail ?? thumbnails.get(parcel.scanIds[0])}
+                    clients={clients}
+                    hasScan={hasScan}
+                  />
                 ))}
               </motion.section>
             )}
@@ -211,7 +259,14 @@ export default function ParcelsPage() {
               <motion.section variants={rise} className={styles.group}>
                 <h2>{t("parcels.received")}</h2>
                 {received.map((parcel) => (
-                  <ParcelRow key={parcel.id} parcel={parcel} thumbnail={thumbnails.get(parcel.scanIds[0])} clients={clients} received />
+                  <ParcelRow
+                    key={parcel.id}
+                    parcel={parcel}
+                    thumbnail={parcel.thumbnail ?? thumbnails.get(parcel.scanIds[0])}
+                    clients={clients}
+                    hasScan={hasScan}
+                    received
+                  />
                 ))}
               </motion.section>
             )}
@@ -222,7 +277,16 @@ export default function ParcelsPage() {
   );
 }
 
-function ParcelRow({ parcel, thumbnail, clients, received = false }: { parcel: Parcel; thumbnail?: string; clients: string[]; received?: boolean }) {
+type ParcelRowProps = {
+  parcel: Parcel;
+  thumbnail?: string;
+  clients: string[];
+  /** Whether a scan still exists in the history (to open it). */
+  hasScan: (id: string) => boolean;
+  received?: boolean;
+};
+
+function ParcelRow({ parcel, thumbnail, clients, hasScan, received = false }: ParcelRowProps) {
   const { t, locale } = useTranslation();
   const toast = useToast();
   const [open, setOpen] = useState(false);
@@ -230,7 +294,8 @@ function ParcelRow({ parcel, thumbnail, clients, received = false }: { parcel: P
   const [editing, setEditing] = useState(false);
   const { info } = parcel;
   const step = parcelStep(info.status);
-  const lastScan = parcel.scanIds[parcel.scanIds.length - 1];
+  // The latest scan still in the history; deleted ones can't be opened.
+  const lastScan = [...parcel.scanIds].reverse().find(hasScan);
   const total = parcelTotalMga(parcel);
   const statusText = received
     ? parcel.receivedAt
@@ -318,10 +383,12 @@ function ParcelRow({ parcel, thumbnail, clients, received = false }: { parcel: P
                           <MapPin size={12} /> {[item.event.description, item.event.location, item.event.at].filter(Boolean).join(" · ")}
                         </small>
                       )}
-                      {item.scanId ? (
+                      {item.scanId && hasScan(item.scanId) ? (
                         <Link href={{ pathname: "/result", query: { id: item.scanId } }} className={styles.scanLink}>
                           {t("parcels.scannedOn", { date: formatDateTime(item.at, locale) })}
                         </Link>
+                      ) : item.scanId ? (
+                        <span className={styles.manual}>{t("parcels.scannedOn", { date: formatDateTime(item.at, locale) })}</span>
                       ) : (
                         <span className={styles.manual}>{t("parcels.editedOn", { date: formatDateTime(item.at, locale) })}</span>
                       )}

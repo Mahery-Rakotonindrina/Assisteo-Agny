@@ -1,0 +1,47 @@
+.badge {
+  position: relative;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.18rem 0.55rem;
+  border-radius: var(--radius-pill);
+  background: var(--plan-gradient);
+  color: var(--plan-ink);
+  font-size: 0.74rem;
+  font-weight: 800;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  box-shadow: 0 6px 16px -10px var(--plan);
+
+  &[data-size="md"] {
+    padding: 0.3rem 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  // Free is a plain grey label, not a reward.
+  &[data-plan="free"] {
+    background: var(--surface-strong);
+    color: var(--text-muted);
+    box-shadow: none;
+  }
+
+  // Premium: a gold card's light sweeping across.
+  &[data-plan="premium"]::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    width: 45%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+    animation: plan-shine 4.5s ease-in-out infinite;
+    pointer-events: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .badge[data-plan="premium"]::after {
+    animation: none;
+    opacity: 0;
+  }
+}

@@ -46,6 +46,7 @@ export function TrialOver({ limit, kind, plan, canUseOwnKey }: { limit: number; 
   return (
     <motion.div
       className={styles.over}
+      data-plan={kind === "month" ? plan : undefined}
       initial={{ opacity: 0, scale: 0.96 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={spring}

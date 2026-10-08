@@ -1,11 +1,13 @@
-import { Crown, Sparkles } from "lucide-react";
+import { Check, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/Button";
+import { PlanIcon } from "@/components/PlanBadge";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDate, formatNumber } from "@/lib/format";
+import { planPerks } from "@/lib/planPerks";
 import styles from "./PlanSettings.module.scss";
 
-/** "Mon offre" in the settings: the plan, until when, and what is left of it. */
+/** "Mon offre" in the settings: the plan in its colours, until when, what is left and what it includes. */
 export function PlanSettings() {
   const { t, locale } = useTranslation();
   const { plan, id, has } = usePlan();
@@ -15,18 +17,18 @@ export function PlanSettings() {
   const validity = !paid ? t("plans.trial") : plan.endsAt === null ? t("plans.noEnd") : t("plans.until", { date: formatDate(plan.endsAt - 1, locale) });
 
   return (
-    <div className={styles.wrap}>
-      <div className={styles.row}>
-        <span className={styles.badge} data-plan={id}>
-          <Crown size={20} />
+    <div className={styles.wrap} data-plan={id}>
+      <div className={styles.hero}>
+        <span className={styles.icon}>
+          <PlanIcon plan={id} size={22} />
         </span>
         <div className={styles.text}>
           <strong>{t(`plans.names.${id}`)}</strong>
-          <small>{validity}</small>
+          <span>{validity}</span>
         </div>
       </div>
 
-      {plan.enabled && (
+      {plan.enabled && id !== "unlimited" && (
         <div className={styles.meters}>
           <Meter label={paid ? t("plans.scansMonth") : t("plans.scansTrial")} used={plan.usage.scans} limit={plan.limits.scans} />
           <Meter label={t("plans.questionsToday")} used={plan.usage.questionsToday} limit={plan.limits.questionsPerDay} />
@@ -34,11 +36,25 @@ export function PlanSettings() {
         </div>
       )}
 
+      <ul className={styles.perks} aria-label={t("plans.includes")}>
+        {planPerks(id, plan.limits, t, locale).map((perk) => (
+          <li key={perk}>
+            <Check size={14} /> {perk}
+          </li>
+        ))}
+      </ul>
+
       {!plan.signedIn && <p className={styles.hint}>{t("plans.signInHint")}</p>}
 
-      <Button href="/plans" block variant={paid ? "secondary" : "primary"} icon={<Sparkles />}>
-        {paid ? t("plans.seeOffers") : t("plans.choose")}
-      </Button>
+      {id === "unlimited" ? (
+        <Button href="/admin" block variant="secondary" icon={<ShieldCheck />}>
+          {t("plans.openAdmin")}
+        </Button>
+      ) : (
+        <Button href="/plans" block variant={paid ? "secondary" : "primary"} icon={<Sparkles />}>
+          {paid ? t("plans.seeOffers") : t("plans.choose")}
+        </Button>
+      )}
     </div>
   );
 }

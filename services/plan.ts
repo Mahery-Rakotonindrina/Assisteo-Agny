@@ -19,6 +19,8 @@ function readCache(): PlanResponse | null {
 }
 
 let state: PlanResponse | null = readCache();
+// Checked with the server since the app opened (the cache may be stale).
+let fresh = false;
 const listeners = new Set<() => void>();
 
 function set(next: PlanResponse) {
@@ -33,6 +35,7 @@ function set(next: PlanResponse) {
 
 export const planStore = {
   get: () => state,
+  isFresh: () => fresh,
 
   subscribe(listener: () => void) {
     listeners.add(listener);
@@ -43,7 +46,9 @@ export const planStore = {
 
   async refresh() {
     try {
-      set(await httpClient.get<PlanResponse>("/api/plan", { headers: await installIdHeaders() }));
+      const next = await httpClient.get<PlanResponse>("/api/plan", { headers: await installIdHeaders() });
+      fresh = true;
+      set(next);
     } catch {
       // Offline or older server: keep the last known plan.
     }

@@ -14,7 +14,7 @@ $size: var(--orb-size, 176px);
   width: $size;
   height: $size;
   border-radius: 50%;
-  border: 1.5px solid var(--accent);
+  border: 1.5px solid var(--orb-ring-a, var(--accent));
   opacity: 0;
   animation: halo 3.2s var(--ease-out) infinite;
 }
@@ -58,7 +58,15 @@ $size: var(--orb-size, 176px);
   inset: 0;
   z-index: -1;
   border-radius: 50%;
-  background: conic-gradient(from 0deg, transparent 0deg, var(--accent) 80deg, transparent 160deg, transparent 360deg);
+  // A subscriber's plan colours the light trail (styles/globals.scss); the core stays green.
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    var(--orb-ring-a, var(--accent)) 70deg,
+    var(--orb-ring-b, var(--accent)) 125deg,
+    transparent 170deg,
+    transparent 360deg
+  );
   animation: spin 4.5s linear infinite;
 }
 

@@ -3,6 +3,7 @@ import { useState, useSyncExternalStore, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Plus, Save, X } from "lucide-react";
 import { Button } from "@/components/Button";
+import { PlanBadge } from "@/components/PlanBadge";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { toDateInput } from "@/lib/format";
@@ -137,7 +138,16 @@ function Form({ parcel, onClose, clients }: Omit<Props, "open">) {
         <Field label={t("parcels.fields.title")}>
           <input value={title} onChange={(event) => setTitle(event.target.value.slice(0, 120))} required />
         </Field>
-        <Field label={t("parcels.fields.client")} hint={reseller ? t("parcels.fields.clientHint") : t("parcels.fields.clientLocked")}>
+        <Field label={t("parcels.fields.client")} hint={
+            reseller ? (
+              t("parcels.fields.clientHint")
+            ) : (
+              <>
+                <PlanBadge plan="pro" /> {t("parcels.fields.clientLocked")}
+              </>
+            )
+          }
+        >
           <input disabled={!reseller} value={client} onChange={(event) => setClient(event.target.value.slice(0, 60))} list="parcel-clients" placeholder={t("parcels.fields.clientPlaceholder")} />
           <datalist id="parcel-clients">
             {clients.map((name) => (
@@ -258,7 +268,7 @@ function Form({ parcel, onClose, clients }: Omit<Props, "open">) {
   );
 }
 
-function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
+function Field({ label, hint, children }: { label: string; hint?: ReactNode; children: ReactNode }) {
   return (
     <label className={styles.field}>
       <span>{label}</span>

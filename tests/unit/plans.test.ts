@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { activePlan, hasFeature, periodEnd, type PaidPlanId } from "@/lib/plans";
+import { activePlan, hasFeature, isAdminPlan, periodEnd, type PaidPlanId, type PlanId } from "@/lib/plans";
 
 const at = (day: string) => new Date(`${day}T12:00:00Z`).getTime();
 const row = (plan: PaidPlanId, start: string, end: string | null) => ({
@@ -40,6 +40,11 @@ describe("plan features", () => {
     expect(hasFeature("premium", "reseller")).toBe(false);
     expect(hasFeature("pro", "reseller")).toBe(true);
     expect(hasFeature("unlimited", "reseller")).toBe(true);
+  });
+
+  it("makes only full access an administrator", () => {
+    expect(isAdminPlan("unlimited")).toBe(true);
+    expect(["free", "lite", "premium", "pro"].some((plan) => isAdminPlan(plan as PlanId))).toBe(false);
   });
 });
 

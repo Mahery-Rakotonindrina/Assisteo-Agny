@@ -1,12 +1,14 @@
 import { useRouter } from "next/router";
 import { motion } from "motion/react";
 import { useEffect, useState, type ReactNode } from "react";
+import { PlanTheme } from "@/components/PlanTheme";
+import { PlanWelcome } from "@/components/PlanWelcome";
 import { Sidebar } from "@/components/Sidebar";
 import { TabBar } from "@/components/TabBar";
 import { easeOut } from "@/lib/motion";
 import styles from "./AppShell.module.scss";
 
-const tabRoutes = new Set(["/", "/history", "/parcels", "/settings"]);
+const tabRoutes = new Set(["/", "/history", "/parcels", "/settings", "/admin"]);
 
 /**
  * Mobile (and native apps): one column with a floating tab bar.
@@ -49,6 +51,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         {children}
       </motion.main>
       {showTabBar && <TabBar />}
+      <PlanTheme />
+      <PlanWelcome />
     </div>
   );
 }

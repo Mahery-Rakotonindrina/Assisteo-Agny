@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { CloudOff, LogOut, RefreshCw, Trash2, UserRound } from "lucide-react";
 import { AccountSheet } from "@/components/AccountSheet";
+import { PlanBadge } from "@/components/PlanBadge";
 import { Button } from "@/components/Button";
 import { useToast } from "@/components/Toast";
 import { useNow } from "@/hooks/useNow";
+import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAccount } from "@/lib/account/AccountProvider";
 import styles from "./AccountSettings.module.scss";
@@ -18,6 +20,7 @@ export function AccountSettings() {
   const toast = useToast();
   const now = useNow(30_000);
   const { session, email, syncStatus, syncNow, signOut, deleteAccount } = useAccount();
+  const { id: plan } = usePlan();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [confirmOut, setConfirmOut] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -62,9 +65,12 @@ export function AccountSettings() {
   return (
     <div className={styles.wrap}>
       <div className={styles.row}>
-        <span className={styles.avatar}>{(email ?? "?").charAt(0).toUpperCase()}</span>
+        <span className={styles.avatar} data-plan={plan}>
+          {(email ?? "?").charAt(0).toUpperCase()}
+        </span>
         <div className={styles.text}>
           <strong>{email}</strong>
+          {plan !== "free" && <PlanBadge plan={plan} className={styles.plan} />}
           <small className={styles.status} data-state={syncStatus.state}>
             {syncStatus.state === "syncing" ? (
               <RefreshCw size={13} className={styles.spin} />

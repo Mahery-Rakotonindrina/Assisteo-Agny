@@ -33,8 +33,8 @@
   gap: 0.4rem;
   padding: 0.75rem 0.9rem;
   border-radius: var(--radius-md);
-  background: var(--accent-soft);
-  color: var(--accent-text);
+  background: var(--plan-soft);
+  color: var(--plan);
   font-weight: 600;
   font-size: 0.92rem;
 }
@@ -50,14 +50,27 @@
 
 .offer {
   @include card;
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  padding: 1.15rem;
+  padding: 1.35rem 1.15rem 1.15rem;
   border: 1px solid var(--border);
+  overflow: hidden;
+  // Each plan's colour: a band on top and a wash behind the name.
+  background-image: linear-gradient(170deg, var(--plan-soft), transparent 45%);
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 4px;
+    background: var(--plan-gradient);
+  }
 
   &[data-current] {
-    border-color: var(--accent-mark);
+    border-color: var(--plan);
+    box-shadow: 0 16px 40px -24px var(--plan);
   }
 
   ul {
@@ -77,23 +90,53 @@
     svg {
       flex-shrink: 0;
       margin-top: 0.15rem;
-      color: var(--accent-text);
+      color: var(--plan);
     }
-  }
-
-  &[data-plan="pro"] li svg {
-    color: var(--cat-parcel);
   }
 }
 
 .offerHead {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
+  gap: 0.6rem;
 
   h2 {
-    @include display(1.6rem);
+    @include display(1.7rem);
+    flex: 1;
+    background: var(--plan-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+.offerIcon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  position: relative;
+  overflow: hidden;
+  border-radius: 13px;
+  background: var(--plan-gradient);
+  color: var(--plan-ink);
+  box-shadow: 0 8px 20px -10px var(--plan);
+}
+
+.offer[data-plan="premium"] .offerIcon::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 50%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  animation: plan-shine 4.5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .offer[data-plan="premium"] .offerIcon::after {
+    animation: none;
+    opacity: 0;
   }
 }
 
@@ -106,9 +149,10 @@
   color: var(--text-muted);
 }
 
-.offer[data-current] .tag {
-  background: var(--accent-soft);
-  color: var(--accent-text);
+.offer[data-current] .tag,
+.offer[data-plan="premium"]:not([data-current]) .tag {
+  background: var(--plan-soft);
+  color: var(--plan);
 }
 
 .price {

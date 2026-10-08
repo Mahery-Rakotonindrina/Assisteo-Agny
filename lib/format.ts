@@ -57,3 +57,18 @@ export function formatReminder(timestamp: number, now: number, locale: Locale) {
   if (days === 1) return `${locale === "fr" ? "demain" : "tomorrow"} ${time}`;
   return formatDateTime(timestamp, locale);
 }
+
+/** A month, short: "oct." / "Oct". */
+export function formatMonth(timestamp: number, locale: Locale) {
+  return new Intl.DateTimeFormat(localeTags[locale], { month: "short" }).format(timestamp);
+}
+
+/** A big number in a few characters: "45 k", "1,2 M". */
+export function formatCompact(value: number, locale: Locale) {
+  return new Intl.NumberFormat(localeTags[locale], { notation: "compact", maximumFractionDigits: 1 }).format(value);
+}
+
+/** A month and its year: "octobre 2026" / "October 2026". */
+export function formatMonthYear(timestamp: number, locale: Locale) {
+  return new Intl.DateTimeFormat(localeTags[locale], { month: "long", year: "numeric" }).format(timestamp);
+}

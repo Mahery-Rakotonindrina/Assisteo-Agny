@@ -2,6 +2,7 @@ import { motion } from "motion/react";
 import { useEffect, useState, type FormEvent } from "react";
 import { BadgePercent, Save } from "lucide-react";
 import { Button } from "@/components/Button";
+import { PlanBadge } from "@/components/PlanBadge";
 import { useToast } from "@/components/Toast";
 import { useTranslation } from "@/hooks/useTranslation";
 import { rise } from "@/lib/motion";
@@ -62,8 +63,10 @@ export function AdminPlans({ token }: { token: string }) {
       </div>
 
       {soldPlans.map((plan) => (
-        <fieldset key={plan} className={styles.plan}>
-          <legend>{t(`plans.names.${plan}`)}</legend>
+        <fieldset key={plan} className={styles.plan} data-plan={plan}>
+          <legend>
+            <PlanBadge plan={plan} size="md" />
+          </legend>
           <div className={styles.grid}>
             {offerFields
               // Lite has no deep analyses.

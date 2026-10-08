@@ -3,8 +3,19 @@ import { parcelTotalMga, type Parcel } from "@/services/parcelStore";
 
 // Reseller tools (Pro): what each client's parcels cost, over a period.
 
-export const periods = ["all", "month", "lastMonth"] as const;
+export const periods = ["month", "lastMonth", "all", "custom"] as const;
 export type Period = (typeof periods)[number];
+
+/** Chosen days, both included ("custom" period): "2026-10-01". */
+export type DayRange = { from: string; to: string };
+
+const dayStart = (day: string) => {
+  const [year, month, date] = day.split("-").map(Number);
+  return new Date(year, month - 1, date).getTime();
+};
+
+/** Whether the range runs forward (from on or before to). */
+export const isValidRange = (range: DayRange) => Boolean(range.from && range.to) && range.from <= range.to;
 
 /** When a parcel counts in a period: its order date, else when it was added. */
 export function parcelDate(parcel: Pick<Parcel, "info" | "createdAt">) {
@@ -17,8 +28,14 @@ const monthOf = (time: number) => {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 };
 
-export function inPeriod(parcel: Pick<Parcel, "info" | "createdAt">, period: Period, now: number) {
+export function inPeriod(parcel: Pick<Parcel, "info" | "createdAt">, period: Period, now: number, range?: DayRange) {
   if (period === "all") return true;
+  if (period === "custom") {
+    if (!range || !isValidRange(range)) return false;
+    const time = parcelDate(parcel);
+    // The last day counts whole.
+    return time >= dayStart(range.from) && time < dayStart(range.to) + 24 * 3600 * 1000;
+  }
   const date = new Date(now);
   const target = period === "month" ? now : new Date(date.getFullYear(), date.getMonth() - 1, 1).getTime();
   return monthOf(parcelDate(parcel)) === monthOf(target);

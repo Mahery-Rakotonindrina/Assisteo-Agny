@@ -1,6 +1,7 @@
 import { isNewerParcel, sameParcel } from "@/lib/parcels";
 import type { HistoryEntry } from "@/types/history";
 import { historyStore } from "./historyStore";
+import { parcelMiniature, parcelStore } from "./parcelStore";
 
 /**
  * A new screenshot of a parcel scanned before: the earlier scans take the new
@@ -31,4 +32,26 @@ export async function updateEarlierParcelScans(entry: HistoryEntry) {
     updated.push(other);
   }
   return updated;
+}
+
+/**
+ * Before scans are deleted (or to catch up parcels followed earlier): the
+ * parcels without their own photo copy one from their scans, so they stay
+ * recognisable. `scanIds`: only the parcels linked to these scans.
+ */
+export async function keepParcelThumbnails(scanIds?: string[]) {
+  const parcels = await parcelStore.list();
+  await Promise.all(
+    parcels
+      .filter((parcel) => !parcel.thumbnail && (!scanIds || parcel.scanIds.some((id) => scanIds.includes(id))))
+      .map(async (parcel) => {
+        for (const id of parcel.scanIds) {
+          const thumbnail = await parcelMiniature((await historyStore.get(id))?.thumbnail);
+          if (thumbnail) {
+            await parcelStore.setThumbnail(parcel.id, thumbnail);
+            return;
+          }
+        }
+      }),
+  );
 }

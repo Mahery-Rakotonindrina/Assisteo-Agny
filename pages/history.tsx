@@ -16,6 +16,7 @@ import { formatDay, startOfDay } from "@/lib/format";
 import { easeOut, rise, spring, stagger } from "@/lib/motion";
 import { haptics } from "@/services/device";
 import { historyStore } from "@/services/historyStore";
+import { keepParcelThumbnails } from "@/services/parcelLinking";
 import { cancelNotification } from "@/services/notifications";
 import type { HistoryEntry } from "@/types/history";
 import styles from "@/styles/History.module.scss";
@@ -104,6 +105,7 @@ export default function HistoryPage() {
   const remove = async (entry: HistoryEntry) => {
     dismissSwipeHint();
     if (entry.reminderId) await cancelNotification(entry.reminderId);
+    await keepParcelThumbnails([entry.id]).catch(() => undefined);
     await historyStore.remove(entry.id);
     toast(t("result.deleted"));
   };

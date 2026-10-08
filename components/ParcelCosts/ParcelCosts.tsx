@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Plus, X } from "lucide-react";
 import { PlanLock } from "@/components/PlanLock";
 import { usePlan } from "@/hooks/usePlan";
+import { planFor } from "@/lib/plans";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatAriary } from "@/lib/format";
 import { createId } from "@/services/historyStore";
@@ -25,7 +26,7 @@ const grouped = (value: string) => value.replace(/\B(?=(\d{3})+(?!\d))/g, "\u202
 export function ParcelCosts({ parcel }: { parcel: Parcel }) {
   const { t } = useTranslation();
   const { has } = usePlan();
-  return has("parcelCosts") ? <Costs parcel={parcel} /> : <PlanLock text={t("parcels.costsLocked")} />;
+  return has("parcelCosts") ? <Costs parcel={parcel} /> : <PlanLock plan={planFor("parcelCosts")} text={t("parcels.costsLocked")} />;
 }
 
 function Costs({ parcel }: { parcel: Parcel }) {
