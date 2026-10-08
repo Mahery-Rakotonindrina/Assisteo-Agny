@@ -252,7 +252,7 @@ function Stepper({ icon, label, hint, value, min, max, onChange }: StepperProps)
   );
 }
 
-const VERSION_PATTERN = /^(d+(.d+){0,2})?$/;
+const VERSION_PATTERN = /^(\d+(\.\d+){0,2})?$/;
 
 /** Minimum and latest app versions, checked by the native apps at launch. */
 function AppVersionCard({ token }: { token: string }) {
