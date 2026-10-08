@@ -528,7 +528,39 @@
       "contact": "Contact to send the reference",
       "contactHint": "A phone number, or a link (WhatsApp: https://wa.me/261…, Messenger…)."
     },
-    "adminAccount": "Your account is an administrator: enter the token to open the admin."
+    "adminAccount": "Your account is an administrator: enter the token to open the admin.",
+    "ai": {
+      "title": "AI cost · last {days} days",
+      "subtitle": "What the server's AI key cost, and what each plan would cost used to the full.",
+      "empty": "No data yet: costs appear after the first scans on the server's AI.",
+      "kinds": {
+        "scan": "Scan",
+        "deep": "Deep analysis",
+        "question": "Question"
+      },
+      "perCall": "per call · {calls} call(s), {total} in all",
+      "noCalls": "no call",
+      "unpriced": "No price: {models}",
+      "plansTitle": "Each plan used to the full, for a month",
+      "planLine": "{price} / month · AI at most {cost}",
+      "unlimitedScans": "(unlimited scans: not counted)",
+      "margin": "Margin {amount} ({percent} %)",
+      "model": "Model",
+      "calls": "Calls",
+      "tokens": "Average tokens (in / out)",
+      "costPerCall": "Cost per call",
+      "noPrice": "missing price",
+      "pricesTitle": "AI prices ($ per million tokens)",
+      "pricesHint": "A model takes the price of the line whose text is in its name (the most precise wins). Indicative prices: check them on Google's and Anthropic's pricing pages.",
+      "match": "Name contains",
+      "input": "Input ($)",
+      "output": "Output ($)",
+      "removePrice": "Remove this price",
+      "addPrice": "Add a price",
+      "rate": "Today's rate: $1 = {rate} Ar",
+      "noRate": "No dollar rate: costs are in $.",
+      "partial": "Not measured yet, so counted as 0: {kinds}."
+    }
   },
   "account": {
     "section": "Account",

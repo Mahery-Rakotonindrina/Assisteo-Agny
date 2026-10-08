@@ -14,6 +14,9 @@ const effort = (["low", "medium", "high"] as const).find((level) => level === pr
 const supportsEffort = (model: string) => /^claude-(opus-(4-[5-9]|5)|sonnet-(4-6|5)|fable|mythos)/.test(model);
 const supportsFallbacks = (model: string) => /^claude-(opus-5|fable-5|mythos-5|sonnet-5-5)/.test(model);
 
+/** Tokens an AI call used (to know what the server's key costs). */
+export type AiUsage = { inputTokens: number; outputTokens: number };
+
 export type EngineOptions = {
   /** A key supplied by the user for this request only. */
   apiKey?: string;
@@ -35,7 +38,7 @@ export async function analyzeWithClaude(
   input: AnalyzeRequest,
   signal?: AbortSignal,
   options: EngineOptions = {},
-): Promise<{ analysis: Analysis; model: string }> {
+): Promise<{ analysis: Analysis; model: string; usage?: AiUsage }> {
   const model = options.model ?? CLAUDE_MODEL;
   let response;
   try {
@@ -77,7 +80,7 @@ export async function analyzeWithClaude(
     throw new AnalysisError("upstream_error", 502, `Unusable model output (stop_reason: ${response.stop_reason}).`);
   }
 
-  return { analysis: response.parsed_output, model: response.model };
+  return { analysis: response.parsed_output, model: response.model, usage: claudeUsage(response.usage) };
 }
 
 /** Cheapest call that proves a key works and its account has credit. */
@@ -99,7 +102,7 @@ export async function askWithClaude(
   input: AskRequest,
   signal?: AbortSignal,
   options: EngineOptions = {},
-): Promise<{ answer: string; model: string }> {
+): Promise<{ answer: string; model: string; usage?: AiUsage }> {
   const model = options.model ?? CLAUDE_MODEL;
   const messages: Anthropic.Beta.BetaMessageParam[] = input.messages.map((message, index) =>
     index === 0
@@ -139,7 +142,7 @@ export async function askWithClaude(
     .join("")
     .trim();
   if (!answer) throw new AnalysisError("upstream_error", 502, `Empty answer (stop_reason: ${response.stop_reason}).`);
-  return { answer, model: response.model };
+  return { answer, model: response.model, usage: claudeUsage(response.usage) };
 }
 
 export async function listClaudeModels(apiKey: string) {
@@ -176,4 +179,12 @@ function toAnalysisError(error: unknown, model: string): unknown {
     return new AnalysisError("upstream_error", 502, `Claude API error ${error.status}: ${error.message}`);
   }
   return error;
+}
+
+/** Cached prompt tokens count as input (an upper bound: they cost less). */
+function claudeUsage(usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens?: number | null; cache_read_input_tokens?: number | null }): AiUsage {
+  return {
+    inputTokens: usage.input_tokens + (usage.cache_creation_input_tokens ?? 0) + (usage.cache_read_input_tokens ?? 0),
+    outputTokens: usage.output_tokens,
+  };
 }

@@ -92,7 +92,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   });
 
   try {
-    const { answer, model } = await askQuestion({ ...parsed.data, analysis: analysis.data }, abort.signal, override);
+    const { answer, model, usage: tokens } = await askQuestion({ ...parsed.data, analysis: analysis.data }, abort.signal, override);
+    if (!override && tokens) await track({ type: "ai", kind: "question", model, ...tokens });
     await track({ type: "question", ownKey: Boolean(override) }, statsDevice);
     return res.status(200).json({ answer, model, demo: false, ...(usage && { usage }) } satisfies AskResponse);
   } catch (error) {

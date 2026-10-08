@@ -528,7 +528,39 @@
       "contact": "Contact pour envoyer la référence",
       "contactHint": "Un numéro de téléphone, ou un lien (WhatsApp : https://wa.me/261…, Messenger…)."
     },
-    "adminAccount": "Ton compte est administrateur : saisis le jeton pour ouvrir l’espace admin."
+    "adminAccount": "Ton compte est administrateur : saisis le jeton pour ouvrir l’espace admin.",
+    "ai": {
+      "title": "Coût de l’IA · {days} derniers jours",
+      "subtitle": "Ce que la clé IA du serveur a coûté, et ce que chaque offre coûterait utilisée à fond.",
+      "empty": "Pas encore de données : les coûts apparaissent après les premiers scans sur l’IA du serveur.",
+      "kinds": {
+        "scan": "Scan",
+        "deep": "Analyse approfondie",
+        "question": "Question"
+      },
+      "perCall": "par appel · {calls} appel(s), {total} en tout",
+      "noCalls": "aucun appel",
+      "unpriced": "Sans prix : {models}",
+      "plansTitle": "Chaque offre utilisée à fond, sur un mois",
+      "planLine": "{price} / mois · IA au plus {cost}",
+      "unlimitedScans": "(scans sans limite : non comptés)",
+      "margin": "Marge {amount} ({percent} %)",
+      "model": "Modèle",
+      "calls": "Appels",
+      "tokens": "Jetons moyens (entrée / sortie)",
+      "costPerCall": "Coût par appel",
+      "noPrice": "prix manquant",
+      "pricesTitle": "Prix de l’IA ($ par million de jetons)",
+      "pricesHint": "Un modèle prend le prix de la ligne dont le texte apparaît dans son nom (la plus précise l’emporte). Prix indicatifs : vérifie-les sur les pages tarifs de Google et d’Anthropic.",
+      "match": "Le nom contient",
+      "input": "Entrée ($)",
+      "output": "Sortie ($)",
+      "removePrice": "Retirer ce prix",
+      "addPrice": "Ajouter un prix",
+      "rate": "Taux du jour : 1 $ = {rate} Ar",
+      "noRate": "Taux du dollar indisponible : les coûts sont en $.",
+      "partial": "Pas encore mesuré, donc compté à 0 : {kinds}."
+    }
   },
   "account": {
     "section": "Compte",
