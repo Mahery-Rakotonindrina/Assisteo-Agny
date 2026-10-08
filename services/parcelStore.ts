@@ -9,11 +9,12 @@ import { createId } from "./historyStore";
 // Local-first like the history; synced with the account (services/parcelSync.ts).
 
 export type ParcelTimelineEntry = {
-  /** When this status was recorded (scan time). */
+  /** When this status was recorded (scan time, or edit time). */
   at: number;
   status: ParcelStatus;
   statusLabel: string;
   event: ParcelInfo["lastEvent"];
+  /** The scan that showed it; empty when the user set it by hand. */
   scanId: string;
 };
 
@@ -23,6 +24,8 @@ export type ParcelFee = { id: string; label: string; amountMga: number };
 export type Parcel = {
   id: string;
   title: string;
+  /** Who the parcel is for (a family member, a customer…). */
+  client?: string;
   info: ParcelInfo;
   /** Scans of this parcel, oldest first. */
   scanIds: string[];
@@ -125,6 +128,25 @@ export const parcelStore = {
 
   async markReceived(parcel: Parcel, received: boolean) {
     await write({ ...parcel, receivedAt: received ? Date.now() : undefined });
+  },
+
+  /**
+   * Saves the user's corrections. A status changed by hand is added to the
+   * timeline, like a scan would.
+   */
+  async edit(id: string, changes: { title: string; client?: string; info: ParcelInfo }) {
+    const current = await get<Parcel>(id, db());
+    if (!current) return;
+    const statusChanged = changes.info.status !== current.info.status;
+    await write({
+      ...current,
+      title: changes.title.trim() || current.title,
+      client: changes.client?.trim() || undefined,
+      info: changes.info,
+      timeline: statusChanged
+        ? [...current.timeline, { at: Date.now(), status: changes.info.status, statusLabel: changes.info.statusLabel, event: changes.info.lastEvent, scanId: "" }]
+        : current.timeline,
+    });
   },
 
   /** Saves the price and fees in ariary. */

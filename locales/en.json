@@ -646,6 +646,35 @@
     },
     "totalSpent": "Total spent",
     "ofFees": "in fees",
-    "totalAll": "Total spent: {amount}"
+    "totalAll": "Total spent: {amount}",
+    "edit": "Edit",
+    "editTitle": "Edit the parcel",
+    "save": "Save",
+    "forClient": "For {name}",
+    "editedOn": "Edited by hand on {date}",
+    "search": "Search: client, tracking no., item…",
+    "clearSearch": "Clear the search",
+    "noMatch": "No parcel matches your search.",
+    "matchCount": "{count} parcel(s) found",
+    "fields": {
+      "title": "Parcel name",
+      "client": "Client",
+      "clientHint": "Who this parcel is for.",
+      "clientPlaceholder": "e.g. Rado, Aunt Voahangy…",
+      "status": "Status",
+      "shipping": "Shipping",
+      "lastEvent": "Last event",
+      "eventDescription": "Description",
+      "eventLocation": "Place",
+      "eventAt": "Date and time",
+      "order": "Order",
+      "items": "Items",
+      "itemName": "Item",
+      "itemVariant": "Colour, size…",
+      "itemQuantity": "Quantity",
+      "itemPrice": "Price (e.g. ¥215)",
+      "removeItem": "Remove the item",
+      "addItem": "Add an item"
+    }
   }
 }

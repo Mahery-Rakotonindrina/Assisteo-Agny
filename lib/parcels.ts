@@ -74,3 +74,26 @@ export function isNewerParcel(current: ParcelInfo, next: ParcelInfo) {
 export function trackingUrl(trackingNumber: string, locale: string) {
   return `https://t.17track.net/${locale === "fr" ? "fr" : "en"}#nums=${encodeURIComponent(trackingNumber.replace(/\s/g, ""))}`;
 }
+
+/** Lower case, no accents, single spaces: "Livré à Foshan" → "livre a foshan". */
+export function normaliseSearch(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[\s\u00a0\u202f]+/g, " ")
+    .trim();
+}
+
+/**
+ * Whether every word of the query appears somewhere in the given texts.
+ * Numbers also match without their spaces or dashes ("7734 4529" finds
+ * "773445294766417").
+ */
+export function matchesSearch(texts: Array<string | number | null | undefined>, query: string) {
+  const terms = normaliseSearch(query).split(" ").filter(Boolean);
+  if (terms.length === 0) return true;
+  const haystack = normaliseSearch(texts.filter((text) => text !== null && text !== undefined && text !== "").join(" | "));
+  const compact = haystack.replace(/[\s-]/g, "");
+  return terms.every((term) => haystack.includes(term) || compact.includes(term.replace(/-/g, "")));
+}
