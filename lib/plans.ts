@@ -18,10 +18,12 @@ export type PlanFeature =
   /** Prices and fees in ariary on parcels. */
   | "parcelCosts"
   /** Reseller tools: a client per parcel, totals per client. */
-  | "reseller";
+  | "reseller"
+  /** Analysing a scan again with a more capable (and costlier) model. */
+  | "deepAnalysis";
 
 /** The lowest plan that includes each feature. */
-const featureFrom: Record<PlanFeature, PlanId> = { ownKey: "lite", parcelCosts: "lite", reseller: "pro" };
+const featureFrom: Record<PlanFeature, PlanId> = { ownKey: "lite", parcelCosts: "lite", reseller: "pro", deepAnalysis: "premium" };
 
 export function hasFeature(plan: PlanId, feature: PlanFeature) {
   return planRank[plan] >= planRank[featureFrom[feature]];
@@ -102,6 +104,8 @@ export type PlanLimits = {
   questionsPerDay: number;
   /** Parcels followed at once. */
   parcels: number;
+  /** Deep analyses per calendar month (plans with that feature). */
+  deepPerMonth: number;
 };
 
 export type PlanOffer = PlanLimits & { priceMga: number };
@@ -117,9 +121,9 @@ export type PlansConfig = {
 
 export const defaultPlansConfig: PlansConfig = {
   offers: {
-    lite: { priceMga: 5000, scans: 60, questionsPerDay: 10, parcels: 15 },
-    premium: { priceMga: 15000, scans: 300, questionsPerDay: 50, parcels: 0 },
-    pro: { priceMga: 25000, scans: 600, questionsPerDay: 50, parcels: 0 },
+    lite: { priceMga: 5000, scans: 60, questionsPerDay: 10, parcels: 15, deepPerMonth: 0 },
+    premium: { priceMga: 15000, scans: 300, questionsPerDay: 50, parcels: 0, deepPerMonth: 30 },
+    pro: { priceMga: 25000, scans: 600, questionsPerDay: 50, parcels: 0, deepPerMonth: 60 },
   },
   freeParcels: 3,
   payment: { instructions: "", contact: "" },
@@ -133,7 +137,7 @@ export type PlanResponse = {
   plan: PlanId;
   endsAt: number | null;
   limits: PlanLimits;
-  usage: { scans: number; questionsToday: number };
+  usage: { scans: number; questionsToday: number; deep: number };
   offers: Array<PlanOffer & { id: SoldPlanId }>;
   payment: PlansConfig["payment"];
 };

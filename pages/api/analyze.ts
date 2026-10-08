@@ -11,9 +11,11 @@ import { hasFeature } from "@/lib/plans";
 import { limitsFor, resolvePlan } from "@/lib/server/plan";
 import {
   countServerCall,
+  releasePlanDeep,
   releasePlanScan,
   releaseServerCall,
   releaseTrialScan,
+  reservePlanDeep,
   reservePlanScan,
   reserveServerCall,
   reserveTrialScan,
@@ -73,15 +75,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   if (override && !hasFeature(current.plan, "ownKey")) {
     return sendError(res, 403, "plan_required", "Your own AI key needs a subscription.");
   }
+  // A deep analysis uses the server's bigger model; with an own key, the user's model applies.
+  const deep = Boolean(parsed.data.deep) && !override;
+  if (deep && !hasFeature(current.plan, "deepAnalysis")) {
+    return sendError(res, 403, "plan_required", "Deep analyses need the Premium plan.");
+  }
 
   // Without their own key, a subscriber spends one of the month's scans...
   let quota: (TrialState & { userId: string }) | null = null;
+  let deepQuota: TrialState | null = null;
   if (!override && current.plan !== "free" && account) {
-    const { scans } = await limitsFor(current.plan);
+    const { scans, deepPerMonth } = await limitsFor(current.plan);
     const usage = await reservePlanScan(account.id, scans);
     if (usage === null) {
       await track({ type: "error", route: "analyze", code: "plan_limit" }, statsDevice);
       return sendError(res, 403, "plan_limit", "This month's scans are used up.");
+    }
+    // A deep analysis also counts against the month's deep analyses.
+    if (deep) {
+      deepQuota = await reservePlanDeep(account.id, deepPerMonth);
+      if (!deepQuota) {
+        await releasePlanScan(account.id).catch(() => undefined);
+        await track({ type: "error", route: "analyze", code: "deep_limit" }, statsDevice);
+        return sendError(res, 403, "deep_limit", "This month's deep analyses are used up.");
+      }
     }
     // Subscribers are counted in the daily total but never turned away by it.
     await countServerCall();
@@ -118,7 +135,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   });
 
   try {
-    const { analysis, model } = await analyzeImage(parsed.data, abort.signal, override);
+    const { analysis, model } = await analyzeImage(parsed.data, abort.signal, override, deep);
     await track(
       { type: "scan", mode: parsed.data.mode, category: analysis.category, ownKey: Boolean(override), durationMs: Date.now() - startedAt },
       statsDevice,
@@ -131,15 +148,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         durationMs: Date.now() - startedAt,
         ...(trial && { trial: { used: trial.used, limit: trial.limit } }),
         ...(quota && { quota: { used: quota.used, limit: quota.limit } }),
+        ...(deep && { deep: true }),
+        ...(deepQuota && { deepQuota }),
       },
     } satisfies AnalyzeResponse);
   } catch (error) {
     // A failed or cancelled analysis doesn't consume a trial scan.
     if (trial) await Promise.all([releaseTrialScan(trial.subject, trial.ip), releaseServerCall()]).catch(() => undefined);
-    if (quota) await Promise.all([releasePlanScan(quota.userId), releaseServerCall()]).catch(() => undefined);
+    if (quota) await Promise.all([releasePlanScan(quota.userId), releaseServerCall(), deepQuota && releasePlanDeep(quota.userId)]).catch(() => undefined);
     if (abort.signal.aborted) return;
     await track({ type: "error", route: "analyze", code: error instanceof AnalysisError ? error.code : "upstream_error" }, statsDevice);
     const engine = override ? `user-${override.provider}` : activeProvider;
+    // The bigger model refused on the server's key (no quota or billing for it, model gone): ours to fix.
+    if (deep && error instanceof AnalysisError && ["rate_limited", "billing", "unavailable", "invalid_request"].includes(error.code)) {
+      console.error(`[analyze:${engine}] deep analysis unavailable`, error.message);
+      await reportError(error, { route: "analyze", engine, kind: "deep_unavailable", code: error.code });
+      return sendError(res, 503, "unavailable", "Deep analysis is unavailable right now.");
+    }
     if (error instanceof AnalysisError) {
       // A rejected server key is a deployment problem, not something the user can fix.
       if (!override && error.code === "invalid_key") {

@@ -9,7 +9,7 @@ import { soldPlans, type PlanOffer, type PlansConfig } from "@/lib/plans";
 import { httpClient } from "@/services/httpClient";
 import styles from "./AdminPlans.module.scss";
 
-const offerFields: Array<keyof PlanOffer> = ["priceMga", "scans", "questionsPerDay", "parcels"];
+const offerFields: Array<keyof PlanOffer> = ["priceMga", "scans", "questionsPerDay", "parcels", "deepPerMonth"];
 
 /** Prices and limits of each plan, and how to pay: shown on the app's offers page. */
 export function AdminPlans({ token }: { token: string }) {
@@ -65,7 +65,10 @@ export function AdminPlans({ token }: { token: string }) {
         <fieldset key={plan} className={styles.plan}>
           <legend>{t(`plans.names.${plan}`)}</legend>
           <div className={styles.grid}>
-            {offerFields.map((field) => (
+            {offerFields
+              // Lite has no deep analyses.
+              .filter((field) => field !== "deepPerMonth" || plan !== "lite")
+              .map((field) => (
               <label key={field} className={styles.field}>
                 <span>{t(`admin.plans.fields.${field}`)}</span>
                 <input inputMode="numeric" value={String(draft.offers[plan][field])} onChange={(event) => setOffer(plan, field, event.target.value)} />

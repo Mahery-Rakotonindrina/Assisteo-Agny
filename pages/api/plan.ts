@@ -20,8 +20,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   if (current.plan !== "free" && account) usage = await getPlanUsage(account.id);
   else if (installId) {
     const [trial, questionsToday] = await Promise.all([getTrialUsage({ installId, userId: account?.id }), getAskUsage(installId)]);
-    usage = { scans: trial.used, questionsToday };
-  } else usage = { scans: 0, questionsToday: 0 };
+    usage = { scans: trial.used, questionsToday, deep: 0 };
+  } else usage = { scans: 0, questionsToday: 0, deep: 0 };
 
   res.setHeader("Cache-Control", "no-store");
   return res.status(200).json({

@@ -483,7 +483,8 @@
         "priceMga": "Price (Ar / month)",
         "scans": "Scans / month",
         "questionsPerDay": "Questions / day",
-        "parcels": "Parcels followed"
+        "parcels": "Parcels followed",
+        "deepPerMonth": "Deep analyses / month"
       },
       "zeroHint": "0 = no limit. Full access (offered): everything is unlimited.",
       "freeParcels": "Parcels followed without a plan",
@@ -856,7 +857,9 @@
       "allPremium": "Everything in Premium, plus:",
       "priority": "Priority when the AI is busy",
       "clients": "A client per parcel: who each parcel is for",
-      "reseller": "Totals per client, monthly recap and Excel export"
+      "reseller": "Totals per client, monthly recap and Excel export",
+      "deep": "{count} deep analyses a month, with the most accurate AI",
+      "deepUnlimited": "Unlimited deep analyses"
     },
     "how": "How to subscribe",
     "step1": "Sign in",
@@ -875,6 +878,22 @@
     "step4Body": "Your plan is activated as soon as the payment is checked. Refresh to see it.",
     "refresh": "Refresh my plan",
     "refreshed": "Plan up to date",
-    "noRenewal": "Plans don’t renew automatically: nothing is charged without you."
+    "noRenewal": "Plans don’t renew automatically: nothing is charged without you.",
+    "deepMonth": "Deep analyses this month"
+  },
+  "deep": {
+    "button": "Deep analysis",
+    "running": "Analysing…",
+    "wait": "With the most accurate AI: up to a minute.",
+    "hint": "With the most accurate AI · {left} left this month",
+    "hintUnlimited": "With the most accurate AI, for the hard cases",
+    "hintLocked": "With the Premium plan: a more accurate AI for the hard cases.",
+    "noPhoto": "This scan’s photo is no longer kept full size: take a new photo for a deep analysis.",
+    "limit": "This month’s deep analyses are used up.",
+    "premium": "Deep analysis comes with the Premium plan.",
+    "failed": "The deep analysis didn’t succeed. Try again in a moment.",
+    "finished": "Deep analysis done",
+    "done": "Deep analysis",
+    "unavailable": "Deep analysis is unavailable right now. Nothing was taken from your plan."
   }
 }

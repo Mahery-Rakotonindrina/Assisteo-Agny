@@ -39,8 +39,9 @@ export default function PlansPage() {
   const features = (offer: PlanOffer, offerId: SoldPlanId) => {
     const limits = [limit(offer.scans, "scans"), limit(offer.questionsPerDay, "questions"), limit(offer.parcels, "parcels")];
     if (offerId === "lite") return [...limits, t("plans.features.parcelCosts"), t("plans.features.ownKey")];
-    if (offerId === "premium") return [t("plans.features.allLite"), ...limits, t("plans.features.priority")];
-    return [t("plans.features.allPremium"), ...limits, t("plans.features.clients"), t("plans.features.reseller")];
+    const deep = offer.deepPerMonth === 0 ? t("plans.features.deepUnlimited") : t("plans.features.deep", { count: formatNumber(offer.deepPerMonth, locale) });
+    if (offerId === "premium") return [t("plans.features.allLite"), ...limits, deep, t("plans.features.priority")];
+    return [t("plans.features.allPremium"), ...limits, deep, t("plans.features.clients"), t("plans.features.reseller")];
   };
 
   const copy = async (value: string) => {

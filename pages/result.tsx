@@ -31,6 +31,7 @@ import {
   Utensils,
 } from "lucide-react";
 import { Button } from "@/components/Button";
+import { DeepAnalysis } from "@/components/DeepAnalysis";
 import { CategoryBadge } from "@/components/CategoryBadge";
 import { PhotoViewer } from "@/components/PhotoViewer";
 import { ReminderSheet } from "@/components/ReminderSheet";
@@ -405,6 +406,7 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
               </p>
             )}
             <ConfidenceBadge value={analysis.confidence} label={t(`result.confidenceLevels.${level}`)} />
+            {!example && !meta.demo && <DeepAnalysis entry={entry} />}
             {level === "low" && (
               <div className={styles.uncertain} role="note">
                 <TriangleAlert size={18} />

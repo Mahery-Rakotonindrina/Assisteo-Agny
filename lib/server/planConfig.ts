@@ -9,6 +9,7 @@ const Offer = z.object({
   scans: z.number().int().min(0).max(100_000),
   questionsPerDay: z.number().int().min(0).max(10_000),
   parcels: z.number().int().min(0).max(10_000),
+  deepPerMonth: z.number().int().min(0).max(10_000),
 });
 
 export const PlansConfigSchema = z.object({
@@ -29,7 +30,8 @@ export async function getPlansConfig(): Promise<PlansConfig> {
   return {
     ...defaultPlansConfig,
     ...stored,
-    offers: { ...defaultPlansConfig.offers, ...stored?.offers },
+    // Per plan, so a setting added later gets its default.
+    offers: Object.fromEntries(soldPlans.map((plan) => [plan, { ...defaultPlansConfig.offers[plan], ...stored?.offers?.[plan] }])) as PlansConfig["offers"],
     payment: { ...defaultPlansConfig.payment, ...stored?.payment },
   };
 }

@@ -183,6 +183,8 @@ export const AnalyzeRequestSchema = z.object({
   mediaType: z.enum(imageMediaTypes),
   mode: z.enum(scanModes),
   locale: z.enum(["fr", "en"]),
+  /** Analyse again with the more capable model (Premium and up). */
+  deep: z.boolean().optional(),
 });
 
 export type AnalyzeRequest = z.infer<typeof AnalyzeRequestSchema>;
@@ -292,6 +294,9 @@ export type AnalyzeResponse = {
     trial?: TrialState;
     /** Present when it used the server's key on a plan: scans this month. */
     quota?: TrialState;
+    /** A deep analysis, and the month's deep analyses used. */
+    deep?: boolean;
+    deepQuota?: TrialState;
   };
 };
 
@@ -322,6 +327,8 @@ export type ApiErrorCode =
   | "plan_required"
   /** This month's scans of the plan are used up. */
   | "plan_limit"
+  /** This month's deep analyses are used up. */
+  | "deep_limit"
   | "method_not_allowed";
 
 export type ApiErrorBody = {

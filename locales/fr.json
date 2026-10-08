@@ -483,7 +483,8 @@
         "priceMga": "Prix (Ar / mois)",
         "scans": "Scans / mois",
         "questionsPerDay": "Questions / jour",
-        "parcels": "Colis suivis"
+        "parcels": "Colis suivis",
+        "deepPerMonth": "Analyses approfondies / mois"
       },
       "zeroHint": "0 = sans limite. Accès complet (offert) : tout est sans limite.",
       "freeParcels": "Colis suivis sans offre",
@@ -856,7 +857,9 @@
       "allPremium": "Tout Premium, et :",
       "priority": "Priorité quand l’IA est très demandée",
       "clients": "Un client par colis : pour qui est chaque colis",
-      "reseller": "Totaux par client, récap du mois et export pour Excel"
+      "reseller": "Totaux par client, récap du mois et export pour Excel",
+      "deep": "{count} analyses approfondies par mois, avec l’IA la plus précise",
+      "deepUnlimited": "Analyses approfondies sans limite"
     },
     "how": "Comment s’abonner",
     "step1": "Connecte-toi",
@@ -875,6 +878,22 @@
     "step4Body": "Ton offre s’active dès que le paiement est vérifié. Actualise pour la voir.",
     "refresh": "Actualiser mon offre",
     "refreshed": "Offre à jour",
-    "noRenewal": "Les offres ne se renouvellent pas automatiquement : rien n’est prélevé sans toi."
+    "noRenewal": "Les offres ne se renouvellent pas automatiquement : rien n’est prélevé sans toi.",
+    "deepMonth": "Analyses approfondies ce mois"
+  },
+  "deep": {
+    "button": "Analyse approfondie",
+    "running": "Analyse en cours…",
+    "wait": "Avec l’IA la plus précise : jusqu’à une minute.",
+    "hint": "Avec l’IA la plus précise · {left} restante(s) ce mois",
+    "hintUnlimited": "Avec l’IA la plus précise, pour les cas difficiles",
+    "hintLocked": "Avec l’offre Premium : une IA plus précise pour les cas difficiles.",
+    "noPhoto": "La photo de ce scan n’est plus gardée en grand : refais une photo pour l’analyser en profondeur.",
+    "limit": "Analyses approfondies du mois épuisées.",
+    "premium": "L’analyse approfondie est réservée à l’offre Premium.",
+    "failed": "L’analyse approfondie n’a pas abouti. Réessaie dans un moment.",
+    "finished": "Analyse approfondie terminée",
+    "done": "Analyse approfondie",
+    "unavailable": "L’analyse approfondie est indisponible pour le moment. Rien n’a été décompté de ton offre."
   }
 }

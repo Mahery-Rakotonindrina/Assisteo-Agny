@@ -21,12 +21,13 @@ export async function resolvePlan(req: NextApiRequest): Promise<{ account: { id:
 
 /** What a plan allows; 0 means no limit. */
 export async function limitsFor(plan: ActivePlan["plan"], config?: PlansConfig): Promise<PlanLimits> {
-  if (plan === "unlimited") return { scans: 0, questionsPerDay: 0, parcels: 0 };
+  if (plan === "unlimited") return { scans: 0, questionsPerDay: 0, parcels: 0, deepPerMonth: 0 };
   const plans = config ?? (await getPlansConfig());
   if (plan === "free") {
     const trial = await getTrialConfig();
-    return { scans: trial.limit, questionsPerDay: trial.askLimit, parcels: plans.freeParcels };
+    // No deep analyses without a plan (the feature is refused before any count).
+    return { scans: trial.limit, questionsPerDay: trial.askLimit, parcels: plans.freeParcels, deepPerMonth: 0 };
   }
-  const { scans, questionsPerDay, parcels } = plans.offers[plan];
-  return { scans, questionsPerDay, parcels };
+  const { scans, questionsPerDay, parcels, deepPerMonth } = plans.offers[plan];
+  return { scans, questionsPerDay, parcels, deepPerMonth };
 }

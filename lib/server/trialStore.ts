@@ -213,10 +213,11 @@ export async function getAskUsage(installId: string) {
 
 const monthScansKey = (userId: string) => `plan:scans:${userId}:${new Date().toISOString().slice(0, 7)}`;
 const dayAskKey = (userId: string) => `plan:ask:${userId}:${new Date().toISOString().slice(0, 10)}`;
+const monthDeepKey = (userId: string) => `plan:deep:${userId}:${new Date().toISOString().slice(0, 7)}`;
 
 export async function getPlanUsage(userId: string) {
-  const [scans, questionsToday] = await Promise.all([store.get(monthScansKey(userId)), store.get(dayAskKey(userId))]);
-  return { scans, questionsToday };
+  const [scans, questionsToday, deep] = await Promise.all([store.get(monthScansKey(userId)), store.get(dayAskKey(userId)), store.get(monthDeepKey(userId))]);
+  return { scans, questionsToday, deep };
 }
 
 /** Books one use against a limit (0 = none); null once the limit is reached. */
@@ -233,6 +234,8 @@ export const reservePlanScan = (userId: string, limit: number) => reserveUse(mon
 export const releasePlanScan = (userId: string) => store.decr(monthScansKey(userId));
 export const reservePlanAsk = (userId: string, limit: number) => reserveUse(dayAskKey(userId), limit, 2 * 24 * 3600);
 export const releasePlanAsk = (userId: string) => store.decr(dayAskKey(userId));
+export const reservePlanDeep = (userId: string, limit: number) => reserveUse(monthDeepKey(userId), limit, 40 * 24 * 3600);
+export const releasePlanDeep = (userId: string) => store.decr(monthDeepKey(userId));
 
 /** Books one call on the server's key for a subscriber: counted, never refused by the daily cap. */
 export async function countServerCall() {

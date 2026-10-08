@@ -8,7 +8,7 @@ import styles from "./PlanSettings.module.scss";
 /** "Mon offre" in the settings: the plan, until when, and what is left of it. */
 export function PlanSettings() {
   const { t, locale } = useTranslation();
-  const { plan, id } = usePlan();
+  const { plan, id, has } = usePlan();
   if (!plan) return <div className={styles.wrap} aria-busy />;
 
   const paid = id !== "free";
@@ -30,6 +30,7 @@ export function PlanSettings() {
         <div className={styles.meters}>
           <Meter label={paid ? t("plans.scansMonth") : t("plans.scansTrial")} used={plan.usage.scans} limit={plan.limits.scans} />
           <Meter label={t("plans.questionsToday")} used={plan.usage.questionsToday} limit={plan.limits.questionsPerDay} />
+          {has("deepAnalysis") && <Meter label={t("plans.deepMonth")} used={plan.usage.deep ?? 0} limit={plan.limits.deepPerMonth ?? 0} />}
         </div>
       )}
 
