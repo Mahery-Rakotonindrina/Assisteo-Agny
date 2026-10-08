@@ -32,7 +32,10 @@ async function saveToken(token: string) {
 }
 
 /** Registers this device for reminder pushes. Never prompts: notifications must already be allowed. */
-export async function registerPush(onOpen: (entryId: string) => void) {
+/** What a tapped push opens: a scan (reminders) or a page of the app (plan reminders). */
+export type PushTarget = { entryId: string } | { route: string };
+
+export async function registerPush(onOpen: (target: PushTarget) => void) {
   if (!pushAvailable()) return;
   const { receive } = await PushNotifications.checkPermissions();
   if (receive !== "granted") return;
@@ -47,7 +50,10 @@ export async function registerPush(onOpen: (entryId: string) => void) {
     });
     await PushNotifications.addListener("pushNotificationActionPerformed", ({ notification }) => {
       const entryId = notification.data?.entryId;
-      if (typeof entryId === "string") onOpen(entryId);
+      const route = notification.data?.route;
+      if (typeof entryId === "string") onOpen({ entryId });
+      // Only the app's own pages.
+      else if (typeof route === "string" && route.startsWith("/") && !route.startsWith("//")) onOpen({ route });
     });
     // Same look as local reminders.
     await PushNotifications.createChannel({ id: "reminders", name: "Rappels", importance: 4, visibility: 1 }).catch(() => undefined);

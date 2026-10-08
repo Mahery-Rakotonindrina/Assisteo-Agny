@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { CalendarClock, ChevronDown, Pencil, Plus, RefreshCw, Save, Search, Square, Trash2, Users, X } from "lucide-react";
+import { CalendarClock, ChevronDown, Copy, Mail, Pencil, Plus, RefreshCw, Save, Search, Square, Trash2, Users, X } from "lucide-react";
 import { Button } from "@/components/Button";
 import { PlanBadge, PlanIcon } from "@/components/PlanBadge";
 import { useToast } from "@/components/Toast";
@@ -213,6 +213,26 @@ export function AdminSubscriptions({ token }: { token: string }) {
       : t("admin.subs.until", { date: formatDate(lastDay(current.endsAt), locale) });
   };
 
+  // A reminder to renew, written for the subscriber: by e-mail, or copied for WhatsApp / SMS.
+  const reminder = (person: Person) => {
+    const plan = t(`plans.names.${person.shown}`);
+    const ended = person.current.plan === "free";
+    const end = person.current.endsAt ?? Math.max(...person.rows.map((row) => (row.endsAt ? Date.parse(row.endsAt) : 0)));
+    const values = { plan, date: formatDate(lastDay(end), locale), link: `${typeof window === "undefined" ? "" : window.location.origin}/plans` };
+    return {
+      subject: t(ended ? "admin.subs.remind.subjectEnded" : "admin.subs.remind.subject", values),
+      body: t(ended ? "admin.subs.remind.bodyEnded" : "admin.subs.remind.body", values),
+    };
+  };
+  const copyReminder = async (person: Person) => {
+    try {
+      await navigator.clipboard.writeText(reminder(person).body);
+      toast(t("admin.subs.remind.copied"));
+    } catch {
+      toast(t("admin.error"), "error");
+    }
+  };
+
   const renew = (person: Person) => {
     const last = person.rows[0];
     const coveredUntil = person.current.endsAt;
@@ -329,6 +349,19 @@ export function AdminSubscriptions({ token }: { token: string }) {
                         <Button size="md" variant="secondary" icon={<RefreshCw />} onClick={() => renew(person)}>
                           {t("admin.subs.renew")}
                         </Button>
+                        {person.status !== "offered" && person.shown !== "unlimited" && (
+                          <>
+                            <a
+                              className={styles.remind}
+                              href={`mailto:${person.email}?subject=${encodeURIComponent(reminder(person).subject)}&body=${encodeURIComponent(reminder(person).body)}`}
+                            >
+                              <Mail size={15} /> {t("admin.subs.remind.email")}
+                            </a>
+                            <button type="button" className={styles.remind} onClick={() => void copyReminder(person)}>
+                              <Copy size={15} /> {t("admin.subs.remind.copy")}
+                            </button>
+                          </>
+                        )}
                         {person.current.plan !== "free" && (
                           <ConfirmButton
                             icon={<Square />}
@@ -413,6 +446,7 @@ function Header() {
         <Users size={18} /> {t("admin.subs.title")}
       </h2>
       <p className={styles.subtitle}>{t("admin.subs.subtitle")}</p>
+      <p className={styles.subtitle}>{t("admin.subs.remind.auto")}</p>
     </div>
   );
 }

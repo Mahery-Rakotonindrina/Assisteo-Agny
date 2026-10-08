@@ -495,6 +495,16 @@
         "split": "Active subscribers by plan",
         "monthly": "Received per month, by plan",
         "noPayments": "No payment recorded yet."
+      },
+      "remind": {
+        "email": "Remind by e-mail",
+        "copy": "Copy the message",
+        "copied": "Message copied: paste it into WhatsApp or a text.",
+        "auto": "Automatic reminders: subscribers get a notification three days before the end, on the last day and when it ends (Android app), on top of the banner in the app.",
+        "subject": "Your Assisteo Agny {plan} plan ends on {date}",
+        "body": "Hello,\n\nYour {plan} plan on Assisteo Agny ends on {date}. To renew it and keep your perks, everything is explained here: {link}\n\nThank you, see you soon!",
+        "subjectEnded": "Your Assisteo Agny {plan} plan has ended",
+        "bodyEnded": "Hello,\n\nYour {plan} plan on Assisteo Agny has ended. To renew it and get your perks back, everything is explained here: {link}\n\nThank you, see you soon!"
       }
     },
     "plans": {

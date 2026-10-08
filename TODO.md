@@ -153,7 +153,7 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Essai gratuit : scans, limite par IP, questions par jour, plafond quotidien
 - [x] Statistiques sur 14 jours : scans par type, erreurs, appareils, avis 👍/👎
 - [x] Versions de l'app : minimale, dernière, lien de téléchargement
-- [ ] ⭐ Relance automatique des abonnés avant la fin de leur offre
+- [x] ⭐ Relance automatique des abonnés avant la fin (notification 3 jours avant, le dernier jour, à la fin) + relance manuelle par e-mail ou WhatsApp depuis l'admin
 - [ ] ⭐ Coût IA réel par scan, pour fixer les prix
 - [ ] Liste de tous les comptes, pas seulement les abonnés
 - [ ] Export comptable des paiements (Excel)

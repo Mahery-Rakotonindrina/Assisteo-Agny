@@ -495,6 +495,16 @@
         "split": "Abonnés actifs par offre",
         "monthly": "Encaissé par mois, par offre",
         "noPayments": "Pas encore de paiement enregistré."
+      },
+      "remind": {
+        "email": "Relancer par e-mail",
+        "copy": "Copier le message",
+        "copied": "Message copié : colle-le dans WhatsApp ou un SMS.",
+        "auto": "Relance automatique : les abonnés reçoivent une notification 3 jours avant la fin, le dernier jour et à la fin (app Android), en plus du bandeau dans l’app.",
+        "subject": "Ton offre {plan} Assisteo Agny se termine le {date}",
+        "body": "Bonjour,\n\nTon offre {plan} sur Assisteo Agny se termine le {date}. Pour la renouveler et garder tes avantages, tout est expliqué ici : {link}\n\nMerci et à bientôt !",
+        "subjectEnded": "Ton offre {plan} Assisteo Agny est terminée",
+        "bodyEnded": "Bonjour,\n\nTon offre {plan} sur Assisteo Agny est terminée. Pour la renouveler et retrouver tes avantages, tout est expliqué ici : {link}\n\nMerci et à bientôt !"
       }
     },
     "plans": {

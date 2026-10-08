@@ -60,7 +60,9 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   // Reminder pushes on this device (Android builds with Firebase only).
   useEffect(() => {
     if (!userId) return;
-    void registerPush((entryId) => void Router.push({ pathname: "/result", query: { id: entryId } })).catch(() => undefined);
+    void registerPush((target) =>
+      void Router.push("entryId" in target ? { pathname: "/result", query: { id: target.entryId } } : target.route),
+    ).catch(() => undefined);
   }, [userId]);
 
   // "Mes colis".
