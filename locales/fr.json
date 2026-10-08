@@ -404,6 +404,69 @@
       "errors": "Erreurs et blocages",
       "feedback": "Derniers avis",
       "noFeedback": "Pas encore d’avis."
+    },
+    "subs": {
+      "title": "Abonnés",
+      "subtitle": "Le paiement se fait hors de l’app : note ici qui a payé quelle offre, et pour combien de temps.",
+      "disabled": "Les comptes ne sont pas configurés sur le serveur.",
+      "active": "actifs",
+      "soon": "expirent sous 7 jours",
+      "cashedThisMonth": "encaissés ce mois",
+      "add": "Ajouter un abonnement",
+      "search": "Rechercher un e-mail",
+      "empty": "Aucun abonné pour l’instant.",
+      "startsOn": "Commence le {date}",
+      "endedOn": "Terminé le {date}",
+      "noEnd": "Sans date de fin",
+      "noEndShort": "sans fin",
+      "endsIn": "Expire dans {days} j · le {date}",
+      "until": "Jusqu’au {date}",
+      "renew": "Renouveler",
+      "stop": "Arrêter maintenant",
+      "stopConfirm": "Confirmer l’arrêt",
+      "stopped": "Accès arrêté",
+      "edit": "Modifier",
+      "delete": "Supprimer (toucher deux fois)",
+      "deleted": "Enregistrement supprimé",
+      "added": "Abonnement enregistré",
+      "free": "Offert",
+      "addTitle": "Nouvel abonnement",
+      "editTitle": "Modifier l’abonnement",
+      "email": "E-mail",
+      "emails": "E-mail(s)",
+      "emailsHint": "Celui du compte dans l’app. Plusieurs e-mails, séparés par une virgule, pour un même paiement (une famille par exemple).",
+      "badEmail": "« {email} » n’est pas un e-mail valide.",
+      "plan": "Offre",
+      "start": "Début",
+      "end": "Dernier jour",
+      "duration": "Durée",
+      "durations": {
+        "week": "1 semaine",
+        "month": "1 mois",
+        "quarter": "3 mois",
+        "half": "6 mois",
+        "year": "1 an",
+        "none": "Sans fin",
+        "custom": "Autre date"
+      },
+      "periodUntil": "Accès jusqu’au {date} inclus",
+      "badPeriod": "Choisis un dernier jour après le début.",
+      "payment": "Paiement",
+      "amount": "Montant (Ar)",
+      "method": "Moyen",
+      "methods": {
+        "mvola": "MVola",
+        "orange": "Orange Money",
+        "airtel": "Airtel Money",
+        "cash": "Espèces",
+        "bank": "Virement",
+        "other": "Autre"
+      },
+      "ref": "Référence",
+      "refHint": "La référence de la transaction Mobile Money, pour la retrouver.",
+      "note": "Note",
+      "notePlaceholder": "Ex. payé par sa sœur",
+      "saveMany": "Enregistrer pour {count} e-mails"
     }
   },
   "account": {
@@ -679,5 +742,14 @@
       "receivedHint": "Mise à la date du jour quand tu le marques comme reçu. Corrige-la si tu l’as marqué en retard ; vide-la pour le remettre en cours."
     },
     "receivedOn": "Reçu le {date}"
+  },
+  "plans": {
+    "names": {
+      "free": "Gratuit",
+      "lite": "Lite",
+      "premium": "Premium",
+      "pro": "Pro",
+      "unlimited": "Accès complet"
+    }
   }
 }

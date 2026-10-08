@@ -1,8 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { z } from "zod";
-import { isAdmin } from "@/lib/server/adminAuth";
-import { clientIp, sendError } from "@/lib/server/http";
-import { rateLimit } from "@/lib/server/rateLimit";
+import { guardAdmin } from "@/lib/server/adminAuth";
+import { sendError } from "@/lib/server/http";
 import { getServerUsage, getTrialConfig, setTrialConfig, trialIsDurable, type TrialConfig } from "@/lib/server/trialStore";
 
 export type AdminTrialResponse = TrialConfig & { durable: boolean; todayUsed: number };
@@ -16,15 +15,7 @@ const ConfigSchema = z.object({
 
 /** Admin-only: read or change the free trial limits at runtime. */
 export default async function handler(req: NextApiRequest, res: NextApiResponse<AdminTrialResponse | unknown>) {
-  if (!process.env.ADMIN_TOKEN) {
-    return sendError(res, 503, "unavailable", "Admin is disabled: set ADMIN_TOKEN on the server.");
-  }
-  // Slow down token guessing.
-  const limit = await rateLimit(`admin:${clientIp(req)}`, 20, 60_000);
-  if (!limit.ok) return sendError(res, 429, "rate_limited", "Too many attempts.");
-  if (!isAdmin(req)) return sendError(res, 401, "invalid_key", "Invalid admin token.");
-
-  res.setHeader("Cache-Control", "no-store");
+  if (!(await guardAdmin(req, res))) return;
 
   if (req.method === "GET") {
     const [config, usage] = await Promise.all([getTrialConfig(), getServerUsage()]);

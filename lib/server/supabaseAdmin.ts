@@ -19,10 +19,17 @@ export function supabaseAdmin() {
 
 /** The signed-in user's id from "Authorization: Bearer <access token>", or null. */
 export async function verifyUser(req: NextApiRequest): Promise<string | null> {
+  return (await verifyAccount(req))?.id ?? null;
+}
+
+/** The signed-in user (id and e-mail) from the session token, or null. */
+export async function verifyAccount(req: NextApiRequest): Promise<{ id: string; email: string | null } | null> {
   const token = req.headers.authorization?.match(/^Bearer\s+(.+)$/i)?.[1];
   if (!token || !accountsEnabled) return null;
   // Verifies the JWT signature (locally with asymmetric keys, else via the Auth server).
   const { data, error } = await supabaseAdmin().auth.getClaims(token);
   const sub = data?.claims?.sub;
-  return error || typeof sub !== "string" ? null : sub;
+  const email = data?.claims?.email;
+  if (error || typeof sub !== "string") return null;
+  return { id: sub, email: typeof email === "string" && email ? email.toLowerCase() : null };
 }

@@ -404,6 +404,69 @@
       "errors": "Errors and blocks",
       "feedback": "Latest feedback",
       "noFeedback": "No feedback yet."
+    },
+    "subs": {
+      "title": "Subscribers",
+      "subtitle": "Payment happens outside the app: record here who paid for which plan, and for how long.",
+      "disabled": "Accounts are not configured on the server.",
+      "active": "active",
+      "soon": "ending within 7 days",
+      "cashedThisMonth": "received this month",
+      "add": "Add a subscription",
+      "search": "Search an e-mail",
+      "empty": "No subscribers yet.",
+      "startsOn": "Starts on {date}",
+      "endedOn": "Ended on {date}",
+      "noEnd": "No end date",
+      "noEndShort": "no end",
+      "endsIn": "Ends in {days} d · on {date}",
+      "until": "Until {date}",
+      "renew": "Renew",
+      "stop": "Stop now",
+      "stopConfirm": "Confirm stopping",
+      "stopped": "Access stopped",
+      "edit": "Edit",
+      "delete": "Delete (tap twice)",
+      "deleted": "Record deleted",
+      "added": "Subscription saved",
+      "free": "Offered",
+      "addTitle": "New subscription",
+      "editTitle": "Edit the subscription",
+      "email": "E-mail",
+      "emails": "E-mail(s)",
+      "emailsHint": "The one of the account in the app. Several e-mails, separated by commas, for one payment (a family for instance).",
+      "badEmail": "“{email}” is not a valid e-mail.",
+      "plan": "Plan",
+      "start": "Start",
+      "end": "Last day",
+      "duration": "Duration",
+      "durations": {
+        "week": "1 week",
+        "month": "1 month",
+        "quarter": "3 months",
+        "half": "6 months",
+        "year": "1 year",
+        "none": "No end",
+        "custom": "Other date"
+      },
+      "periodUntil": "Access until {date} included",
+      "badPeriod": "Pick a last day after the start.",
+      "payment": "Payment",
+      "amount": "Amount (Ar)",
+      "method": "Method",
+      "methods": {
+        "mvola": "MVola",
+        "orange": "Orange Money",
+        "airtel": "Airtel Money",
+        "cash": "Cash",
+        "bank": "Bank transfer",
+        "other": "Other"
+      },
+      "ref": "Reference",
+      "refHint": "The Mobile Money transaction reference, to find it again.",
+      "note": "Note",
+      "notePlaceholder": "e.g. paid by her sister",
+      "saveMany": "Save for {count} e-mails"
     }
   },
   "account": {
@@ -679,5 +742,14 @@
       "receivedHint": "Set to today when you mark it received. Correct it if you marked it late; clear it to put the parcel back in progress."
     },
     "receivedOn": "Received on {date}"
+  },
+  "plans": {
+    "names": {
+      "free": "Free",
+      "lite": "Lite",
+      "premium": "Premium",
+      "pro": "Pro",
+      "unlimited": "Full access"
+    }
   }
 }

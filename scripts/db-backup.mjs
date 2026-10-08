@@ -12,7 +12,7 @@ import { gzipSync } from "node:zlib";
 import pg from "pg";
 
 export const MAGIC = Buffer.from("AGNYBK1");
-export const TABLES = ["analyses", "user_settings", "user_ai_keys", "push_devices", "parcels", "_migrations"];
+export const TABLES = ["analyses", "user_settings", "user_ai_keys", "push_devices", "parcels", "subscriptions", "_migrations"];
 
 const url = process.env.POSTGRES_URL_NON_POOLING ?? process.env.POSTGRES_URL;
 const passphrase = process.env.BACKUP_PASSPHRASE;
