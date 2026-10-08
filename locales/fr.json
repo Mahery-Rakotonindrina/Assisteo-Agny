@@ -9,7 +9,8 @@
     "parcels": "Colis",
     "settings": "Réglages",
     "back": "Retour",
-    "admin": "Admin"
+    "admin": "Admin",
+    "lists": "Listes"
   },
   "scan": {
     "greeting": {
@@ -123,7 +124,8 @@
     "object": "Objet",
     "plant": "Plante",
     "other": "Autre",
-    "vehicle": "Véhicule"
+    "vehicle": "Véhicule",
+    "list": "Liste"
   },
   "result": {
     "confidence": "Confiance",
@@ -191,7 +193,8 @@
       "vehicle": "Véhicule",
       "document": "Document",
       "chat": "Question",
-      "parcel": "Colis"
+      "parcel": "Colis",
+      "list": "Liste"
     },
     "ask": "Poser une question",
     "askShort": "Question",
@@ -969,5 +972,49 @@
     "finished": "Analyse approfondie terminée",
     "done": "Analyse approfondie",
     "unavailable": "L’analyse approfondie est indisponible pour le moment. Rien n’a été décompté de ton offre."
+  },
+  "lists": {
+    "title": "Mes listes",
+    "summary": "{ongoing} en cours · {done} terminée(s)",
+    "emptyTitle": "Aucune liste pour l’instant",
+    "emptyBody": "Prends en photo une liste de courses ou de tâches, même écrite à la main, ou crée-en une ici.",
+    "scan": "Scanner une liste",
+    "new": "Nouvelle liste",
+    "newTitle": "Nom de la liste",
+    "newPlaceholder": "Ex. Courses du samedi",
+    "kind": "Type de liste",
+    "kinds": {
+      "shopping": "Courses",
+      "todo": "Tâches",
+      "other": "Liste"
+    },
+    "create": "Créer",
+    "count": "{count} élément(s)",
+    "progress": "{done}/{total} fait(s)",
+    "allDone": "tout est fait",
+    "noItems": "Aucun élément : ajoute le premier ci-dessous.",
+    "addItem": "Ajouter un élément",
+    "quantity": "Quantité",
+    "itemText": "Élément",
+    "editItem": "Modifier « {item} »",
+    "removeItem": "Retirer « {item} »",
+    "save": "Enregistrer",
+    "share": "Partager",
+    "copied": "Liste copiée : colle-la dans WhatsApp ou un SMS.",
+    "rename": "Renommer",
+    "uncheckAll": "Tout décocher",
+    "clearDone": "Effacer les cochés",
+    "openScan": "Voir le scan",
+    "remove": "Supprimer",
+    "confirmRemove": "Supprimer la liste ?",
+    "removed": "Liste supprimée",
+    "add": "Ajouter à mes listes",
+    "addShort": "Garder",
+    "added": "Ajoutée à Mes listes",
+    "view": "Voir dans Mes listes",
+    "viewShort": "Mes listes",
+    "inList": "Gardée dans Mes listes.",
+    "open": "Ouvrir",
+    "addItemButton": "Ajouter l’élément"
   }
 }

@@ -40,7 +40,7 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Date d'échéance ou de validité détectée
 - [x] Documents d'assurance reconnus, rappel d'échéance proposé
 - [x] Rappel proposé dès qu'il y a une date limite
-- [ ] ⭐ « Mes listes » : listes (courses, tâches) reconnues sur une photo, cases à cocher, ajout et modification des éléments, synchronisées
+- [x] ⭐ « Mes listes » : listes (courses, tâches) reconnues sur une photo, cases à cocher, ajout et modification des éléments, partage, synchronisées
 - [ ] Prix en ariary par article sur les listes de courses, total estimé et dépensé
 - [ ] « Mes papiers » : CNI, assurances, garanties, avec suivi des expirations
 - [ ] Factures (JIRAMA, téléphone…) : montant lu, suivi des dépenses

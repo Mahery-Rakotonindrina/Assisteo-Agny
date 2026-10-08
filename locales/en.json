@@ -9,7 +9,8 @@
     "parcels": "Parcels",
     "settings": "Settings",
     "back": "Back",
-    "admin": "Admin"
+    "admin": "Admin",
+    "lists": "Lists"
   },
   "scan": {
     "greeting": {
@@ -123,7 +124,8 @@
     "object": "Object",
     "plant": "Plant",
     "other": "Other",
-    "vehicle": "Vehicle"
+    "vehicle": "Vehicle",
+    "list": "List"
   },
   "result": {
     "confidence": "Confidence",
@@ -191,7 +193,8 @@
       "vehicle": "Vehicle",
       "document": "Document",
       "chat": "Question",
-      "parcel": "Parcel"
+      "parcel": "Parcel",
+      "list": "List"
     },
     "ask": "Ask a question",
     "askShort": "Question",
@@ -969,5 +972,49 @@
     "finished": "Deep analysis done",
     "done": "Deep analysis",
     "unavailable": "Deep analysis is unavailable right now. Nothing was taken from your plan."
+  },
+  "lists": {
+    "title": "My lists",
+    "summary": "{ongoing} in progress · {done} done",
+    "emptyTitle": "No list yet",
+    "emptyBody": "Take a photo of a shopping or to-do list, even handwritten, or create one here.",
+    "scan": "Scan a list",
+    "new": "New list",
+    "newTitle": "List name",
+    "newPlaceholder": "e.g. Saturday shopping",
+    "kind": "Kind of list",
+    "kinds": {
+      "shopping": "Shopping",
+      "todo": "Tasks",
+      "other": "List"
+    },
+    "create": "Create",
+    "count": "{count} item(s)",
+    "progress": "{done}/{total} done",
+    "allDone": "all done",
+    "noItems": "No item: add the first one below.",
+    "addItem": "Add an item",
+    "quantity": "Quantity",
+    "itemText": "Item",
+    "editItem": "Edit “{item}”",
+    "removeItem": "Remove “{item}”",
+    "save": "Save",
+    "share": "Share",
+    "copied": "List copied: paste it into WhatsApp or a text.",
+    "rename": "Rename",
+    "uncheckAll": "Untick all",
+    "clearDone": "Clear ticked",
+    "openScan": "See the scan",
+    "remove": "Delete",
+    "confirmRemove": "Delete the list?",
+    "removed": "List deleted",
+    "add": "Add to my lists",
+    "addShort": "Keep",
+    "added": "Added to My lists",
+    "view": "See in My lists",
+    "viewShort": "My lists",
+    "inList": "Kept in My lists.",
+    "open": "Open",
+    "addItemButton": "Add the item"
   }
 }

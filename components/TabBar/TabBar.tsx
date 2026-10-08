@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { motion } from "motion/react";
-import { History, Package, ScanLine, Settings2, ShieldCheck } from "lucide-react";
+import { History, ListChecks, Package, ScanLine, Settings2, ShieldCheck } from "lucide-react";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { spring } from "@/lib/motion";
@@ -12,6 +12,7 @@ const tabs = [
   { href: "/", key: "scan", Icon: ScanLine },
   { href: "/history", key: "history", Icon: History },
   { href: "/parcels", key: "parcels", Icon: Package },
+  { href: "/lists", key: "lists", Icon: ListChecks },
   { href: "/settings", key: "settings", Icon: Settings2 },
 ] as const;
 

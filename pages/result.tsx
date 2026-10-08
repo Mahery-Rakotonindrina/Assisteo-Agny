@@ -15,6 +15,7 @@ import {
   FileText,
   Hash,
   ListChecks,
+  ListPlus,
   Lock,
   Maximize2,
   MessageCircle,
@@ -51,6 +52,7 @@ import {
 } from "@/components/Result";
 import { useToast } from "@/components/Toast";
 import { useHistory, useHistoryEntry } from "@/hooks/useHistory";
+import { useLists } from "@/hooks/useLists";
 import { useParcels } from "@/hooks/useParcels";
 import { usePlan } from "@/hooks/usePlan";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
@@ -63,6 +65,7 @@ import { formatDateTime, formatDay } from "@/lib/format";
 import { easeOut, pop, rise, spring, stagger } from "@/lib/motion";
 import { haptics, shareText } from "@/services/device";
 import { historyStore } from "@/services/historyStore";
+import { listStore } from "@/services/listStore";
 import { keepParcelThumbnails } from "@/services/parcelLinking";
 import { hasNewStatus, parcelStore } from "@/services/parcelStore";
 import { cancelNotification } from "@/services/notifications";
@@ -70,8 +73,8 @@ import { cancelReminder, expiryDate, INSURANCE_NOTICE_DAYS, insuranceReminderAt,
 import type { HistoryEntry } from "@/types/history";
 import styles from "@/styles/Result.module.scss";
 
-type TabId = "overview" | "parcel" | "nutrition" | "recipe" | "vehicle" | "document" | "chat";
-type Action = "reminder" | "question" | "parcel";
+type TabId = "overview" | "list" | "parcel" | "nutrition" | "recipe" | "vehicle" | "document" | "chat";
+type Action = "reminder" | "question" | "parcel" | "list";
 
 /** Gap between the header and the tabs (the .content flex gap). */
 const CONTENT_GAP = 16;
@@ -125,7 +128,7 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetKey, setSheetKey] = useState(0);
   // A parcel opens on its tracking details.
-  const [tab, setTab] = useState<TabId>(analysis.parcel ? "parcel" : "overview");
+  const [tab, setTab] = useState<TabId>(analysis.parcel ? "parcel" : analysis.list ? "list" : "overview");
   const [composerFocused, setComposerFocused] = useState(false);
   const [barSolid, setBarSolid] = useState(false);
   const [barTitled, setBarTitled] = useState(false);
@@ -185,6 +188,7 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
 
   const tabs = [
     { id: "overview", label: t("result.tabs.overview"), icon: <Sparkles /> },
+    analysis.list && { id: "list", label: t("result.tabs.list"), icon: <ListChecks /> },
     analysis.parcel && { id: "parcel", label: t("result.tabs.parcel"), icon: <Package /> },
     analysis.nutrition && { id: "nutrition", label: t("result.tabs.nutrition"), icon: <Utensils /> },
     analysis.recipe && { id: "recipe", label: t("result.tabs.recipe"), icon: <CookingPot /> },
@@ -223,6 +227,15 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
     : [];
 
   const parcelLimit = usePlan().plan?.limits.parcels ?? 0;
+  // "Mes listes": the list read on this scan, kept once.
+  const { lists } = useLists();
+  const savedList = lists.find((list) => list.scanId === entry.id);
+  const addList = async () => {
+    haptics.success();
+    await listStore.addFromScan(entry);
+    toast(t("lists.added"));
+  };
+
   const addParcel = async () => {
     // Parcels followed at once (not received yet), per plan; 0 = no limit.
     if (parcelLimit > 0 && parcels.filter((parcel) => !parcel.receivedAt).length >= parcelLimit) {
@@ -249,7 +262,15 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
     analysis.category === "vehicle" ||
     (analysis.category === "plant" && analysis.reminder !== null);
   const actions = (
-    example ? [] : ((analysis.parcel ? ["parcel", "question"] : reminderFirst ? ["reminder", "question"] : ["question", "reminder"]) as Action[])
+    example
+      ? []
+      : ((analysis.parcel
+          ? ["parcel", "question"]
+          : analysis.list
+            ? ["list", "question"]
+            : reminderFirst
+              ? ["reminder", "question"]
+              : ["question", "reminder"]) as Action[])
   ).filter(
     // The question tab has its own composer.
     (action) => !(action === "question" && tab === "chat"),
@@ -499,6 +520,8 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
 
   function renderPanel(): ReactNode {
     switch (tab) {
+      case "list":
+        return analysis.list && renderList(analysis.list);
       case "parcel":
         return analysis.parcel && renderParcel(analysis.parcel);
       case "nutrition":
@@ -588,6 +611,28 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
           </>
         );
     }
+  }
+
+  function renderList(list: NonNullable<HistoryEntry["analysis"]["list"]>) {
+    return (
+      <Section title={`${t(`lists.kinds.${list.kind}`)} · ${t("lists.count", { count: list.items.length })}`} icon={<ListChecks />}>
+        <ul className={styles.readList}>
+          {list.items.map((item, index) => (
+            <li key={`${index}-${item.text}`} data-done={item.done ? "" : undefined}>
+              <span className={styles.readBox} aria-hidden />
+              <span>{item.text}</span>
+              {item.quantity && <small>{item.quantity}</small>}
+            </li>
+          ))}
+        </ul>
+        {savedList && (
+          <p className={styles.readListNote}>
+            <ListChecks size={14} /> {t("lists.inList")}{" "}
+            <Link href={{ pathname: "/lists", query: { open: savedList.id } }}>{t("lists.open")}</Link>
+          </p>
+        )}
+      </Section>
+    );
   }
 
   function renderDocument(document: NonNullable<HistoryEntry["analysis"]["document"]>) {
@@ -702,6 +747,17 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
       return (
         <Button key="parcel" variant="secondary" icon={<PackageCheck />} href="/parcels" className={className}>
           {slot === "secondary" ? t("parcel.viewShort") : t("parcel.view")}
+        </Button>
+      );
+    }
+    if (action === "list") {
+      return savedList ? (
+        <Button key="list" variant="secondary" icon={<ListChecks />} href={`/lists?open=${savedList.id}`} className={className}>
+          {slot === "secondary" ? t("lists.viewShort") : t("lists.view")}
+        </Button>
+      ) : (
+        <Button key="list" variant={slot === "primary" ? "primary" : "secondary"} icon={<ListPlus />} onClick={() => void addList()} className={className}>
+          {slot === "secondary" ? t("lists.addShort") : t("lists.add")}
         </Button>
       );
     }

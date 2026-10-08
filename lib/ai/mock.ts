@@ -54,6 +54,7 @@ const food: Record<Locale, Analysis> = {
     document: null,
     vehicle: null,
     parcel: null,
+    list: null,
     reminder: { title: "Salade au frigo", body: "Pense à finir ta salade avant demain soir.", delayHours: 24 },
   },
   en: {
@@ -104,6 +105,7 @@ const food: Record<Locale, Analysis> = {
     document: null,
     vehicle: null,
     parcel: null,
+    list: null,
     reminder: { title: "Salad in the fridge", body: "Remember to finish your salad before tomorrow night.", delayHours: 24 },
   },
 };
@@ -137,6 +139,7 @@ const documentScan: Record<Locale, Analysis> = {
     },
     vehicle: null,
     parcel: null,
+    list: null,
     reminder: { title: "Facture d'électricité", body: "Le prélèvement de 84,20 € arrive bientôt.", delayHours: 72 },
   },
   en: {
@@ -167,6 +170,7 @@ const documentScan: Record<Locale, Analysis> = {
     },
     vehicle: null,
     parcel: null,
+    list: null,
     reminder: { title: "Electricity bill", body: "The €84.20 direct debit is coming up.", delayHours: 72 },
   },
 };
@@ -194,6 +198,7 @@ const objectScan: Record<Locale, Analysis> = {
     document: null,
     vehicle: null,
     parcel: null,
+    list: null,
     reminder: { title: "Arroser le Monstera", body: "Vérifie la terre et arrose si elle est sèche.", delayHours: 168 },
   },
   en: {
@@ -218,6 +223,7 @@ const objectScan: Record<Locale, Analysis> = {
     document: null,
     vehicle: null,
     parcel: null,
+    list: null,
     reminder: { title: "Water the Monstera", body: "Check the soil and water if it is dry.", delayHours: 168 },
   },
 };
@@ -273,6 +279,7 @@ const vehicleScan: Record<Locale, Analysis> = {
       ],
     },
     parcel: null,
+    list: null,
     reminder: { title: "Révision de la Corolla", body: "Pense à vérifier la date de ta prochaine révision.", delayHours: 720 },
   },
   en: {
@@ -325,6 +332,7 @@ const vehicleScan: Record<Locale, Analysis> = {
       ],
     },
     parcel: null,
+    list: null,
     reminder: { title: "Corolla service", body: "Remember to check when your next service is due.", delayHours: 720 },
   },
 };
@@ -376,6 +384,7 @@ const parcelScan: Record<Locale, Analysis> = {
       estimatedDelivery: null,
       destinationCity: "Foshan",
     },
+    list: null,
     reminder: null,
   },
   en: {
@@ -413,13 +422,73 @@ const parcelScan: Record<Locale, Analysis> = {
       estimatedDelivery: null,
       destinationCity: "Foshan",
     },
+    list: null,
+    reminder: null,
+  },
+};
+
+// A fictional shopping list for demo mode.
+const listScan: Record<Locale, Analysis> = {
+  fr: {
+    category: "list",
+    title: "Courses de la semaine",
+    summary: "Une liste de courses écrite à la main : 7 articles, dont un déjà barré.",
+    confidence: 0.9,
+    tags: ["courses", "liste", "marché"],
+    facts: [{ label: "Articles", value: "7" }],
+    suggestions: [{ kind: "tip", title: "Garde-la dans Mes listes", detail: "Coche les articles au fur et à mesure au marché." }],
+    nutrition: null,
+    recipe: null,
+    document: null,
+    vehicle: null,
+    parcel: null,
+    list: {
+      kind: "shopping",
+      items: [
+        { text: "Riz", quantity: "5 kg", done: false },
+        { text: "Huile", quantity: "1 L", done: false },
+        { text: "Tomates", quantity: "1 kg", done: false },
+        { text: "Oignons", quantity: null, done: false },
+        { text: "Brèdes mafana", quantity: "2 bottes", done: false },
+        { text: "Sucre", quantity: "1 kg", done: true },
+        { text: "Savon", quantity: "x3", done: false },
+      ],
+    },
+    reminder: null,
+  },
+  en: {
+    category: "list",
+    title: "This week's shopping",
+    summary: "A handwritten shopping list: 7 items, one already crossed out.",
+    confidence: 0.9,
+    tags: ["shopping", "list", "market"],
+    facts: [{ label: "Items", value: "7" }],
+    suggestions: [{ kind: "tip", title: "Keep it in My lists", detail: "Tick the items off as you go at the market." }],
+    nutrition: null,
+    recipe: null,
+    document: null,
+    vehicle: null,
+    parcel: null,
+    list: {
+      kind: "shopping",
+      items: [
+        { text: "Rice", quantity: "5 kg", done: false },
+        { text: "Oil", quantity: "1 L", done: false },
+        { text: "Tomatoes", quantity: "1 kg", done: false },
+        { text: "Onions", quantity: null, done: false },
+        { text: "Mafana greens", quantity: "2 bunches", done: false },
+        { text: "Sugar", quantity: "1 kg", done: true },
+        { text: "Soap", quantity: "x3", done: false },
+      ],
+    },
     reminder: null,
   },
 };
 
 export function mockAnalysis(mode: ScanMode, locale: Locale): Analysis {
   if (mode !== "auto") return byMode[mode][locale];
-  const pool = [food, documentScan, vehicleScan, objectScan, parcelScan];
+  // New examples go last: tests rely on the order of the first ones.
+  const pool = [food, documentScan, vehicleScan, objectScan, parcelScan, listScan];
   const pick = pool[autoCursor % pool.length];
   autoCursor += 1;
   return pick[locale];
