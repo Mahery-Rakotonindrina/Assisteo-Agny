@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
-import { Check, ChevronDown, Cpu, ExternalLink, Eye, EyeOff, Globe, KeyRound, ListRestart, Loader2, ShieldCheck, Sparkles, Trash2 } from "lucide-react";
+import { Check, ChevronDown, Cpu, ExternalLink, Eye, EyeOff, Globe, KeyRound, ListRestart, Loader2, Lock, ShieldCheck, Sparkles, Trash2 } from "lucide-react";
 import { Button } from "@/components/Button";
 import { useToast } from "@/components/Toast";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -62,8 +62,8 @@ export function AiKeySettings({ requestOpen = false }: { requestOpen?: boolean }
     });
   }, []);
 
-  // Once the free trial is over, start on Gemini (free keys) rather than the server.
-  const choice = chosen ?? (trial.exhausted && !saved ? "gemini" : "server");
+  // Once the month's scans are over, start on Gemini (free keys) rather than the server.
+  const choice = chosen ?? (trial.exhausted && trial.canUseOwnKey && !saved ? "gemini" : "server");
   const preset = choice === "server" ? undefined : findPreset(choice);
   const draft: Draft = (preset && drafts[preset.id]) ?? { model: preset?.suggestedModels[0] ?? "", baseUrl: "" };
   const savedForChoice = saved && saved.presetId === choice ? saved : null;
@@ -152,24 +152,27 @@ export function AiKeySettings({ requestOpen = false }: { requestOpen?: boolean }
       (savedForChoice.provider === "openai" && needsBaseUrl && savedForChoice.baseUrl !== draft.baseUrl.trim()));
   const canTest = Boolean(preset && apiKey && draft.model.trim() && (!needsBaseUrl || draft.baseUrl.trim()) && (key.trim() || changed));
 
-  const savedPreset = saved ? findPreset(saved.presetId) : undefined;
-  const savedName = saved?.presetId === "custom" ? t("settings.aiCustom") : (savedPreset?.name ?? "");
-  const summaryDetail = saved
-    ? saved.model
+  // A saved key is only used with a subscription; without one the app's AI analyses.
+  const activeKey = trial.canUseOwnKey ? saved : null;
+  const savedPreset = activeKey ? findPreset(activeKey.presetId) : undefined;
+  const savedName = activeKey?.presetId === "custom" ? t("settings.aiCustom") : (savedPreset?.name ?? "");
+  const month = trial.kind === "month";
+  const summaryDetail = activeKey
+    ? activeKey.model
     : !trial.limited
       ? t("settings.aiDefaultIncluded")
       : trial.exhausted
-        ? t("settings.aiDefaultOver")
-        : t("settings.aiDefaultLeft", { remaining: trial.remaining ?? 0, limit: trial.limit ?? 0 });
+        ? t(month ? "settings.aiDefaultOverMonth" : "settings.aiDefaultOver")
+        : t(month ? "settings.aiDefaultLeftMonth" : "settings.aiDefaultLeft", { remaining: trial.remaining ?? 0, limit: trial.limit ?? 0 });
 
   return (
     <div className={styles.wrap}>
       <div className={styles.summary}>
-        <span className={`${styles.summaryIcon} ${trial.exhausted && !saved ? styles.summaryIconOver : ""}`}>
-          {saved ? <KeyRound /> : <Sparkles />}
+        <span className={`${styles.summaryIcon} ${trial.exhausted && !activeKey ? styles.summaryIconOver : ""}`}>
+          {activeKey ? <KeyRound /> : <Sparkles />}
         </span>
         <div className={styles.summaryText}>
-          <strong>{saved ? t("settings.aiOwnKeyTitle", { name: savedName }) : t("settings.aiDefaultTitle")}</strong>
+          <strong>{activeKey ? t("settings.aiOwnKeyTitle", { name: savedName }) : t("settings.aiDefaultTitle")}</strong>
           <small>{summaryDetail}</small>
         </div>
       </div>
@@ -185,8 +188,8 @@ export function AiKeySettings({ requestOpen = false }: { requestOpen?: boolean }
         }}
       >
         <span>
-          <strong>{saved ? t("settings.aiChangeKey") : t("settings.aiUseOwnKey")}</strong>
-          <small>{t("settings.aiUseOwnKeyHint")}</small>
+          <strong>{activeKey ? t("settings.aiChangeKey") : t("settings.aiUseOwnKey")}</strong>
+          <small>{trial.canUseOwnKey ? t("settings.aiUseOwnKeyHint") : t("settings.aiLockedHint")}</small>
         </span>
         <ChevronDown size={18} className={`${styles.chevron} ${open ? styles.chevronOpen : ""}`} />
       </button>
@@ -201,6 +204,21 @@ export function AiKeySettings({ requestOpen = false }: { requestOpen?: boolean }
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: easeOut }}
           >
+            {!trial.canUseOwnKey ? (
+              <div className={styles.advancedInner}>
+                <p className={styles.locked}>
+                  <Lock size={16} /> {saved ? t("settings.aiLockedSaved") : t("settings.aiLocked")}
+                </p>
+                <Button href="/plans" block icon={<Sparkles />}>
+                  {t("trial.seeOffers")}
+                </Button>
+                {saved && (
+                  <Button variant="ghost" block icon={<Trash2 />} onClick={() => void removeKey()}>
+                    {t("settings.aiKeyRemove")}
+                  </Button>
+                )}
+              </div>
+            ) : (
             <div className={styles.advancedInner}>
               <div className={styles.providers} role="radiogroup" aria-label={t("settings.aiProvider")}>
                 {[{ id: "server", name: t("settings.aiServer"), free: false }, ...providerPresets].map((item) => {
@@ -387,6 +405,7 @@ export function AiKeySettings({ requestOpen = false }: { requestOpen?: boolean }
                 </motion.div>
               </AnimatePresence>
             </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

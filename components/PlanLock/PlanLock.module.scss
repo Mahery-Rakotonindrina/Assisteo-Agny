@@ -1,0 +1,21 @@
+.lock {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  font-size: 0.86rem;
+  color: var(--text-muted);
+
+  svg {
+    flex-shrink: 0;
+    margin-top: 0.12rem;
+    color: var(--accent-text);
+  }
+
+  a {
+    font-weight: 700;
+    color: var(--accent-text);
+    white-space: nowrap;
+  }
+}

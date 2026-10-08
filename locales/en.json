@@ -110,8 +110,10 @@
     "billing": "The AI account has no credit left. Add credit at console.anthropic.com or switch back to demo mode.",
     "notImage": "This file isn’t an image.",
     "invalid_key": "Your API key was rejected. Check it in Settings → AI engine.",
-    "trial_exhausted": "Your free trial is over. Add your own API key in Settings → AI engine to continue.",
-    "server_busy": "The free AI has reached today's limit. Add your own key (Gemini is free) or come back tomorrow."
+    "trial_exhausted": "Your free trial is over. Choose a plan to continue.",
+    "server_busy": "The free AI has reached today’s limit. Come back tomorrow, or take a plan: subscribers go first.",
+    "plan_required": "Your own AI key is for subscribers. Choose a plan, or remove your key to use the app’s AI.",
+    "plan_limit": "You have used all your plan’s scans this month. Move to a bigger plan, or wait for next month."
   },
   "categories": {
     "food": "Food",
@@ -304,12 +306,17 @@
     "aiModelsLoaded": "{count} models available with this key. Type to filter.",
     "aiDefaultTitle": "Assisteo AI",
     "aiDefaultLeft": "{remaining} of {limit} free analyses left",
-    "aiDefaultOver": "Free trial over: add your own key to continue.",
+    "aiDefaultOver": "Free trial over: choose a plan to continue.",
     "aiDefaultIncluded": "Included with the app",
     "aiOwnKeyTitle": "Your {name} key",
     "aiUseOwnKey": "Use my own AI key",
     "aiChangeKey": "Change key or provider",
-    "aiUseOwnKeyHint": "Advanced · Gemini offers free keys"
+    "aiUseOwnKeyHint": "Advanced · Gemini offers free keys",
+    "aiDefaultLeftMonth": "{remaining} scans left this month out of {limit}",
+    "aiDefaultOverMonth": "This month’s scans are used up: move to a bigger plan, or use your key.",
+    "aiLocked": "Using your own AI key, with no limit, is for subscribers (from the Lite plan).",
+    "aiLockedSaved": "Your key is saved, but it only works with a subscription: meanwhile, the app’s AI does the analyses.",
+    "aiLockedHint": "For subscribers"
   },
   "notifications": {
     "readyTitle": "Analysis ready ✨"
@@ -354,11 +361,12 @@
   "trial": {
     "pill": "Free trial · {remaining}/{limit}",
     "overTitle": "Your free trial is over",
-    "overBody": "You’ve used your {limit} free analyses. To keep going, add your own API key: Gemini gives free keys in two minutes.",
-    "addKey": "Add my API key",
-    "freeKey": "Get a free Gemini key",
-    "settingsLeft": "Free trial: {remaining} of {limit} analyses left on the server’s AI.",
-    "settingsOver": "Your free trial is over. Add your Gemini (free) or Claude key to continue."
+    "overBody": "You have used your {limit} free analyses. Choose a plan to continue: from Lite on, you get scans every month.",
+    "pillMonth": "{remaining} scans left this month",
+    "overTitleMonth": "This month’s scans are used up",
+    "overBodyMonth": "Your {plan} plan includes {limit} scans a month. Move to a bigger plan, or wait for next month.",
+    "seeOffers": "See the plans",
+    "useOwnKey": "Use my AI key"
   },
   "admin": {
     "title": "Admin",
@@ -565,7 +573,7 @@
     "retry": "Try again",
     "clear": "Clear the conversation",
     "confirmClear": "Confirm clearing",
-    "limit": "You’ve used all of today’s questions on the server’s AI. Add your own API key to continue, or come back tomorrow.",
+    "limit": "You have used all your questions for today. Come back tomorrow, or move to a bigger plan.",
     "suggestions": {
       "food": [
         "How long does it keep?",
@@ -691,7 +699,8 @@
     "newStatus": "This parcel is already in your list. New status: {from} → {to}.",
     "inList": "This parcel is in your list ({status}).",
     "earlierUpdated": "You scanned it before on {date}: that scan now shows the latest status.",
-    "openEarlier": "See the earlier scan"
+    "openEarlier": "See the earlier scan",
+    "limitReached": "Your plan follows up to {count} parcels at once. Mark some as received, or move to a bigger plan."
   },
   "parcels": {
     "title": "My parcels",
@@ -756,9 +765,11 @@
       "removeItem": "Remove the item",
       "addItem": "Add an item",
       "receivedAt": "Pick-up date",
-      "receivedHint": "Set to today when you mark it received. Correct it if you marked it late; clear it to put the parcel back in progress."
+      "receivedHint": "Set to today when you mark it received. Correct it if you marked it late; clear it to put the parcel back in progress.",
+      "clientLocked": "With the Pro plan: note who each parcel is for."
     },
-    "receivedOn": "Received on {date}"
+    "receivedOn": "Received on {date}",
+    "costsLocked": "Costs in ariary (price and fees) come with the Lite plan and up."
   },
   "plans": {
     "names": {

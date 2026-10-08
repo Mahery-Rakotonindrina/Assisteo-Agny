@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Plus, X } from "lucide-react";
+import { PlanLock } from "@/components/PlanLock";
+import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatAriary } from "@/lib/format";
 import { createId } from "@/services/historyStore";
@@ -21,6 +23,12 @@ const grouped = (value: string) => value.replace(/\B(?=(\d{3})+(?!\d))/g, "\u202
  * (freight, customs, delivery…). Saved as you type.
  */
 export function ParcelCosts({ parcel }: { parcel: Parcel }) {
+  const { t } = useTranslation();
+  const { has } = usePlan();
+  return has("parcelCosts") ? <Costs parcel={parcel} /> : <PlanLock text={t("parcels.costsLocked")} />;
+}
+
+function Costs({ parcel }: { parcel: Parcel }) {
   const { t, locale } = useTranslation();
   const [price, setPrice] = useState(parcel.priceMga ? String(parcel.priceMga) : "");
   const [fees, setFees] = useState<DraftFee[]>(() => (parcel.fees ?? []).map((fee) => ({ id: fee.id, label: fee.label, amount: fee.amountMga ? String(fee.amountMga) : "" })));

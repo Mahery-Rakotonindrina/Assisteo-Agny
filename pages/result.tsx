@@ -51,6 +51,7 @@ import {
 import { useToast } from "@/components/Toast";
 import { useHistory, useHistoryEntry } from "@/hooks/useHistory";
 import { useParcels } from "@/hooks/useParcels";
+import { usePlan } from "@/hooks/usePlan";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import { useNow } from "@/hooks/useNow";
 import { useReminderTexts } from "@/hooks/useReminderTexts";
@@ -219,7 +220,15 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
     ? entries.filter((other) => other.id !== entry.id && other.createdAt < entry.createdAt && sameParcel(other.analysis.parcel, analysis.parcel))
     : [];
 
+  const parcelLimit = usePlan().plan?.limits.parcels ?? 0;
   const addParcel = async () => {
+    // Parcels followed at once (not received yet), per plan; 0 = no limit.
+    if (parcelLimit > 0 && parcels.filter((parcel) => !parcel.receivedAt).length >= parcelLimit) {
+      haptics.error();
+      toast(t("parcel.limitReached", { count: parcelLimit }), "error");
+      void router.push("/plans");
+      return;
+    }
     haptics.success();
     await parcelStore.add(entry);
     toast(t("parcel.added"));

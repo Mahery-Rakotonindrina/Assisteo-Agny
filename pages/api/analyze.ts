@@ -7,8 +7,18 @@ import { applyCors, clientIp, sendError } from "@/lib/server/http";
 import { rateLimit } from "@/lib/server/rateLimit";
 import { reportError } from "@/lib/server/reportError";
 import { track } from "@/lib/server/stats";
-import { verifyUser } from "@/lib/server/supabaseAdmin";
-import { releaseServerCall, releaseTrialScan, reserveServerCall, reserveTrialScan, type TrialSubject } from "@/lib/server/trialStore";
+import { hasFeature } from "@/lib/plans";
+import { limitsFor, resolvePlan } from "@/lib/server/plan";
+import {
+  countServerCall,
+  releasePlanScan,
+  releaseServerCall,
+  releaseTrialScan,
+  reservePlanScan,
+  reserveServerCall,
+  reserveTrialScan,
+  type TrialSubject,
+} from "@/lib/server/trialStore";
 
 export const config = {
   api: {
@@ -58,25 +68,45 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     } satisfies AnalyzeResponse);
   }
 
-  // Without their own key, the user spends one of the free trial scans.
+  // The plan comes from the signed-in account's subscriptions (free when signed out).
+  const { account, current } = await resolvePlan(req);
+  if (override && !hasFeature(current.plan, "ownKey")) {
+    return sendError(res, 403, "plan_required", "Your own AI key needs a subscription.");
+  }
+
+  // Without their own key, a subscriber spends one of the month's scans...
+  let quota: (TrialState & { userId: string }) | null = null;
+  if (!override && current.plan !== "free" && account) {
+    const { scans } = await limitsFor(current.plan);
+    const usage = await reservePlanScan(account.id, scans);
+    if (usage === null) {
+      await track({ type: "error", route: "analyze", code: "plan_limit" }, statsDevice);
+      return sendError(res, 403, "plan_limit", "This month's scans are used up.");
+    }
+    // Subscribers are counted in the daily total but never turned away by it.
+    await countServerCall();
+    quota = { userId: account.id, used: usage.used, limit: usage.limit };
+  }
+
+  // ...anyone else one of the free trial scans.
   let trial: (TrialState & { subject: TrialSubject; ip: string }) | null = null;
-  if (!override) {
+  if (!override && !quota) {
     const installId = InstallIdSchema.safeParse(req.headers[installIdHeader]);
     if (!installId.success) {
       return sendError(res, 400, "invalid_request", "Missing install id: update the app.");
     }
     const ip = clientIp(req);
     // Signed in: the account's count applies too (an invalid token just counts as signed out).
-    const subject: TrialSubject = { installId: installId.data, userId: await verifyUser(req).catch(() => null) };
+    const subject: TrialSubject = { installId: installId.data, userId: account?.id ?? null };
     const usage = await reserveTrialScan(subject, ip);
     if (usage === null) {
       await track({ type: "error", route: "analyze", code: "trial_exhausted" }, statsDevice);
-      return sendError(res, 403, "trial_exhausted", "The free trial is over: add your own API key in Settings.");
+      return sendError(res, 403, "trial_exhausted", "The free trial is over: choose a plan to continue.");
     }
     if (!(await reserveServerCall())) {
       await releaseTrialScan(subject, ip).catch(() => undefined);
       await track({ type: "error", route: "analyze", code: "server_busy" }, statsDevice);
-      return sendError(res, 503, "server_busy", "The free AI has reached today's limit: add your own API key or come back tomorrow.");
+      return sendError(res, 503, "server_busy", "The free AI has reached today's limit: come back tomorrow.");
     }
     trial = { subject, ip, ...usage };
   }
@@ -100,11 +130,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         demo: false,
         durationMs: Date.now() - startedAt,
         ...(trial && { trial: { used: trial.used, limit: trial.limit } }),
+        ...(quota && { quota: { used: quota.used, limit: quota.limit } }),
       },
     } satisfies AnalyzeResponse);
   } catch (error) {
     // A failed or cancelled analysis doesn't consume a trial scan.
     if (trial) await Promise.all([releaseTrialScan(trial.subject, trial.ip), releaseServerCall()]).catch(() => undefined);
+    if (quota) await Promise.all([releasePlanScan(quota.userId), releaseServerCall()]).catch(() => undefined);
     if (abort.signal.aborted) return;
     await track({ type: "error", route: "analyze", code: error instanceof AnalysisError ? error.code : "upstream_error" }, statsDevice);
     const engine = override ? `user-${override.provider}` : activeProvider;

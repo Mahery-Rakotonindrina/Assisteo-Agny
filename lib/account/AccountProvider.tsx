@@ -13,7 +13,6 @@ import { startParcelSync, syncParcels } from "@/services/parcelSync";
 import { registerPush, unregisterPush } from "@/services/push";
 import { sync, type SyncStatus } from "@/services/sync";
 import { planStore } from "@/services/plan";
-import { trialStore } from "@/services/trial";
 
 type AccountContextValue = {
   /** Accounts are configured for this build (Supabase env present). */
@@ -50,13 +49,11 @@ export function AccountProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => onSessionChange(setSession), []);
 
-  // The free trial is also counted per account: refresh it on sign-in and sign-out.
+  // The plan (and the free trial, also counted per account) comes with the
+  // account: refresh it on sign-in and sign-out.
   const sessionKnown = session !== undefined;
   useEffect(() => {
-    if (!sessionKnown) return;
-    // The plan comes with the account: refresh both when it changes.
-    void trialStore.refresh();
-    void planStore.refresh();
+    if (sessionKnown) void planStore.refresh();
   }, [userId, sessionKnown]);
   useEffect(() => sync.subscribe(() => setSyncStatus(sync.status())), []);
 

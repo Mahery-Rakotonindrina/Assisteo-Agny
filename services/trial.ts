@@ -1,7 +1,6 @@
 import { SecureStorage } from "@aparajita/capacitor-secure-storage";
-import { installIdHeader, type TrialResponse, type TrialState } from "@/lib/ai/schema";
+import { installIdHeader } from "@/lib/ai/schema";
 import { authHeaders } from "./account";
-import { httpClient } from "./httpClient";
 
 // Anonymous per-install id the server counts free trial scans against. Kept in
 // secure storage: on iOS the Keychain even survives reinstalling the app.
@@ -32,39 +31,4 @@ export async function installIdHeaders() {
   return { [installIdHeader]: id, ...auth };
 }
 
-// ---- Trial state, shared by every screen that shows it -------------------
-
-let state: TrialResponse | null = null;
-const listeners = new Set<() => void>();
-const emit = () => listeners.forEach((listener) => listener());
-
-export const trialStore = {
-  get: () => state,
-
-  subscribe(listener: () => void) {
-    listeners.add(listener);
-    return () => {
-      listeners.delete(listener);
-    };
-  },
-
-  async refresh() {
-    try {
-      state = await httpClient.get<TrialResponse>("/api/trial", { headers: await installIdHeaders() });
-      emit();
-    } catch {
-      // Offline or older server: keep the last known state.
-    }
-  },
-
-  /** Applies the count returned with an analysis, without another request. */
-  update(trial: TrialState) {
-    state = { enabled: true, ...trial };
-    emit();
-  },
-
-  markExhausted() {
-    if (state) state = { ...state, used: state.limit };
-    emit();
-  },
-};
+// The trial's usage now comes with the plan (services/plan.ts, GET /api/plan).

@@ -110,8 +110,10 @@
     "billing": "Le compte IA n’a plus de crédit. Ajoute du crédit sur console.anthropic.com ou repasse en mode démo.",
     "notImage": "Ce fichier n’est pas une image.",
     "invalid_key": "Ta clé API a été refusée. Vérifie-la dans Réglages → Moteur IA.",
-    "trial_exhausted": "Ton essai gratuit est terminé. Ajoute ta propre clé API dans Réglages → Moteur IA pour continuer.",
-    "server_busy": "L’IA gratuite a atteint sa limite du jour. Ajoute ta propre clé (Gemini est gratuit) ou reviens demain."
+    "trial_exhausted": "Ton essai gratuit est terminé. Choisis une offre pour continuer.",
+    "server_busy": "L’IA gratuite a atteint sa limite du jour. Reviens demain, ou prends une offre : les abonnés passent en priorité.",
+    "plan_required": "Ta propre clé IA est réservée aux abonnés. Choisis une offre, ou retire ta clé pour utiliser l’IA de l’app.",
+    "plan_limit": "Tu as utilisé tous les scans de ton offre ce mois-ci. Passe à une offre supérieure, ou attends le mois prochain."
   },
   "categories": {
     "food": "Aliment",
@@ -304,12 +306,17 @@
     "aiModelsLoaded": "{count} modèles disponibles avec cette clé. Tape pour filtrer.",
     "aiDefaultTitle": "IA Assisteo",
     "aiDefaultLeft": "{remaining} analyse(s) gratuite(s) restante(s) sur {limit}",
-    "aiDefaultOver": "Essai gratuit terminé : ajoute ta propre clé pour continuer.",
+    "aiDefaultOver": "Essai gratuit terminé : choisis une offre pour continuer.",
     "aiDefaultIncluded": "Incluse avec l’app",
     "aiOwnKeyTitle": "Ta clé {name}",
     "aiUseOwnKey": "Utiliser ma propre clé IA",
     "aiChangeKey": "Changer de clé ou de fournisseur",
-    "aiUseOwnKeyHint": "Avancé · Gemini propose des clés gratuites"
+    "aiUseOwnKeyHint": "Avancé · Gemini propose des clés gratuites",
+    "aiDefaultLeftMonth": "{remaining} scans restants ce mois sur {limit}",
+    "aiDefaultOverMonth": "Scans du mois épuisés : passe à l’offre supérieure, ou utilise ta clé.",
+    "aiLocked": "Utiliser ta propre clé IA, sans limite, est réservé aux abonnés (dès l’offre Lite).",
+    "aiLockedSaved": "Ta clé est enregistrée, mais elle ne sert qu’avec un abonnement : en attendant, c’est l’IA de l’app qui analyse.",
+    "aiLockedHint": "Réservé aux abonnés"
   },
   "notifications": {
     "readyTitle": "Analyse prête ✨"
@@ -354,11 +361,12 @@
   "trial": {
     "pill": "Essai gratuit · {remaining}/{limit}",
     "overTitle": "Ton essai gratuit est terminé",
-    "overBody": "Tu as utilisé tes {limit} analyses offertes. Pour continuer, ajoute ta propre clé API : Gemini propose des clés gratuites en deux minutes.",
-    "addKey": "Ajouter ma clé API",
-    "freeKey": "Obtenir une clé Gemini gratuite",
-    "settingsLeft": "Essai gratuit : {remaining} analyse(s) sur {limit} restante(s) avec l’IA du serveur.",
-    "settingsOver": "Ton essai gratuit est terminé. Ajoute ta clé Gemini (gratuite) ou Claude pour continuer."
+    "overBody": "Tu as utilisé tes {limit} analyses offertes. Choisis une offre pour continuer : dès Lite, tu as des scans chaque mois.",
+    "pillMonth": "{remaining} scans restants ce mois",
+    "overTitleMonth": "Scans du mois épuisés",
+    "overBodyMonth": "Ton offre {plan} inclut {limit} scans par mois. Passe à une offre supérieure, ou attends le début du mois prochain.",
+    "seeOffers": "Voir les offres",
+    "useOwnKey": "Utiliser ma clé IA"
   },
   "admin": {
     "title": "Administration",
@@ -565,7 +573,7 @@
     "retry": "Réessayer",
     "clear": "Effacer la conversation",
     "confirmClear": "Confirmer l’effacement",
-    "limit": "Tu as utilisé toutes tes questions du jour avec l’IA du serveur. Ajoute ta propre clé API pour continuer, ou reviens demain.",
+    "limit": "Tu as utilisé toutes tes questions du jour. Reviens demain, ou passe à une offre supérieure.",
     "suggestions": {
       "food": [
         "Combien de temps ça se conserve ?",
@@ -691,7 +699,8 @@
     "newStatus": "Ce colis est déjà dans ta liste. Nouveau statut : {from} → {to}.",
     "inList": "Ce colis est dans ta liste ({status}).",
     "earlierUpdated": "Tu l’avais déjà scanné le {date} : ce scan a été mis à jour avec le dernier statut.",
-    "openEarlier": "Voir l’ancien scan"
+    "openEarlier": "Voir l’ancien scan",
+    "limitReached": "Ton offre suit jusqu’à {count} colis à la fois. Marque des colis comme reçus, ou passe à une offre supérieure."
   },
   "parcels": {
     "title": "Mes colis",
@@ -756,9 +765,11 @@
       "removeItem": "Supprimer l’article",
       "addItem": "Ajouter un article",
       "receivedAt": "Date de récupération",
-      "receivedHint": "Mise à la date du jour quand tu le marques comme reçu. Corrige-la si tu l’as marqué en retard ; vide-la pour le remettre en cours."
+      "receivedHint": "Mise à la date du jour quand tu le marques comme reçu. Corrige-la si tu l’as marqué en retard ; vide-la pour le remettre en cours.",
+      "clientLocked": "Avec l’offre Pro : note pour qui est chaque colis."
     },
-    "receivedOn": "Reçu le {date}"
+    "receivedOn": "Reçu le {date}",
+    "costsLocked": "Les coûts en ariary (prix et frais) sont inclus dès l’offre Lite."
   },
   "plans": {
     "names": {

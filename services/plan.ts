@@ -1,4 +1,5 @@
-import type { PlanResponse } from "@/lib/plans";
+import { hasFeature, type PlanResponse } from "@/lib/plans";
+import { aiKeyStore } from "./aiKeyStore";
 import { httpClient } from "./httpClient";
 import { installIdHeaders } from "./trial";
 
@@ -52,4 +53,15 @@ export const planStore = {
   setUsage(usage: Partial<PlanResponse["usage"]>) {
     if (state) set({ ...state, usage: { ...state.usage, ...usage } });
   },
+
+  /** The server refused a scan: none left on the trial or this month. */
+  markScansUsedUp() {
+    if (state) set({ ...state, usage: { ...state.usage, scans: Math.max(state.usage.scans, state.limits.scans) } });
+  },
 };
+
+/** The user's own AI key, when their plan allows one (a subscription); else the app's AI is used. */
+export async function usableAiKey() {
+  const key = await aiKeyStore.get();
+  return key && hasFeature(state?.plan ?? "free", "ownKey") ? key : null;
+}
