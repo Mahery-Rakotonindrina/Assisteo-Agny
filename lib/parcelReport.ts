@@ -1,5 +1,5 @@
 import { eventTime } from "@/lib/parcels";
-import { parcelTotalMga, type Parcel } from "@/services/parcelStore";
+import { parcelDueMga, parcelProfitMga, parcelTotalMga, type Parcel } from "@/services/parcelStore";
 
 // Reseller tools (Pro): what each client's parcels cost, over a period.
 
@@ -47,6 +47,11 @@ export type ClientSummary = {
   parcels: number;
   ongoing: number;
   totalMga: number;
+  /** Resellers: what the client still owes, and the profit on the parcels sold. */
+  dueMga: number;
+  profitMga: number;
+  /** Parcels with a sale price. */
+  sold: number;
 };
 
 /** One line per client (and one for parcels without a client), the biggest spenders first. */
@@ -56,10 +61,16 @@ export function clientSummaries(parcels: Parcel[]): ClientSummary[] {
     const name = parcel.client?.trim() || null;
     // Same client whatever the case: "rado" and "Rado".
     const key = name?.toLocaleLowerCase() ?? "";
-    const summary = byClient.get(key) ?? { name, parcels: 0, ongoing: 0, totalMga: 0 };
+    const summary = byClient.get(key) ?? { name, parcels: 0, ongoing: 0, totalMga: 0, dueMga: 0, profitMga: 0, sold: 0 };
     summary.parcels += 1;
     if (!parcel.receivedAt) summary.ongoing += 1;
     summary.totalMga += parcelTotalMga(parcel);
+    summary.dueMga += parcelDueMga(parcel);
+    const profit = parcelProfitMga(parcel);
+    if (profit !== null) {
+      summary.profitMga += profit;
+      summary.sold += 1;
+    }
     byClient.set(key, summary);
   }
   return [...byClient.values()].sort(

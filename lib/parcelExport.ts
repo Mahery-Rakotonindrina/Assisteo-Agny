@@ -1,6 +1,6 @@
 import type { Locale } from "@/i18n.config";
 import { eventTime } from "@/lib/parcels";
-import { parcelTotalMga, type Parcel } from "@/services/parcelStore";
+import { parcelDueMga, parcelProfitMga, parcelTotalMga, type Parcel } from "@/services/parcelStore";
 import { formatAriary } from "./format";
 import { clientSummaries } from "./parcelReport";
 
@@ -40,6 +40,10 @@ export type ParcelRow = {
   feesMga: number | null;
   feesDetail: string;
   totalMga: number | null;
+  salePriceMga: number | null;
+  paidMga: number | null;
+  dueMga: number | null;
+  profitMga: number | null;
 };
 
 /** One row per parcel, in the sheet's column order. */
@@ -64,6 +68,10 @@ export function parcelRows(parcels: Parcel[], t: Translate, locale: Locale): Par
       feesMga: fees.length ? fees.reduce((total, fee) => total + (fee.amountMga || 0), 0) : null,
       feesDetail: fees.map((fee) => `${fee.label} ${formatAriary(fee.amountMga, locale)}`).join(", "),
       totalMga: parcelTotalMga(parcel) || null,
+      salePriceMga: parcel.salePriceMga ?? null,
+      paidMga: parcel.paidMga ?? null,
+      dueMga: parcel.salePriceMga ? parcelDueMga(parcel) : null,
+      profitMga: parcelProfitMga(parcel),
     };
   });
 }
@@ -83,6 +91,10 @@ const parcelColumns: Array<{ key: keyof ParcelRow; width: number; kind?: "money"
   { key: "feesMga", width: 15, kind: "money" },
   { key: "feesDetail", width: 30 },
   { key: "totalMga", width: 17, kind: "money" },
+  { key: "salePriceMga", width: 17, kind: "money" },
+  { key: "paidMga", width: 17, kind: "money" },
+  { key: "dueMga", width: 17, kind: "money" },
+  { key: "profitMga", width: 17, kind: "money" },
 ];
 
 // ExcelJS writes the totals row's value (read by previews that don't compute), its types forget it.
@@ -161,14 +173,26 @@ export async function parcelsWorkbook(parcels: Parcel[], t: Translate, locale: L
       { name: t("parcels.export.clientColumns.ongoing"), filterButton: true, totalsRowFunction: "sum", totalsRowResult: sum(summaries.map((client) => client.ongoing)) },
       { name: t("parcels.export.clientColumns.received"), filterButton: true, totalsRowFunction: "sum", totalsRowResult: sum(summaries.map((client) => client.parcels - client.ongoing)) },
       { name: t("parcels.export.clientColumns.total"), filterButton: true, totalsRowFunction: "sum", totalsRowResult: sum(summaries.map((client) => client.totalMga)) },
+      { name: t("parcels.export.clientColumns.due"), filterButton: true, totalsRowFunction: "sum", totalsRowResult: sum(summaries.map((client) => client.dueMga)) },
+      { name: t("parcels.export.clientColumns.profit"), filterButton: true, totalsRowFunction: "sum", totalsRowResult: sum(summaries.map((client) => client.profitMga)) },
     ] satisfies TableColumn[]) as TableColumn[],
-    rows: summaries.map((client) => [client.name ?? t("parcels.clients.none"), client.parcels, client.ongoing, client.parcels - client.ongoing, client.totalMga]),
+    rows: summaries.map((client) => [
+      client.name ?? t("parcels.clients.none"),
+      client.parcels,
+      client.ongoing,
+      client.parcels - client.ongoing,
+      client.totalMga,
+      client.dueMga,
+      client.profitMga,
+    ]),
   });
-  [24, 10, 10, 10, 18].forEach((width, index) => (recap.getColumn(index + 1).width = width));
+  [24, 10, 10, 10, 18, 18, 18].forEach((width, index) => (recap.getColumn(index + 1).width = width));
   for (let line = TOP + 1; line <= TOP + summaries.length + 1; line += 1) {
-    const cell = recap.getCell(line, 5);
-    cell.numFmt = ARIARY;
-    if (line === TOP + summaries.length + 1) cell.font = { bold: true };
+    for (const column of [5, 6, 7]) {
+      const cell = recap.getCell(line, column);
+      cell.numFmt = ARIARY;
+      if (line === TOP + summaries.length + 1) cell.font = { bold: true };
+    }
   }
 
   return (await workbook.xlsx.writeBuffer()) as ArrayBuffer;

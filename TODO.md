@@ -110,8 +110,8 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Export Excel (Pro) : 2 feuilles, montants en Ar, lignes Total
 - [x] Miniature propre au colis, qui survit à l'effacement de l'historique
 - [x] Synchronisé ; nombre de colis suivis selon l'offre
-- [ ] ⭐ Taux de change yuan → ariary pour préremplir le prix
-- [ ] ⭐ Revendeurs : prix de vente, bénéfice, payé / reste à payer par le client
+- [x] ⭐ Taux de change yuan / dollar / euro → ariary pour préremplir le prix (taux du jour ou taux du transitaire)
+- [x] ⭐ Revendeurs : prix de vente, bénéfice, payé / reste à payer par le client (carte, vue Clients, export Excel)
 - [ ] Suivi automatique sans rescanner, notification au changement de statut
 - [ ] Fret calculé au kilo (poids × tarif du transitaire)
 - [ ] Envoyer le statut au client par WhatsApp

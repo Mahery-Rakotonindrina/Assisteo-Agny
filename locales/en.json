@@ -828,7 +828,10 @@
       "empty": "No parcel in this period.",
       "from": "From",
       "to": "To",
-      "badRange": "The start date must be before the end date."
+      "badRange": "The start date must be before the end date.",
+      "due": "To collect: {amount}",
+      "profit": "Profit: {amount}",
+      "dueShort": "{amount} due"
     },
     "export": {
       "button": "Export for Excel",
@@ -849,7 +852,11 @@
         "priceMga": "Item price",
         "feesMga": "Fees",
         "feesDetail": "Fee details",
-        "totalMga": "Total"
+        "totalMga": "Total",
+        "salePriceMga": "Sale price",
+        "paidMga": "Paid by the client",
+        "dueMga": "Still to pay",
+        "profitMga": "Profit"
       },
       "working": "Preparing the file…",
       "sheetParcels": "Parcels",
@@ -863,8 +870,27 @@
         "parcels": "Parcels",
         "ongoing": "In progress",
         "received": "Received",
-        "total": "Total spent"
+        "total": "Total spent",
+        "due": "Still to pay",
+        "profit": "Profit"
       }
+    },
+    "fx": {
+      "rate": "Rate: how many ariary for 1 {symbol}",
+      "market": "Today's rate: 1 {symbol} = {rate} Ar",
+      "noMarket": "No rate today: type yours",
+      "use": "Use this price"
+    },
+    "sale": {
+      "title": "Sale to the client",
+      "price": "Sale price",
+      "paid": "Paid by the client",
+      "due": "Still to pay: {amount}",
+      "allPaid": "All paid",
+      "profit": "Profit: {amount}",
+      "loss": "Loss: {amount}",
+      "locked": "Sale price, client payment and profit: with the Pro plan.",
+      "dueShort": "{amount} due"
     }
   },
   "plans": {

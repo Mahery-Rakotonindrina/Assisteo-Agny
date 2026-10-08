@@ -32,6 +32,9 @@ export function ParcelClients({ parcels, period, onPeriod, range, onRange, today
   const summaries = clientSummaries(parcels);
   const total = summaries.reduce((sum, client) => sum + client.totalMga, 0);
   const ongoing = summaries.reduce((sum, client) => sum + client.ongoing, 0);
+  const sold = summaries.reduce((sum, client) => sum + client.sold, 0);
+  const due = summaries.reduce((sum, client) => sum + client.dueMga, 0);
+  const profit = summaries.reduce((sum, client) => sum + client.profitMga, 0);
 
   return (
     <div className={styles.wrap}>
@@ -65,6 +68,12 @@ export function ParcelClients({ parcels, period, onPeriod, range, onRange, today
         </span>
         <strong>{formatAriary(total, locale)}</strong>
         <small>{t("parcels.clients.count", { parcels: parcels.length, ongoing })}</small>
+        {sold > 0 && (
+          <div className={styles.money}>
+            <span data-tone={due > 0 ? "due" : "ok"}>{t("parcels.clients.due", { amount: formatAriary(due, locale) })}</span>
+            <span data-tone={profit >= 0 ? "ok" : "loss"}>{t("parcels.clients.profit", { amount: formatAriary(profit, locale) })}</span>
+          </div>
+        )}
       </div>
       {actions}
 
@@ -80,7 +89,10 @@ export function ParcelClients({ parcels, period, onPeriod, range, onRange, today
                 </span>
                 <span className={styles.text}>
                   <strong>{client.name ?? t("parcels.clients.none")}</strong>
-                  <small>{t("parcels.clients.count", { parcels: client.parcels, ongoing: client.ongoing })}</small>
+                  <small>
+                    {t("parcels.clients.count", { parcels: client.parcels, ongoing: client.ongoing })}
+                    {client.dueMga > 0 && <> · <em>{t("parcels.clients.dueShort", { amount: formatAriary(client.dueMga, locale) })}</em></>}
+                  </small>
                 </span>
                 <span className={styles.amount}>{formatAriary(client.totalMga, locale)}</span>
                 <ChevronRight size={16} className={styles.chevron} />

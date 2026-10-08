@@ -144,3 +144,134 @@
     white-space: nowrap;
   }
 }
+
+// Converting a price paid abroad.
+.convert {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-top: -0.2rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.convertLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+
+  strong {
+    margin-left: auto;
+  }
+}
+
+.rate {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--text-muted);
+
+  input {
+    width: 4.8rem;
+    height: 2.2rem;
+    padding: 0 0.5rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--bg-elevated);
+    color: var(--text);
+    font: inherit;
+    text-align: right;
+    outline: none;
+
+    &:focus {
+      border-color: var(--accent-mark);
+    }
+  }
+}
+
+.convertFoot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+
+  small {
+    font-size: 0.75rem;
+    color: var(--text-subtle);
+  }
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+    color: inherit;
+    text-decoration: underline;
+  }
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.35rem 0.7rem;
+    border-radius: var(--radius-pill);
+    background: var(--accent-soft);
+    color: var(--accent-text);
+    font-size: 0.82rem;
+    font-weight: 700;
+
+    &:disabled {
+      opacity: 0.45;
+    }
+  }
+}
+
+// Resellers: the client's side.
+.sale {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 0.4rem;
+  padding-top: 0.8rem;
+  border-top: 1px dashed var(--border-strong);
+
+  h4 {
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--plan-pro);
+  }
+}
+
+.saleSummary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+
+  span {
+    padding: 0.3rem 0.65rem;
+    border-radius: var(--radius-pill);
+    font-size: 0.82rem;
+    font-weight: 800;
+
+    &[data-tone="ok"] {
+      background: var(--accent-soft);
+      color: var(--accent-text);
+    }
+
+    &[data-tone="due"] {
+      background: color-mix(in srgb, var(--cat-food) 16%, transparent);
+      color: var(--cat-food);
+    }
+
+    &[data-tone="loss"] {
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+  }
+}

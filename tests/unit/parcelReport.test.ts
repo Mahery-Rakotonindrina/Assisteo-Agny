@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import fr from "@/locales/fr.json";
 import ExcelJS from "exceljs";
+import { parseForeignAmount } from "@/lib/money";
 import { parcelsWorkbook } from "@/lib/parcelExport";
 import { clientSummaries, inPeriod, isForClient } from "@/lib/parcelReport";
 import type { ParcelInfo } from "@/lib/parcels";
@@ -47,12 +48,21 @@ describe("clients", () => {
 
   it("adds up each client's parcels, whatever the case, biggest first, those without a client last", () => {
     expect(clientSummaries(parcels)).toEqual([
-      { name: "Voahangy", parcels: 1, ongoing: 1, totalMga: 300000 },
-      { name: "Rado", parcels: 2, ongoing: 1, totalMga: 170000 },
-      { name: null, parcels: 1, ongoing: 1, totalMga: 10000 },
+      { name: "Voahangy", parcels: 1, ongoing: 1, totalMga: 300000, dueMga: 0, profitMga: 0, sold: 0 },
+      { name: "Rado", parcels: 2, ongoing: 1, totalMga: 170000, dueMga: 0, profitMga: 0, sold: 0 },
+      { name: null, parcels: 1, ongoing: 1, totalMga: 10000, dueMga: 0, profitMga: 0, sold: 0 },
     ]);
     expect(parcels.filter((item) => isForClient(item, "RADO")).map((item) => item.id)).toEqual(["a", "b"]);
     expect(parcels.filter((item) => isForClient(item, null)).map((item) => item.id)).toEqual(["d"]);
+  });
+
+  it("adds up what each client still owes and the profit on what was sold", () => {
+    const [rado] = clientSummaries([
+      parcel("a", { client: "Rado", priceMga: 100000, fees: [{ id: "f", label: "Fret", amountMga: 20000 }], salePriceMga: 150000, paidMga: 100000 }),
+      parcel("b", { client: "Rado", priceMga: 50000, salePriceMga: 45000, paidMga: 45000 }),
+      parcel("c", { client: "Rado", priceMga: 10000 }),
+    ]);
+    expect(rado).toMatchObject({ totalMga: 180000, dueMga: 50000, profitMga: 25000, sold: 2 });
   });
 
   it("puts a parcel in the month of its order, else of when it was added", () => {
@@ -123,5 +133,17 @@ describe("export", () => {
     expect(recap.getCell("A5").value).toBe("Rado");
     expect(recap.getCell("E5").value).toBe(195000);
     expect((recap.getCell("E7").value as { result: number }).result).toBe(245000);
+  });
+});
+
+describe("prices paid abroad", () => {
+  it("reads yuan, dollars and euros as shops write them", () => {
+    expect(parseForeignAmount("¥221,45")).toEqual({ currency: "CNY", amount: 221.45 });
+    expect(parseForeignAmount("88 元")).toEqual({ currency: "CNY", amount: 88 });
+    expect(parseForeignAmount("RMB 1,234.50")).toEqual({ currency: "CNY", amount: 1234.5 });
+    expect(parseForeignAmount("US $12.99")).toEqual({ currency: "USD", amount: 12.99 });
+    expect(parseForeignAmount("1 234,50 €")).toEqual({ currency: "EUR", amount: 1234.5 });
+    expect(parseForeignAmount("120 000 Ar")).toBeNull();
+    expect(parseForeignAmount(null)).toBeNull();
   });
 });

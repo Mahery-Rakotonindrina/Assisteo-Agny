@@ -828,7 +828,10 @@
       "empty": "Aucun colis sur cette période.",
       "from": "Du",
       "to": "Au",
-      "badRange": "La date de début doit être avant la date de fin."
+      "badRange": "La date de début doit être avant la date de fin.",
+      "due": "À encaisser : {amount}",
+      "profit": "Bénéfice : {amount}",
+      "dueShort": "reste {amount}"
     },
     "export": {
       "button": "Exporter pour Excel",
@@ -849,7 +852,11 @@
         "priceMga": "Prix de l’article",
         "feesMga": "Frais",
         "feesDetail": "Détail des frais",
-        "totalMga": "Total"
+        "totalMga": "Total",
+        "salePriceMga": "Prix de vente",
+        "paidMga": "Payé par le client",
+        "dueMga": "Reste à payer",
+        "profitMga": "Bénéfice"
       },
       "working": "Préparation du fichier…",
       "sheetParcels": "Colis",
@@ -863,8 +870,27 @@
         "parcels": "Colis",
         "ongoing": "En cours",
         "received": "Reçus",
-        "total": "Total dépensé"
+        "total": "Total dépensé",
+        "due": "Reste à payer",
+        "profit": "Bénéfice"
       }
+    },
+    "fx": {
+      "rate": "Taux : combien d’ariary pour 1 {symbol}",
+      "market": "Taux du jour : 1 {symbol} = {rate} Ar",
+      "noMarket": "Taux du jour indisponible : saisis le tien",
+      "use": "Utiliser ce prix"
+    },
+    "sale": {
+      "title": "Vente au client",
+      "price": "Prix de vente",
+      "paid": "Payé par le client",
+      "due": "Reste à payer : {amount}",
+      "allPaid": "Tout est payé",
+      "profit": "Bénéfice : {amount}",
+      "loss": "Perte : {amount}",
+      "locked": "Prix de vente, paiement du client et bénéfice : avec l’offre Pro.",
+      "dueShort": "Reste {amount}"
     }
   },
   "plans": {

@@ -23,7 +23,7 @@ import { compareParcels, matchesSearch, parcelStep, parcelSteps, parcelTone, tra
 import { haptics } from "@/services/device";
 import { shareFile } from "@/services/fileShare";
 import { keepParcelThumbnails } from "@/services/parcelLinking";
-import { parcelStore, parcelTotalMga, type Parcel } from "@/services/parcelStore";
+import { parcelDueMga, parcelStore, parcelTotalMga, type Parcel } from "@/services/parcelStore";
 import styles from "@/styles/Parcels.module.scss";
 
 /**
@@ -141,6 +141,8 @@ export default function ParcelsPage() {
       ...parcel.timeline.flatMap((item) => [item.event?.description, item.event?.location, item.event?.at]),
       parcel.priceMga,
       ...(parcel.fees ?? []).flatMap((fee) => [fee.label, fee.amountMga]),
+      parcel.salePriceMga,
+      parcel.paidMga,
       total || null,
       total ? formatAriary(total, locale) : null,
     ];
@@ -251,6 +253,7 @@ export default function ParcelsPage() {
                     thumbnail={parcel.thumbnail ?? thumbnails.get(parcel.scanIds[0])}
                     clients={clients}
                     hasScan={hasScan}
+                    reseller={reseller}
                   />
                 ))}
               </motion.section>
@@ -265,6 +268,7 @@ export default function ParcelsPage() {
                     thumbnail={parcel.thumbnail ?? thumbnails.get(parcel.scanIds[0])}
                     clients={clients}
                     hasScan={hasScan}
+                    reseller={reseller}
                     received
                   />
                 ))}
@@ -284,9 +288,11 @@ type ParcelRowProps = {
   /** Whether a scan still exists in the history (to open it). */
   hasScan: (id: string) => boolean;
   received?: boolean;
+  /** Pro: show what the client still owes. */
+  reseller: boolean;
 };
 
-function ParcelRow({ parcel, thumbnail, clients, hasScan, received = false }: ParcelRowProps) {
+function ParcelRow({ parcel, thumbnail, clients, hasScan, reseller, received = false }: ParcelRowProps) {
   const { t, locale } = useTranslation();
   const toast = useToast();
   const [open, setOpen] = useState(false);
@@ -332,6 +338,7 @@ function ParcelRow({ parcel, thumbnail, clients, hasScan, received = false }: Pa
           <span className={styles.status}>{statusText}</span>
           {info.lastEvent && <small>{[info.lastEvent.description, info.lastEvent.at].filter(Boolean).join(" · ")}</small>}
           {total > 0 && <span className={styles.cost}>{formatAriary(total, locale)}</span>}
+          {reseller && parcelDueMga(parcel) > 0 && <span className={styles.due}>{t("parcels.sale.dueShort", { amount: formatAriary(parcelDueMga(parcel), locale) })}</span>}
         </span>
         <ChevronDown size={18} className={`${styles.chevron} ${open ? styles.chevronOpen : ""}`} />
       </button>
