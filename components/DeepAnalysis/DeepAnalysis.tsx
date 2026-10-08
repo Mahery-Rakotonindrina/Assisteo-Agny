@@ -2,6 +2,7 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 import { Loader2, Microscope } from "lucide-react";
 import { Button } from "@/components/Button";
+import { PlanBadge } from "@/components/PlanBadge";
 import { useToast } from "@/components/Toast";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -100,7 +101,7 @@ export function DeepAnalysis({ entry }: { entry: HistoryEntry }) {
         disabled={running || (allowed && (!photo || left === 0))}
       >
         {running ? t("deep.running") : t("deep.button")}
-        {!allowed && <span className={styles.tag}>Premium</span>}
+        {!allowed && <PlanBadge plan="premium" className={styles.tag} />}
       </Button>
       <small>{hint}</small>
     </div>

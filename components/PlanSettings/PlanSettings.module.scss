@@ -1,42 +1,29 @@
 .wrap {
   display: flex;
   flex-direction: column;
-  gap: 0.9rem;
+  gap: 1rem;
   min-height: 5rem;
   padding: 1rem;
+  // The plan's colour washes the top of the card.
+  background: linear-gradient(160deg, var(--plan-soft, transparent), transparent 55%);
 }
 
-.row {
+.hero {
   display: flex;
   align-items: center;
   gap: 0.85rem;
 }
 
-.badge {
+.icon {
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  border-radius: 50%;
-  background: var(--surface-strong);
-  color: var(--text-muted);
-
-  &[data-plan="lite"],
-  &[data-plan="premium"] {
-    background: var(--accent-soft);
-    color: var(--accent-text);
-  }
-
-  &[data-plan="pro"] {
-    background: color-mix(in srgb, var(--cat-parcel) 18%, transparent);
-    color: var(--cat-parcel);
-  }
-
-  &[data-plan="unlimited"] {
-    background: color-mix(in srgb, var(--cat-plant) 18%, transparent);
-    color: var(--cat-plant);
-  }
+  width: 3rem;
+  height: 3rem;
+  border-radius: 16px;
+  background: var(--plan);
+  color: var(--bg);
+  box-shadow: 0 10px 26px -12px var(--plan);
 }
 
 .text {
@@ -44,10 +31,17 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
 
-  small {
-    font-size: 0.8rem;
+  strong {
+    font-family: var(--font-display);
+    font-size: 1.7rem;
+    font-weight: 400;
+    line-height: 1.1;
+    color: var(--plan);
+  }
+
+  span {
+    font-size: 0.82rem;
     color: var(--text-muted);
   }
 }
@@ -89,12 +83,34 @@
     display: block;
     height: 100%;
     border-radius: inherit;
-    background: var(--accent);
+    background: var(--plan);
   }
 }
 
 .meter[data-full] .track span {
-  background: var(--cat-food);
+  background: var(--danger);
+}
+
+.perks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.45rem;
+    font-size: 0.86rem;
+    color: var(--text-muted);
+
+    svg {
+      flex-shrink: 0;
+      margin-top: 0.15rem;
+      color: var(--plan);
+    }
+  }
 }
 
 .hint {

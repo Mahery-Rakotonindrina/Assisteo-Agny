@@ -9,6 +9,7 @@ import { CaptureOrb } from "@/components/CaptureOrb";
 import { DropZone } from "@/components/DropZone";
 import { HistoryItem } from "@/components/HistoryItem";
 import { NextReminder } from "@/components/NextReminder";
+import { PlanBadge } from "@/components/PlanBadge";
 import { ScanStage } from "@/components/ScanStage";
 import { ScanWait } from "@/components/ScanWait";
 import { SegmentedControl } from "@/components/SegmentedControl";
@@ -104,15 +105,23 @@ export default function ScanPage() {
                   {t("scan.headline")} <em>{t("scan.headlineAccent")}</em>
                 </h1>
                 <p className={styles.lead}>{t("scan.webIntro")}</p>
-                {trial.limited &&
-                  !trial.exhausted &&
-                  trial.remaining !== null &&
-                  trial.limit !== null &&
-                  (trial.kind === "trial" || trial.remaining <= LOW_MONTH_SCANS) && (
-                    <div className={styles.trial}>
-                      <TrialPill remaining={trial.remaining} limit={trial.limit} kind={trial.kind} />
-                    </div>
-                  )}
+                {(trial.plan !== "free" ||
+                  (trial.limited && !trial.exhausted && trial.remaining !== null && trial.limit !== null)) && (
+                  <div className={styles.trial}>
+                    {trial.plan !== "free" && (
+                      <Link href="/settings?section=plan" aria-label={t("plans.section")}>
+                        <PlanBadge plan={trial.plan} size="md" />
+                      </Link>
+                    )}
+                    {trial.limited &&
+                      !trial.exhausted &&
+                      trial.remaining !== null &&
+                      trial.limit !== null &&
+                      (trial.kind === "trial" || trial.remaining <= LOW_MONTH_SCANS) && (
+                        <TrialPill remaining={trial.remaining} limit={trial.limit} kind={trial.kind} />
+                      )}
+                  </div>
+                )}
               </motion.header>
 
               {aiStatus.status === "demo" && (

@@ -3,6 +3,7 @@ import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react
 import { createPortal } from "react-dom";
 import { CalendarClock, ChevronDown, Pencil, Plus, RefreshCw, Save, Search, Square, Trash2, Users, X } from "lucide-react";
 import { Button } from "@/components/Button";
+import { PlanBadge, PlanIcon } from "@/components/PlanBadge";
 import { useToast } from "@/components/Toast";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatAriary, formatDate, toDateInput } from "@/lib/format";
@@ -21,7 +22,18 @@ export const paymentMethods = ["mvola", "orange", "airtel", "cash", "bank", "oth
 type Status = "soon" | "active" | "offered" | "upcoming" | "ended";
 const statusOrder: Status[] = ["soon", "active", "offered", "upcoming", "ended"];
 
-type Person = { email: string; current: ActivePlan; status: Status; rows: Subscription[]; nextStart: number | null };
+type Person = {
+  email: string;
+  current: ActivePlan;
+  status: Status;
+  rows: Subscription[];
+  nextStart: number | null;
+  /** The plan shown: the running one, else the latest recorded. */
+  shown: PaidPlanId;
+};
+
+/** The list filters: everyone, one plan running, or no plan running (ended or not started). */
+type Filter = "all" | PaidPlanId | "inactive";
 
 function people(rows: Subscription[], now: number): Person[] {
   const byEmail = new Map<string, Subscription[]>();
@@ -33,7 +45,8 @@ function people(rows: Subscription[], now: number): Person[] {
       const nextStart = starts.length ? Math.min(...starts) : null;
       const status: Status =
         current.plan === "free" ? (nextStart ? "upcoming" : "ended") : current.endsAt === null ? "offered" : current.endsAt - now < SOON_MS ? "soon" : "active";
-      return { email, current, status, rows: [...list].sort((a, b) => Date.parse(b.startsAt) - Date.parse(a.startsAt)), nextStart };
+      const sorted = [...list].sort((a, b) => Date.parse(b.startsAt) - Date.parse(a.startsAt));
+      return { email, current, status, rows: sorted, nextStart, shown: current.plan === "free" ? sorted[0].plan : current.plan };
     })
     .sort((a, b) => statusOrder.indexOf(a.status) - statusOrder.indexOf(b.status) || a.email.localeCompare(b.email));
 }
@@ -118,6 +131,7 @@ export function AdminSubscriptions({ token }: { token: string }) {
   const [failure, setFailure] = useState<"error" | "disabled" | null>(null);
   const [version, setVersion] = useState(0);
   const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<Filter>("all");
   const [draft, setDraft] = useState<Draft | null>(null);
   const [openEmail, setOpenEmail] = useState<string | null>(null);
   const [now, setNow] = useState(timestamp);
@@ -167,12 +181,22 @@ export function AdminSubscriptions({ token }: { token: string }) {
 
   const list = people(rows, now);
   const needle = query.trim().toLowerCase();
-  const visible = needle ? list.filter((person) => person.email.includes(needle)) : list;
   const running = list.filter((person) => person.current.plan !== "free");
+  const matchesFilter = (person: Person) =>
+    filter === "all" ? true : filter === "inactive" ? person.current.plan === "free" : person.current.plan === filter;
+  const visible = list.filter((person) => matchesFilter(person) && (!needle || person.email.includes(needle)));
   const soon = list.filter((person) => person.status === "soon").length;
   const thisMonth = toDateInput(now).slice(0, 7);
   const cashedThisMonth = rows.filter((row) => toDateInput(Date.parse(row.createdAt)).slice(0, 7) === thisMonth).reduce((total, row) => total + (row.amountMga ?? 0), 0);
-  const perPlan = paidPlans.map((plan) => ({ plan, count: running.filter((person) => person.current.plan === plan).length })).filter((item) => item.count > 0);
+  // Per plan: who has it now, and what came in for it this month.
+  const perPlan = paidPlans.map((plan) => ({
+    plan,
+    count: running.filter((person) => person.current.plan === plan).length,
+    cashed: rows
+      .filter((row) => row.plan === plan && toDateInput(Date.parse(row.createdAt)).slice(0, 7) === thisMonth)
+      .reduce((total, row) => total + (row.amountMga ?? 0), 0),
+  }));
+  const inactive = list.length - running.length;
 
   const describe = (person: Person) => {
     const { current } = person;
@@ -222,9 +246,24 @@ export function AdminSubscriptions({ token }: { token: string }) {
           <span>{t("admin.subs.cashedThisMonth")}</span>
         </div>
       </div>
-      {perPlan.length > 0 && (
-        <p className={styles.perPlan}>{perPlan.map(({ plan, count }) => `${t(`plans.names.${plan}`)} ${count}`).join(" · ")}</p>
-      )}
+      <div className={styles.plans}>
+        {perPlan.map(({ plan, count, cashed }) => (
+          <button
+            key={plan}
+            type="button"
+            className={styles.planTile}
+            data-plan={plan}
+            aria-pressed={filter === plan}
+            onClick={() => setFilter(filter === plan ? "all" : plan)}
+          >
+            <span className={styles.planTileHead}>
+              <PlanIcon plan={plan} size={15} /> {t(`plans.names.${plan}`)}
+            </span>
+            <strong>{count}</strong>
+            <small>{plan === "unlimited" ? t("admin.subs.offered") : t("admin.subs.cashed", { amount: formatAriary(cashed, locale) })}</small>
+          </button>
+        ))}
+      </div>
 
       <Button icon={<Plus />} block onClick={() => setDraft(newDraft(now))}>
         {t("admin.subs.add")}
@@ -237,21 +276,40 @@ export function AdminSubscriptions({ token }: { token: string }) {
         </label>
       )}
 
+      {list.length > 0 && (
+        <div className={styles.filters} role="group" aria-label={t("admin.subs.filter")}>
+          <button type="button" aria-pressed={filter === "all"} onClick={() => setFilter("all")}>
+            {t("admin.subs.filters.all")} <span>{list.length}</span>
+          </button>
+          {perPlan
+            .filter(({ count }) => count > 0)
+            .map(({ plan, count }) => (
+              <button key={plan} type="button" data-plan={plan} aria-pressed={filter === plan} onClick={() => setFilter(plan)}>
+                <PlanIcon plan={plan} size={13} /> {t(`plans.names.${plan}`)} <span>{count}</span>
+              </button>
+            ))}
+          {inactive > 0 && (
+            <button type="button" aria-pressed={filter === "inactive"} onClick={() => setFilter("inactive")}>
+              {t("admin.subs.filters.inactive")} <span>{inactive}</span>
+            </button>
+          )}
+        </div>
+      )}
+
       {list.length === 0 && <p className={styles.empty}>{t("admin.subs.empty")}</p>}
+      {list.length > 0 && visible.length === 0 && <p className={styles.empty}>{t("admin.subs.noMatch")}</p>}
 
       <ul className={styles.people}>
         {visible.map((person) => {
           const open = openEmail === person.email;
           return (
-            <li key={person.email} className={styles.person} data-status={person.status}>
+            <li key={person.email} className={styles.person} data-status={person.status} data-plan={person.shown}>
               <button type="button" className={styles.personSummary} onClick={() => setOpenEmail(open ? null : person.email)} aria-expanded={open}>
                 <span className={styles.personText}>
                   <strong>{person.email}</strong>
                   <small>{describe(person)}</small>
                 </span>
-                <span className={styles.badge} data-plan={person.current.plan === "free" ? person.rows[0].plan : person.current.plan}>
-                  {t(`plans.names.${person.current.plan === "free" ? person.rows[0].plan : person.current.plan}`)}
-                </span>
+                <PlanBadge plan={person.shown} />
                 <ChevronDown size={16} className={open ? styles.chevronOpen : styles.chevron} />
               </button>
               <AnimatePresence initial={false}>
@@ -284,10 +342,11 @@ export function AdminSubscriptions({ token }: { token: string }) {
                       </div>
                       <ol className={styles.history}>
                         {person.rows.map((row) => (
-                          <li key={row.id}>
+                          <li key={row.id} data-plan={row.plan}>
                             <div>
+                              <PlanBadge plan={row.plan} />
                               <strong>
-                                {t(`plans.names.${row.plan}`)} · {formatDate(Date.parse(row.startsAt), locale)} →{" "}
+                                {formatDate(Date.parse(row.startsAt), locale)} →{" "}
                                 {row.endsAt ? formatDate(lastDay(Date.parse(row.endsAt)), locale) : t("admin.subs.noEndShort")}
                               </strong>
                               <small>
@@ -429,6 +488,7 @@ function SheetForm({ initial, now, onClose, onSave }: { initial: Draft; now: num
     <motion.div className={styles.backdrop} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
       <motion.form
         className={styles.sheet}
+        data-plan={draft.plan}
         role="dialog"
         aria-modal="true"
         aria-labelledby="subscription-title"
@@ -465,8 +525,8 @@ function SheetForm({ initial, now, onClose, onSave }: { initial: Draft; now: num
         <ChoiceGroup label={t("admin.subs.plan")}>
           <div className={styles.chips}>
             {paidPlans.map((plan) => (
-              <button key={plan} type="button" aria-pressed={draft.plan === plan} onClick={() => set("plan", plan)}>
-                {t(`plans.names.${plan}`)}
+              <button key={plan} type="button" data-plan={plan} aria-pressed={draft.plan === plan} onClick={() => set("plan", plan)}>
+                <PlanIcon plan={plan} size={14} /> {t(`plans.names.${plan}`)}
               </button>
             ))}
           </div>

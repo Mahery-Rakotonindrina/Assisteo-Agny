@@ -38,6 +38,13 @@
   --cat-other: #94a3b8;
   --cat-parcel: #2dd4bf;
 
+  // Plans (lib/plans.ts): one colour each, used through [data-plan] below.
+  --plan-free: #94a3b8;
+  --plan-lite: #38bdf8;
+  --plan-premium: #fbbf24;
+  --plan-pro: #a78bfa;
+  --plan-unlimited: #e879f9;
+
   --aurora-a: rgba(198, 255, 77, 0.16);
   --aurora-b: rgba(124, 92, 255, 0.2);
 
@@ -94,6 +101,12 @@
   --cat-other: #576475;
   --cat-parcel: #0f766e;
 
+  --plan-free: #576475;
+  --plan-lite: #0369a1;
+  --plan-premium: #a16207;
+  --plan-pro: #6d28d9;
+  --plan-unlimited: #a21caf;
+
   --aurora-a: rgba(170, 230, 40, 0.18);
   --aurora-b: rgba(124, 92, 255, 0.14);
 
@@ -109,6 +122,28 @@
 
 :root[data-theme="light"] {
   @include light-tokens;
+}
+
+// Any element with data-plan gets its plan colour as --plan, and a soft tint.
+[data-plan] {
+  --plan: var(--plan-free);
+  --plan-soft: color-mix(in srgb, var(--plan) 15%, transparent);
+}
+
+[data-plan="lite"] {
+  --plan: var(--plan-lite);
+}
+
+[data-plan="premium"] {
+  --plan: var(--plan-premium);
+}
+
+[data-plan="pro"] {
+  --plan: var(--plan-pro);
+}
+
+[data-plan="unlimited"] {
+  --plan: var(--plan-unlimited);
 }
 
 * {

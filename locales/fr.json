@@ -474,7 +474,15 @@
       "refHint": "La référence de la transaction Mobile Money, pour la retrouver.",
       "note": "Note",
       "notePlaceholder": "Ex. payé par sa sœur",
-      "saveMany": "Enregistrer pour {count} e-mails"
+      "saveMany": "Enregistrer pour {count} e-mails",
+      "offered": "offert",
+      "cashed": "{amount} ce mois",
+      "filter": "Filtrer",
+      "filters": {
+        "all": "Tous",
+        "inactive": "Sans offre en cours"
+      },
+      "noMatch": "Personne dans ce filtre."
     },
     "plans": {
       "title": "Offres",
@@ -879,7 +887,13 @@
     "refresh": "Actualiser mon offre",
     "refreshed": "Offre à jour",
     "noRenewal": "Les offres ne se renouvellent pas automatiquement : rien n’est prélevé sans toi.",
-    "deepMonth": "Analyses approfondies ce mois"
+    "deepMonth": "Analyses approfondies ce mois",
+    "recommended": "Recommandé",
+    "includes": "Ce que comprend ton offre",
+    "perks": {
+      "everything": "Tout est inclus, sans limite",
+      "trialScans": "{count} scans pour essayer"
+    }
   },
   "deep": {
     "button": "Analyse approfondie",

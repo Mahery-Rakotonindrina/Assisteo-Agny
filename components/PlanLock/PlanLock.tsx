@@ -1,17 +1,18 @@
 import Link from "next/link";
-import { Lock } from "lucide-react";
+import { PlanBadge } from "@/components/PlanBadge";
 import { useTranslation } from "@/hooks/useTranslation";
+import type { PlanId } from "@/lib/plans";
 import styles from "./PlanLock.module.scss";
 
-/** In place of a feature the user's plan doesn't include: what it needs, and where to get it. */
-export function PlanLock({ text }: { text: string }) {
+/** In place of a feature the user's plan doesn't include: the plan that has it, and where to get it. */
+export function PlanLock({ plan, text }: { plan: PlanId; text: string }) {
   const { t } = useTranslation();
   return (
-    <p className={styles.lock}>
-      <Lock size={15} />
-      <span>
+    <div className={styles.lock} data-plan={plan}>
+      <PlanBadge plan={plan} />
+      <p>
         {text} <Link href="/plans">{t("trial.seeOffers")}</Link>
-      </span>
-    </p>
+      </p>
+    </div>
   );
 }

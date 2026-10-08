@@ -72,3 +72,9 @@
   box-shadow: 0 20px 50px -18px var(--accent-glow);
 }
 
+
+.over[data-plan] .icon {
+  background: var(--plan);
+  color: var(--bg);
+  box-shadow: 0 20px 50px -18px var(--plan);
+}

@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import { useState } from "react";
 import { ArrowLeft, Check, Copy, ExternalLink, LogIn, MessageCircle, Phone, RefreshCw } from "lucide-react";
 import { Button } from "@/components/Button";
+import { PlanIcon } from "@/components/PlanBadge";
 import { useToast } from "@/components/Toast";
 import { useAccount } from "@/lib/account/AccountProvider";
 import { usePlan } from "@/hooks/usePlan";
@@ -80,8 +81,8 @@ export default function PlansPage() {
         </motion.header>
 
         {id !== "free" && plan && (
-          <motion.p variants={rise} className={styles.current}>
-            <Check size={16} />{" "}
+          <motion.p variants={rise} className={styles.current} data-plan={id}>
+            <PlanIcon plan={id} size={16} />{" "}
             {plan.endsAt === null
               ? t("plans.currentNoEnd", { plan: t(`plans.names.${id}`) })
               : t("plans.current", { plan: t(`plans.names.${id}`), date: formatDate(plan.endsAt - 1, locale) })}
@@ -95,9 +96,13 @@ export default function PlansPage() {
             return (
               <article key={offer.id} className={styles.offer} data-plan={offer.id} data-current={isCurrent ? "" : undefined}>
                 <div className={styles.offerHead}>
+                  <span className={styles.offerIcon}>
+                    <PlanIcon plan={offer.id} size={20} />
+                  </span>
                   <h2>{t(`plans.names.${offer.id}`)}</h2>
                   {isCurrent && <span className={styles.tag}>{t("plans.yours")}</span>}
                   {included && <span className={styles.tag}>{t("plans.included")}</span>}
+                  {offer.id === "premium" && !isCurrent && !included && <span className={styles.tag}>{t("plans.recommended")}</span>}
                 </div>
                 <p className={styles.price}>
                   <strong>{formatAriary(offer.priceMga, locale)}</strong> <span>{t("plans.perMonth")}</span>

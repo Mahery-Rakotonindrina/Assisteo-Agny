@@ -361,16 +361,21 @@
 
 .locked {
   display: flex;
-  gap: 0.5rem;
-  padding: 0.75rem 0.85rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.45rem;
+  padding: 0.8rem 0.9rem;
   border-radius: var(--radius-md);
-  background: var(--surface);
-  font-size: 0.88rem;
-  color: var(--text-muted);
+  border: 1px dashed color-mix(in srgb, var(--plan) 45%, transparent);
+  background: var(--plan-soft);
+
+  p {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+  }
 
   svg {
-    flex-shrink: 0;
-    margin-top: 0.1rem;
-    color: var(--accent-text);
+    vertical-align: -2px;
+    color: var(--plan);
   }
 }

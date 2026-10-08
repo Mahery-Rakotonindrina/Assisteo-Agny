@@ -474,7 +474,15 @@
       "refHint": "The Mobile Money transaction reference, to find it again.",
       "note": "Note",
       "notePlaceholder": "e.g. paid by her sister",
-      "saveMany": "Save for {count} e-mails"
+      "saveMany": "Save for {count} e-mails",
+      "offered": "offered",
+      "cashed": "{amount} this month",
+      "filter": "Filter",
+      "filters": {
+        "all": "All",
+        "inactive": "No plan running"
+      },
+      "noMatch": "Nobody in this filter."
     },
     "plans": {
       "title": "Plans",
@@ -879,7 +887,13 @@
     "refresh": "Refresh my plan",
     "refreshed": "Plan up to date",
     "noRenewal": "Plans don’t renew automatically: nothing is charged without you.",
-    "deepMonth": "Deep analyses this month"
+    "deepMonth": "Deep analyses this month",
+    "recommended": "Recommended",
+    "includes": "What your plan includes",
+    "perks": {
+      "everything": "Everything included, no limit",
+      "trialScans": "{count} scans to try"
+    }
   },
   "deep": {
     "button": "Deep analysis",

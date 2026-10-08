@@ -27,6 +27,17 @@
 .avatar {
   background: var(--accent);
   color: var(--accent-ink);
+
+  // A subscriber's avatar takes the plan's colour.
+  &:not([data-plan="free"]) {
+    background: var(--plan);
+    color: var(--bg);
+    box-shadow: 0 0 0 3px var(--plan-soft);
+  }
+}
+
+.plan {
+  align-self: flex-start;
 }
 
 .avatarEmpty {

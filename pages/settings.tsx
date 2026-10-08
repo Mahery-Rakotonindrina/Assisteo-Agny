@@ -60,7 +60,7 @@ export default function SettingsPage() {
   // "Add my API key" links land on the AI engine section.
   const section = router.isReady ? router.query.section : undefined;
   useEffect(() => {
-    const target = section === "ai" ? "ai-engine" : section === "account" ? "account" : null;
+    const target = section === "ai" ? "ai-engine" : section === "account" ? "account" : section === "plan" ? "plan" : null;
     if (!target) return;
     const timer = setTimeout(() => document.getElementById(target)?.scrollIntoView({ behavior: "smooth", block: "start" }), 350);
     return () => clearTimeout(timer);

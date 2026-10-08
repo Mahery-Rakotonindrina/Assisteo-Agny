@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import { Check, ChevronDown, Cpu, ExternalLink, Eye, EyeOff, Globe, KeyRound, ListRestart, Loader2, Lock, ShieldCheck, Sparkles, Trash2 } from "lucide-react";
 import { Button } from "@/components/Button";
+import { PlanBadge } from "@/components/PlanBadge";
 import { useToast } from "@/components/Toast";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTrial } from "@/hooks/useTrial";
@@ -206,9 +207,12 @@ export function AiKeySettings({ requestOpen = false }: { requestOpen?: boolean }
           >
             {!trial.canUseOwnKey ? (
               <div className={styles.advancedInner}>
-                <p className={styles.locked}>
-                  <Lock size={16} /> {saved ? t("settings.aiLockedSaved") : t("settings.aiLocked")}
-                </p>
+                <div className={styles.locked} data-plan="lite">
+                  <PlanBadge plan="lite" />
+                  <p>
+                    <Lock size={14} /> {saved ? t("settings.aiLockedSaved") : t("settings.aiLocked")}
+                  </p>
+                </div>
                 <Button href="/plans" block icon={<Sparkles />}>
                   {t("trial.seeOffers")}
                 </Button>
