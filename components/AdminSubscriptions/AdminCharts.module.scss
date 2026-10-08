@@ -27,7 +27,9 @@
 
 .ringRow {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
   gap: 1rem;
 }
 
@@ -63,9 +65,10 @@
   fill: var(--text-muted);
 }
 
+// Beside the ring when there is room, under it otherwise (half-width on desktop).
 .legend {
-  flex: 1;
-  min-width: 0;
+  flex: 1 1 10rem;
+  min-width: 10rem;
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
@@ -73,9 +76,10 @@
   list-style: none;
 
   li {
-    display: flex;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
     align-items: center;
-    gap: 0.45rem;
+    gap: 0.5rem;
     font-size: 0.84rem;
   }
 
@@ -88,8 +92,9 @@
   }
 
   span {
-    flex: 1;
-    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     color: var(--text-muted);
   }
 
@@ -98,7 +103,7 @@
   }
 
   small {
-    width: 2.6rem;
+    min-width: 2.8rem;
     text-align: right;
     color: var(--text-subtle);
     font-variant-numeric: tabular-nums;
