@@ -646,6 +646,35 @@
     },
     "totalSpent": "Total dépensé",
     "ofFees": "de frais",
-    "totalAll": "Total dépensé : {amount}"
+    "totalAll": "Total dépensé : {amount}",
+    "edit": "Modifier",
+    "editTitle": "Modifier le colis",
+    "save": "Enregistrer",
+    "forClient": "Pour {name}",
+    "editedOn": "Modifié à la main le {date}",
+    "search": "Rechercher : client, n° de suivi, article…",
+    "clearSearch": "Effacer la recherche",
+    "noMatch": "Aucun colis ne correspond à ta recherche.",
+    "matchCount": "{count} colis trouvé(s)",
+    "fields": {
+      "title": "Nom du colis",
+      "client": "Client",
+      "clientHint": "Pour qui est ce colis.",
+      "clientPlaceholder": "Ex. Rado, Tante Voahangy…",
+      "status": "Statut",
+      "shipping": "Livraison",
+      "lastEvent": "Dernier événement",
+      "eventDescription": "Description",
+      "eventLocation": "Lieu",
+      "eventAt": "Date et heure",
+      "order": "Commande",
+      "items": "Articles",
+      "itemName": "Article",
+      "itemVariant": "Couleur, taille…",
+      "itemQuantity": "Quantité",
+      "itemPrice": "Prix (ex. ¥215)",
+      "removeItem": "Supprimer l’article",
+      "addItem": "Ajouter un article"
+    }
   }
 }
