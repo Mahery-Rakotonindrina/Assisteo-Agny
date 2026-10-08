@@ -3,9 +3,10 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { motion } from "motion/react";
 import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
-import { BellRing, Camera, Check, ChevronRight, Cpu, FileText, Globe, Info, Moon, Monitor, Palette, RotateCcw, Send, ShieldCheck, Smartphone, Sun, Trash2, Vibrate, X } from "lucide-react";
+import { BellRing, Camera, Check, ChevronRight, Cpu, Download, FileText, Globe, Info, Monitor, Moon, Palette, RotateCcw, Send, ShieldCheck, Smartphone, Sun, Trash2, Vibrate, X } from "lucide-react";
 import { AccountSettings } from "@/components/AccountSettings";
 import { AiKeySettings } from "@/components/AiKeySettings";
+import { useAndroidDownload } from "@/hooks/useAndroidDownload";
 import { PlanSettings } from "@/components/PlanSettings";
 import { Button } from "@/components/Button";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
@@ -38,6 +39,7 @@ export default function SettingsPage() {
   const router = useRouter();
   const toast = useToast();
   const { settings, update } = useSettings();
+  const android = useAndroidDownload();
   const { entries } = useHistory();
   const [permission, setPermission] = useState<NotificationPermission>("prompt");
   const [cameraPermission, setCameraPermission] = useState<PermissionStatus>("prompt");
@@ -155,6 +157,20 @@ export default function SettingsPage() {
         <Group id="plan" title={t("plans.section")}>
           <PlanSettings />
         </Group>
+
+        {android && (
+          <Group title={t("settings.androidApp")}>
+            <Row
+              icon={<Smartphone />}
+              label={t("settings.androidAppLabel")}
+              hint={android.version ? t("settings.androidAppHint", { version: android.version }) : t("settings.androidAppHintNoVersion")}
+            >
+              <Button href={android.url} size="md" icon={<Download />}>
+                {t("settings.androidAppDownload")}
+              </Button>
+            </Row>
+          </Group>
+        )}
 
         <Group id="ai-engine" title={t("settings.aiEngine")}>
           <AiKeySettings requestOpen={section === "ai"} />

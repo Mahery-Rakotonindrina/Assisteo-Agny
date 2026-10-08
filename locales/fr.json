@@ -317,7 +317,12 @@
     "aiDefaultOverMonth": "Scans du mois épuisés : passe à l’offre supérieure, ou utilise ta clé.",
     "aiLocked": "Utiliser ta propre clé IA, sans limite, est réservé aux abonnés (dès l’offre Lite).",
     "aiLockedSaved": "Ta clé est enregistrée, mais elle ne sert qu’avec un abonnement : en attendant, c’est l’IA de l’app qui analyse.",
-    "aiLockedHint": "Réservé aux abonnés"
+    "aiLockedHint": "Réservé aux abonnés",
+    "androidApp": "Application Android",
+    "androidAppLabel": "App Android",
+    "androidAppHint": "Version {version} · à installer sur un téléphone Android",
+    "androidAppHintNoVersion": "À installer sur un téléphone Android",
+    "androidAppDownload": "Télécharger"
   },
   "notifications": {
     "readyTitle": "Analyse prête ✨"
@@ -330,7 +335,8 @@
     "installTitle": "Installer l’app",
     "installBody": "Ajoute Assisteo Agny à ton ordinateur pour l’ouvrir comme une application.",
     "installCta": "Installer",
-    "mobileApps": "Aussi disponible sur Android et iOS."
+    "mobileApps": "Aussi disponible sur Android et iOS.",
+    "androidDownload": "Télécharger l’app Android"
   },
   "onboarding": {
     "welcomeTitle": "Bienvenue !",

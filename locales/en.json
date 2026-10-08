@@ -317,7 +317,12 @@
     "aiDefaultOverMonth": "This month’s scans are used up: move to a bigger plan, or use your key.",
     "aiLocked": "Using your own AI key, with no limit, is for subscribers (from the Lite plan).",
     "aiLockedSaved": "Your key is saved, but it only works with a subscription: meanwhile, the app’s AI does the analyses.",
-    "aiLockedHint": "For subscribers"
+    "aiLockedHint": "For subscribers",
+    "androidApp": "Android app",
+    "androidAppLabel": "Android app",
+    "androidAppHint": "Version {version} · to install on an Android phone",
+    "androidAppHintNoVersion": "To install on an Android phone",
+    "androidAppDownload": "Download"
   },
   "notifications": {
     "readyTitle": "Analysis ready ✨"
@@ -330,7 +335,8 @@
     "installTitle": "Install the app",
     "installBody": "Add Assisteo Agny to your computer and open it like an app.",
     "installCta": "Install",
-    "mobileApps": "Also available on Android and iOS."
+    "mobileApps": "Also available on Android and iOS.",
+    "androidDownload": "Download the Android app"
   },
   "onboarding": {
     "welcomeTitle": "Welcome!",

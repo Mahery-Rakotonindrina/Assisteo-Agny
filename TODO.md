@@ -176,7 +176,7 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] iPhone : ajout à l'écran d'accueil (icône, écran de démarrage)
 - [x] App Android signée, construite par GitHub à chaque mise en ligne
 - [x] Bandeau de mise à jour, mise à jour obligatoire possible
-- [ ] ⭐ Lien de téléchargement automatique de l'APK et bouton « Télécharger l'app Android »
+- [x] ⭐ Lien de téléchargement automatique de l'APK (GitHub Releases) et bouton « Télécharger l'app Android »
 - [ ] Publication sur le Play Store
 - [ ] Widget Android (prochain rappel, colis)
 - [ ] App iPhone native (App Store)

@@ -1,10 +1,16 @@
 # Builds the Android app in the cloud, so no Android SDK is needed locally.
-# Download it from the run's "Artifacts" section, then open it on an Android phone.
+# Each signed build is published as a GitHub release, so anyone can download
+# the latest one at a fixed link (no GitHub account needed):
+#   https://github.com/<owner>/<repo>/releases/latest/download/AssisteoAgny.apk
 #
 # Repository settings used (Settings → Secrets and variables → Actions):
 # - variable NEXT_PUBLIC_API_URL: public URL of the deployed web build (the AI API).
 # - secrets ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS,
-#   ANDROID_KEY_PASSWORD: release signing key. Without them a debug APK is built.
+#   ANDROID_KEY_PASSWORD: release signing key. Without them a debug APK is built
+#   (kept as a run artifact only: it can't update a signed install).
+# - secret ADMIN_TOKEN (optional, the server's admin token): the new version and
+#   its link are then set in Admin → "Versions de l'app", so installed apps
+#   offer the update by themselves.
 name: Android APK
 
 on:
@@ -16,6 +22,9 @@ on:
 jobs:
   apk:
     runs-on: ubuntu-latest
+    permissions:
+      # Publish the APK as a release.
+      contents: write
     env:
       ANDROID_VERSION_CODE: ${{ github.run_number }}
       ANDROID_VERSION_NAME: 1.0.${{ github.run_number }}
@@ -136,3 +145,38 @@ jobs:
           name: assisteo-agny-play-store-bundle
           path: dist/*.aab
           retention-days: 30
+
+      # The APK under its version and under a fixed name: the "latest" link
+      # always gives the newest signed build.
+      - name: Publish the APK as a release
+        if: steps.signing.outputs.release == 'true' && github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp "dist/AssisteoAgny-$ANDROID_VERSION_NAME.apk" dist/AssisteoAgny.apk
+          gh release create "v$ANDROID_VERSION_NAME" \
+            dist/AssisteoAgny.apk "dist/AssisteoAgny-$ANDROID_VERSION_NAME.apk" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "Assisteo Agny $ANDROID_VERSION_NAME" \
+            --notes "Sur un téléphone Android : télécharge AssisteoAgny.apk, ouvre-le et autorise l'installation." \
+            --generate-notes
+          echo "Download: https://github.com/$GITHUB_REPOSITORY/releases/latest/download/AssisteoAgny.apk"
+
+      # Optional: the installed apps learn about this version (and where to get it).
+      - name: Announce the version to the installed apps
+        if: steps.signing.outputs.release == 'true' && github.event_name == 'push'
+        env:
+          ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+          API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+        run: |
+          if [ -z "$ADMIN_TOKEN" ]; then
+            echo "::notice::No ADMIN_TOKEN secret: set the latest version ($ANDROID_VERSION_NAME) in Admin yourself."
+            exit 0
+          fi
+          url="https://github.com/$GITHUB_REPOSITORY/releases/latest/download/AssisteoAgny.apk"
+          # Keep the minimum version as it is; only the latest one and its link change.
+          current=$(curl -sf -H "Authorization: Bearer $ADMIN_TOKEN" "$API_URL/api/admin/app")
+          body=$(echo "$current" | jq -c --arg version "$ANDROID_VERSION_NAME" --arg url "$url" '.latest = $version | .downloadUrl = $url')
+          curl -sf -X PUT -H "Authorization: Bearer $ADMIN_TOKEN" -H "Content-Type: application/json" -d "$body" "$API_URL/api/admin/app" > /dev/null
+          echo "Installed apps now offer $ANDROID_VERSION_NAME."
