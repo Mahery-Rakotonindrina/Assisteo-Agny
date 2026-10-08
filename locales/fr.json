@@ -110,8 +110,10 @@
     "billing": "Le compte IA n’a plus de crédit. Ajoute du crédit sur console.anthropic.com ou repasse en mode démo.",
     "notImage": "Ce fichier n’est pas une image.",
     "invalid_key": "Ta clé API a été refusée. Vérifie-la dans Réglages → Moteur IA.",
-    "trial_exhausted": "Ton essai gratuit est terminé. Ajoute ta propre clé API dans Réglages → Moteur IA pour continuer.",
-    "server_busy": "L’IA gratuite a atteint sa limite du jour. Ajoute ta propre clé (Gemini est gratuit) ou reviens demain."
+    "trial_exhausted": "Ton essai gratuit est terminé. Choisis une offre pour continuer.",
+    "server_busy": "L’IA gratuite a atteint sa limite du jour. Reviens demain, ou prends une offre : les abonnés passent en priorité.",
+    "plan_required": "Ta propre clé IA est réservée aux abonnés. Choisis une offre, ou retire ta clé pour utiliser l’IA de l’app.",
+    "plan_limit": "Tu as utilisé tous les scans de ton offre ce mois-ci. Passe à une offre supérieure, ou attends le mois prochain."
   },
   "categories": {
     "food": "Aliment",
@@ -304,12 +306,17 @@
     "aiModelsLoaded": "{count} modèles disponibles avec cette clé. Tape pour filtrer.",
     "aiDefaultTitle": "IA Assisteo",
     "aiDefaultLeft": "{remaining} analyse(s) gratuite(s) restante(s) sur {limit}",
-    "aiDefaultOver": "Essai gratuit terminé : ajoute ta propre clé pour continuer.",
+    "aiDefaultOver": "Essai gratuit terminé : choisis une offre pour continuer.",
     "aiDefaultIncluded": "Incluse avec l’app",
     "aiOwnKeyTitle": "Ta clé {name}",
     "aiUseOwnKey": "Utiliser ma propre clé IA",
     "aiChangeKey": "Changer de clé ou de fournisseur",
-    "aiUseOwnKeyHint": "Avancé · Gemini propose des clés gratuites"
+    "aiUseOwnKeyHint": "Avancé · Gemini propose des clés gratuites",
+    "aiDefaultLeftMonth": "{remaining} scans restants ce mois sur {limit}",
+    "aiDefaultOverMonth": "Scans du mois épuisés : passe à l’offre supérieure, ou utilise ta clé.",
+    "aiLocked": "Utiliser ta propre clé IA, sans limite, est réservé aux abonnés (dès l’offre Lite).",
+    "aiLockedSaved": "Ta clé est enregistrée, mais elle ne sert qu’avec un abonnement : en attendant, c’est l’IA de l’app qui analyse.",
+    "aiLockedHint": "Réservé aux abonnés"
   },
   "notifications": {
     "readyTitle": "Analyse prête ✨"
@@ -354,11 +361,12 @@
   "trial": {
     "pill": "Essai gratuit · {remaining}/{limit}",
     "overTitle": "Ton essai gratuit est terminé",
-    "overBody": "Tu as utilisé tes {limit} analyses offertes. Pour continuer, ajoute ta propre clé API : Gemini propose des clés gratuites en deux minutes.",
-    "addKey": "Ajouter ma clé API",
-    "freeKey": "Obtenir une clé Gemini gratuite",
-    "settingsLeft": "Essai gratuit : {remaining} analyse(s) sur {limit} restante(s) avec l’IA du serveur.",
-    "settingsOver": "Ton essai gratuit est terminé. Ajoute ta clé Gemini (gratuite) ou Claude pour continuer."
+    "overBody": "Tu as utilisé tes {limit} analyses offertes. Choisis une offre pour continuer : dès Lite, tu as des scans chaque mois.",
+    "pillMonth": "{remaining} scans restants ce mois",
+    "overTitleMonth": "Scans du mois épuisés",
+    "overBodyMonth": "Ton offre {plan} inclut {limit} scans par mois. Passe à une offre supérieure, ou attends le début du mois prochain.",
+    "seeOffers": "Voir les offres",
+    "useOwnKey": "Utiliser ma clé IA"
   },
   "admin": {
     "title": "Administration",
@@ -404,6 +412,87 @@
       "errors": "Erreurs et blocages",
       "feedback": "Derniers avis",
       "noFeedback": "Pas encore d’avis."
+    },
+    "subs": {
+      "title": "Abonnés",
+      "subtitle": "Le paiement se fait hors de l’app : note ici qui a payé quelle offre, et pour combien de temps.",
+      "disabled": "Les comptes ne sont pas configurés sur le serveur.",
+      "active": "actifs",
+      "soon": "expirent sous 7 jours",
+      "cashedThisMonth": "encaissés ce mois",
+      "add": "Ajouter un abonnement",
+      "search": "Rechercher un e-mail",
+      "empty": "Aucun abonné pour l’instant.",
+      "startsOn": "Commence le {date}",
+      "endedOn": "Terminé le {date}",
+      "noEnd": "Sans date de fin",
+      "noEndShort": "sans fin",
+      "endsIn": "Expire dans {days} j · le {date}",
+      "until": "Jusqu’au {date}",
+      "renew": "Renouveler",
+      "stop": "Arrêter maintenant",
+      "stopConfirm": "Confirmer l’arrêt",
+      "stopped": "Accès arrêté",
+      "edit": "Modifier",
+      "delete": "Supprimer (toucher deux fois)",
+      "deleted": "Enregistrement supprimé",
+      "added": "Abonnement enregistré",
+      "free": "Offert",
+      "addTitle": "Nouvel abonnement",
+      "editTitle": "Modifier l’abonnement",
+      "email": "E-mail",
+      "emails": "E-mail(s)",
+      "emailsHint": "Celui du compte dans l’app. Plusieurs e-mails, séparés par une virgule, pour un même paiement (une famille par exemple).",
+      "badEmail": "« {email} » n’est pas un e-mail valide.",
+      "plan": "Offre",
+      "start": "Début",
+      "end": "Dernier jour",
+      "duration": "Durée",
+      "durations": {
+        "week": "1 semaine",
+        "month": "1 mois",
+        "quarter": "3 mois",
+        "half": "6 mois",
+        "year": "1 an",
+        "none": "Sans fin",
+        "custom": "Autre date"
+      },
+      "periodUntil": "Accès jusqu’au {date} inclus",
+      "badPeriod": "Choisis un dernier jour après le début.",
+      "payment": "Paiement",
+      "amount": "Montant (Ar)",
+      "method": "Moyen",
+      "methods": {
+        "mvola": "MVola",
+        "orange": "Orange Money",
+        "airtel": "Airtel Money",
+        "cash": "Espèces",
+        "bank": "Virement",
+        "other": "Autre"
+      },
+      "ref": "Référence",
+      "refHint": "La référence de la transaction Mobile Money, pour la retrouver.",
+      "note": "Note",
+      "notePlaceholder": "Ex. payé par sa sœur",
+      "saveMany": "Enregistrer pour {count} e-mails"
+    },
+    "plans": {
+      "title": "Offres",
+      "subtitle": "Prix et limites de chaque offre, et comment payer : affichés sur la page « Les offres » de l’app.",
+      "fields": {
+        "priceMga": "Prix (Ar / mois)",
+        "scans": "Scans / mois",
+        "questionsPerDay": "Questions / jour",
+        "parcels": "Colis suivis",
+        "deepPerMonth": "Analyses approfondies / mois"
+      },
+      "zeroHint": "0 = sans limite. Accès complet (offert) : tout est sans limite.",
+      "freeParcels": "Colis suivis sans offre",
+      "freeParcelsHint": "Les scans et questions gratuits se règlent plus bas, dans l’essai gratuit.",
+      "instructions": "Comment payer",
+      "instructionsPlaceholder": "Ex. Envoie le montant par MVola au 034 00 000 00 (Nom Prénom), avec ton e-mail en motif.",
+      "contact": "Contact pour envoyer la référence",
+      "contactHint": "Un numéro de téléphone, ou un lien (WhatsApp : https://wa.me/261…, Messenger…)."
     }
   },
   "account": {
@@ -485,7 +574,7 @@
     "retry": "Réessayer",
     "clear": "Effacer la conversation",
     "confirmClear": "Confirmer l’effacement",
-    "limit": "Tu as utilisé toutes tes questions du jour avec l’IA du serveur. Ajoute ta propre clé API pour continuer, ou reviens demain.",
+    "limit": "Tu as utilisé toutes tes questions du jour. Reviens demain, ou passe à une offre supérieure.",
     "suggestions": {
       "food": [
         "Combien de temps ça se conserve ?",
@@ -611,7 +700,8 @@
     "newStatus": "Ce colis est déjà dans ta liste. Nouveau statut : {from} → {to}.",
     "inList": "Ce colis est dans ta liste ({status}).",
     "earlierUpdated": "Tu l’avais déjà scanné le {date} : ce scan a été mis à jour avec le dernier statut.",
-    "openEarlier": "Voir l’ancien scan"
+    "openEarlier": "Voir l’ancien scan",
+    "limitReached": "Ton offre suit jusqu’à {count} colis à la fois. Marque des colis comme reçus, ou passe à une offre supérieure."
   },
   "parcels": {
     "title": "Mes colis",
@@ -676,8 +766,134 @@
       "removeItem": "Supprimer l’article",
       "addItem": "Ajouter un article",
       "receivedAt": "Date de récupération",
-      "receivedHint": "Mise à la date du jour quand tu le marques comme reçu. Corrige-la si tu l’as marqué en retard ; vide-la pour le remettre en cours."
+      "receivedHint": "Mise à la date du jour quand tu le marques comme reçu. Corrige-la si tu l’as marqué en retard ; vide-la pour le remettre en cours.",
+      "clientLocked": "Avec l’offre Pro : note pour qui est chaque colis."
     },
-    "receivedOn": "Reçu le {date}"
+    "receivedOn": "Reçu le {date}",
+    "costsLocked": "Les coûts en ariary (prix et frais) sont inclus dès l’offre Lite.",
+    "clients": {
+      "view": "Affichage",
+      "parcelsTab": "Colis",
+      "clientsTab": "Clients",
+      "period": "Période",
+      "periods": {
+        "all": "Tout",
+        "month": "Ce mois",
+        "lastMonth": "Mois dernier"
+      },
+      "totalOf": {
+        "all": "Total dépensé",
+        "month": "Dépensé ce mois",
+        "lastMonth": "Dépensé le mois dernier"
+      },
+      "count": "{parcels} colis · {ongoing} en cours",
+      "none": "Sans client",
+      "empty": "Aucun colis sur cette période."
+    },
+    "export": {
+      "button": "Exporter pour Excel",
+      "title": "Mes colis",
+      "downloaded": "Fichier téléchargé : ouvre-le avec Excel ou Google Sheets.",
+      "failed": "L’export n’a pas pu être créé.",
+      "columns": {
+        "client": "Client",
+        "title": "Colis",
+        "platform": "Plateforme",
+        "orderNumber": "N° de commande",
+        "trackingNumber": "N° de suivi",
+        "carrier": "Transporteur",
+        "status": "Statut",
+        "orderedAt": "Commandé le",
+        "receivedAt": "Reçu le",
+        "items": "Articles",
+        "priceMga": "Prix de l’article (Ar)",
+        "feesMga": "Frais (Ar)",
+        "feesDetail": "Détail des frais",
+        "totalMga": "Total (Ar)"
+      }
+    }
+  },
+  "plans": {
+    "names": {
+      "free": "Gratuit",
+      "lite": "Lite",
+      "premium": "Premium",
+      "pro": "Pro",
+      "unlimited": "Accès complet"
+    },
+    "section": "Mon offre",
+    "title": "Les offres",
+    "subtitle": "Paie par Mobile Money : ton offre est activée sur ton compte, sur tous tes appareils.",
+    "trial": "Essai gratuit",
+    "noEnd": "Sans date de fin",
+    "until": "Jusqu’au {date}",
+    "scansMonth": "Scans ce mois",
+    "scansTrial": "Scans gratuits utilisés",
+    "questionsToday": "Questions aujourd’hui",
+    "unlimited": "Illimité",
+    "signInHint": "Connecte-toi avec l’e-mail de ton abonnement pour retrouver ton offre.",
+    "seeOffers": "Voir les offres",
+    "choose": "Choisir une offre",
+    "current": "Ton offre : {plan}, jusqu’au {date}",
+    "currentNoEnd": "Ton offre : {plan}, sans date de fin",
+    "yours": "Ton offre",
+    "included": "Incluse",
+    "perMonth": "/ mois",
+    "pitch": {
+      "lite": "Pour scanner régulièrement, au quotidien.",
+      "premium": "Pour toute la famille et les gros utilisateurs.",
+      "pro": "Pour celles et ceux qui achètent pour d’autres."
+    },
+    "features": {
+      "scans": "{count} scans par mois",
+      "scansUnlimited": "Scans illimités",
+      "questions": "{count} questions par jour sur tes scans",
+      "questionsUnlimited": "Questions illimitées",
+      "parcels": "Jusqu’à {count} colis suivis",
+      "parcelsUnlimited": "Colis suivis sans limite",
+      "parcelCosts": "Coûts des colis en ariary : prix et frais",
+      "ownKey": "Option : ta propre clé IA, sans limite",
+      "allLite": "Tout Lite, et :",
+      "allPremium": "Tout Premium, et :",
+      "priority": "Priorité quand l’IA est très demandée",
+      "clients": "Un client par colis : pour qui est chaque colis",
+      "reseller": "Totaux par client, récap du mois et export pour Excel",
+      "deep": "{count} analyses approfondies par mois, avec l’IA la plus précise",
+      "deepUnlimited": "Analyses approfondies sans limite"
+    },
+    "how": "Comment s’abonner",
+    "step1": "Connecte-toi",
+    "step1Body": "Ton offre est liée à ton e-mail : crée ton compte ou connecte-toi d’abord.",
+    "signIn": "Se connecter",
+    "signedInAs": "Connecté avec {email}",
+    "step2": "Paie l’offre choisie",
+    "noInstructions": "Contacte-nous pour connaître les moyens de paiement.",
+    "step3": "Envoie la référence",
+    "step3Body": "Envoie la référence de la transaction, l’offre choisie et ton e-mail :",
+    "message": "Envoyer un message",
+    "copyNumber": "Copier le numéro",
+    "copyEmail": "Copier mon e-mail",
+    "copied": "Copié",
+    "step4": "C’est activé",
+    "step4Body": "Ton offre s’active dès que le paiement est vérifié. Actualise pour la voir.",
+    "refresh": "Actualiser mon offre",
+    "refreshed": "Offre à jour",
+    "noRenewal": "Les offres ne se renouvellent pas automatiquement : rien n’est prélevé sans toi.",
+    "deepMonth": "Analyses approfondies ce mois"
+  },
+  "deep": {
+    "button": "Analyse approfondie",
+    "running": "Analyse en cours…",
+    "wait": "Avec l’IA la plus précise : jusqu’à une minute.",
+    "hint": "Avec l’IA la plus précise · {left} restante(s) ce mois",
+    "hintUnlimited": "Avec l’IA la plus précise, pour les cas difficiles",
+    "hintLocked": "Avec l’offre Premium : une IA plus précise pour les cas difficiles.",
+    "noPhoto": "La photo de ce scan n’est plus gardée en grand : refais une photo pour l’analyser en profondeur.",
+    "limit": "Analyses approfondies du mois épuisées.",
+    "premium": "L’analyse approfondie est réservée à l’offre Premium.",
+    "failed": "L’analyse approfondie n’a pas abouti. Réessaie dans un moment.",
+    "finished": "Analyse approfondie terminée",
+    "done": "Analyse approfondie",
+    "unavailable": "L’analyse approfondie est indisponible pour le moment. Rien n’a été décompté de ton offre."
   }
 }

@@ -1,16 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { isAdmin } from "@/lib/server/adminAuth";
+import { guardAdmin } from "@/lib/server/adminAuth";
 import { AppVersionConfigSchema, getAppVersionConfig, setAppVersionConfig, type AppVersionConfig } from "@/lib/server/appVersionStore";
-import { clientIp, sendError } from "@/lib/server/http";
-import { rateLimit } from "@/lib/server/rateLimit";
+import { sendError } from "@/lib/server/http";
 
 /** Admin-only: read or change the minimum / latest app versions. */
 export default async function handler(req: NextApiRequest, res: NextApiResponse<AppVersionConfig | unknown>) {
-  if (!process.env.ADMIN_TOKEN) return sendError(res, 503, "unavailable", "Admin is disabled: set ADMIN_TOKEN on the server.");
-  const limit = await rateLimit(`admin:${clientIp(req)}`, 20, 60_000);
-  if (!limit.ok) return sendError(res, 429, "rate_limited", "Too many attempts.");
-  if (!isAdmin(req)) return sendError(res, 401, "invalid_key", "Invalid admin token.");
-  res.setHeader("Cache-Control", "no-store");
+  if (!(await guardAdmin(req, res))) return;
 
   if (req.method === "GET") return res.status(200).json(await getAppVersionConfig());
   if (req.method === "PUT") {

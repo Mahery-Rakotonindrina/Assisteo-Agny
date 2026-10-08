@@ -202,3 +202,42 @@ export async function reserveServerCall() {
 export async function releaseServerCall() {
   await store.decr(dayKey());
 }
+
+/** Questions asked today by an install on the server's key. */
+export async function getAskUsage(installId: string) {
+  return store.get(askKey(installId));
+}
+
+// ---- Subscribers ---------------------------------------------------------------
+// Counted per account: scans per calendar month, questions per day (UTC).
+
+const monthScansKey = (userId: string) => `plan:scans:${userId}:${new Date().toISOString().slice(0, 7)}`;
+const dayAskKey = (userId: string) => `plan:ask:${userId}:${new Date().toISOString().slice(0, 10)}`;
+const monthDeepKey = (userId: string) => `plan:deep:${userId}:${new Date().toISOString().slice(0, 7)}`;
+
+export async function getPlanUsage(userId: string) {
+  const [scans, questionsToday, deep] = await Promise.all([store.get(monthScansKey(userId)), store.get(dayAskKey(userId)), store.get(monthDeepKey(userId))]);
+  return { scans, questionsToday, deep };
+}
+
+/** Books one use against a limit (0 = none); null once the limit is reached. */
+async function reserveUse(key: string, limit: number, ttlSeconds: number) {
+  const used = await store.incr(key, ttlSeconds);
+  if (limit > 0 && used > limit) {
+    await store.decr(key);
+    return null;
+  }
+  return { used, limit };
+}
+
+export const reservePlanScan = (userId: string, limit: number) => reserveUse(monthScansKey(userId), limit, 40 * 24 * 3600);
+export const releasePlanScan = (userId: string) => store.decr(monthScansKey(userId));
+export const reservePlanAsk = (userId: string, limit: number) => reserveUse(dayAskKey(userId), limit, 2 * 24 * 3600);
+export const releasePlanAsk = (userId: string) => store.decr(dayAskKey(userId));
+export const reservePlanDeep = (userId: string, limit: number) => reserveUse(monthDeepKey(userId), limit, 40 * 24 * 3600);
+export const releasePlanDeep = (userId: string) => store.decr(monthDeepKey(userId));
+
+/** Books one call on the server's key for a subscriber: counted, never refused by the daily cap. */
+export async function countServerCall() {
+  await store.incr(dayKey(), 2 * 24 * 3600);
+}

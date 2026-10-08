@@ -183,6 +183,8 @@ export const AnalyzeRequestSchema = z.object({
   mediaType: z.enum(imageMediaTypes),
   mode: z.enum(scanModes),
   locale: z.enum(["fr", "en"]),
+  /** Analyse again with the more capable model (Premium and up). */
+  deep: z.boolean().optional(),
 });
 
 export type AnalyzeRequest = z.infer<typeof AnalyzeRequestSchema>;
@@ -209,7 +211,13 @@ export const AskRequestSchema = z.object({
   locale: z.enum(["fr", "en"]),
 });
 export type AskRequest = Omit<z.infer<typeof AskRequestSchema>, "analysis"> & { analysis: Analysis };
-export type AskResponse = { answer: string; model: string; demo: boolean };
+export type AskResponse = {
+  answer: string;
+  model: string;
+  demo: boolean;
+  /** Questions asked today against the plan's daily allowance (server's key only). */
+  usage?: TrialState;
+};
 
 export type AiProvider = "claude" | "gemini" | "demo";
 
@@ -282,8 +290,13 @@ export type AnalyzeResponse = {
     model: string;
     demo: boolean;
     durationMs: number;
-    /** Present when the analysis used the server's key (free trial). */
+    /** Present when the analysis used the server's key on the free trial. */
     trial?: TrialState;
+    /** Present when it used the server's key on a plan: scans this month. */
+    quota?: TrialState;
+    /** A deep analysis, and the month's deep analyses used. */
+    deep?: boolean;
+    deepQuota?: TrialState;
   };
 };
 
@@ -310,6 +323,12 @@ export type ApiErrorCode =
   | "ask_limit"
   /** The server's daily AI budget is spent (all users together). */
   | "server_busy"
+  /** The feature (an own AI key) needs a subscription. */
+  | "plan_required"
+  /** This month's scans of the plan are used up. */
+  | "plan_limit"
+  /** This month's deep analyses are used up. */
+  | "deep_limit"
   | "method_not_allowed";
 
 export type ApiErrorBody = {

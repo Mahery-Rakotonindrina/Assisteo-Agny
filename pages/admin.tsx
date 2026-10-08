@@ -2,7 +2,9 @@ import Head from "next/head";
 import { motion } from "motion/react";
 import { useEffect, useState, type FormEvent } from "react";
 import { Download, Gauge, Gift, LockKeyhole, Smartphone, LogOut, MessageCircle, Minus, Plus, Save, ShieldAlert, Wifi } from "lucide-react";
+import { AdminPlans } from "@/components/AdminPlans";
 import { AdminStats } from "@/components/AdminStats";
+import { AdminSubscriptions } from "@/components/AdminSubscriptions";
 import { Button } from "@/components/Button";
 import { useToast } from "@/components/Toast";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -23,7 +25,7 @@ function readToken() {
   }
 }
 
-/** Owner-only page to change the free trial limits without redeploying. */
+/** Owner-only page: subscribers, usage, free trial limits and app versions, without redeploying. */
 export default function AdminPage() {
   const { t } = useTranslation();
   const toast = useToast();
@@ -122,6 +124,8 @@ export default function AdminPage() {
           <p>{t("admin.subtitle")}</p>
         </motion.header>
 
+        {config && <AdminSubscriptions token={token} />}
+        {config && <AdminPlans token={token} />}
         {config && <AdminStats token={token} />}
 
         {!config ? (
@@ -252,7 +256,7 @@ function Stepper({ icon, label, hint, value, min, max, onChange }: StepperProps)
   );
 }
 
-const VERSION_PATTERN = /^(d+(.d+){0,2})?$/;
+const VERSION_PATTERN = /^(\d+(\.\d+){0,2})?$/;
 
 /** Minimum and latest app versions, checked by the native apps at launch. */
 function AppVersionCard({ token }: { token: string }) {

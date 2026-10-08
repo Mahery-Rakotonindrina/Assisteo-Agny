@@ -3,6 +3,7 @@ import { useState, useSyncExternalStore, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Plus, Save, X } from "lucide-react";
 import { Button } from "@/components/Button";
+import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { toDateInput } from "@/lib/format";
 import { parcelStatuses, type ParcelStatus } from "@/lib/ai/schema";
@@ -48,6 +49,7 @@ export function ParcelEditSheet({ parcel, open, onClose, clients }: Props) {
 
 function Form({ parcel, onClose, clients }: Omit<Props, "open">) {
   const { t } = useTranslation();
+  const reseller = usePlan().has("reseller");
   const { info } = parcel;
   const [title, setTitle] = useState(parcel.title);
   const [client, setClient] = useState(parcel.client ?? "");
@@ -135,8 +137,8 @@ function Form({ parcel, onClose, clients }: Omit<Props, "open">) {
         <Field label={t("parcels.fields.title")}>
           <input value={title} onChange={(event) => setTitle(event.target.value.slice(0, 120))} required />
         </Field>
-        <Field label={t("parcels.fields.client")} hint={t("parcels.fields.clientHint")}>
-          <input value={client} onChange={(event) => setClient(event.target.value.slice(0, 60))} list="parcel-clients" placeholder={t("parcels.fields.clientPlaceholder")} />
+        <Field label={t("parcels.fields.client")} hint={reseller ? t("parcels.fields.clientHint") : t("parcels.fields.clientLocked")}>
+          <input disabled={!reseller} value={client} onChange={(event) => setClient(event.target.value.slice(0, 60))} list="parcel-clients" placeholder={t("parcels.fields.clientPlaceholder")} />
           <datalist id="parcel-clients">
             {clients.map((name) => (
               <option key={name} value={name} />

@@ -13,7 +13,9 @@ import { applyCors, clientIp, sendError } from "@/lib/server/http";
 import { rateLimit } from "@/lib/server/rateLimit";
 import { reportError } from "@/lib/server/reportError";
 import { track } from "@/lib/server/stats";
-import { releaseAsk, releaseServerCall, reserveAsk, reserveServerCall } from "@/lib/server/trialStore";
+import { hasFeature } from "@/lib/plans";
+import { limitsFor, resolvePlan } from "@/lib/server/plan";
+import { countServerCall, releaseAsk, releasePlanAsk, releaseServerCall, reserveAsk, reservePlanAsk, reserveServerCall } from "@/lib/server/trialStore";
 
 export const config = {
   api: { bodyParser: { sizeLimit: "7mb" } },
@@ -44,23 +46,42 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   const override = readOverride(req.headers);
   if (override === "invalid") return sendError(res, 400, "invalid_request", "Invalid AI provider, model or key.");
 
+  const { account, current } = await resolvePlan(req);
+  if (override && !hasFeature(current.plan, "ownKey")) {
+    return sendError(res, 403, "plan_required", "Your own AI key needs a subscription.");
+  }
+
   if (!override && activeProvider === "demo") {
     return res.status(200).json({ answer: demoAnswers[parsed.data.locale], model: "demo", demo: true } satisfies AskResponse);
   }
 
   const statsDevice = InstallIdSchema.safeParse(req.headers[installIdHeader]).data ?? null;
 
-  // On the server's key, questions draw on a daily allowance per install.
+  // On the server's key, a subscriber's questions draw on the plan's daily allowance...
+  let planUser: string | null = null;
+  let usage: { used: number; limit: number } | undefined;
+  if (!override && current.plan !== "free" && account) {
+    const { questionsPerDay } = await limitsFor(current.plan);
+    const booked = await reservePlanAsk(account.id, questionsPerDay);
+    if (!booked) return sendError(res, 403, "ask_limit", "Today's questions of your plan are used up.");
+    await countServerCall();
+    planUser = account.id;
+    usage = booked;
+  }
+
+  // ...anyone else's on a daily allowance per install.
   let installId: string | null = null;
-  if (!override) {
+  if (!override && !planUser) {
     const id = InstallIdSchema.safeParse(req.headers[installIdHeader]);
     if (!id.success) return sendError(res, 400, "invalid_request", "Missing install id: update the app.");
-    if (!(await reserveAsk(id.data))) {
-      return sendError(res, 403, "ask_limit", "Today's questions on the server's AI are used up: add your own API key to continue.");
+    const booked = await reserveAsk(id.data);
+    if (!booked) {
+      return sendError(res, 403, "ask_limit", "Today's questions on the server's AI are used up.");
     }
+    usage = booked;
     if (!(await reserveServerCall())) {
       await releaseAsk(id.data).catch(() => undefined);
-      return sendError(res, 503, "server_busy", "The free AI has reached today's limit: add your own API key or come back tomorrow.");
+      return sendError(res, 503, "server_busy", "The free AI has reached today's limit: come back tomorrow.");
     }
     installId = id.data;
   }
@@ -73,9 +94,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   try {
     const { answer, model } = await askQuestion({ ...parsed.data, analysis: analysis.data }, abort.signal, override);
     await track({ type: "question", ownKey: Boolean(override) }, statsDevice);
-    return res.status(200).json({ answer, model, demo: false } satisfies AskResponse);
+    return res.status(200).json({ answer, model, demo: false, ...(usage && { usage }) } satisfies AskResponse);
   } catch (error) {
     if (installId) await Promise.all([releaseAsk(installId), releaseServerCall()]).catch(() => undefined);
+    if (planUser) await Promise.all([releasePlanAsk(planUser), releaseServerCall()]).catch(() => undefined);
     if (abort.signal.aborted) return;
     await track({ type: "error", route: "ask", code: error instanceof AnalysisError ? error.code : "upstream_error" }, statsDevice);
     if (error instanceof AnalysisError) {

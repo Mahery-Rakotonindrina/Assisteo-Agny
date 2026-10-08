@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { getTrialUsage, releaseTrialScan, reserveTrialScan } from "@/lib/server/trialStore";
+import {
+  getPlanUsage,
+  getTrialUsage,
+  releasePlanDeep,
+  releasePlanScan,
+  releaseTrialScan,
+  reservePlanAsk,
+  reservePlanDeep,
+  reservePlanScan,
+  reserveTrialScan,
+} from "@/lib/server/trialStore";
 
 // No Redis in unit tests: the in-memory store, default limit of 7 scans.
 const id = (prefix: string) => `${prefix}${Math.random().toString(16).slice(2)}0000000000000000`.slice(0, 24);
@@ -28,5 +38,26 @@ describe("free trial per account", () => {
     expect(await reserveTrialScan(subject, address)).toEqual({ used: 1, limit: 7 });
     await releaseTrialScan(subject, address);
     expect(await getTrialUsage(subject)).toEqual({ used: 0, limit: 7 });
+  });
+});
+
+describe("subscribers' allowances", () => {
+  it("counts scans per month and questions per day against the plan, 0 meaning no limit", async () => {
+    const user = id("s");
+    expect(await reservePlanScan(user, 2)).toEqual({ used: 1, limit: 2 });
+    expect(await reservePlanScan(user, 2)).toEqual({ used: 2, limit: 2 });
+    expect(await reservePlanScan(user, 2)).toBeNull();
+    await releasePlanScan(user);
+    expect(await getPlanUsage(user)).toEqual({ scans: 1, questionsToday: 0, deep: 0 });
+    expect(await reservePlanDeep(user, 1)).toEqual({ used: 1, limit: 1 });
+    expect(await reservePlanDeep(user, 1)).toBeNull();
+    await releasePlanDeep(user);
+    expect((await getPlanUsage(user)).deep).toBe(0);
+
+    const family = id("f");
+    for (let i = 0; i < 50; i++) expect(await reservePlanScan(family, 0)).not.toBeNull();
+    expect(await reservePlanAsk(family, 1)).toEqual({ used: 1, limit: 1 });
+    expect(await reservePlanAsk(family, 1)).toBeNull();
+    expect(await getPlanUsage(family)).toEqual({ scans: 50, questionsToday: 1, deep: 0 });
   });
 });

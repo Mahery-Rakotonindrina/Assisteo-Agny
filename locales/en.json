@@ -110,8 +110,10 @@
     "billing": "The AI account has no credit left. Add credit at console.anthropic.com or switch back to demo mode.",
     "notImage": "This file isn’t an image.",
     "invalid_key": "Your API key was rejected. Check it in Settings → AI engine.",
-    "trial_exhausted": "Your free trial is over. Add your own API key in Settings → AI engine to continue.",
-    "server_busy": "The free AI has reached today's limit. Add your own key (Gemini is free) or come back tomorrow."
+    "trial_exhausted": "Your free trial is over. Choose a plan to continue.",
+    "server_busy": "The free AI has reached today’s limit. Come back tomorrow, or take a plan: subscribers go first.",
+    "plan_required": "Your own AI key is for subscribers. Choose a plan, or remove your key to use the app’s AI.",
+    "plan_limit": "You have used all your plan’s scans this month. Move to a bigger plan, or wait for next month."
   },
   "categories": {
     "food": "Food",
@@ -304,12 +306,17 @@
     "aiModelsLoaded": "{count} models available with this key. Type to filter.",
     "aiDefaultTitle": "Assisteo AI",
     "aiDefaultLeft": "{remaining} of {limit} free analyses left",
-    "aiDefaultOver": "Free trial over: add your own key to continue.",
+    "aiDefaultOver": "Free trial over: choose a plan to continue.",
     "aiDefaultIncluded": "Included with the app",
     "aiOwnKeyTitle": "Your {name} key",
     "aiUseOwnKey": "Use my own AI key",
     "aiChangeKey": "Change key or provider",
-    "aiUseOwnKeyHint": "Advanced · Gemini offers free keys"
+    "aiUseOwnKeyHint": "Advanced · Gemini offers free keys",
+    "aiDefaultLeftMonth": "{remaining} scans left this month out of {limit}",
+    "aiDefaultOverMonth": "This month’s scans are used up: move to a bigger plan, or use your key.",
+    "aiLocked": "Using your own AI key, with no limit, is for subscribers (from the Lite plan).",
+    "aiLockedSaved": "Your key is saved, but it only works with a subscription: meanwhile, the app’s AI does the analyses.",
+    "aiLockedHint": "For subscribers"
   },
   "notifications": {
     "readyTitle": "Analysis ready ✨"
@@ -354,11 +361,12 @@
   "trial": {
     "pill": "Free trial · {remaining}/{limit}",
     "overTitle": "Your free trial is over",
-    "overBody": "You’ve used your {limit} free analyses. To keep going, add your own API key: Gemini gives free keys in two minutes.",
-    "addKey": "Add my API key",
-    "freeKey": "Get a free Gemini key",
-    "settingsLeft": "Free trial: {remaining} of {limit} analyses left on the server’s AI.",
-    "settingsOver": "Your free trial is over. Add your Gemini (free) or Claude key to continue."
+    "overBody": "You have used your {limit} free analyses. Choose a plan to continue: from Lite on, you get scans every month.",
+    "pillMonth": "{remaining} scans left this month",
+    "overTitleMonth": "This month’s scans are used up",
+    "overBodyMonth": "Your {plan} plan includes {limit} scans a month. Move to a bigger plan, or wait for next month.",
+    "seeOffers": "See the plans",
+    "useOwnKey": "Use my AI key"
   },
   "admin": {
     "title": "Admin",
@@ -404,6 +412,87 @@
       "errors": "Errors and blocks",
       "feedback": "Latest feedback",
       "noFeedback": "No feedback yet."
+    },
+    "subs": {
+      "title": "Subscribers",
+      "subtitle": "Payment happens outside the app: record here who paid for which plan, and for how long.",
+      "disabled": "Accounts are not configured on the server.",
+      "active": "active",
+      "soon": "ending within 7 days",
+      "cashedThisMonth": "received this month",
+      "add": "Add a subscription",
+      "search": "Search an e-mail",
+      "empty": "No subscribers yet.",
+      "startsOn": "Starts on {date}",
+      "endedOn": "Ended on {date}",
+      "noEnd": "No end date",
+      "noEndShort": "no end",
+      "endsIn": "Ends in {days} d · on {date}",
+      "until": "Until {date}",
+      "renew": "Renew",
+      "stop": "Stop now",
+      "stopConfirm": "Confirm stopping",
+      "stopped": "Access stopped",
+      "edit": "Edit",
+      "delete": "Delete (tap twice)",
+      "deleted": "Record deleted",
+      "added": "Subscription saved",
+      "free": "Offered",
+      "addTitle": "New subscription",
+      "editTitle": "Edit the subscription",
+      "email": "E-mail",
+      "emails": "E-mail(s)",
+      "emailsHint": "The one of the account in the app. Several e-mails, separated by commas, for one payment (a family for instance).",
+      "badEmail": "“{email}” is not a valid e-mail.",
+      "plan": "Plan",
+      "start": "Start",
+      "end": "Last day",
+      "duration": "Duration",
+      "durations": {
+        "week": "1 week",
+        "month": "1 month",
+        "quarter": "3 months",
+        "half": "6 months",
+        "year": "1 year",
+        "none": "No end",
+        "custom": "Other date"
+      },
+      "periodUntil": "Access until {date} included",
+      "badPeriod": "Pick a last day after the start.",
+      "payment": "Payment",
+      "amount": "Amount (Ar)",
+      "method": "Method",
+      "methods": {
+        "mvola": "MVola",
+        "orange": "Orange Money",
+        "airtel": "Airtel Money",
+        "cash": "Cash",
+        "bank": "Bank transfer",
+        "other": "Other"
+      },
+      "ref": "Reference",
+      "refHint": "The Mobile Money transaction reference, to find it again.",
+      "note": "Note",
+      "notePlaceholder": "e.g. paid by her sister",
+      "saveMany": "Save for {count} e-mails"
+    },
+    "plans": {
+      "title": "Plans",
+      "subtitle": "Price and limits of each plan, and how to pay: shown on the app’s “Plans” page.",
+      "fields": {
+        "priceMga": "Price (Ar / month)",
+        "scans": "Scans / month",
+        "questionsPerDay": "Questions / day",
+        "parcels": "Parcels followed",
+        "deepPerMonth": "Deep analyses / month"
+      },
+      "zeroHint": "0 = no limit. Full access (offered): everything is unlimited.",
+      "freeParcels": "Parcels followed without a plan",
+      "freeParcelsHint": "Free scans and questions are set below, in the free trial.",
+      "instructions": "How to pay",
+      "instructionsPlaceholder": "e.g. Send the amount by MVola to 034 00 000 00 (Full Name), with your e-mail as the reason.",
+      "contact": "Contact to send the reference",
+      "contactHint": "A phone number, or a link (WhatsApp: https://wa.me/261…, Messenger…)."
     }
   },
   "account": {
@@ -485,7 +574,7 @@
     "retry": "Try again",
     "clear": "Clear the conversation",
     "confirmClear": "Confirm clearing",
-    "limit": "You’ve used all of today’s questions on the server’s AI. Add your own API key to continue, or come back tomorrow.",
+    "limit": "You have used all your questions for today. Come back tomorrow, or move to a bigger plan.",
     "suggestions": {
       "food": [
         "How long does it keep?",
@@ -611,7 +700,8 @@
     "newStatus": "This parcel is already in your list. New status: {from} → {to}.",
     "inList": "This parcel is in your list ({status}).",
     "earlierUpdated": "You scanned it before on {date}: that scan now shows the latest status.",
-    "openEarlier": "See the earlier scan"
+    "openEarlier": "See the earlier scan",
+    "limitReached": "Your plan follows up to {count} parcels at once. Mark some as received, or move to a bigger plan."
   },
   "parcels": {
     "title": "My parcels",
@@ -676,8 +766,134 @@
       "removeItem": "Remove the item",
       "addItem": "Add an item",
       "receivedAt": "Pick-up date",
-      "receivedHint": "Set to today when you mark it received. Correct it if you marked it late; clear it to put the parcel back in progress."
+      "receivedHint": "Set to today when you mark it received. Correct it if you marked it late; clear it to put the parcel back in progress.",
+      "clientLocked": "With the Pro plan: note who each parcel is for."
     },
-    "receivedOn": "Received on {date}"
+    "receivedOn": "Received on {date}",
+    "costsLocked": "Costs in ariary (price and fees) come with the Lite plan and up.",
+    "clients": {
+      "view": "View",
+      "parcelsTab": "Parcels",
+      "clientsTab": "Clients",
+      "period": "Period",
+      "periods": {
+        "all": "All",
+        "month": "This month",
+        "lastMonth": "Last month"
+      },
+      "totalOf": {
+        "all": "Total spent",
+        "month": "Spent this month",
+        "lastMonth": "Spent last month"
+      },
+      "count": "{parcels} parcel(s) · {ongoing} in progress",
+      "none": "No client",
+      "empty": "No parcel in this period."
+    },
+    "export": {
+      "button": "Export for Excel",
+      "title": "My parcels",
+      "downloaded": "File downloaded: open it with Excel or Google Sheets.",
+      "failed": "The export could not be created.",
+      "columns": {
+        "client": "Client",
+        "title": "Parcel",
+        "platform": "Platform",
+        "orderNumber": "Order no.",
+        "trackingNumber": "Tracking no.",
+        "carrier": "Carrier",
+        "status": "Status",
+        "orderedAt": "Ordered on",
+        "receivedAt": "Received on",
+        "items": "Items",
+        "priceMga": "Item price (Ar)",
+        "feesMga": "Fees (Ar)",
+        "feesDetail": "Fee details",
+        "totalMga": "Total (Ar)"
+      }
+    }
+  },
+  "plans": {
+    "names": {
+      "free": "Free",
+      "lite": "Lite",
+      "premium": "Premium",
+      "pro": "Pro",
+      "unlimited": "Full access"
+    },
+    "section": "My plan",
+    "title": "Plans",
+    "subtitle": "Pay by Mobile Money: your plan is activated on your account, on all your devices.",
+    "trial": "Free trial",
+    "noEnd": "No end date",
+    "until": "Until {date}",
+    "scansMonth": "Scans this month",
+    "scansTrial": "Free scans used",
+    "questionsToday": "Questions today",
+    "unlimited": "Unlimited",
+    "signInHint": "Sign in with your subscription’s e-mail to get your plan.",
+    "seeOffers": "See the plans",
+    "choose": "Choose a plan",
+    "current": "Your plan: {plan}, until {date}",
+    "currentNoEnd": "Your plan: {plan}, no end date",
+    "yours": "Your plan",
+    "included": "Included",
+    "perMonth": "/ month",
+    "pitch": {
+      "lite": "To scan regularly, every day.",
+      "premium": "For the whole family and heavy users.",
+      "pro": "For those who buy for other people."
+    },
+    "features": {
+      "scans": "{count} scans a month",
+      "scansUnlimited": "Unlimited scans",
+      "questions": "{count} questions a day about your scans",
+      "questionsUnlimited": "Unlimited questions",
+      "parcels": "Up to {count} parcels followed",
+      "parcelsUnlimited": "No limit on parcels followed",
+      "parcelCosts": "Parcel costs in ariary: price and fees",
+      "ownKey": "Option: your own AI key, no limit",
+      "allLite": "Everything in Lite, plus:",
+      "allPremium": "Everything in Premium, plus:",
+      "priority": "Priority when the AI is busy",
+      "clients": "A client per parcel: who each parcel is for",
+      "reseller": "Totals per client, monthly recap and Excel export",
+      "deep": "{count} deep analyses a month, with the most accurate AI",
+      "deepUnlimited": "Unlimited deep analyses"
+    },
+    "how": "How to subscribe",
+    "step1": "Sign in",
+    "step1Body": "Your plan is tied to your e-mail: create your account or sign in first.",
+    "signIn": "Sign in",
+    "signedInAs": "Signed in with {email}",
+    "step2": "Pay for the plan you chose",
+    "noInstructions": "Contact us to know the payment methods.",
+    "step3": "Send the reference",
+    "step3Body": "Send the transaction reference, the plan you chose and your e-mail:",
+    "message": "Send a message",
+    "copyNumber": "Copy the number",
+    "copyEmail": "Copy my e-mail",
+    "copied": "Copied",
+    "step4": "It’s on",
+    "step4Body": "Your plan is activated as soon as the payment is checked. Refresh to see it.",
+    "refresh": "Refresh my plan",
+    "refreshed": "Plan up to date",
+    "noRenewal": "Plans don’t renew automatically: nothing is charged without you.",
+    "deepMonth": "Deep analyses this month"
+  },
+  "deep": {
+    "button": "Deep analysis",
+    "running": "Analysing…",
+    "wait": "With the most accurate AI: up to a minute.",
+    "hint": "With the most accurate AI · {left} left this month",
+    "hintUnlimited": "With the most accurate AI, for the hard cases",
+    "hintLocked": "With the Premium plan: a more accurate AI for the hard cases.",
+    "noPhoto": "This scan’s photo is no longer kept full size: take a new photo for a deep analysis.",
+    "limit": "This month’s deep analyses are used up.",
+    "premium": "Deep analysis comes with the Premium plan.",
+    "failed": "The deep analysis didn’t succeed. Try again in a moment.",
+    "finished": "Deep analysis done",
+    "done": "Deep analysis",
+    "unavailable": "Deep analysis is unavailable right now. Nothing was taken from your plan."
   }
 }

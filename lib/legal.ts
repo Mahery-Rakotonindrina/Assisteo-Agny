@@ -10,7 +10,7 @@ export type LegalDocument = { title: string; intro: string; sections: LegalSecti
 export type LegalKind = "privacy" | "terms";
 
 /** Date of the last change, shown on both documents. */
-export const LEGAL_UPDATED_AT = "2026-10-07";
+export const LEGAL_UPDATED_AT = "2026-10-08";
 
 const privacyFr: LegalDocument = {
   title: "Politique de confidentialité",
@@ -25,6 +25,7 @@ const privacyFr: LegalDocument = {
             "Les photos que tu choisis d’analyser, et les questions que tu poses ensuite sur un scan.",
             "Le résultat des analyses et ton historique.",
             "Si tu crées un compte : ton adresse e-mail, ton historique avec les photos, tes réglages et, si tu en ajoutes une, ta clé API (chiffrée).",
+            "Si tu prends un abonnement : ton adresse e-mail, l’offre, ses dates, le montant payé, le moyen de paiement et la référence de la transaction, pour activer ton offre et tenir les comptes.",
             "Un identifiant d’installation aléatoire et ton adresse IP, uniquement pour compter les scans gratuits et limiter les abus.",
             "Des compteurs anonymes et regroupés par jour (nombre d’analyses par type, de questions, d’erreurs, estimation du nombre d’appareils actifs) pour suivre le bon fonctionnement de l’app. Ils ne contiennent ni photo, ni texte, ni identifiant, et s’effacent au bout de 120 jours.",
             "Si tu dis qu’une réponse est juste ou fausse : ton avis, la raison choisie, le titre et le type de l’analyse, sans la photo ni ton identité.",
@@ -65,6 +66,7 @@ const privacyFr: LegalDocument = {
         {
           list: [
             "Ton historique est gardé jusqu’à ce que tu le supprimes, ou que tu supprimes ton compte.",
+            "Les enregistrements d’abonnement (e-mail, offre, dates, paiement) sont gardés le temps nécessaire à la comptabilité, même si tu supprimes ton compte.",
             "Le compteur lié à l’adresse IP s’efface au bout de 30 jours ; celui des questions, au bout de 2 jours.",
             "Les journaux techniques de l’hébergeur sont conservés quelques jours.",
           ],
@@ -114,6 +116,7 @@ const privacyEn: LegalDocument = {
             "The photos you choose to analyse, and the follow-up questions you ask about a scan.",
             "Analysis results and your history.",
             "If you create an account: your e-mail address, your history with its photos, your settings and, if you add one, your API key (encrypted).",
+            "If you take a subscription: your e-mail address, the plan, its dates, the amount paid, the payment method and the transaction reference, to activate your plan and keep the accounts.",
             "A random installation id and your IP address, only to count free scans and prevent abuse.",
             "Anonymous counters grouped by day (number of analyses by type, questions, errors, an estimate of active devices) to keep an eye on how the app works. They hold no photo, text or identifier, and are erased after 120 days.",
             "If you say whether an answer was right or wrong: your vote, the reason you picked, and the title and type of the analysis, without the photo or your identity.",
@@ -154,6 +157,7 @@ const privacyEn: LegalDocument = {
         {
           list: [
             "Your history is kept until you delete it, or delete your account.",
+            "Subscription records (e-mail, plan, dates, payment) are kept as long as accounting requires, even if you delete your account.",
             "The IP address counter is erased after 30 days; the questions counter after 2 days.",
             "The host's technical logs are kept for a few days.",
           ],
@@ -214,9 +218,11 @@ const termsFr: LegalDocument = {
       ],
     },
     {
-      heading: "Essai gratuit et clé API personnelle",
+      heading: "Essai gratuit, abonnements et clé API personnelle",
       body: [
-        "Un nombre limité de scans et de questions est offert. Ces limites peuvent changer. Au-delà, tu peux ajouter ta propre clé API : son usage est alors facturé par ton fournisseur, selon ses conditions, et tu en es responsable.",
+        "Un nombre limité de scans et de questions est offert pour essayer l’app.",
+        "Les abonnements (Lite, Premium, Pro) donnent plus de scans et de fonctions pendant la période payée. Ils se paient en dehors de l’app (Mobile Money ou autre moyen indiqué), sont activés sur le compte de l’e-mail donné une fois le paiement vérifié, et ne se renouvellent pas automatiquement. Les prix et les limites de chaque offre sont indiqués dans l’app et peuvent évoluer.",
+        "Avec un abonnement, tu peux aussi ajouter ta propre clé API : son usage est alors facturé par ton fournisseur, selon ses conditions, et tu en es responsable.",
       ],
     },
     {
@@ -274,9 +280,11 @@ const termsEn: LegalDocument = {
       ],
     },
     {
-      heading: "Free trial and personal API key",
+      heading: "Free trial, subscriptions and personal API key",
       body: [
-        "A limited number of scans and questions is offered. These limits may change. Beyond them, you can add your own API key: its usage is then billed by your provider under its terms, and you are responsible for it.",
+        "A limited number of scans and questions is offered to try the app.",
+        "Subscriptions (Lite, Premium, Pro) give more scans and features for the period paid. They are paid outside the app (Mobile Money or another method shown), activated on the account of the e-mail given once the payment is checked, and do not renew automatically. The prices and limits of each plan are shown in the app and may change.",
+        "With a subscription, you can also add your own API key: its usage is then billed by your provider under its terms, and you are responsible for it.",
       ],
     },
     {

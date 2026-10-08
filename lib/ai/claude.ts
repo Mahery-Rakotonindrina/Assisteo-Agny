@@ -18,6 +18,8 @@ export type EngineOptions = {
   /** A key supplied by the user for this request only. */
   apiKey?: string;
   model?: string;
+  /** A deep analysis: a bigger model, given more time. */
+  deep?: boolean;
   /** OpenAI-compatible APIs only. */
   baseUrl?: string;
 };

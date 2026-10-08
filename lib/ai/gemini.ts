@@ -8,6 +8,8 @@ import { AnalysisSchema, type Analysis, type AnalyzeRequest, type AskRequest } f
 // Free-tier friendly alternative to Claude (Google AI Studio key, no billing).
 // The "-latest" aliases always point at the current Flash models.
 export const GEMINI_MODEL = process.env.GEMINI_MODEL ?? "gemini-flash-latest";
+/** Deep analyses (Premium): the current Pro model. */
+export const GEMINI_DEEP_MODEL = process.env.GEMINI_DEEP_MODEL ?? "gemini-pro-latest";
 
 // Free-tier capacity is shared: when a model is overloaded, fall through to
 // the next one instead of failing the analysis.
@@ -16,6 +18,8 @@ const FALLBACK_STATUSES = new Set([404, 429, 500, 503, 504]);
 // A saturated model can hang for minutes before failing: give each attempt
 // this long, then move on to the next model in the chain.
 const ATTEMPT_TIMEOUT_MS = 30_000;
+// A Pro model thinks longer; the route allows 60 s in all.
+const DEEP_TIMEOUT_MS = 55_000;
 
 /** Overloaded, rate-limited, missing or stuck: worth trying the next model. */
 function canFallBack(error: unknown, signal?: AbortSignal) {
@@ -62,7 +66,7 @@ export async function analyzeWithGemini(
   let lastError: unknown;
   for (const candidate of chain) {
     try {
-      return await analyzeOnce(client, candidate, input, signal);
+      return await analyzeOnce(client, candidate, input, signal, options.deep ? DEEP_TIMEOUT_MS : ATTEMPT_TIMEOUT_MS);
     } catch (error) {
       lastError = error;
       const retryable = canFallBack(error, signal);
@@ -78,6 +82,7 @@ async function analyzeOnce(
   model: string,
   input: AnalyzeRequest,
   signal?: AbortSignal,
+  timeoutMs = ATTEMPT_TIMEOUT_MS,
 ): Promise<{ analysis: Analysis; model: string }> {
   const response = await client.models.generateContent({
     model,
@@ -87,7 +92,7 @@ async function analyzeOnce(
       responseMimeType: "application/json",
       responseJsonSchema,
       abortSignal: signal,
-      httpOptions: { timeout: ATTEMPT_TIMEOUT_MS },
+      httpOptions: { timeout: timeoutMs },
     },
   });
 

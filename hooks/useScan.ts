@@ -11,7 +11,7 @@ import { notify } from "@/services/notifications";
 import { ensureCameraAccess } from "@/services/permissions";
 import { updateEarlierParcelScans } from "@/services/parcelLinking";
 import { compactOldPhotos } from "@/services/photoStorage";
-import { trialStore } from "@/services/trial";
+import { planStore } from "@/services/plan";
 import { insuranceReminderAt, scheduleReminder } from "@/services/reminders";
 import { useReminderTexts } from "./useReminderTexts";
 import { ApiError } from "@/types/api";
@@ -26,6 +26,8 @@ export type ScanErrorKind =
   | "invalid_key"
   | "trial_exhausted"
   | "server_busy"
+  | "plan_required"
+  | "plan_limit"
   | "invalid_request"
   | "upstream_error"
   | "image"
@@ -44,7 +46,7 @@ type Prepared = Awaited<ReturnType<typeof prepareCapture>>;
 function toErrorKind(error: unknown): ScanErrorKind {
   if (error instanceof ApiError) {
     const code = error.code;
-    return code === "method_not_allowed" || code === "ask_limit" ? "unknown" : code;
+    return code === "method_not_allowed" || code === "ask_limit" || code === "deep_limit" ? "unknown" : code;
   }
   return "unknown";
 }
@@ -76,7 +78,8 @@ export function useScan(mode: ScanMode) {
           controller.signal,
         );
 
-        if (meta.trial) trialStore.update(meta.trial);
+        const used = meta.quota ?? meta.trial;
+        if (used) planStore.setUsage({ scans: used.used });
 
         const id = createId();
         await historyStore.save({
@@ -112,7 +115,7 @@ export function useScan(mode: ScanMode) {
         setState({ phase: "idle" });
       } catch (error) {
         if (controller.signal.aborted) return;
-        if (error instanceof ApiError && error.code === "trial_exhausted") trialStore.markExhausted();
+        if (error instanceof ApiError && (error.code === "trial_exhausted" || error.code === "plan_limit")) planStore.markScansUsedUp();
         haptics.error();
         setState({ phase: "error", previewSrc: prepared.preview.dataUrl, error: toErrorKind(error) });
       }

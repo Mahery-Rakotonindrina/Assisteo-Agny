@@ -14,7 +14,8 @@ export type HistoryEntry = {
   /** Medium JPEG data URL for the result screen. */
   preview: string;
   analysis: Analysis;
-  meta: { model: string; demo: boolean; durationMs: number };
+  /** `deep`: analysed again with the more capable model (Premium). */
+  meta: { model: string; demo: boolean; durationMs: number; deep?: boolean };
   /** Id of a scheduled local notification, if the user asked for a reminder. */
   reminderId?: number;
   /** When this device's local notification fires (device-local, like reminderId). */

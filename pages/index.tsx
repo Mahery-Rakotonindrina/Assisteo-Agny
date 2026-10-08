@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { Apple, ArrowRight, Box, Car, FileText, FlaskConical, ImageUp, KeyRound, Lightbulb, RotateCcw, Sparkles, X } from "lucide-react";
+import { Apple, ArrowRight, Box, Car, FileText, FlaskConical, ImageUp, Lightbulb, RotateCcw, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/Button";
 import { CaptureOrb } from "@/components/CaptureOrb";
 import { DropZone } from "@/components/DropZone";
@@ -12,7 +12,7 @@ import { NextReminder } from "@/components/NextReminder";
 import { ScanStage } from "@/components/ScanStage";
 import { ScanWait } from "@/components/ScanWait";
 import { SegmentedControl } from "@/components/SegmentedControl";
-import { AI_SETTINGS_HREF, TrialOver, TrialPill } from "@/components/Trial";
+import { PLANS_HREF, TrialOver, TrialPill } from "@/components/Trial";
 import { useAiStatus } from "@/hooks/useAiStatus";
 import { useHistory } from "@/hooks/useHistory";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
@@ -26,6 +26,10 @@ import { easeOut, rise, stagger } from "@/lib/motion";
 import styles from "@/styles/Scan.module.scss";
 
 const modeIcons = { auto: Sparkles, food: Apple, document: FileText, vehicle: Car, object: Box } as const;
+/** A plan's scans are shown once this few are left in the month. */
+const LOW_MONTH_SCANS = 10;
+/** Errors the offers answer: no scans left, the AI busy, an own key without a plan. */
+const planErrors = new Set(["trial_exhausted", "server_busy", "plan_limit", "plan_required"]);
 
 function greetingKey() {
   const hour = new Date().getHours();
@@ -100,11 +104,15 @@ export default function ScanPage() {
                   {t("scan.headline")} <em>{t("scan.headlineAccent")}</em>
                 </h1>
                 <p className={styles.lead}>{t("scan.webIntro")}</p>
-                {trial.limited && !trial.exhausted && trial.remaining !== null && trial.limit !== null && (
-                  <div className={styles.trial}>
-                    <TrialPill remaining={trial.remaining} limit={trial.limit} />
-                  </div>
-                )}
+                {trial.limited &&
+                  !trial.exhausted &&
+                  trial.remaining !== null &&
+                  trial.limit !== null &&
+                  (trial.kind === "trial" || trial.remaining <= LOW_MONTH_SCANS) && (
+                    <div className={styles.trial}>
+                      <TrialPill remaining={trial.remaining} limit={trial.limit} kind={trial.kind} />
+                    </div>
+                  )}
               </motion.header>
 
               {aiStatus.status === "demo" && (
@@ -171,7 +179,7 @@ export default function ScanPage() {
 
             <motion.div variants={rise} className={styles.capture}>
               {trial.exhausted && trial.limit !== null ? (
-                <TrialOver limit={trial.limit} />
+                <TrialOver limit={trial.limit} kind={trial.kind} plan={trial.plan} canUseOwnKey={trial.canUseOwnKey} />
               ) : (
                 <>
                   <div className={styles.orb}>
@@ -263,10 +271,10 @@ export default function ScanPage() {
             )}
 
             <div className={styles.actions}>
-              {state.phase === "error" && (state.error === "trial_exhausted" || state.error === "server_busy") ? (
+              {state.phase === "error" && planErrors.has(state.error) ? (
                 <>
-                  <Button size="lg" href={AI_SETTINGS_HREF} icon={<KeyRound />}>
-                    {t("trial.addKey")}
+                  <Button size="lg" href={PLANS_HREF} icon={<Sparkles />}>
+                    {t("trial.seeOffers")}
                   </Button>
                   <Button size="lg" variant="secondary" onClick={reset}>
                     {t("scan.cancel")}

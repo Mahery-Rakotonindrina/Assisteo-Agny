@@ -6,6 +6,7 @@ import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react
 import { BellRing, Camera, Check, ChevronRight, Cpu, FileText, Globe, Info, Moon, Monitor, Palette, RotateCcw, Send, ShieldCheck, Smartphone, Sun, Trash2, Vibrate, X } from "lucide-react";
 import { AccountSettings } from "@/components/AccountSettings";
 import { AiKeySettings } from "@/components/AiKeySettings";
+import { PlanSettings } from "@/components/PlanSettings";
 import { Button } from "@/components/Button";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { Logo } from "@/components/Logo";
@@ -147,6 +148,10 @@ export default function SettingsPage() {
             <AccountSettings />
           </Group>
         )}
+
+        <Group id="plan" title={t("plans.section")}>
+          <PlanSettings />
+        </Group>
 
         <Group id="ai-engine" title={t("settings.aiEngine")}>
           <AiKeySettings requestOpen={section === "ai"} />

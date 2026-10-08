@@ -37,14 +37,14 @@ jobs:
           fi
           echo "API OK: $(cat health.json)"
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: npm
 
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 21
@@ -124,13 +124,13 @@ jobs:
         if: always()
         run: rm -f "$RUNNER_TEMP/release.p12" android/app/google-services.json
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: assisteo-agny-android
           path: dist/*.apk
           retention-days: 30
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: steps.signing.outputs.release == 'true'
         with:
           name: assisteo-agny-play-store-bundle

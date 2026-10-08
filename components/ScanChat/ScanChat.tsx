@@ -2,12 +2,13 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { Fragment, useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { ArrowUp, RotateCcw, Sparkles, Trash2 } from "lucide-react";
-import { AI_SETTINGS_HREF } from "@/components/Trial";
+import { PLANS_HREF } from "@/components/Trial";
 import { useTranslation } from "@/hooks/useTranslation";
 import { easeOut } from "@/lib/motion";
 import { askAboutScan } from "@/services/chatService";
 import { haptics } from "@/services/device";
 import { historyStore } from "@/services/historyStore";
+import { planStore } from "@/services/plan";
 import { ApiError } from "@/types/api";
 import type { ChatEntry, HistoryEntry } from "@/types/history";
 import styles from "./ScanChat.module.scss";
@@ -43,7 +44,7 @@ function renderAnswer(text: string) {
   return blocks;
 }
 
-type ErrorKind = "network" | "rate_limited" | "refused" | "unavailable" | "ask_limit" | "server_busy" | "invalid_key" | "billing" | "unknown";
+type ErrorKind = "network" | "rate_limited" | "refused" | "unavailable" | "ask_limit" | "server_busy" | "plan_required" | "invalid_key" | "billing" | "unknown";
 
 /** A conversation about one scan: the AI sees the photo and its own analysis. */
 export function ScanChat({ entry }: { entry: HistoryEntry }) {
@@ -65,17 +66,18 @@ export function ScanChat({ entry }: { entry: HistoryEntry }) {
     setSending(true);
     setError(null);
     try {
-      const { answer } = await askAboutScan(
+      const { answer, usage } = await askAboutScan(
         entry,
         conversation.map(({ role, content }) => ({ role, content })),
         locale,
       );
+      if (usage) planStore.setUsage({ questionsToday: usage.used });
       await historyStore.update(entry.id, { chat: [...conversation, { role: "assistant", content: answer, at: timestamp() }] });
       haptics.tap();
     } catch (err) {
       haptics.error();
       const code = err instanceof ApiError ? err.code : "unknown";
-      const known: ErrorKind[] = ["network", "rate_limited", "refused", "unavailable", "ask_limit", "server_busy", "invalid_key", "billing"];
+      const known: ErrorKind[] = ["network", "rate_limited", "refused", "unavailable", "ask_limit", "server_busy", "plan_required", "invalid_key", "billing"];
       setError(known.includes(code as ErrorKind) ? (code as ErrorKind) : "unknown");
     } finally {
       setSending(false);
@@ -154,8 +156,8 @@ export function ScanChat({ entry }: { entry: HistoryEntry }) {
         <div className={styles.error} role="alert">
           <p>{error === "ask_limit" ? t("chat.limit") : t(`errors.${error}`)}</p>
           <div className={styles.errorActions}>
-            {error === "ask_limit" || error === "server_busy" ? (
-              <Link href={AI_SETTINGS_HREF}>{t("trial.addKey")}</Link>
+            {error === "ask_limit" || error === "server_busy" || error === "plan_required" ? (
+              <Link href={PLANS_HREF}>{t("trial.seeOffers")}</Link>
             ) : (
               awaitingAnswer && (
                 <button type="button" onClick={() => void requestAnswer(chat)}>

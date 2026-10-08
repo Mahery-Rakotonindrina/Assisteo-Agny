@@ -1,6 +1,6 @@
 import type { IncomingHttpHeaders } from "node:http";
 import { analyzeWithClaude, askWithClaude, CLAUDE_MODEL, listClaudeModels, verifyClaudeKey, type EngineOptions } from "./claude";
-import { analyzeWithGemini, askWithGemini, GEMINI_MODEL, listGeminiModels, verifyGeminiKey } from "./gemini";
+import { analyzeWithGemini, askWithGemini, GEMINI_DEEP_MODEL, GEMINI_MODEL, listGeminiModels, verifyGeminiKey } from "./gemini";
 import { analyzeWithOpenAICompatible, askWithOpenAICompatible, listOpenAICompatibleModels, verifyOpenAICompatibleKey } from "./openaiCompatible";
 import {
   AiOverrideSchema,
@@ -15,15 +15,17 @@ import {
 
 type Engine = (input: AnalyzeRequest, signal?: AbortSignal, options?: EngineOptions) => Promise<{ analysis: Analysis; model: string }>;
 
-const serverEngines: Record<Exclude<AiProvider, "demo">, { analyze: Engine; model: string; configured: boolean }> = {
+const serverEngines: Record<Exclude<AiProvider, "demo">, { analyze: Engine; model: string; deepModel: string; configured: boolean }> = {
   claude: {
     analyze: analyzeWithClaude,
     model: CLAUDE_MODEL,
+    deepModel: process.env.ANTHROPIC_DEEP_MODEL ?? CLAUDE_MODEL,
     configured: Boolean(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN),
   },
   gemini: {
     analyze: analyzeWithGemini,
     model: GEMINI_MODEL,
+    deepModel: GEMINI_DEEP_MODEL,
     configured: Boolean(process.env.GEMINI_API_KEY),
   },
 };
@@ -66,7 +68,8 @@ export function readOverride(headers: IncomingHttpHeaders): AiOverride | null | 
 }
 
 /** Analyses with the user's own key when given, else with the server's engine. */
-export function analyzeImage(input: AnalyzeRequest, signal?: AbortSignal, override?: AiOverride | null) {
+/** Analyses with the user's own key when given, else the server's engine (its bigger model for a deep analysis). */
+export function analyzeImage(input: AnalyzeRequest, signal?: AbortSignal, override?: AiOverride | null, deep = false) {
   if (override) {
     switch (override.provider) {
       case "claude":
@@ -78,7 +81,8 @@ export function analyzeImage(input: AnalyzeRequest, signal?: AbortSignal, overri
     }
   }
   if (activeProvider === "demo") throw new Error("analyzeImage called in demo mode.");
-  return serverEngines[activeProvider].analyze(input, signal);
+  const engine = serverEngines[activeProvider];
+  return deep ? engine.analyze(input, signal, { model: engine.deepModel, deep: true }) : engine.analyze(input, signal);
 }
 
 /** Answers a follow-up question with the user's own key when given, else the server's engine. */

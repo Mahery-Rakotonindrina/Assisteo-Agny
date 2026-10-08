@@ -1,18 +1,28 @@
 import Link from "next/link";
 import { motion } from "motion/react";
-import { ExternalLink, Gift, KeyRound } from "lucide-react";
+import { CalendarClock, Gift, KeyRound, Sparkles } from "lucide-react";
 import { Button } from "@/components/Button";
 import { useTranslation } from "@/hooks/useTranslation";
+import type { PlanId } from "@/lib/plans";
 import { spring } from "@/lib/motion";
 import styles from "./Trial.module.scss";
 
 export const AI_SETTINGS_HREF = "/settings?section=ai";
+export const PLANS_HREF = "/plans";
 
-/** "Free trial · 2/3 left" with one dot per scan. */
-export function TrialPill({ remaining, limit }: { remaining: number; limit: number }) {
+/** Free trial: "Free trial · 2/3" with one dot per scan. A plan: "8 scans left this month". */
+export function TrialPill({ remaining, limit, kind }: { remaining: number; limit: number; kind: "trial" | "month" }) {
   const { t } = useTranslation();
+  if (kind === "month") {
+    return (
+      <Link href={PLANS_HREF} className={styles.pill}>
+        <CalendarClock size={15} />
+        <span>{t("trial.pillMonth", { remaining })}</span>
+      </Link>
+    );
+  }
   return (
-    <Link href={AI_SETTINGS_HREF} className={styles.pill}>
+    <Link href={PLANS_HREF} className={styles.pill}>
       <Gift size={15} />
       <span>{t("trial.pill", { remaining, limit })}</span>
       <span className={styles.dots} aria-hidden>
@@ -30,8 +40,8 @@ export function TrialPill({ remaining, limit }: { remaining: number; limit: numb
   );
 }
 
-/** Replaces the capture controls once the free scans are used up. */
-export function TrialOver({ limit }: { limit: number }) {
+/** Replaces the capture controls once the free scans, or this month's, are used up. */
+export function TrialOver({ limit, kind, plan, canUseOwnKey }: { limit: number; kind: "trial" | "month"; plan: PlanId; canUseOwnKey: boolean }) {
   const { t } = useTranslation();
   return (
     <motion.div
@@ -43,16 +53,18 @@ export function TrialOver({ limit }: { limit: number }) {
       aria-labelledby="trial-over-title"
     >
       <span className={styles.icon} aria-hidden>
-        <KeyRound size={30} />
+        {kind === "trial" ? <Gift size={30} /> : <CalendarClock size={30} />}
       </span>
-      <h2 id="trial-over-title">{t("trial.overTitle")}</h2>
-      <p>{t("trial.overBody", { limit })}</p>
-      <Button href={AI_SETTINGS_HREF} size="lg" icon={<KeyRound />} block>
-        {t("trial.addKey")}
+      <h2 id="trial-over-title">{kind === "trial" ? t("trial.overTitle") : t("trial.overTitleMonth")}</h2>
+      <p>{kind === "trial" ? t("trial.overBody", { limit }) : t("trial.overBodyMonth", { limit, plan: t(`plans.names.${plan}`) })}</p>
+      <Button href={PLANS_HREF} size="lg" icon={<Sparkles />} block>
+        {t("trial.seeOffers")}
       </Button>
-      <a className={styles.link} href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer">
-        {t("trial.freeKey")} <ExternalLink size={13} />
-      </a>
+      {canUseOwnKey && (
+        <Button href={AI_SETTINGS_HREF} variant="ghost" icon={<KeyRound />} block>
+          {t("trial.useOwnKey")}
+        </Button>
+      )}
     </motion.div>
   );
 }
