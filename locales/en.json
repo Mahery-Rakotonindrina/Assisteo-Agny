@@ -629,6 +629,23 @@
     "markOngoing": "Not received yet",
     "remove": "Remove",
     "confirmRemove": "Remove from the list?",
-    "removed": "Parcel removed from the list"
+    "removed": "Parcel removed from the list",
+    "deliveredWaiting": "Delivered by the carrier · not received yet",
+    "cost": "Cost in ariary",
+    "price": "Item price",
+    "paidOnShop": "Paid on the shop: {amount}",
+    "feeName": "Fee name",
+    "feeAmount": "Amount of {name}",
+    "removeFee": "Remove {name}",
+    "fees": {
+      "freight": "Freight",
+      "customs": "Customs",
+      "delivery": "Delivery",
+      "commission": "Commission",
+      "other": "Other fee"
+    },
+    "totalSpent": "Total spent",
+    "ofFees": "in fees",
+    "totalAll": "Total spent: {amount}"
   }
 }

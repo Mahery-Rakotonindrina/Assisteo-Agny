@@ -26,6 +26,11 @@ export function startOfDay(timestamp: number) {
   return date.getTime();
 }
 
+/** An amount in Malagasy ariary, e.g. "245 000 Ar" (no decimals). */
+export function formatAriary(value: number, locale: Locale) {
+  return `${new Intl.NumberFormat(localeTags[locale], { maximumFractionDigits: 0 }).format(Math.round(value))} Ar`;
+}
+
 export function formatNumber(value: number, locale: Locale) {
   return new Intl.NumberFormat(localeTags[locale], { maximumFractionDigits: 0 }).format(value);
 }
