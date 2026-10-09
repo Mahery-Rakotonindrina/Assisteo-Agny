@@ -29,6 +29,10 @@ export const parcelStatuses = [
   "unknown",
 ] as const;
 export type ParcelStatus = (typeof parcelStatuses)[number];
+
+/** How a parcel travels to Madagascar: by air ("NORMAL" at the forwarders) or by sea ("SEA"). */
+export const shippingModes = ["air", "sea"] as const;
+export type ShippingMode = (typeof shippingModes)[number];
 export type Category = (typeof categories)[number];
 
 /** The major food allergens, checked against the user's own (Settings → Food). */
@@ -192,6 +196,12 @@ export const AnalysisSchema = z.object({
         .string()
         .nullable()
         .describe("Destination city or region only. Never the recipient's name, phone number or street address."),
+      shippingMode: z
+        .enum(shippingModes)
+        .nullable()
+        .describe(
+          "How it travels to Madagascar when the screen or label says so: sea for sea freight (SEA, 海运, maritime, bateau, conteneur), air for air freight (NORMAL, AIR, 空运, aérien, avion); null if not shown.",
+        ),
     })
     .nullable()
     .describe("Only for parcels (order, shipping or tracking screens and shipping labels), null otherwise."),
@@ -235,10 +245,10 @@ export function normalizeStoredAnalysis(raw: unknown): unknown {
     recipe: null,
     diet: null,
     vehicle: null,
-    parcel: null,
     list: null,
     ...analysis,
     document: document ? { expiresOn: null, isInsurance: false, paper: null, bill: null, ...document } : null,
+    parcel: analysis.parcel ? { shippingMode: null, ...(analysis.parcel as Record<string, unknown>) } : null,
   };
 }
 

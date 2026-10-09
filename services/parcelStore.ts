@@ -1,5 +1,5 @@
 import { clear, createStore, del, get, set, values } from "idb-keyval";
-import type { ParcelStatus } from "@/lib/ai/schema";
+import type { ParcelStatus, ShippingMode } from "@/lib/ai/schema";
 import { encodeImage } from "@/lib/image";
 import { isNewerParcel, sameParcel, type ParcelInfo } from "@/lib/parcels";
 import type { HistoryEntry } from "@/types/history";
@@ -27,6 +27,8 @@ export type Parcel = {
   title: string;
   /** Who the parcel is for (a family member, a customer…). */
   client?: string;
+  /** Sea or air, chosen by the user; otherwise read on the scans or guessed (see shippingModeOf). */
+  shippingMode?: ShippingMode;
   /**
    * A small copy of its first scan's photo (JPEG data URL), kept with the
    * parcel so it stays recognisable once the scans are deleted.
@@ -161,9 +163,9 @@ export const parcelStore = {
    * Saves the user's corrections. A status changed by hand is added to the
    * timeline, like a scan would. `receivedAt`: a date corrects when the parcel
    * was picked up (and marks it received), null marks it not received,
-   * absent keeps it.
+   * absent keeps it. `shippingMode`: null goes back to automatic, absent keeps it.
    */
-  async edit(id: string, changes: { title: string; client?: string; info: ParcelInfo; receivedAt?: number | null }) {
+  async edit(id: string, changes: { title: string; client?: string; info: ParcelInfo; receivedAt?: number | null; shippingMode?: ShippingMode | null }) {
     const current = await get<Parcel>(id, db());
     if (!current) return;
     const statusChanged = changes.info.status !== current.info.status;
@@ -173,6 +175,7 @@ export const parcelStore = {
       client: changes.client?.trim() || undefined,
       info: changes.info,
       receivedAt: changes.receivedAt === undefined ? current.receivedAt : (changes.receivedAt ?? undefined),
+      shippingMode: changes.shippingMode === undefined ? current.shippingMode : (changes.shippingMode ?? undefined),
       timeline: statusChanged
         ? [...current.timeline, { at: Date.now(), status: changes.info.status, statusLabel: changes.info.statusLabel, event: changes.info.lastEvent, scanId: "" }]
         : current.timeline,

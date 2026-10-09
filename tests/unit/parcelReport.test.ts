@@ -22,6 +22,7 @@ const info = (patch: Partial<ParcelInfo> = {}): ParcelInfo => ({
   shippedAt: null,
   estimatedDelivery: null,
   destinationCity: null,
+  shippingMode: null,
   ...patch,
 });
 const parcel = (id: string, patch: Partial<Parcel> = {}): Parcel => ({
@@ -91,7 +92,7 @@ describe("export", () => {
         parcel("a", {
           client: "Rado",
           title: "Casque carbone",
-          info: info({ orderedAt: "2026-10-01", items: [{ name: "Casque", variant: "Noir, M", quantity: 2, price: "¥215" }] }),
+          info: info({ orderedAt: "2026-10-01", trackingNumber: "TNR-NORMAL-7", items: [{ name: "Casque", variant: "Noir, M", quantity: 2, price: "¥215" }] }),
           priceMga: 120000,
           fees: [
             { id: "f1", label: "Fret", amountMga: 45000 },
@@ -113,21 +114,22 @@ describe("export", () => {
     expect(sheet.getRow(4).values).toContain("Prix de l’article");
 
     // First parcel: amounts are numbers shown as "120 000 Ar", days are dates.
-    const price = sheet.getCell("K5");
+    expect(sheet.getCell("G5").value).toBe("Aérien (NORMAL)");
+    const price = sheet.getCell("L5");
     expect(price.value).toBe(120000);
     expect(price.numFmt).toBe('#,##0" Ar"');
-    expect(sheet.getCell("L5").value).toBe(75000);
-    expect(sheet.getCell("N5").value).toBe(195000);
-    expect((sheet.getCell("H5").value as Date).toISOString().slice(0, 10)).toBe("2026-10-01");
-    expect(sheet.getCell("G5").value).toBe("Reçu");
-    expect(String(sheet.getCell("M5").value)).toMatch(/^Fret 45\s000 Ar, Douane 30\s000 Ar$/);
+    expect(sheet.getCell("M5").value).toBe(75000);
+    expect(sheet.getCell("O5").value).toBe(195000);
+    expect((sheet.getCell("I5").value as Date).toISOString().slice(0, 10)).toBe("2026-10-01");
+    expect(sheet.getCell("H5").value).toBe("Reçu");
+    expect(String(sheet.getCell("N5").value)).toMatch(/^Fret 45\s000 Ar, Douane 30\s000 Ar$/);
 
     // The totals row, with its value for previews that don't compute.
     expect(sheet.getCell("A7").value).toBe("Total");
-    const total = sheet.getCell("N7").value as { formula: string; result: number };
+    const total = sheet.getCell("O7").value as { formula: string; result: number };
     expect(total.formula).toMatch(/SUBTOTAL\(109/);
     expect(total.result).toBe(245000);
-    expect(sheet.getCell("N7").numFmt).toBe('#,##0" Ar"');
+    expect(sheet.getCell("O7").numFmt).toBe('#,##0" Ar"');
 
     const recap = book.getWorksheet("Par client")!;
     expect(recap.getCell("A5").value).toBe("Rado");

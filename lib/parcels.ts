@@ -1,4 +1,4 @@
-import type { Analysis, ParcelStatus } from "@/lib/ai/schema";
+import type { Analysis, ParcelStatus, ShippingMode } from "@/lib/ai/schema";
 
 // Shared parcel helpers: matching scans of the same parcel, status order and
 // the public tracking link.
@@ -102,6 +102,44 @@ export function compareParcels(a: Sortable, b: Sortable) {
     if (byStatus) return byStatus;
   }
   return parcelActivity(b) - parcelActivity(a) || b.createdAt - a.createdAt || a.id.localeCompare(b.id);
+}
+
+// ---- Sea or air ---------------------------------------------------------------------
+// Forwarders to Madagascar mark parcels SEA (by boat, ~45-60 days) or NORMAL
+// (by plane, ~1-2 weeks), often in the tracking number or the shipping mark.
+
+const seaWords = /\b(SEA|MARITIME|BATEAU|CONTENEUR|CONTAINER)\b|海运|海派|船运/i;
+const airWords = /\b(NORMAL|AIR|AERIEN|AÉRIEN|AVION)\b|空运|空派/i;
+
+/** "sea" or "air" when the texts say so, null when they say nothing or both. */
+export function detectShippingMode(texts: Array<string | null | undefined>): ShippingMode | null {
+  const text = texts.filter(Boolean).join(" | ");
+  const sea = seaWords.test(text);
+  const air = airWords.test(text);
+  return sea === air ? null : sea ? "sea" : "air";
+}
+
+type Shippable = { shippingMode?: ShippingMode; info: ParcelInfo; timeline?: Array<{ event: ParcelInfo["lastEvent"]; statusLabel: string }> };
+
+/**
+ * How a parcel travels and how that is known: chosen by the user, read on a
+ * scan by the AI, or guessed from the tracking texts (never the item names:
+ * "Air Max" is a shoe).
+ */
+export function shippingModeOf(parcel: Shippable): { mode: ShippingMode | null; source: "manual" | "scan" | "guess" | null } {
+  if (parcel.shippingMode) return { mode: parcel.shippingMode, source: "manual" };
+  if (parcel.info.shippingMode) return { mode: parcel.info.shippingMode, source: "scan" };
+  const { info } = parcel;
+  const guess = detectShippingMode([
+    info.trackingNumber,
+    info.orderNumber,
+    info.carrier,
+    info.statusLabel,
+    info.lastEvent?.description,
+    info.lastEvent?.location,
+    ...(parcel.timeline ?? []).flatMap((item) => [item.statusLabel, item.event?.description, item.event?.location]),
+  ]);
+  return { mode: guess, source: guess ? "guess" : null };
 }
 
 /** Public multi-carrier tracking page for a tracking number. */

@@ -30,6 +30,7 @@ export function ParcelCard({ parcel }: { parcel: ParcelInfo }) {
     [t("parcel.shippedAt"), parcel.shippedAt],
     [t("parcel.estimatedDelivery"), parcel.estimatedDelivery],
     [t("parcel.destination"), parcel.destinationCity],
+    [t("parcel.shipping.label"), parcel.shippingMode ? t(`parcel.shipping.${parcel.shippingMode}`) : null],
     [t("parcel.total"), parcel.total],
   ];
 

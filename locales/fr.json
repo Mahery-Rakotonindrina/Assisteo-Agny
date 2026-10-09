@@ -840,7 +840,21 @@
     "inList": "Ce colis est dans ta liste ({status}).",
     "earlierUpdated": "Tu l’avais déjà scanné le {date} : ce scan a été mis à jour avec le dernier statut.",
     "openEarlier": "Voir l’ancien scan",
-    "limitReached": "Ton offre suit jusqu’à {count} colis à la fois. Marque des colis comme reçus, ou passe à une offre supérieure."
+    "limitReached": "Ton offre suit jusqu’à {count} colis à la fois. Marque des colis comme reçus, ou passe à une offre supérieure.",
+    "shipping": {
+      "label": "Mode d’envoi",
+      "air": "Aérien (NORMAL)",
+      "sea": "Maritime (SEA)",
+      "all": "Tous les envois",
+      "auto": "Automatique : {mode}",
+      "autoUnknown": "Automatique (pas encore détecté)",
+      "hint": "Détecté sur les captures (SEA, NORMAL, 海运, 空运…). Choisis-le si ce n’est pas le bon.",
+      "source": {
+        "manual": "Choisi à la main",
+        "scan": "Lu sur la capture",
+        "guess": "Déduit du n° de suivi ou du transitaire"
+      }
+    }
   },
   "parcels": {
     "title": "Mes colis",
@@ -960,7 +974,8 @@
         "salePriceMga": "Prix de vente",
         "paidMga": "Payé par le client",
         "dueMga": "Reste à payer",
-        "profitMga": "Bénéfice"
+        "profitMga": "Bénéfice",
+        "shipping": "Envoi"
       },
       "working": "Préparation du fichier…",
       "sheetParcels": "Colis",

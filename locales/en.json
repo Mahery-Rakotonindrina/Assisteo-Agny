@@ -840,7 +840,21 @@
     "inList": "This parcel is in your list ({status}).",
     "earlierUpdated": "You scanned it before on {date}: that scan now shows the latest status.",
     "openEarlier": "See the earlier scan",
-    "limitReached": "Your plan follows up to {count} parcels at once. Mark some as received, or move to a bigger plan."
+    "limitReached": "Your plan follows up to {count} parcels at once. Mark some as received, or move to a bigger plan.",
+    "shipping": {
+      "label": "Shipping",
+      "air": "Air (NORMAL)",
+      "sea": "Sea (SEA)",
+      "all": "All shipments",
+      "auto": "Automatic: {mode}",
+      "autoUnknown": "Automatic (not found yet)",
+      "hint": "Found on the screenshots (SEA, NORMAL, 海运, 空运…). Pick it if it is wrong.",
+      "source": {
+        "manual": "Picked by hand",
+        "scan": "Read on the screenshot",
+        "guess": "Guessed from the tracking number or forwarder"
+      }
+    }
   },
   "parcels": {
     "title": "My parcels",
@@ -960,7 +974,8 @@
         "salePriceMga": "Sale price",
         "paidMga": "Paid by the client",
         "dueMga": "Still to pay",
-        "profitMga": "Profit"
+        "profitMga": "Profit",
+        "shipping": "Shipping"
       },
       "working": "Preparing the file…",
       "sheetParcels": "Parcels",
