@@ -10,7 +10,8 @@
     "settings": "Settings",
     "back": "Back",
     "admin": "Admin",
-    "lists": "Lists"
+    "lists": "Lists",
+    "food": "Food log"
   },
   "scan": {
     "greeting": {
@@ -1197,7 +1198,50 @@
     "copyTranslation": "Copy the translation",
     "copied": "Text copied"
   },
+  "shortcuts": {
+    "label": "Shortcuts",
+    "foodHint": "What you ate today"
+  },
   "food": {
+    "title": "Food journal",
+    "subtitle": "What you eat each day, from your meal photos.",
+    "emptyTitle": "Your journal is empty",
+    "emptyBody": "Take a photo of your meal: the AI estimates the calories, then tap “I ate this”.",
+    "scanMeal": "Scan a meal",
+    "previousDay": "Previous day",
+    "nextDay": "Next day",
+    "ofGoal": "of {goal} kcal",
+    "kcalLeft": "{count} kcal left",
+    "kcalOver": "{count} kcal over your goal",
+    "kcal": "{count} kcal",
+    "todayKcal": "{count} kcal today",
+    "goals": "My goals",
+    "goalCalories": "Calories",
+    "goalsHint": "A common adult reference: 2000 kcal. A doctor or a dietitian can give you goals that suit you.",
+    "goalsSaved": "Goals saved",
+    "nothingYet": "Nothing logged that day.",
+    "fromScans": "From my scans",
+    "week": "Last 7 days",
+    "estimateNote": "Calories are estimates made from the photos.",
+    "meal": "Meal",
+    "meals": {
+      "breakfast": "Breakfast",
+      "lunch": "Lunch",
+      "dinner": "Dinner",
+      "snack": "Snack"
+    },
+    "portions": "Portions",
+    "portionCount": "{count} portion(s)",
+    "logButton": "I ate this · {kcal} kcal",
+    "logged": "Added to the journal ({meal})",
+    "loggedShort": "Added to today’s journal",
+    "removeLog": "Remove from the journal",
+    "openJournal": "See my journal",
+    "journalSection": "Food journal",
+    "journalShort": "Journal",
+    "inJournal": "In today’s journal",
+    "ate": "I ate this",
+    "ateShort": "Ate it",
     "dietSection": "Allergens and diets",
     "allergensTitle": "Likely allergens",
     "noAllergen": "No major allergen spotted.",

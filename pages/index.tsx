@@ -12,6 +12,7 @@ import { HistoryItem } from "@/components/HistoryItem";
 import { NextReminder } from "@/components/NextReminder";
 import { PagesTray } from "@/components/PagesTray";
 import { PendingScans } from "@/components/PendingScans";
+import { Shortcuts } from "@/components/Shortcuts";
 import { PlanBadge } from "@/components/PlanBadge";
 import { PlanNotice } from "@/components/PlanWelcome";
 import { ScanStage } from "@/components/ScanStage";
@@ -252,6 +253,12 @@ export default function ScanPage() {
             {hasReminder && (
               <motion.div variants={rise} className={styles.reminderSlot}>
                 <NextReminder entries={entries} />
+              </motion.div>
+            )}
+
+            {recent.length > 0 && (
+              <motion.div variants={rise}>
+                <Shortcuts entries={entries} />
               </motion.div>
             )}
 

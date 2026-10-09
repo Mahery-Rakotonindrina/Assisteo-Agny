@@ -1,5 +1,6 @@
 import type { Analysis, ChatMessage, ScanMode, TranslateLanguage } from "@/lib/ai/schema";
 import type { ScannedCode } from "@/lib/codes";
+import type { MealLog } from "@/lib/food";
 
 export type ChatEntry = ChatMessage & { at: number };
 
@@ -33,6 +34,8 @@ export type HistoryEntry = {
   reminderAt?: number;
   /** Follow-up conversation about this scan. */
   chat?: ChatEntry[];
+  /** Food journal: each time this food was eaten. */
+  meals?: MealLog[];
   /** The user's "was this right?" vote, kept on this device. */
   feedback?: { vote: "up" | "down"; reason?: FeedbackReason; at: number };
 

@@ -28,7 +28,7 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Valeurs nutritionnelles estimées par portion (calories, protéines, glucides, lipides)
 - [x] Recette complète : portions, temps, difficulté, ingrédients, étapes, astuce du chef
 - [x] Conseils
-- [ ] Journal alimentaire du jour, avec objectifs
+- [x] Journal alimentaire du jour, avec objectifs : « J’ai mangé ça » (repas, portions), totaux du jour face aux objectifs, 7 derniers jours, synchronisé
 - [x] Allergènes et régimes (sans gluten, halal…) : allergènes probables et régimes compatibles sur chaque aliment, alerte si ça touche tes allergies ou ton régime (Réglages → Alimentation)
 - [x] Liste de courses tirée d’une recette : les ingrédients vont dans une nouvelle liste ou une liste en cours, sans doublons
 

@@ -1,0 +1,469 @@
+@use "mixins" as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  max-width: 720px;
+}
+
+.header {
+  padding-top: 1.25rem;
+
+  @include desktop {
+    padding-top: 0;
+  }
+
+  h1 {
+    @include display(2.6rem);
+  }
+
+  p {
+    margin-top: 0.3rem;
+    color: var(--text-muted);
+  }
+}
+
+// ---- Day ---------------------------------------------------------------------------
+
+.dayNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+
+  strong {
+    font-size: 1.05rem;
+  }
+
+  button {
+    display: grid;
+    place-items: center;
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 50%;
+    background: var(--surface-strong);
+
+    &:disabled {
+      opacity: 0.35;
+    }
+  }
+}
+
+.summary {
+  @include card;
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 1.1rem 1.2rem;
+}
+
+.ring {
+  position: relative;
+  flex-shrink: 0;
+  width: 8.5rem;
+  height: 8.5rem;
+
+  svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+
+  > span {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+
+    strong {
+      font-size: 1.7rem;
+      line-height: 1.1;
+    }
+
+    small {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+  }
+}
+
+.ringTrack {
+  fill: none;
+  stroke: var(--surface-strong);
+  stroke-width: 11;
+}
+
+.ringValue {
+  fill: none;
+  stroke: var(--cat-food);
+  stroke-width: 11;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.5s var(--ease-out);
+
+  &[data-over] {
+    stroke: var(--danger);
+  }
+}
+
+.macros {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.left {
+  font-weight: 700;
+
+  &[data-over] {
+    color: var(--danger);
+  }
+}
+
+.macro {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+
+  > span:first-child {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  small {
+    color: var(--text-muted);
+  }
+}
+
+.bar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--surface-strong);
+  overflow: hidden;
+
+  span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    transition: width 0.4s var(--ease-out);
+  }
+}
+
+.goalsButton {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--accent-text);
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.goalsForm {
+  @include card;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  padding: 1rem;
+
+  p {
+    grid-column: 1 / -1;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+
+  button {
+    grid-column: 1 / -1;
+  }
+}
+
+.goal {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.goalField {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  input {
+    flex: 1;
+    min-width: 0;
+    height: 2.6rem;
+    padding: 0 0.75rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+    outline: none;
+
+    &:focus {
+      border-color: var(--accent-mark);
+    }
+  }
+}
+
+// ---- Meals ---------------------------------------------------------------------------
+
+.meals {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.meal {
+  @include card;
+  padding: 0.85rem 0.95rem;
+  border-radius: var(--radius-md);
+
+  h2 {
+    @include eyebrow;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+
+    small {
+      font-size: inherit;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+  }
+
+  ul {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+  }
+
+  img {
+    flex-shrink: 0;
+    width: 2.8rem;
+    height: 2.8rem;
+    border-radius: 10px;
+    object-fit: cover;
+  }
+
+  select {
+    flex-shrink: 0;
+    height: 2.2rem;
+    padding: 0 0.4rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+    font-size: 0.82rem;
+  }
+}
+
+.mealText {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+
+  strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.93rem;
+  }
+
+  small {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+}
+
+.remove {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  color: var(--text-subtle);
+
+  &:hover {
+    background: var(--surface-strong);
+  }
+}
+
+.nothing {
+  padding: 1rem 0.2rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.addRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.picker {
+  @include card;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.85rem;
+  border-radius: var(--radius-md);
+
+  ul {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li button {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    width: 100%;
+    padding: 0.35rem;
+    border-radius: var(--radius-sm);
+    text-align: left;
+
+    &:hover {
+      background: var(--surface-strong);
+    }
+
+    > span {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    strong {
+      font-size: 0.92rem;
+    }
+
+    small {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    > svg {
+      color: var(--accent-text);
+    }
+  }
+
+  img {
+    flex-shrink: 0;
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 10px;
+    object-fit: cover;
+  }
+}
+
+.mealChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+
+  button {
+    padding: 0.42rem 0.75rem;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 0.86rem;
+    font-weight: 600;
+
+    &[aria-pressed="true"] {
+      border-color: var(--cat-food);
+      background: color-mix(in srgb, var(--cat-food) 16%, transparent);
+      color: var(--text);
+    }
+  }
+}
+
+// ---- Last 7 days -------------------------------------------------------------------------
+
+.week {
+  @include card;
+  padding: 1rem 1.1rem;
+  border-radius: var(--radius-md);
+
+  h2 {
+    @include eyebrow;
+    margin-bottom: 0.75rem;
+  }
+}
+
+.chart {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.4rem;
+
+  button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+
+    small {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    &[aria-pressed="true"] small {
+      color: var(--text);
+      font-weight: 700;
+    }
+  }
+}
+
+.column {
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  height: 5rem;
+  border-radius: 8px;
+  background: var(--surface-strong);
+  overflow: hidden;
+
+  span {
+    display: block;
+    width: 100%;
+    border-radius: 8px 8px 0 0;
+    background: var(--cat-food);
+
+    &[data-over] {
+      background: var(--danger);
+    }
+  }
+}
+
+.estimate {
+  margin-top: 0.75rem;
+  font-size: 0.78rem;
+  color: var(--text-subtle);
+}

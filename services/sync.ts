@@ -1,5 +1,6 @@
 import { Preferences } from "@capacitor/preferences";
 import { AnalysisSchema, normalizeStoredAnalysis, type ScanMode } from "@/lib/ai/schema";
+import { pick } from "@/lib/account/pick";
 import { supabase } from "@/lib/supabase";
 import type { HistoryEntry } from "@/types/history";
 import { isSavingData } from "./dataSaver";
@@ -23,13 +24,29 @@ type Row = {
   deleted_at: string | null;
   mode: string;
   analysis: unknown;
-  meta: HistoryEntry["meta"];
+  meta: RowMeta;
   reminder_at: string | null;
   preview_path: string | null;
   thumbnail_path: string | null;
   chat: HistoryEntry["chat"] | null;
   server_updated_at: string;
 };
+
+/**
+ * What the user adds to a scan (meals eaten…) travels in the meta column with
+ * the analysis's own meta: no schema change needed for each new field.
+ */
+const userFields = ["meals"] as const satisfies ReadonlyArray<keyof HistoryEntry>;
+type UserFields = Pick<HistoryEntry, (typeof userFields)[number]>;
+type RowMeta = HistoryEntry["meta"] & Partial<UserFields>;
+
+const toRowMeta = (entry: HistoryEntry): RowMeta => ({ ...entry.meta, ...pick(entry, userFields) });
+
+function fromRowMeta(meta: RowMeta): { meta: HistoryEntry["meta"] } & UserFields {
+  const own = { ...meta };
+  for (const key of userFields) delete own[key];
+  return { meta: own, ...pick(meta, userFields) };
+}
 
 const PAGE = 100;
 const BUCKET = "scans";
@@ -120,7 +137,7 @@ async function applyRemote(row: Row) {
       createdAt: time(row.created_at) ?? Date.now(),
       mode: row.mode as ScanMode,
       analysis: analysis.data,
-      meta: row.meta,
+      ...fromRowMeta(row.meta),
       reminderAt: time(row.reminder_at),
       chat: Array.isArray(row.chat) && row.chat.length > 0 ? row.chat : undefined,
       // Notifications are scheduled per device: keep this device's own one.
@@ -178,7 +195,7 @@ async function pushEntry(uid: string, entry: HistoryEntry) {
       deleted_at: new Date(entry.deletedAt).toISOString(),
       mode: entry.mode,
       analysis: entry.analysis,
-      meta: entry.meta,
+      meta: toRowMeta(entry),
       preview_path: null,
       thumbnail_path: null,
     });
@@ -215,7 +232,7 @@ async function pushEntry(uid: string, entry: HistoryEntry) {
     deleted_at: null,
     mode: entry.mode,
     analysis: entry.analysis,
-    meta: entry.meta,
+    meta: toRowMeta(entry),
     reminder_at: entry.reminderAt ? new Date(entry.reminderAt).toISOString() : null,
     chat: entry.chat ?? [],
     preview_path: remote.preview,

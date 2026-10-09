@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import {
   ArrowLeft,
+  BookOpen,
   Bell,
   BellRing,
   CalendarDays,
@@ -47,6 +48,7 @@ import {
   AnswerFeedback,
   ConfidenceBadge,
   DietCard,
+  MealLogger,
   RecipeShopping,
   confidenceLevel,
   NutritionCard,
@@ -79,6 +81,7 @@ import { listStore } from "@/services/listStore";
 import { keepParcelThumbnails } from "@/services/parcelLinking";
 import { hasNewStatus, parcelStore } from "@/services/parcelStore";
 import { cancelNotification } from "@/services/notifications";
+import { foodJournal } from "@/services/foodJournal";
 import { cancelReminder, expiryDate, INSURANCE_NOTICE_DAYS, insuranceReminderAt, scheduleReminder } from "@/services/reminders";
 import type { HistoryEntry } from "@/types/history";
 import styles from "@/styles/Result.module.scss";
@@ -87,7 +90,7 @@ type TabId = "overview" | "list" | "parcel" | "nutrition" | "recipe" | "vehicle"
 
 /** Photos of these kinds rarely hold text worth reading in full. */
 const withoutText = new Set(["food", "vehicle", "plant"]);
-type Action = "reminder" | "question" | "parcel" | "list";
+type Action = "reminder" | "question" | "parcel" | "list" | "meal";
 
 /** Gap between the header and the tabs (the .content flex gap). */
 const CONTENT_GAP = 16;
@@ -272,9 +275,15 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
     toast(t("parcel.updated", { status: t(`parcel.statuses.${analysis.parcel!.status}`) }));
   };
 
-  // Food: the allergies and diets of the user.
+  // Food: the allergies and diets of the user, and the meals already logged today.
   const { settings } = useSettings();
   const alerts = dietAlerts(analysis.diet, settings);
+  const eatenToday = (entry.meals ?? []).some((log) => new Date(log.at).toDateString() === new Date(now).toDateString());
+  const logMeal = async () => {
+    haptics.success();
+    await foodJournal.add(entry.id);
+    toast(t("food.loggedShort"));
+  };
 
   const reminderFirst =
     forcedAt !== null ||
@@ -289,9 +298,11 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
           ? ["parcel", "question"]
           : analysis.list
             ? ["list", "question"]
-            : reminderFirst
-              ? ["reminder", "question"]
-              : ["question", "reminder"]) as Action[])
+            : analysis.nutrition && analysis.category === "food"
+              ? ["meal", "question"]
+              : reminderFirst
+                ? ["reminder", "question"]
+                : ["question", "reminder"]) as Action[])
   ).filter(
     // The question tab has its own composer.
     (action) => !(action === "question" && tab === "chat"),
@@ -574,6 +585,11 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
                 <NutritionCard nutrition={analysis.nutrition} />
               </Section>
             )}
+            {analysis.nutrition && !example && (
+              <Section title={t("food.journalSection")} icon={<BookOpen />}>
+                <MealLogger entry={entry} />
+              </Section>
+            )}
             {analysis.diet && (
               <Section title={t("food.dietSection")} icon={<HeartPulse />}>
                 <DietCard diet={analysis.diet} />
@@ -839,6 +855,17 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
       ) : (
         <Button key="list" variant={slot === "primary" ? "primary" : "secondary"} icon={<ListPlus />} onClick={() => void addList()} className={className}>
           {slot === "secondary" ? t("lists.addShort") : t("lists.add")}
+        </Button>
+      );
+    }
+    if (action === "meal") {
+      return eatenToday ? (
+        <Button key="meal" variant="secondary" icon={<BookOpen />} href="/food" className={className}>
+          {slot === "secondary" ? t("food.journalShort") : t("food.inJournal")}
+        </Button>
+      ) : (
+        <Button key="meal" variant={slot === "primary" ? "primary" : "secondary"} icon={<Utensils />} onClick={() => void logMeal()} className={className}>
+          {slot === "secondary" ? t("food.ateShort") : t("food.ate")}
         </Button>
       );
     }

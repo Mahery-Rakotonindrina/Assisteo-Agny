@@ -10,7 +10,8 @@
     "settings": "Réglages",
     "back": "Retour",
     "admin": "Admin",
-    "lists": "Listes"
+    "lists": "Listes",
+    "food": "Journal"
   },
   "scan": {
     "greeting": {
@@ -1197,7 +1198,50 @@
     "copyTranslation": "Copier la traduction",
     "copied": "Texte copié"
   },
+  "shortcuts": {
+    "label": "Raccourcis",
+    "foodHint": "Ce que tu as mangé aujourd’hui"
+  },
   "food": {
+    "title": "Journal alimentaire",
+    "subtitle": "Ce que tu manges chaque jour, d’après tes photos de repas.",
+    "emptyTitle": "Ton journal est vide",
+    "emptyBody": "Prends en photo ton repas : l’IA estime les calories, puis touche « J’ai mangé ça ».",
+    "scanMeal": "Scanner un repas",
+    "previousDay": "Jour précédent",
+    "nextDay": "Jour suivant",
+    "ofGoal": "sur {goal} kcal",
+    "kcalLeft": "Encore {count} kcal",
+    "kcalOver": "{count} kcal au-dessus de ton objectif",
+    "kcal": "{count} kcal",
+    "todayKcal": "{count} kcal aujourd’hui",
+    "goals": "Mes objectifs",
+    "goalCalories": "Calories",
+    "goalsHint": "Repère courant pour un adulte : 2000 kcal. Un médecin ou un nutritionniste peut te donner des objectifs adaptés.",
+    "goalsSaved": "Objectifs enregistrés",
+    "nothingYet": "Rien de noté ce jour-là.",
+    "fromScans": "Depuis mes scans",
+    "week": "Les 7 derniers jours",
+    "estimateNote": "Les calories sont des estimations faites à partir des photos.",
+    "meal": "Repas",
+    "meals": {
+      "breakfast": "Petit-déjeuner",
+      "lunch": "Déjeuner",
+      "dinner": "Dîner",
+      "snack": "En-cas"
+    },
+    "portions": "Portions",
+    "portionCount": "{count} portion(s)",
+    "logButton": "J’ai mangé ça · {kcal} kcal",
+    "logged": "Ajouté au journal ({meal})",
+    "loggedShort": "Ajouté au journal du jour",
+    "removeLog": "Retirer du journal",
+    "openJournal": "Voir mon journal",
+    "journalSection": "Journal alimentaire",
+    "journalShort": "Journal",
+    "inJournal": "Dans le journal du jour",
+    "ate": "J’ai mangé ça",
+    "ateShort": "Mangé",
     "dietSection": "Allergènes et régimes",
     "allergensTitle": "Allergènes probables",
     "noAllergen": "Aucun allergène majeur repéré.",

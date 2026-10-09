@@ -2,6 +2,7 @@ import { Preferences } from "@capacitor/preferences";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { defaultLocale, locales, type Locale } from "@/i18n.config";
 import type { Allergen, Diet } from "@/lib/ai/schema";
+import { defaultFoodGoals, type FoodGoals } from "@/lib/food";
 import { setDataSaverPreference, type DataSaverPreference } from "@/services/dataSaver";
 import { setHapticsEnabled } from "@/services/device";
 
@@ -18,6 +19,8 @@ export type Settings = {
   /** Allergies and diets the food scans are checked against. */
   allergies: Allergen[];
   diets: Diet[];
+  /** Daily targets of the food journal. */
+  foodGoals: FoodGoals;
   /** The first-run permission walkthrough has been completed or skipped. */
   onboardingDone: boolean;
   /** Last change to the synced fields, to settle edits from two devices. */
@@ -25,7 +28,7 @@ export type Settings = {
 };
 
 /** Preferences that follow the account across devices (the rest is per device). */
-export const syncedSettingKeys = ["locale", "theme", "notifyOnResult", "haptics", "allergies", "diets"] as const;
+export const syncedSettingKeys = ["locale", "theme", "notifyOnResult", "haptics", "allergies", "diets", "foodGoals"] as const;
 export type SyncedSettings = Pick<Settings, (typeof syncedSettingKeys)[number]>;
 
 type SettingsContextValue = {
@@ -46,6 +49,7 @@ const defaults: Settings = {
   dataSaver: "auto",
   allergies: [],
   diets: [],
+  foodGoals: defaultFoodGoals,
   onboardingDone: false,
   updatedAt: 0,
 };

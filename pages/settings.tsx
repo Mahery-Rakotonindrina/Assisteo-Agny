@@ -5,6 +5,7 @@ import { motion } from "motion/react";
 import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import {
   BellRing,
+  BookOpen,
   Camera,
   Check,
   ChevronRight,
@@ -221,6 +222,13 @@ export default function SettingsPage() {
               })}
             </div>
           </Row>
+          <Link href="/food" className={styles.linkRow}>
+            <span className={styles.rowIcon}>
+              <BookOpen />
+            </span>
+            <span className={styles.linkLabel}>{t("food.title")}</span>
+            <ChevronRight size={16} />
+          </Link>
         </Group>
 
         {android && (

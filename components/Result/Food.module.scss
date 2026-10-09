@@ -119,6 +119,76 @@
   }
 }
 
+// ---- "I ate this" -----------------------------------------------------------------
+
+.logger {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.pickRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+
+  button {
+    padding: 0.42rem 0.75rem;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 0.86rem;
+    font-weight: 600;
+
+    &[aria-pressed="true"] {
+      border-color: var(--cat-food);
+      background: color-mix(in srgb, var(--cat-food) 16%, transparent);
+      color: var(--text);
+    }
+  }
+}
+
+.logs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+
+  li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  button {
+    display: grid;
+    place-items: center;
+    width: 1.9rem;
+    height: 1.9rem;
+    border-radius: 50%;
+    color: var(--text-subtle);
+
+    &:hover {
+      background: var(--surface-strong);
+    }
+  }
+}
+
+.journalLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--accent-text);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
 // ---- Recipe → shopping list ---------------------------------------------------------
 
 .chooser {
