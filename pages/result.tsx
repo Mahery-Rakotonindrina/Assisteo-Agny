@@ -51,6 +51,7 @@ import {
   DietCard,
   MealLogger,
   PaperControls,
+  PdfExportButton,
   RecipeShopping,
   confidenceLevel,
   NutritionCard,
@@ -783,6 +784,11 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
             </div>
           )}
         </div>
+        {!example && (
+          <div className={styles.afterCard}>
+            <PdfExportButton entry={entry} />
+          </div>
+        )}
         {!example && <PaperControls entry={entry} />}
         {!example && <BillControls entry={entry} />}
       </Section>

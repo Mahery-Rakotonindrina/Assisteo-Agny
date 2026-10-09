@@ -42,7 +42,7 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Prix en ariary par article sur les listes de courses, total estimé et dépensé : le dernier prix payé est repris automatiquement, total dans le partage
 - [x] « Mes papiers » : CNI, assurances, garanties, avec suivi des expirations : rangés par l’IA ou à la main, expirés / bientôt (60 jours) / valides, date corrigeable, raccourci sur l’accueil
 - [x] Factures (JIRAMA, téléphone…) : montant lu, suivi des dépenses : onglet Factures de Mes papiers, ce mois-ci, reste à payer, 6 derniers mois, par type, payée ou en retard
-- [ ] Export du document en PDF propre
+- [x] Export du document en PDF propre : photos des pages en A4, puis résumé, points clés, dates, actions et texte lu — à partir de Lite
 
 ## 4. Véhicules
 

@@ -1020,7 +1020,8 @@
       "reseller": "Totals per client, monthly recap and Excel export",
       "deep": "{count} deep analyses a month, with the most accurate AI",
       "deepUnlimited": "Unlimited deep analyses",
-      "multiPage": "Multi-page scans (contract, long invoice)"
+      "multiPage": "Multi-page scans (contract, long invoice)",
+      "pdfExport": "PDF export of documents and history"
     },
     "how": "How to subscribe",
     "step1": "Sign in",
@@ -1369,5 +1370,15 @@
       "health": "Health",
       "other": "Other"
     }
+  },
+  "pdf": {
+    "export": "Export as PDF",
+    "making": "Making the PDF…",
+    "downloaded": "PDF downloaded",
+    "failed": "The PDF couldn’t be made. Try again.",
+    "scannedOn": "Scanned on {date} with Assisteo Agny",
+    "keyPoints": "Key points",
+    "dates": "Dates",
+    "footer": "Assisteo Agny"
   }
 }
