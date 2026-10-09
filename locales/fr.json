@@ -1121,7 +1121,12 @@
     "viewShort": "Mes listes",
     "inList": "Gardée dans Mes listes.",
     "open": "Ouvrir",
-    "addItemButton": "Ajouter l’élément"
+    "addItemButton": "Ajouter l’élément",
+    "price": "Prix (Ar)",
+    "estimated": "Total estimé",
+    "spent": "Dépensé",
+    "unpriced": "{count} article(s) sans prix",
+    "shareTotal": "Total estimé : {total}"
   },
   "pages": {
     "start": "Plusieurs pages",

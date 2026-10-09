@@ -10,7 +10,14 @@ import { parcelMiniature } from "./parcelStore";
 
 export type ListKind = (typeof listKinds)[number];
 
-export type ListItem = { id: string; text: string; quantity?: string; done: boolean };
+export type ListItem = {
+  id: string;
+  text: string;
+  quantity?: string;
+  /** What the line costs, in ariary (entered by the user, or the last price paid). */
+  priceMga?: number;
+  done: boolean;
+};
 
 export type SavedList = {
   id: string;
@@ -50,7 +57,27 @@ async function change(id: string, update: (list: SavedList) => SavedList) {
 
 const cleanText = (text: string) => text.trim().slice(0, 200);
 
-const sameText = (a: string, b: string) => a.trim().toLocaleLowerCase() === b.trim().toLocaleLowerCase();
+const textKey = (text: string) => text.trim().toLocaleLowerCase();
+const sameText = (a: string, b: string) => textKey(a) === textKey(b);
+
+/** The last price entered for each item, over every list (the latest changed list wins). */
+async function priceMemory() {
+  const prices = new Map<string, number>();
+  const lists = (await values<SavedList>(db())).filter((list) => !list.deletedAt).sort((a, b) => b.updatedAt - a.updatedAt);
+  for (const list of lists) {
+    for (const item of list.items) if (item.priceMga && !prices.has(textKey(item.text))) prices.set(textKey(item.text), item.priceMga);
+  }
+  return prices;
+}
+
+/** Items without a price take the last one entered for the same thing: an estimate. */
+async function withKnownPrices(items: ListItem[]) {
+  const prices = await priceMemory();
+  return items.map((item) => (item.priceMga || !prices.has(textKey(item.text)) ? item : { ...item, priceMga: prices.get(textKey(item.text)) }));
+}
+
+/** A price typed by the user: a positive whole number of ariary, else none. */
+const cleanPrice = (value: number | undefined) => (value && Number.isFinite(value) && value > 0 ? Math.round(value) : undefined);
 
 /** A recipe ingredient (`name`) or a list item (`text`). */
 type NamedItem = { name?: string; text?: string; quantity?: string | null };
@@ -87,13 +114,14 @@ export const listStore = {
     const existing = await listStore.findForScan(entry.id);
     if (existing) return existing;
     const now = Date.now();
+    const items: ListItem[] = read.items
+      .filter((item) => item.text.trim())
+      .map((item) => ({ id: createId(), text: cleanText(item.text), ...(item.quantity && { quantity: item.quantity }), done: item.done }));
     const list: SavedList = {
       id: createId(),
       title: entry.analysis.title,
       kind: read.kind,
-      items: read.items
-        .filter((item) => item.text.trim())
-        .map((item) => ({ id: createId(), text: cleanText(item.text), ...(item.quantity && { quantity: item.quantity }), done: item.done })),
+      items: read.kind === "shopping" ? await withKnownPrices(items) : items,
       scanId: entry.id,
       thumbnail: await parcelMiniature(entry.thumbnail),
       createdAt: now,
@@ -112,7 +140,7 @@ export const listStore = {
       id: createId(),
       title: cleanText(title) || recipe.name,
       kind: "shopping",
-      items: recipeItems(recipe.ingredients),
+      items: await withKnownPrices(recipeItems(recipe.ingredients)),
       scanId: entry.id,
       thumbnail: await parcelMiniature(entry.thumbnail),
       createdAt: now,
@@ -125,8 +153,9 @@ export const listStore = {
   /** Adds items to an existing list, skipping those it already has (not ticked). Returns how many were added. */
   async addItems(id: string, items: NamedItem[]) {
     let added = 0;
+    const priced = await withKnownPrices(recipeItems(items));
     await change(id, (list) => {
-      const fresh = recipeItems(items).filter((item) => !list.items.some((other) => !other.done && sameText(other.text, item.text)));
+      const fresh = priced.filter((item) => !list.items.some((other) => !other.done && sameText(other.text, item.text)));
       added = fresh.length;
       return { ...list, items: [...list.items, ...fresh] };
     });
@@ -146,18 +175,22 @@ export const listStore = {
   toggle: (id: string, itemId: string) =>
     change(id, (list) => ({ ...list, items: list.items.map((item) => (item.id === itemId ? { ...item, done: !item.done } : item)) })),
 
-  addItem: (id: string, text: string, quantity?: string) =>
-    change(id, (list) =>
-      cleanText(text)
-        ? { ...list, items: [...list.items, { id: createId(), text: cleanText(text), ...(quantity?.trim() && { quantity: quantity.trim() }), done: false }] }
-        : list,
-    ),
+  /** Adds an item; without a price, a shopping list takes the last one entered for it. */
+  async addItem(id: string, text: string, quantity?: string, priceMga?: number) {
+    if (!cleanText(text)) return;
+    const item: ListItem = { id: createId(), text: cleanText(text), ...(quantity?.trim() && { quantity: quantity.trim() }), done: false };
+    const price = cleanPrice(priceMga);
+    const [known] = price ? [{ ...item, priceMga: price }] : await withKnownPrices([item]);
+    await change(id, (list) => ({ ...list, items: [...list.items, list.kind === "shopping" ? known : item] }));
+  },
 
-  editItem: (id: string, itemId: string, patch: { text: string; quantity?: string }) =>
+  editItem: (id: string, itemId: string, patch: { text: string; quantity?: string; priceMga?: number }) =>
     change(id, (list) => ({
       ...list,
       items: list.items.map((item) =>
-        item.id === itemId ? { ...item, text: cleanText(patch.text) || item.text, quantity: patch.quantity?.trim() || undefined } : item,
+        item.id === itemId
+          ? { ...item, text: cleanText(patch.text) || item.text, quantity: patch.quantity?.trim() || undefined, priceMga: cleanPrice(patch.priceMga) }
+          : item,
       ),
     })),
 
@@ -203,6 +236,19 @@ export const listStore = {
 /** Ticked items over all items. */
 export function listProgress(list: Pick<SavedList, "items">) {
   return { done: list.items.filter((item) => item.done).length, total: list.items.length };
+}
+
+/** A shopping list's money: all priced items (estimate), the ticked ones (spent), and how many have no price. */
+export function listTotals(list: Pick<SavedList, "items">) {
+  const totals = { estimated: 0, spent: 0, unpriced: 0 };
+  for (const item of list.items) {
+    if (!item.priceMga) totals.unpriced += 1;
+    else {
+      totals.estimated += item.priceMga;
+      if (item.done) totals.spent += item.priceMga;
+    }
+  }
+  return totals;
 }
 
 /** Lists still to do first, the latest changed first; finished ones last. */

@@ -326,3 +326,50 @@
   flex-wrap: wrap;
   gap: 0.5rem;
 }
+
+// ---- Prices (shopping lists) ----------------------------------------------------
+
+.itemText small + small {
+  margin-left: 0;
+}
+
+.itemText small.price {
+  background: color-mix(in srgb, var(--cat-list) 16%, transparent);
+  color: var(--text);
+}
+
+// The name on its own row, then quantity, price and the add button.
+.addItemPriced {
+  flex-wrap: wrap;
+
+  input:first-child {
+    flex: 1 1 100%;
+  }
+
+  .qty {
+    flex: 1 1 0 !important;
+  }
+}
+
+.totals {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem 1.2rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface-strong);
+  font-size: 0.86rem;
+  color: var(--text-muted);
+
+  strong {
+    margin-left: 0.35rem;
+    color: var(--text);
+    font-size: 0.98rem;
+  }
+
+  small {
+    flex-basis: 100%;
+    font-size: 0.78rem;
+  }
+}

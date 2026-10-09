@@ -1121,7 +1121,12 @@
     "viewShort": "My lists",
     "inList": "Kept in My lists.",
     "open": "Open",
-    "addItemButton": "Add the item"
+    "addItemButton": "Add the item",
+    "price": "Price (Ar)",
+    "estimated": "Estimated total",
+    "spent": "Spent",
+    "unpriced": "{count} item(s) without a price",
+    "shareTotal": "Estimated total: {total}"
   },
   "pages": {
     "start": "Several pages",
