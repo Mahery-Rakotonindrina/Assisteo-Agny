@@ -348,6 +348,8 @@ export type ApiErrorCode =
   | "plan_limit"
   /** This month's deep analyses are used up. */
   | "deep_limit"
+  /** The admin token is right: a code from the authenticator app is needed (or was wrong). */
+  | "second_factor"
   | "method_not_allowed";
 
 export type ApiErrorBody = {

@@ -1,11 +1,12 @@
 import Head from "next/head";
 import { motion } from "motion/react";
 import { useEffect, useState, type FormEvent } from "react";
-import { Download, Gauge, Gift, LockKeyhole, Smartphone, LogOut, MessageCircle, Minus, Plus, Save, ShieldAlert, Wifi } from "lucide-react";
+import { Download, Gauge, Gift, KeyRound, LockKeyhole, Smartphone, LogOut, MessageCircle, Minus, Plus, Save, ShieldAlert, Wifi } from "lucide-react";
 import { AdminAiCost } from "@/components/AdminAiCost";
 import { AdminPlans } from "@/components/AdminPlans";
 import { AdminStats } from "@/components/AdminStats";
 import { AdminSubscriptions } from "@/components/AdminSubscriptions";
+import { AdminTwoFactor } from "@/components/AdminTwoFactor";
 import { Button } from "@/components/Button";
 import { useToast } from "@/components/Toast";
 import { usePlan } from "@/hooks/usePlan";
@@ -13,11 +14,13 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { rise, stagger } from "@/lib/motion";
 import { httpClient } from "@/services/httpClient";
 import { ApiError } from "@/types/api";
+import type { AdminLoginResponse } from "@/pages/api/admin/login";
 import type { AdminTrialResponse } from "@/pages/api/admin/trial";
 import type { AppVersionResponse } from "@/pages/api/app-version";
 import styles from "@/styles/Admin.module.scss";
 
-const TOKEN_KEY = "admin-token";
+// A signed session from /api/admin/login (never the admin token itself).
+const TOKEN_KEY = "admin-session";
 
 function readToken() {
   try {
@@ -34,6 +37,9 @@ export default function AdminPage() {
   const { isAdmin } = usePlan();
   const [token, setToken] = useState("");
   const [draftToken, setDraftToken] = useState("");
+  const [draftCode, setDraftCode] = useState("");
+  const [needCode, setNeedCode] = useState(false);
+  const [unlocking, setUnlocking] = useState(false);
   const [config, setConfig] = useState<AdminTrialResponse | null>(null);
   const [limit, setLimit] = useState(7);
   const [ipLimit, setIpLimit] = useState(20);
@@ -46,6 +52,15 @@ export default function AdminPage() {
 
   const fetchConfig = (value: string) => httpClient.get<AdminTrialResponse>("/api/admin/trial", { headers: headers(value) });
 
+  const keepSession = (value: string) => {
+    setToken(value);
+    try {
+      sessionStorage.setItem(TOKEN_KEY, value);
+    } catch {
+      // Private mode: the session just won't survive a reload.
+    }
+  };
+
   const apply = (result: AdminTrialResponse, value: string) => {
     setError(null);
     setConfig(result);
@@ -53,27 +68,38 @@ export default function AdminPage() {
     setIpLimit(result.ipLimit);
     setAskLimit(result.askLimit);
     setDailyLimit(result.dailyLimit);
-    setToken(value);
-    try {
-      sessionStorage.setItem(TOKEN_KEY, value);
-    } catch {
-      // Private mode: the token just won't survive a reload.
-    }
+    keepSession(value);
   };
 
-  const unlock = async (value: string) => {
+  // The token, then the code of the authenticator app when the second factor is on.
+  const unlock = async () => {
+    setUnlocking(true);
     try {
-      apply(await fetchConfig(value), value);
+      const login = await httpClient.post<AdminLoginResponse>("/api/admin/login", { token: draftToken.trim(), code: needCode ? draftCode.trim() : undefined });
+      apply(await fetchConfig(login.session), login.session);
+      setDraftToken("");
+      setDraftCode("");
+      setNeedCode(false);
     } catch (err) {
       setToken("");
       setConfig(null);
+      if (err instanceof ApiError && err.code === "second_factor") {
+        setError(needCode ? t("admin.badCode") : null);
+        setNeedCode(true);
+        setDraftCode("");
+        return;
+      }
       setError(
         err instanceof ApiError && err.status === 401
           ? t("admin.badToken")
-          : err instanceof ApiError && err.status === 503
-            ? t("admin.disabled")
-            : t("admin.error"),
+          : err instanceof ApiError && err.status === 429
+            ? t("admin.tooMany")
+            : err instanceof ApiError && err.status === 503
+              ? t("admin.disabled")
+              : t("admin.error"),
       );
+    } finally {
+      setUnlocking(false);
     }
   };
 
@@ -110,6 +136,8 @@ export default function AdminPage() {
     setToken("");
     setConfig(null);
     setDraftToken("");
+    setDraftCode("");
+    setNeedCode(false);
   };
 
   const dirty = config !== null && (config.limit !== limit || config.ipLimit !== ipLimit || config.askLimit !== askLimit || config.dailyLimit !== dailyLimit);
@@ -138,7 +166,7 @@ export default function AdminPage() {
             className={styles.card}
             onSubmit={(event) => {
               event.preventDefault();
-              void unlock(draftToken.trim());
+              void unlock();
             }}
           >
             <label className={styles.label} htmlFor="admin-token">
@@ -152,9 +180,27 @@ export default function AdminPage() {
               onChange={(event) => setDraftToken(event.target.value)}
               autoComplete="off"
             />
-            {isAdmin && !error && <p className={styles.hint}>{t("admin.adminAccount")}</p>}
+            {needCode && (
+              <>
+                <label className={styles.label} htmlFor="admin-code">
+                  <KeyRound size={16} /> {t("admin.code")}
+                </label>
+                <input
+                  id="admin-code"
+                  className={styles.input}
+                  value={draftCode}
+                  onChange={(event) => setDraftCode(event.target.value.slice(0, 20))}
+                  inputMode="text"
+                  autoComplete="one-time-code"
+                  placeholder="123 456"
+                  autoFocus
+                />
+                <small className={styles.hint}>{t("admin.codeHint")}</small>
+              </>
+            )}
+            {isAdmin && !error && !needCode && <p className={styles.hint}>{t("admin.adminAccount")}</p>}
             {error && <p className={styles.error}>{error}</p>}
-            <Button type="submit" block disabled={!draftToken.trim()}>
+            <Button type="submit" block disabled={!draftToken.trim() || (needCode && !draftCode.trim()) || unlocking}>
               {t("admin.unlock")}
             </Button>
           </motion.form>
@@ -215,6 +261,7 @@ export default function AdminPage() {
         )}
 
         {config && <AppVersionCard token={token} />}
+        {config && <AdminTwoFactor token={token} onSession={keepSession} />}
       </motion.div>
     </>
   );

@@ -41,3 +41,31 @@ jobs:
           name: playwright-report
           path: playwright-report
           retention-days: 7
+
+  # The migrations on an empty Postgres, then a backup of made-up data in
+  # every table restored and read back: a new table or column that the
+  # backups would miss fails here, before it reaches production.
+  restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 12
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci --ignore-scripts
+
+      - name: Backup restore test (sample data)
+        env:
+          CHECK_DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
+        run: node scripts/db-restore-check.mjs --sample
