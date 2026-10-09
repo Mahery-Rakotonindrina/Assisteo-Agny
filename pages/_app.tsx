@@ -5,6 +5,8 @@ import { MotionConfig } from "motion/react";
 import { AppShell } from "@/components/AppShell";
 import { Onboarding } from "@/components/Onboarding";
 import { ReminderKeeper } from "@/components/ReminderKeeper";
+import { ScanQueueRunner } from "@/components/ScanQueueRunner";
+import { ShareReceiver } from "@/components/ShareReceiver";
 import { ToastProvider } from "@/components/Toast";
 import { UpdateGate } from "@/components/UpdateGate";
 import { useNativeBootstrap } from "@/hooks/useNativeBootstrap";
@@ -58,6 +60,8 @@ export default function App({ Component, pageProps }: AppProps) {
               </AppShell>
               <Onboarding />
               <ReminderKeeper />
+              <ScanQueueRunner />
+              <ShareReceiver />
               <UpdateGate />
             </MotionConfig>
           </AccountProvider>

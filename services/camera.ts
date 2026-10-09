@@ -36,6 +36,19 @@ export async function capturePhoto(source: PhotoSource): Promise<string> {
   }
 }
 
+/** Several photos from the gallery at once (the pages of a document). */
+export async function choosePhotos(limit: number): Promise<string[]> {
+  try {
+    const { results } = await Camera.chooseFromGallery({ allowMultipleSelection: true, limit, quality: 90 });
+    const sources = results.map((result) => resolveSrc(result.webPath, result.thumbnail)).slice(0, limit);
+    if (sources.length === 0) throw new CaptureCancelledError();
+    return sources;
+  } catch (error) {
+    if (error instanceof CaptureCancelledError || isCancellation(error)) throw new CaptureCancelledError();
+    throw error;
+  }
+}
+
 // In a browser, the in-page camera modal needs getUserMedia (HTTPS only) and is
 // clunky on phones; a capture file input opens the phone's own camera app instead.
 function preferFileInput() {

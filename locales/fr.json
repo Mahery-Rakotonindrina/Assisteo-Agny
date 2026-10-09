@@ -194,7 +194,8 @@
       "document": "Document",
       "chat": "Question",
       "parcel": "Colis",
-      "list": "Liste"
+      "list": "Liste",
+      "text": "Texte"
     },
     "ask": "Poser une question",
     "askShort": "Question",
@@ -325,7 +326,17 @@
     "androidAppLabel": "App Android",
     "androidAppHint": "Version {version} · à installer sur un téléphone Android",
     "androidAppHintNoVersion": "À installer sur un téléphone Android",
-    "androidAppDownload": "Télécharger"
+    "androidAppDownload": "Télécharger",
+    "dataSaver": "Économie de données",
+    "dataSaverHint": "Photos envoyées environ 3 fois plus légères, et photos des autres appareils téléchargées en miniature.",
+    "dataSaverAutoOn": "Activée en ce moment : connexion lente ou économiseur de données du téléphone.",
+    "dataSaverOn": "Activée en ce moment.",
+    "dataSaverAutoOff": "Désactivée en ce moment : bonne connexion.",
+    "dataSaverModes": {
+      "auto": "Auto (3G)",
+      "on": "Toujours",
+      "off": "Jamais"
+    }
   },
   "notifications": {
     "readyTitle": "Analyse prête ✨"
@@ -1006,7 +1017,8 @@
       "clients": "Un client par colis : pour qui est chaque colis",
       "reseller": "Totaux par client, récap du mois et export pour Excel",
       "deep": "{count} analyses approfondies par mois, avec l’IA la plus précise",
-      "deepUnlimited": "Analyses approfondies sans limite"
+      "deepUnlimited": "Analyses approfondies sans limite",
+      "multiPage": "Scan de plusieurs pages (contrat, longue facture)"
     },
     "how": "Comment s’abonner",
     "step1": "Connecte-toi",
@@ -1109,5 +1121,80 @@
     "inList": "Gardée dans Mes listes.",
     "open": "Ouvrir",
     "addItemButton": "Ajouter l’élément"
+  },
+  "pages": {
+    "start": "Plusieurs pages",
+    "title": "Document en plusieurs pages",
+    "hint": "Prends chaque page dans l’ordre (jusqu’à {max}). L’IA les lit ensemble et fait une seule analyse, qui compte pour un seul scan.",
+    "page": "Page {number}",
+    "remove": "Retirer la page {number}",
+    "earlier": "Avancer la page {number}",
+    "later": "Reculer la page {number}",
+    "count": "{count} / {max} pages",
+    "short": "{count} pages",
+    "firstPhoto": "Photo de la page 1",
+    "addPhoto": "Page suivante",
+    "addGallery": "Depuis la galerie",
+    "analyze": "Analyser les {count} pages",
+    "analyzeOne": "Analyser",
+    "analyzing": "{count} pages lues ensemble",
+    "sectionTitle": "Les {count} pages",
+    "elsewhere": "Les autres pages sont restées sur l’appareil où le document a été scanné."
+  },
+  "codes": {
+    "found": "QR code trouvé",
+    "free": "Lu directement sur ton téléphone : aucun scan utilisé.",
+    "section": "Codes lus sur la photo",
+    "done": "Terminé",
+    "analyze": "Analyser la photo",
+    "open": "Ouvrir",
+    "copy": "Copier",
+    "copied": "Copié",
+    "copyFailed": "Impossible de copier",
+    "wifi": "Wi-Fi « {name} »",
+    "wifiPassword": "Mot de passe : {password}",
+    "wifiOpen": "Réseau ouvert, sans mot de passe",
+    "copyPassword": "Copier le mot de passe",
+    "passwordCopied": "Mot de passe copié",
+    "write": "Écrire",
+    "call": "Appeler",
+    "sms": "SMS au {number}",
+    "sendSms": "Envoyer le SMS",
+    "map": "Voir sur la carte"
+  },
+  "queue": {
+    "title": "En attente d’envoi ({count})",
+    "waiting": "Pas de réseau · photo prise à {time}",
+    "sending": "Envoi…",
+    "retry": "Réessayer",
+    "remove": "Retirer",
+    "done": "Résultat prêt : {title}",
+    "queuedTitle": "Pas de réseau pour l’instant",
+    "queuedBody": "Ta photo est gardée sur le téléphone et partira toute seule dès que la connexion revient. Tu seras prévenu quand le résultat sera prêt.",
+    "ok": "D’accord"
+  },
+  "share": {
+    "onlyFirst": "Plusieurs photos reçues : seule la première est analysée. Le scan de plusieurs pages est inclus à partir de Premium."
+  },
+  "text": {
+    "title": "Texte du document",
+    "intro": "L’IA recopie tout le texte de la photo (toutes les pages), pour le copier ou le traduire.",
+    "tooSmall": "La photo gardée sur ce téléphone est trop petite pour être lue (ancien scan ou économie de données).",
+    "read": "Lire tout le texte",
+    "cost": "Compte comme une question. Le texte reste ensuite sur ton téléphone.",
+    "original": "Original",
+    "translate": "Traduire",
+    "languages": {
+      "fr": "Français",
+      "en": "Anglais",
+      "mg": "Malgache",
+      "zh": "Chinois"
+    },
+    "reading": "L’IA lit le texte…",
+    "translating": "Traduction en cours…",
+    "none": "Aucun texte lisible sur cette photo.",
+    "copy": "Copier le texte",
+    "copyTranslation": "Copier la traduction",
+    "copied": "Texte copié"
   }
 }

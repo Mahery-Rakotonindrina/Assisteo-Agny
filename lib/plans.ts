@@ -20,10 +20,12 @@ export type PlanFeature =
   /** Reseller tools: a client per parcel, totals per client. */
   | "reseller"
   /** Analysing a scan again with a more capable (and costlier) model. */
-  | "deepAnalysis";
+  | "deepAnalysis"
+  /** Scanning a document in several pages, analysed as one. */
+  | "multiPage";
 
 /** The lowest plan that includes each feature. */
-const featureFrom: Record<PlanFeature, PlanId> = { ownKey: "lite", parcelCosts: "lite", reseller: "pro", deepAnalysis: "premium" };
+const featureFrom: Record<PlanFeature, PlanId> = { ownKey: "lite", parcelCosts: "lite", reseller: "pro", deepAnalysis: "premium", multiPage: "premium" };
 
 /**
  * Full access is the administrators' plan: it shows the Admin menu. The admin

@@ -194,7 +194,8 @@
       "document": "Document",
       "chat": "Question",
       "parcel": "Parcel",
-      "list": "List"
+      "list": "List",
+      "text": "Text"
     },
     "ask": "Ask a question",
     "askShort": "Question",
@@ -325,7 +326,17 @@
     "androidAppLabel": "Android app",
     "androidAppHint": "Version {version} · to install on an Android phone",
     "androidAppHintNoVersion": "To install on an Android phone",
-    "androidAppDownload": "Download"
+    "androidAppDownload": "Download",
+    "dataSaver": "Data saver",
+    "dataSaverHint": "Photos sent about 3 times lighter, and photos from your other devices downloaded small.",
+    "dataSaverAutoOn": "On right now: slow connection or the phone's data saver.",
+    "dataSaverOn": "On right now.",
+    "dataSaverAutoOff": "Off right now: good connection.",
+    "dataSaverModes": {
+      "auto": "Auto (3G)",
+      "on": "Always",
+      "off": "Never"
+    }
   },
   "notifications": {
     "readyTitle": "Analysis ready ✨"
@@ -1006,7 +1017,8 @@
       "clients": "A client per parcel: who each parcel is for",
       "reseller": "Totals per client, monthly recap and Excel export",
       "deep": "{count} deep analyses a month, with the most accurate AI",
-      "deepUnlimited": "Unlimited deep analyses"
+      "deepUnlimited": "Unlimited deep analyses",
+      "multiPage": "Multi-page scans (contract, long invoice)"
     },
     "how": "How to subscribe",
     "step1": "Sign in",
@@ -1109,5 +1121,80 @@
     "inList": "Kept in My lists.",
     "open": "Open",
     "addItemButton": "Add the item"
+  },
+  "pages": {
+    "start": "Several pages",
+    "title": "Document in several pages",
+    "hint": "Take each page in order (up to {max}). The AI reads them together for one analysis, which counts as a single scan.",
+    "page": "Page {number}",
+    "remove": "Remove page {number}",
+    "earlier": "Move page {number} earlier",
+    "later": "Move page {number} later",
+    "count": "{count} / {max} pages",
+    "short": "{count} pages",
+    "firstPhoto": "Photo of page 1",
+    "addPhoto": "Next page",
+    "addGallery": "From the gallery",
+    "analyze": "Analyse the {count} pages",
+    "analyzeOne": "Analyse",
+    "analyzing": "{count} pages read together",
+    "sectionTitle": "The {count} pages",
+    "elsewhere": "The other pages stayed on the device where the document was scanned."
+  },
+  "codes": {
+    "found": "QR code found",
+    "free": "Read right on your phone: no scan used.",
+    "section": "Codes read on the photo",
+    "done": "Done",
+    "analyze": "Analyse the photo",
+    "open": "Open",
+    "copy": "Copy",
+    "copied": "Copied",
+    "copyFailed": "Couldn't copy",
+    "wifi": "Wi-Fi “{name}”",
+    "wifiPassword": "Password: {password}",
+    "wifiOpen": "Open network, no password",
+    "copyPassword": "Copy the password",
+    "passwordCopied": "Password copied",
+    "write": "Write",
+    "call": "Call",
+    "sms": "Text to {number}",
+    "sendSms": "Send the text",
+    "map": "See on the map"
+  },
+  "queue": {
+    "title": "Waiting to be sent ({count})",
+    "waiting": "No network · photo taken at {time}",
+    "sending": "Sending…",
+    "retry": "Try again",
+    "remove": "Remove",
+    "done": "Result ready: {title}",
+    "queuedTitle": "No network right now",
+    "queuedBody": "Your photo is kept on the phone and will go by itself as soon as the connection is back. You'll be told when the result is ready.",
+    "ok": "OK"
+  },
+  "share": {
+    "onlyFirst": "Several photos received: only the first one is analysed. Multi-page scans come with Premium."
+  },
+  "text": {
+    "title": "Document text",
+    "intro": "The AI copies out all the text of the photo (every page), to copy or translate it.",
+    "tooSmall": "The photo kept on this phone is too small to read (old scan or data saver).",
+    "read": "Read all the text",
+    "cost": "Counts as one question. The text then stays on your phone.",
+    "original": "Original",
+    "translate": "Translate",
+    "languages": {
+      "fr": "French",
+      "en": "English",
+      "mg": "Malagasy",
+      "zh": "Chinese"
+    },
+    "reading": "The AI is reading the text…",
+    "translating": "Translating…",
+    "none": "No legible text on this photo.",
+    "copy": "Copy the text",
+    "copyTranslation": "Copy the translation",
+    "copied": "Text copied"
   }
 }

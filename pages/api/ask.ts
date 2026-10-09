@@ -27,6 +27,11 @@ const demoAnswers = {
   en: "I'm in demo mode, so I can't really answer your question. Add an AI key (Settings → AI engine) or set up the server's AI to chat about your scans.",
 };
 
+const demoText = {
+  transcribe: "FACTURE N° 2026-104\nDate : 8 octobre 2026\n\nRiz 25 kg | 1 | 95 000 Ar\nHuile 5 L | 2 | 60 000 Ar\n\nTotal : 155 000 Ar\n(texte d'exemple, mode démo)",
+  translate: "INVOICE No. 2026-104\nDate: 8 October 2026\n\nRice 25 kg | 1 | 95,000 Ar\nOil 5 L | 2 | 60,000 Ar\n\nTotal: 155,000 Ar\n(sample text, demo mode)",
+};
+
 /** Answers a follow-up question about a scan, with the photo and the earlier analysis as context. */
 export default async function handler(req: NextApiRequest, res: NextApiResponse<AskResponse | unknown>) {
   if (applyCors(req, res, ["POST"])) return;
@@ -52,10 +57,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   }
 
   if (!override && activeProvider === "demo") {
-    return res.status(200).json({ answer: demoAnswers[parsed.data.locale], model: "demo", demo: true } satisfies AskResponse);
+    const answer = parsed.data.task === "transcribe" || parsed.data.task === "translate" ? demoText[parsed.data.task] : demoAnswers[parsed.data.locale];
+    return res.status(200).json({ answer, model: "demo", demo: true } satisfies AskResponse);
   }
 
   const statsDevice = InstallIdSchema.safeParse(req.headers[installIdHeader]).data ?? null;
+  // The other pages of a multi-page scan go along while the plan allows several pages.
+  const pages = hasFeature(current.plan, "multiPage") ? parsed.data.pages : undefined;
 
   // On the server's key, a subscriber's questions draw on the plan's daily allowance...
   let planUser: string | null = null;
@@ -92,7 +100,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   });
 
   try {
-    const { answer, model, usage: tokens } = await askQuestion({ ...parsed.data, analysis: analysis.data }, abort.signal, override);
+    const { answer, model, usage: tokens } = await askQuestion({ ...parsed.data, pages, analysis: analysis.data }, abort.signal, override);
     if (!override && tokens) await track({ type: "ai", kind: "question", model, ...tokens });
     await track({ type: "question", ownKey: Boolean(override) }, statsDevice);
     return res.status(200).json({ answer, model, demo: false, ...(usage && { usage }) } satisfies AskResponse);

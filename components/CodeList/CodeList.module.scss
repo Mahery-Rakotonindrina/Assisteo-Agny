@@ -1,0 +1,97 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.85rem;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.icon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+
+  svg {
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+
+  strong {
+    font-size: 1rem;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+}
+
+.format {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-subtle);
+}
+
+.text {
+  font-weight: 500 !important;
+  white-space: pre-wrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.detail {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.45rem;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.45rem 0.8rem;
+    border-radius: var(--radius-pill);
+    background: var(--surface-strong);
+    color: var(--text);
+    font-size: 0.85rem;
+    font-weight: 600;
+
+    svg {
+      width: 0.95rem;
+      height: 0.95rem;
+    }
+
+    &:first-child {
+      background: var(--accent);
+      color: var(--accent-ink);
+    }
+  }
+}

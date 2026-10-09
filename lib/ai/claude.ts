@@ -1,8 +1,10 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { AnalysisError } from "./errors";
-import { ASK_SYSTEM_PROMPT, buildAskContext, buildUserPrompt, SYSTEM_PROMPT } from "./prompt";
-import { AnalysisSchema, type Analysis, type AnalyzeRequest, type AskRequest } from "./schema";
+import { askSystemPrompt, buildUserPrompt, firstAskText, isReadTask, SYSTEM_PROMPT } from "./prompt";
+import { AnalysisSchema, imagesOf, type Analysis, type AnalyzeRequest, type AskRequest, type PageImage } from "./schema";
+
+const imageBlock = (page: PageImage) => ({ type: "image" as const, source: { type: "base64" as const, media_type: page.mediaType, data: page.image } });
 
 export const CLAUDE_MODEL = process.env.ANTHROPIC_MODEL ?? "claude-opus-5-5";
 
@@ -58,11 +60,8 @@ export async function analyzeWithClaude(
           {
             role: "user",
             content: [
-              {
-                type: "image",
-                source: { type: "base64", media_type: input.mediaType, data: input.image },
-              },
-              { type: "text", text: buildUserPrompt(input.mode, input.locale) },
+              ...imagesOf(input).map(imageBlock),
+              { type: "text", text: buildUserPrompt(input.mode, input.locale, imagesOf(input).length) },
             ],
           },
         ],
@@ -109,8 +108,8 @@ export async function askWithClaude(
       ? {
           role: "user",
           content: [
-            { type: "image", source: { type: "base64", media_type: input.mediaType, data: input.image } },
-            { type: "text", text: buildAskContext(input.analysis, input.locale) + message.content },
+            ...imagesOf(input).map(imageBlock),
+            { type: "text", text: firstAskText(input, message.content) },
           ],
         }
       : { role: message.role, content: message.content },
@@ -121,11 +120,12 @@ export async function askWithClaude(
     response = await getClient(options.apiKey).beta.messages.create(
       {
         model,
-        max_tokens: 4000,
+        // The full text of a long document needs more room than a reply.
+        max_tokens: isReadTask(input.task) ? 16000 : 4000,
         ...(supportsFallbacks(model) && { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const }),
         // Conversation replies favour speed over depth.
         ...(supportsEffort(model) && { output_config: { effort: "low" as const } }),
-        system: [{ type: "text", text: ASK_SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
+        system: [{ type: "text", text: askSystemPrompt(input.task), cache_control: { type: "ephemeral" } }],
         messages,
       },
       { signal },

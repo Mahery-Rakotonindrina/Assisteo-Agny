@@ -534,6 +534,72 @@ $bar-height: calc(var(--safe-top) + 3.95rem);
   pointer-events: none;
 }
 
+.heroPages {
+  position: absolute;
+  right: 4rem;
+  bottom: 1.5rem;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  height: 2.25rem;
+  padding: 0 0.8rem;
+  border-radius: var(--radius-pill);
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  pointer-events: none;
+}
+
+// The pages of a multi-page scan.
+.pageStrip {
+  display: flex;
+  gap: 0.6rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  scrollbar-width: thin;
+
+  button {
+    position: relative;
+    flex-shrink: 0;
+    width: 5.5rem;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    span {
+      position: absolute;
+      left: 0.35rem;
+      top: 0.35rem;
+      display: grid;
+      place-items: center;
+      min-width: 1.35rem;
+      height: 1.35rem;
+      border-radius: var(--radius-pill);
+      background: rgba(0, 0, 0, 0.6);
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+  }
+}
+
+.pagesElsewhere {
+  margin-top: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--text-subtle);
+}
+
 // Parcel already followed, or scanned before.
 .parcelNote {
   display: flex;

@@ -1,4 +1,4 @@
-import type { ScanMode } from "./schema";
+import type { AskRequest, ScanMode, TranslateLanguage } from "./schema";
 
 // Kept byte-stable so the system prompt is cache-friendly across requests.
 export const SYSTEM_PROMPT = `You are Assisteo Agny, a mobile companion that looks at a single photo taken by the user and tells them what is useful to know about it.
@@ -28,8 +28,13 @@ const modeHints: Record<ScanMode, string> = {
 
 const languageNames = { fr: "French", en: "English" } as const;
 
-export function buildUserPrompt(mode: ScanMode, locale: keyof typeof languageNames) {
-  return `${modeHints[mode]}\nRespond in ${languageNames[locale]}.`;
+/** `pageCount` > 1: the photos are the pages of one document (multi-page scan). */
+export function buildUserPrompt(mode: ScanMode, locale: keyof typeof languageNames, pageCount = 1) {
+  const pages =
+    pageCount > 1
+      ? `The user sent ${pageCount} photos: the pages of one document (or one long receipt), in order. Read every page and analyse them together as a single document, with one combined result.\n`
+      : "";
+  return `${pages}${modeHints[mode]}\nRespond in ${languageNames[locale]}.`;
 }
 
 // Follow-up questions about a scan the user just made.
@@ -43,6 +48,41 @@ How to answer:
 - For health, legal or financial matters, give general information and suggest asking a professional when it matters.
 - Never identify real people from their face.
 - Answer in the language requested.`;
+
+// Reading the text on the photos: "Copier le texte" and "Traduire" on a result.
+export const READ_SYSTEM_PROMPT = `You are Assisteo Agny. You read the text on photos the user took (a document, a receipt, a label, a sign, a screen…) and give it back as plain text.
+
+How to answer:
+- Every legible word, in reading order, page after page. Keep the line breaks and the structure: headings, lists, and table rows as lines with " | " between the columns.
+- Never invent, complete or correct the text. Mark an illegible part as […].
+- Only the text: no introduction, no comment, no Markdown.
+- If there is no legible text at all, answer exactly: NO_TEXT`;
+
+/** Answer of the read tasks when the photos hold no text. */
+export const NO_TEXT = "NO_TEXT";
+
+const targetNames: Record<TranslateLanguage, string> = { fr: "French", en: "English", mg: "Malagasy", zh: "Simplified Chinese" };
+
+/** The system prompt of a follow-up call: a question, or reading the text. */
+export function askSystemPrompt(task: AskRequest["task"]) {
+  return task === "transcribe" || task === "translate" ? READ_SYSTEM_PROMPT : ASK_SYSTEM_PROMPT;
+}
+
+/** True for the calls that read the text (longer answers than a question). */
+export function isReadTask(task: AskRequest["task"]) {
+  return task === "transcribe" || task === "translate";
+}
+
+/** The text that goes with the photos in the first message. */
+export function firstAskText(input: Pick<AskRequest, "task" | "target" | "analysis" | "locale" | "pages">, question: string) {
+  const extra = input.pages?.length ?? 0;
+  const photos = extra > 0 ? `these ${extra + 1} pages (in order)` : "this photo";
+  if (input.task === "transcribe") return `Transcribe all the text on ${photos}, as written, in its original language.`;
+  if (input.task === "translate") {
+    return `Translate all the text on ${photos} into ${targetNames[input.target ?? input.locale]}. Keep the structure, and the numbers, amounts, dates and proper names as they are. Only the translation.`;
+  }
+  return buildAskContext(input.analysis, input.locale) + question;
+}
 
 /** Prepended to the first question: the earlier analysis and the answer language. */
 export function buildAskContext(analysis: unknown, locale: keyof typeof languageNames) {

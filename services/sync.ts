@@ -2,6 +2,7 @@ import { Preferences } from "@capacitor/preferences";
 import { AnalysisSchema, normalizeStoredAnalysis, type ScanMode } from "@/lib/ai/schema";
 import { supabase } from "@/lib/supabase";
 import type { HistoryEntry } from "@/types/history";
+import { isSavingData } from "./dataSaver";
 import { historyStore } from "./historyStore";
 
 // Two-way sync of the history between this device and the user's account.
@@ -64,15 +65,34 @@ async function blobToDataUrl(blob: Blob) {
 
 // ---- Pull ----------------------------------------------------------------------
 
-async function downloadPhotos(row: Row) {
-  const paths = [row.preview_path, row.thumbnail_path].filter((path): path is string => Boolean(path));
-  if (paths.length < 2) return null;
+async function download(paths: string[]) {
   const { data, error } = await supabase().storage.from(BUCKET).createSignedUrls(paths, 120);
   if (error || !data) return null;
-  const [preview, thumbnail] = await Promise.all(
-    data.map(async (item) => (item.signedUrl ? blobToDataUrl(await (await fetch(item.signedUrl)).blob()) : null)),
-  );
-  return preview && thumbnail ? { preview, thumbnail } : null;
+  return Promise.all(data.map(async (item) => (item.signedUrl ? blobToDataUrl(await (await fetch(item.signedUrl)).blob()) : null)));
+}
+
+/** With the data saver on, only the thumbnail (~8x lighter): the full photo comes later. */
+async function downloadPhotos(row: Row) {
+  if (!row.preview_path || !row.thumbnail_path) return null;
+  if (isSavingData()) {
+    const [thumbnail] = (await download([row.thumbnail_path])) ?? [];
+    return thumbnail ? { preview: thumbnail, thumbnail, previewPending: true } : null;
+  }
+  const [preview, thumbnail] = (await download([row.preview_path, row.thumbnail_path])) ?? [];
+  return preview && thumbnail ? { preview, thumbnail, previewPending: undefined } : null;
+}
+
+/** Back on a good connection: the full photos skipped by the data saver, a few at a time. */
+async function fillPendingPreviews() {
+  if (isSavingData()) return;
+  const waiting = (await historyStore.raw()).filter((entry) => entry.previewPending && entry.remote && !entry.deletedAt).slice(0, 10);
+  for (const entry of waiting) {
+    const [preview] = (await download([entry.remote!.preview])) ?? [];
+    const latest = await historyStore.rawGet(entry.id);
+    if (!preview || !latest) continue;
+    await historyStore.rawPut({ ...latest, preview, previewPending: undefined }, { silent: true });
+  }
+  if (waiting.length > 0) historyStore.notify();
 }
 
 async function applyRemote(row: Row) {
@@ -90,7 +110,8 @@ async function applyRemote(row: Row) {
   if (!analysis.success) return;
 
   // Photos are immutable: only download them for entries this device lacks.
-  const photos = local?.preview && local.thumbnail ? { preview: local.preview, thumbnail: local.thumbnail } : await downloadPhotos(row);
+  const photos =
+    local?.preview && local.thumbnail ? { preview: local.preview, thumbnail: local.thumbnail, previewPending: local.previewPending } : await downloadPhotos(row);
   if (!photos) return;
 
   await historyStore.rawPut(
@@ -105,8 +126,11 @@ async function applyRemote(row: Row) {
       // Notifications are scheduled per device: keep this device's own one.
       reminderId: local?.reminderId,
       reminderScheduledAt: local?.reminderScheduledAt,
-      // The answer vote is kept on this device only.
+      // The answer vote, the pages, the read text and the queue state stay on this device.
       feedback: local?.feedback,
+      pages: local?.pages,
+      transcript: local?.transcript,
+      translations: local?.translations,
       ...photos,
       updatedAt: remoteUpdated,
       // A pending remote shrink (see photoStorage) must survive this pull.
@@ -229,6 +253,7 @@ async function runOnce() {
   try {
     await pull(uid);
     await push(uid);
+    await fillPendingPreviews();
     if (userId === uid) setStatus({ state: "idle", lastSyncAt: Date.now() });
   } catch (error) {
     console.warn("[sync]", error instanceof Error ? error.message : error);
