@@ -1233,6 +1233,12 @@
       "low_sugar": "Peu sucré (diabète)",
       "low_salt": "Peu salé (tension)"
     },
+    "toShopping": "Ajouter les ingrédients à une liste de courses",
+    "chooseList": "Dans quelle liste ?",
+    "newShoppingList": "Nouvelle liste de courses",
+    "shoppingTitle": "Courses : {name}",
+    "addedTo": "{count} ingrédient(s) ajouté(s) à « {list} »",
+    "shoppingMade": "Ingrédients dans « {list} ».",
     "settingsSection": "Alimentation",
     "myAllergies": "Mes allergies",
     "myAllergiesHint": "Un aliment qui en contient s’affiche avec une alerte.",

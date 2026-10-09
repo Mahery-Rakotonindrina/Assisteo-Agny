@@ -50,6 +50,19 @@ async function change(id: string, update: (list: SavedList) => SavedList) {
 
 const cleanText = (text: string) => text.trim().slice(0, 200);
 
+const sameText = (a: string, b: string) => a.trim().toLocaleLowerCase() === b.trim().toLocaleLowerCase();
+
+/** A recipe ingredient (`name`) or a list item (`text`). */
+type NamedItem = { name?: string; text?: string; quantity?: string | null };
+
+/** Ingredients (or any named items) as unticked list items. */
+function recipeItems(items: NamedItem[]): ListItem[] {
+  return items
+    .map((item) => ({ text: cleanText(item.name ?? item.text ?? ""), quantity: item.quantity?.trim() }))
+    .filter((item) => item.text)
+    .map((item) => ({ id: createId(), text: item.text, ...(item.quantity && { quantity: item.quantity }), done: false }));
+}
+
 export const listStore = {
   subscribe(listener: () => void) {
     listeners.add(listener);
@@ -88,6 +101,36 @@ export const listStore = {
     };
     await write(list);
     return list;
+  },
+
+  /** A shopping list made of a recipe's ingredients, linked to its scan. */
+  async addFromRecipe(entry: HistoryEntry, title: string) {
+    const recipe = entry.analysis.recipe;
+    if (!recipe) throw new Error("This scan has no recipe.");
+    const now = Date.now();
+    const list: SavedList = {
+      id: createId(),
+      title: cleanText(title) || recipe.name,
+      kind: "shopping",
+      items: recipeItems(recipe.ingredients),
+      scanId: entry.id,
+      thumbnail: await parcelMiniature(entry.thumbnail),
+      createdAt: now,
+      updatedAt: now,
+    };
+    await write(list);
+    return list;
+  },
+
+  /** Adds items to an existing list, skipping those it already has (not ticked). Returns how many were added. */
+  async addItems(id: string, items: NamedItem[]) {
+    let added = 0;
+    await change(id, (list) => {
+      const fresh = recipeItems(items).filter((item) => !list.items.some((other) => !other.done && sameText(other.text, item.text)));
+      added = fresh.length;
+      return { ...list, items: [...list.items, ...fresh] };
+    });
+    return added;
   },
 
   /** A new list written in the app. */

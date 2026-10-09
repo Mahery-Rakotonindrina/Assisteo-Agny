@@ -700,3 +700,8 @@ $bar-height: calc(var(--safe-top) + 3.95rem);
     color: var(--accent-text);
   }
 }
+
+// An action under a card of the same section (recipe → shopping list).
+.afterCard {
+  margin-top: 1.1rem;
+}

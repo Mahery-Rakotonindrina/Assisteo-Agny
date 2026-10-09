@@ -1233,6 +1233,12 @@
       "low_sugar": "Low sugar (diabetes)",
       "low_salt": "Low salt (blood pressure)"
     },
+    "toShopping": "Add the ingredients to a shopping list",
+    "chooseList": "Which list?",
+    "newShoppingList": "New shopping list",
+    "shoppingTitle": "Shopping: {name}",
+    "addedTo": "{count} ingredient(s) added to “{list}”",
+    "shoppingMade": "Ingredients in “{list}”.",
     "settingsSection": "Food",
     "myAllergies": "My allergies",
     "myAllergiesHint": "A food that contains one shows a warning.",

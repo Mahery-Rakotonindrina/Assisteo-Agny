@@ -47,6 +47,7 @@ import {
   AnswerFeedback,
   ConfidenceBadge,
   DietCard,
+  RecipeShopping,
   confidenceLevel,
   NutritionCard,
   ParcelCard,
@@ -585,6 +586,11 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
           analysis.recipe && (
             <Section title={t("result.recipe")} icon={<CookingPot />}>
               <RecipeCard recipe={analysis.recipe} />
+              {!example && (
+                <div className={styles.afterCard}>
+                  <RecipeShopping entry={entry} />
+                </div>
+              )}
             </Section>
           )
         );
