@@ -5,7 +5,7 @@ import { Button } from "@/components/Button";
 import { useToast } from "@/components/Toast";
 import { useTranslation } from "@/hooks/useTranslation";
 import { mealAt, mealKinds, portionChoices, type MealKind } from "@/lib/food";
-import { formatDateTime, formatNumber } from "@/lib/format";
+import { formatDateTime, formatDecimal, formatNumber } from "@/lib/format";
 import { haptics } from "@/services/device";
 import { foodJournal } from "@/services/foodJournal";
 import type { HistoryEntry } from "@/types/history";
@@ -38,7 +38,7 @@ export function MealLogger({ entry }: { entry: HistoryEntry }) {
       <div className={styles.pickRow} role="group" aria-label={t("food.portions")}>
         {portionChoices.map((value) => (
           <button key={value} type="button" aria-pressed={portions === value} onClick={() => setPortions(value)}>
-            {t("food.portionCount", { count: formatNumber(value, locale) })}
+            {t("food.portionCount", { count: formatDecimal(value, locale) })}
           </button>
         ))}
       </div>
@@ -51,7 +51,7 @@ export function MealLogger({ entry }: { entry: HistoryEntry }) {
           {logs.slice(0, 5).map((log) => (
             <li key={log.id}>
               <span>
-                {t(`food.meals.${log.meal}`)} · {formatDateTime(log.at, locale)} · {t("food.portionCount", { count: formatNumber(log.portions, locale) })}
+                {t(`food.meals.${log.meal}`)} · {formatDateTime(log.at, locale)} · {t("food.portionCount", { count: formatDecimal(log.portions, locale) })}
               </span>
               <button type="button" onClick={() => void foodJournal.remove(entry.id, log.id)} aria-label={t("food.removeLog")}>
                 <X size={14} />

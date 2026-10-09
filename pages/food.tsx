@@ -10,7 +10,7 @@ import { useHistory } from "@/hooks/useHistory";
 import { useNow } from "@/hooks/useNow";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cleanGoals, journalDay, mealAt, mealKinds, portionChoices, sameTimeOn, totalIntake, type FoodGoals, type MealKind } from "@/lib/food";
-import { formatDay, formatNumber, formatTime, startOfDay } from "@/lib/format";
+import { formatDay, formatDecimal, formatNumber, formatTime, startOfDay } from "@/lib/format";
 import { rise, stagger } from "@/lib/motion";
 import { useSettings } from "@/lib/settings/SettingsProvider";
 import { haptics } from "@/services/device";
@@ -192,7 +192,7 @@ export default function FoodPage() {
                           >
                             {[...new Set([...portionChoices, log.portions])].map((value) => (
                               <option key={value} value={value}>
-                                {t("food.portionCount", { count: formatNumber(value, locale) })}
+                                {t("food.portionCount", { count: formatDecimal(value, locale) })}
                               </option>
                             ))}
                           </select>
