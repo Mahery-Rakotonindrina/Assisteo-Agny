@@ -15,6 +15,7 @@ import {
   FileText,
   Files,
   Hash,
+  HeartPulse,
   ListChecks,
   ListPlus,
   Lock,
@@ -45,6 +46,7 @@ import { ScanChat } from "@/components/ScanChat";
 import {
   AnswerFeedback,
   ConfidenceBadge,
+  DietCard,
   confidenceLevel,
   NutritionCard,
   ParcelCard,
@@ -65,9 +67,11 @@ import { useNow } from "@/hooks/useNow";
 import { useReminderTexts } from "@/hooks/useReminderTexts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { exampleEntry, isExampleId } from "@/lib/examples";
+import { dietAlerts, hasDietAlert } from "@/lib/food";
 import { sameParcel } from "@/lib/parcels";
 import { formatDateTime, formatDay } from "@/lib/format";
 import { easeOut, pop, rise, spring, stagger } from "@/lib/motion";
+import { useSettings } from "@/lib/settings/SettingsProvider";
 import { haptics, shareText } from "@/services/device";
 import { historyStore } from "@/services/historyStore";
 import { listStore } from "@/services/listStore";
@@ -200,7 +204,7 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
     { id: "overview", label: t("result.tabs.overview"), icon: <Sparkles /> },
     analysis.list && { id: "list", label: t("result.tabs.list"), icon: <ListChecks /> },
     analysis.parcel && { id: "parcel", label: t("result.tabs.parcel"), icon: <Package /> },
-    analysis.nutrition && { id: "nutrition", label: t("result.tabs.nutrition"), icon: <Utensils /> },
+    (analysis.nutrition || analysis.diet) && { id: "nutrition", label: t("result.tabs.nutrition"), icon: <Utensils /> },
     analysis.recipe && { id: "recipe", label: t("result.tabs.recipe"), icon: <CookingPot /> },
     analysis.vehicle && { id: "vehicle", label: t("result.tabs.vehicle"), icon: <Car /> },
     analysis.document && { id: "document", label: t("result.tabs.document"), icon: <FileText /> },
@@ -266,6 +270,10 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
     await parcelStore.applyScan(trackedParcel, entry);
     toast(t("parcel.updated", { status: t(`parcel.statuses.${analysis.parcel!.status}`) }));
   };
+
+  // Food: the allergies and diets of the user.
+  const { settings } = useSettings();
+  const alerts = dietAlerts(analysis.diet, settings);
 
   const reminderFirst =
     forcedAt !== null ||
@@ -464,6 +472,22 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
                 </div>
               </div>
             )}
+            {hasDietAlert(alerts) && (
+              <div className={styles.uncertain} role="alert">
+                <TriangleAlert size={18} />
+                <div>
+                  <strong>{t("food.alertTitle")}</strong>
+                  <p>
+                    {[
+                      alerts.allergens.length > 0 && t("food.alertAllergens", { list: alerts.allergens.map((value) => t(`food.allergens.${value}`)).join(", ") }),
+                      alerts.against.length > 0 && t("food.alertDiets", { list: alerts.against.map((value) => t(`food.diets.${value}`)).join(", ") }),
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                  </p>
+                </div>
+              </div>
+            )}
             {meta.demo && <p className={styles.demoNote}>{t("result.demoNote")}</p>}
           </motion.header>
 
@@ -543,11 +567,18 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
         return analysis.parcel && renderParcel(analysis.parcel);
       case "nutrition":
         return (
-          analysis.nutrition && (
-            <Section title={t("result.nutrition")} icon={<Utensils />}>
-              <NutritionCard nutrition={analysis.nutrition} />
-            </Section>
-          )
+          <>
+            {analysis.nutrition && (
+              <Section title={t("result.nutrition")} icon={<Utensils />}>
+                <NutritionCard nutrition={analysis.nutrition} />
+              </Section>
+            )}
+            {analysis.diet && (
+              <Section title={t("food.dietSection")} icon={<HeartPulse />}>
+                <DietCard diet={analysis.diet} />
+              </Section>
+            )}
+          </>
         );
       case "recipe":
         return (

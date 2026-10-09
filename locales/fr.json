@@ -1196,5 +1196,47 @@
     "copy": "Copier le texte",
     "copyTranslation": "Copier la traduction",
     "copied": "Texte copié"
+  },
+  "food": {
+    "dietSection": "Allergènes et régimes",
+    "allergensTitle": "Allergènes probables",
+    "noAllergen": "Aucun allergène majeur repéré.",
+    "dietsTitle": "Régimes",
+    "fits": {
+      "yes": "oui",
+      "no": "non",
+      "unsure": "à vérifier"
+    },
+    "estimate": "Estimation à partir de la photo : vérifie l’étiquette en cas d’allergie.",
+    "setProfile": "Indiquer mes allergies",
+    "editProfile": "Mes allergies et mon régime",
+    "alertTitle": "Attention pour toi",
+    "alertAllergens": "Contient probablement : {list}.",
+    "alertDiets": "Ne convient pas à ton régime : {list}.",
+    "allergens": {
+      "gluten": "Gluten",
+      "milk": "Lait",
+      "eggs": "Œufs",
+      "peanuts": "Arachides",
+      "nuts": "Fruits à coque",
+      "soy": "Soja",
+      "fish": "Poisson",
+      "shellfish": "Crustacés",
+      "sesame": "Sésame"
+    },
+    "diets": {
+      "vegetarian": "Végétarien",
+      "vegan": "Végane",
+      "gluten_free": "Sans gluten",
+      "lactose_free": "Sans lactose",
+      "halal": "Halal",
+      "low_sugar": "Peu sucré (diabète)",
+      "low_salt": "Peu salé (tension)"
+    },
+    "settingsSection": "Alimentation",
+    "myAllergies": "Mes allergies",
+    "myAllergiesHint": "Un aliment qui en contient s’affiche avec une alerte.",
+    "myDiets": "Mon régime",
+    "myDietsHint": "Les aliments qui ne conviennent pas sont signalés."
   }
 }

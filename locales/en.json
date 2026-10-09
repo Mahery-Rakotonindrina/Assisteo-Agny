@@ -1196,5 +1196,47 @@
     "copy": "Copy the text",
     "copyTranslation": "Copy the translation",
     "copied": "Text copied"
+  },
+  "food": {
+    "dietSection": "Allergens and diets",
+    "allergensTitle": "Likely allergens",
+    "noAllergen": "No major allergen spotted.",
+    "dietsTitle": "Diets",
+    "fits": {
+      "yes": "yes",
+      "no": "no",
+      "unsure": "check"
+    },
+    "estimate": "Estimated from the photo: check the label if you have an allergy.",
+    "setProfile": "Set my allergies",
+    "editProfile": "My allergies and diet",
+    "alertTitle": "Careful for you",
+    "alertAllergens": "Probably contains: {list}.",
+    "alertDiets": "Doesn’t fit your diet: {list}.",
+    "allergens": {
+      "gluten": "Gluten",
+      "milk": "Milk",
+      "eggs": "Eggs",
+      "peanuts": "Peanuts",
+      "nuts": "Tree nuts",
+      "soy": "Soy",
+      "fish": "Fish",
+      "shellfish": "Shellfish",
+      "sesame": "Sesame"
+    },
+    "diets": {
+      "vegetarian": "Vegetarian",
+      "vegan": "Vegan",
+      "gluten_free": "Gluten-free",
+      "lactose_free": "Lactose-free",
+      "halal": "Halal",
+      "low_sugar": "Low sugar (diabetes)",
+      "low_salt": "Low salt (blood pressure)"
+    },
+    "settingsSection": "Food",
+    "myAllergies": "My allergies",
+    "myAllergiesHint": "A food that contains one shows a warning.",
+    "myDiets": "My diet",
+    "myDietsHint": "Foods that don’t fit are flagged."
   }
 }

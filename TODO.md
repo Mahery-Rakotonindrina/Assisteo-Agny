@@ -29,7 +29,7 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Recette complète : portions, temps, difficulté, ingrédients, étapes, astuce du chef
 - [x] Conseils
 - [ ] Journal alimentaire du jour, avec objectifs
-- [ ] Allergènes et régimes (sans gluten, halal…)
+- [x] Allergènes et régimes (sans gluten, halal…) : allergènes probables et régimes compatibles sur chaque aliment, alerte si ça touche tes allergies ou ton régime (Réglages → Alimentation)
 - [ ] Liste de courses tirée d'une recette
 
 ## 3. Documents et listes

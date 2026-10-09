@@ -210,3 +210,29 @@
     font-variant-numeric: tabular-nums;
   }
 }
+
+// Several choices at once (allergies, diets).
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.42rem 0.8rem;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 0.86rem;
+    font-weight: 600;
+
+    &[aria-pressed="true"] {
+      border-color: var(--accent-mark);
+      background: var(--accent-soft);
+      color: var(--text);
+    }
+  }
+}

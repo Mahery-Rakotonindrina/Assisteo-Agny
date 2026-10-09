@@ -8,3 +8,4 @@ export { Section } from "./Section";
 export { SuggestionList } from "./SuggestionList";
 export { VehicleCard } from "./VehicleCard";
 export { ResultTabs, type ResultTab } from "./ResultTabs";
+export { DietCard } from "./DietCard";

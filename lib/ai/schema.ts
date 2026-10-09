@@ -31,6 +31,14 @@ export const parcelStatuses = [
 export type ParcelStatus = (typeof parcelStatuses)[number];
 export type Category = (typeof categories)[number];
 
+/** The major food allergens, checked against the user's own (Settings → Food). */
+export const allergens = ["gluten", "milk", "eggs", "peanuts", "nuts", "soy", "fish", "shellfish", "sesame"] as const;
+export type Allergen = (typeof allergens)[number];
+
+/** Diets a food is checked against. */
+export const diets = ["vegetarian", "vegan", "gluten_free", "lactose_free", "halal", "low_sugar", "low_salt"] as const;
+export type Diet = (typeof diets)[number];
+
 export const AnalysisSchema = z.object({
   category: z.enum(categories).describe("What the photo mainly shows."),
   title: z.string().describe("Short name of the subject, 2 to 6 words."),
@@ -76,6 +84,18 @@ export const AnalysisSchema = z.object({
     .describe(
       "Only for food, null otherwise. For a prepared dish: how to make it at home. For a raw ingredient or product: a simple recipe that uses it.",
     ),
+  diet: z
+    .object({
+      allergens: z
+        .array(z.enum(allergens))
+        .describe("Major allergens it likely contains: from the visible ingredients, the label, or the usual recipe of the dish."),
+      diets: z
+        .array(z.object({ diet: z.enum(diets), fits: z.enum(["yes", "no", "unsure"]) }))
+        .describe("Every diet of the list, once each: whether this food fits it. 'unsure' when it depends on what can't be seen."),
+      note: z.string().nullable().describe("One short caution (hidden allergens, cross-contamination, how sure this is), or null."),
+    })
+    .nullable()
+    .describe("Allergens and diets. Only for food, null otherwise."),
   document: z
     .object({
       type: z.string().describe("Kind of document, e.g. invoice, letter, receipt."),
@@ -184,6 +204,7 @@ export function normalizeStoredAnalysis(raw: unknown): unknown {
   const document = analysis.document as Record<string, unknown> | null | undefined;
   return {
     recipe: null,
+    diet: null,
     vehicle: null,
     parcel: null,
     list: null,
