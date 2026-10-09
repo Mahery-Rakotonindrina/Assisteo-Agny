@@ -13,11 +13,13 @@ describe("AnalysisSchema", () => {
     const old = { ...mockAnalysis("document", "fr") } as Record<string, unknown>;
     delete old.recipe;
     delete old.vehicle;
+    delete old.questions;
     old.document = { type: "Facture", keyPoints: [], dates: [], actionItems: [] };
     const upgraded = AnalysisSchema.safeParse(normalizeStoredAnalysis(old));
     expect(upgraded.success).toBe(true);
     expect(upgraded.data?.document?.expiresOn).toBeNull();
     expect(upgraded.data?.document?.isInsurance).toBe(false);
+    expect(upgraded.data?.questions).toEqual([]);
   });
 });
 

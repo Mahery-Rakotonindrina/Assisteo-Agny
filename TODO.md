@@ -68,7 +68,7 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Questions écrites, l'IA revoit la photo pour répondre
 - [x] Conversation gardée avec le scan et synchronisée
 - [x] Limite par jour selon l'offre
-- [ ] Questions suggérées sous forme de boutons
+- [x] Questions suggérées sous forme de boutons : 3 questions propres à chaque scan, proposées dans le Résumé et sous la conversation (celles déjà posées disparaissent)
 - [ ] Question à la voix, réponse lue à voix haute
 - [ ] Partager une réponse
 

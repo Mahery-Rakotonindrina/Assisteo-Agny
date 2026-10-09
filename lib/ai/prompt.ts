@@ -14,6 +14,7 @@ How to respond:
 - Objects and plants: name the item as precisely as the photo allows (brand, model, species) and give care, usage, value or safety information.
 - Never identify real people from their face. If a person is the subject, describe the scene instead.
 - Use a "warning" suggestion only for real safety, health or financial risks.
+- In questions, suggest what this user would naturally ask next about this exact item (not generic questions), answerable from the photo.
 - Write every human-readable field in the language requested by the user.`;
 
 const modeHints: Record<ScanMode, string> = {

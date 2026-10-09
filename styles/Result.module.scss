@@ -705,3 +705,31 @@ $bar-height: calc(var(--safe-top) + 3.95rem);
 .afterCard {
   margin-top: 1.1rem;
 }
+
+// Suggested questions on the overview: a tap asks it in the question tab.
+.questions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.45rem 0.75rem;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    font-size: 0.85rem;
+    text-align: left;
+
+    svg {
+      flex-shrink: 0;
+      color: var(--accent-text);
+    }
+
+    &:hover {
+      border-color: var(--border-strong);
+    }
+  }
+}

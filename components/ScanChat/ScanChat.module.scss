@@ -210,3 +210,16 @@
     animation: none;
   }
 }
+
+// More questions to tap, under the conversation.
+.more {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.3rem;
+
+  small {
+    font-size: 0.78rem;
+    color: var(--text-subtle);
+  }
+}

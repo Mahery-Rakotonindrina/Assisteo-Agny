@@ -2,7 +2,7 @@ import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import {
   ArrowLeft,
   BookOpen,
@@ -149,6 +149,8 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
   // A parcel opens on its tracking details.
   const [tab, setTab] = useState<TabId>(analysis.parcel ? "parcel" : analysis.list ? "list" : "overview");
   const [composerFocused, setComposerFocused] = useState(false);
+  // A suggested question tapped on the overview: sent once the question tab opens.
+  const [askNow, setAskNow] = useState<string | null>(null);
   const [barSolid, setBarSolid] = useState(false);
   const [barTitled, setBarTitled] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -230,6 +232,13 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
     const top = header.getBoundingClientRect().bottom + window.scrollY + CONTENT_GAP - offset;
     if (window.scrollY > top) window.scrollTo({ top, behavior: "instant" });
   };
+
+  const askQuestion = (question: string) => {
+    haptics.tap();
+    setAskNow(question);
+    changeTab("chat");
+  };
+  const clearAskNow = useCallback(() => setAskNow(null), []);
 
   const openQuestion = () => {
     haptics.tap();
@@ -639,7 +648,7 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
             }}
           >
             <Section title={t("chat.title")} icon={<MessageCircle />}>
-              <ScanChat entry={entry} />
+              <ScanChat entry={entry} initialQuestion={askNow} onInitialQuestion={clearAskNow} />
             </Section>
           </div>
         );
@@ -687,6 +696,19 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
             {analysis.suggestions.length > 0 && (
               <Section title={t("result.suggestions")} icon={<Sparkles />}>
                 <SuggestionList suggestions={analysis.suggestions} />
+              </Section>
+            )}
+
+            {!example && analysis.questions.length > 0 && (
+              <Section title={t("chat.askAbout")} icon={<MessageCircle />}>
+                <div className={styles.questions}>
+                  {analysis.questions.map((question) => (
+                    <button key={question} type="button" onClick={() => askQuestion(question)}>
+                      <Sparkles size={13} />
+                      {question}
+                    </button>
+                  ))}
+                </div>
               </Section>
             )}
 

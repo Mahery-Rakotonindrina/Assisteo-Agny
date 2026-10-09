@@ -46,8 +46,15 @@ function renderAnswer(text: string) {
 
 type ErrorKind = "network" | "rate_limited" | "refused" | "unavailable" | "ask_limit" | "server_busy" | "plan_required" | "invalid_key" | "billing" | "unknown";
 
+type ScanChatProps = {
+  entry: HistoryEntry;
+  /** A question tapped elsewhere on the result, sent as soon as the chat opens. */
+  initialQuestion?: string | null;
+  onInitialQuestion?: () => void;
+};
+
 /** A conversation about one scan: the AI sees the photo and its own analysis. */
-export function ScanChat({ entry }: { entry: HistoryEntry }) {
+export function ScanChat({ entry, initialQuestion, onInitialQuestion }: ScanChatProps) {
   const { t, list, locale } = useTranslation();
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
@@ -56,7 +63,10 @@ export function ScanChat({ entry }: { entry: HistoryEntry }) {
   const endRef = useRef<HTMLDivElement>(null);
   const chat = entry.chat ?? [];
   const awaitingAnswer = chat.length > 0 && chat[chat.length - 1].role === "user";
-  const suggestions = list(`chat.suggestions.${entry.analysis.category}`);
+  // The questions the AI suggested for this scan (older scans: common ones for the category), not asked yet.
+  const suggested = entry.analysis.questions.length > 0 ? entry.analysis.questions : list(`chat.suggestions.${entry.analysis.category}`);
+  const asked = new Set(chat.filter((message) => message.role === "user").map((message) => message.content.trim().toLowerCase()));
+  const suggestions = suggested.filter((question) => !asked.has(question.trim().toLowerCase())).slice(0, 3);
 
   useEffect(() => {
     if (chat.length > 0 || sending) endRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -93,6 +103,18 @@ export function ScanChat({ entry }: { entry: HistoryEntry }) {
     await historyStore.update(entry.id, { chat: conversation });
     await requestAnswer(conversation);
   };
+
+  const sentInitial = useRef(false);
+  useEffect(() => {
+    if (!initialQuestion || sentInitial.current) return;
+    sentInitial.current = true;
+    // Next tick, so no state changes while the effect runs. Not cancelled: the
+    // parent clears the question, which re-renders this before the timer fires.
+    setTimeout(() => {
+      onInitialQuestion?.();
+      void send(initialQuestion);
+    }, 0);
+  }, [initialQuestion, onInitialQuestion, send]);
 
   const onKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     // Enter sends on a keyboard; Shift+Enter adds a line.
@@ -147,6 +169,19 @@ export function ScanChat({ entry }: { entry: HistoryEntry }) {
               <span />
               <span />
             </motion.div>
+          )}
+          {!sending && !awaitingAnswer && suggestions.length > 0 && (
+            <div className={styles.more}>
+              <small>{t("chat.alsoAsk")}</small>
+              <div className={styles.suggestions}>
+                {suggestions.map((question) => (
+                  <button key={question} type="button" className={styles.suggestion} onClick={() => void send(question)}>
+                    <Sparkles size={13} />
+                    {question}
+                  </button>
+                ))}
+              </div>
+            </div>
           )}
           <div ref={endRef} />
         </div>

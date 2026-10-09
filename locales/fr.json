@@ -721,7 +721,9 @@
         "Comment ça marche ?",
         "Qu’est-ce que je dois savoir ?"
       ]
-    }
+    },
+    "alsoAsk": "Tu peux aussi demander :",
+    "askAbout": "Tu peux demander"
   },
   "legal": {
     "updated": "Mise à jour le {date}",

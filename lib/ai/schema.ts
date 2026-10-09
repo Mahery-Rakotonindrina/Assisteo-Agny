@@ -65,6 +65,9 @@ export const AnalysisSchema = z.object({
       }),
     )
     .describe("2 to 4 practical, specific suggestions for the user."),
+  questions: z
+    .array(z.string())
+    .describe("3 short follow-up questions the user would likely ask about this exact photo, in the user's language, under 60 characters each."),
   nutrition: z
     .object({
       portion: z.string().describe("The portion the estimate refers to."),
@@ -228,6 +231,7 @@ export function normalizeStoredAnalysis(raw: unknown): unknown {
   const analysis = raw as Record<string, unknown>;
   const document = analysis.document as Record<string, unknown> | null | undefined;
   return {
+    questions: [],
     recipe: null,
     diet: null,
     vehicle: null,
