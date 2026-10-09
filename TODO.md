@@ -69,7 +69,7 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Conversation gardée avec le scan et synchronisée
 - [x] Limite par jour selon l'offre
 - [x] Questions suggérées sous forme de boutons : 3 questions propres à chaque scan, proposées dans le Résumé et sous la conversation (celles déjà posées disparaissent)
-- [ ] Question à la voix, réponse lue à voix haute
+- [x] Question à la voix, réponse lue à voix haute : bouton micro (saisie vocale du téléphone), réponse lue automatiquement, bouton « Écouter » sur chaque réponse (Android : nouvel APK)
 - [ ] Partager une réponse
 
 ## 7. Historique

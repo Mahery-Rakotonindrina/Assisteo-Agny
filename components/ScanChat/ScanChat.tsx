@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
-import { Fragment, useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
-import { ArrowUp, RotateCcw, Sparkles, Trash2 } from "lucide-react";
+import { Fragment, useEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent, type ReactNode } from "react";
+import { ArrowUp, Mic, RotateCcw, Sparkles, Square, Trash2, Volume2 } from "lucide-react";
+import { useToast } from "@/components/Toast";
 import { PLANS_HREF } from "@/components/Trial";
 import { useTranslation } from "@/hooks/useTranslation";
 import { easeOut } from "@/lib/motion";
@@ -9,6 +10,7 @@ import { askAboutScan } from "@/services/chatService";
 import { haptics } from "@/services/device";
 import { historyStore } from "@/services/historyStore";
 import { planStore } from "@/services/plan";
+import { voice, VoiceError } from "@/services/voice";
 import { ApiError } from "@/types/api";
 import type { ChatEntry, HistoryEntry } from "@/types/history";
 import styles from "./ScanChat.module.scss";
@@ -17,6 +19,8 @@ const MAX_LENGTH = 2000;
 
 // Message timestamps, taken in event handlers (never during render).
 const timestamp = () => Date.now();
+
+const noSubscribe = () => () => {};
 
 /** Renders "**bold**" and "- " lists from a plain-text answer, without injecting HTML. */
 function renderAnswer(text: string) {
@@ -61,6 +65,34 @@ export function ScanChat({ entry, initialQuestion, onInitialQuestion }: ScanChat
   const [error, setError] = useState<ErrorKind | null>(null);
   const [confirmClear, setConfirmClear] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
+  const toast = useToast();
+  // Voice: listening for a question, and the answer being read aloud (by its time).
+  const canListen = useSyncExternalStore(noSubscribe, voice.canListen, () => false);
+  const canSpeak = useSyncExternalStore(noSubscribe, voice.canSpeak, () => false);
+  const [listening, setListening] = useState(false);
+  const [speakingAt, setSpeakingAt] = useState<number | null>(null);
+  // A question asked aloud gets its answer read aloud.
+  const readAloud = useRef(false);
+
+  // Leaving the conversation stops the voice.
+  useEffect(() => () => void voice.stopSpeaking(), []);
+
+  const speak = async (at: number, text: string) => {
+    if (speakingAt === at) {
+      await voice.stopSpeaking();
+      setSpeakingAt(null);
+      return;
+    }
+    await voice.stopSpeaking();
+    setSpeakingAt(at);
+    try {
+      await voice.speak(text, locale);
+    } catch {
+      toast(t("chat.voiceUnavailable"), "error");
+    } finally {
+      setSpeakingAt((current) => (current === at ? null : current));
+    }
+  };
   const chat = entry.chat ?? [];
   const awaitingAnswer = chat.length > 0 && chat[chat.length - 1].role === "user";
   // The questions the AI suggested for this scan (older scans: common ones for the category), not asked yet.
@@ -82,8 +114,11 @@ export function ScanChat({ entry, initialQuestion, onInitialQuestion }: ScanChat
         locale,
       );
       if (usage) planStore.setUsage({ questionsToday: usage.used });
-      await historyStore.update(entry.id, { chat: [...conversation, { role: "assistant", content: answer, at: timestamp() }] });
+      const at = timestamp();
+      await historyStore.update(entry.id, { chat: [...conversation, { role: "assistant", content: answer, at }] });
       haptics.tap();
+      if (readAloud.current && canSpeak) void speak(at, answer);
+      readAloud.current = false;
     } catch (err) {
       haptics.error();
       const code = err instanceof ApiError ? err.code : "unknown";
@@ -115,6 +150,26 @@ export function ScanChat({ entry, initialQuestion, onInitialQuestion }: ScanChat
       void send(initialQuestion);
     }, 0);
   }, [initialQuestion, onInitialQuestion, send]);
+
+  const listen = async () => {
+    if (listening) {
+      voice.stopListening();
+      return;
+    }
+    haptics.tap();
+    await voice.stopSpeaking();
+    setListening(true);
+    try {
+      const heard = await voice.listen(locale, t("chat.voicePrompt"));
+      readAloud.current = true;
+      await send(heard);
+    } catch (err) {
+      const reason = err instanceof VoiceError ? err.reason : "no_speech";
+      if (reason !== "no_speech") toast(t(reason === "denied" ? "chat.voiceDenied" : "chat.voiceUnavailable"), "error");
+    } finally {
+      setListening(false);
+    }
+  };
 
   const onKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     // Enter sends on a keyboard; Shift+Enter adds a line.
@@ -160,6 +215,14 @@ export function ScanChat({ entry, initialQuestion, onInitialQuestion }: ScanChat
                 transition={{ duration: 0.25, ease: easeOut }}
               >
                 {message.role === "user" ? <p>{message.content}</p> : renderAnswer(message.content)}
+                {message.role === "assistant" && canSpeak && (
+                  <div className={styles.answerActions}>
+                    <button type="button" onClick={() => void speak(message.at, message.content)} aria-pressed={speakingAt === message.at}>
+                      {speakingAt === message.at ? <Square size={13} /> : <Volume2 size={14} />}
+                      {speakingAt === message.at ? t("chat.stopListening") : t("chat.listen")}
+                    </button>
+                  </div>
+                )}
               </motion.div>
             ))}
           </AnimatePresence>
@@ -216,11 +279,23 @@ export function ScanChat({ entry, initialQuestion, onInitialQuestion }: ScanChat
           value={draft}
           onChange={(event) => setDraft(event.target.value.slice(0, MAX_LENGTH))}
           onKeyDown={onKeyDown}
-          placeholder={t("chat.placeholder")}
+          placeholder={listening ? t("chat.listening") : t("chat.placeholder")}
           rows={1}
           disabled={sending}
           aria-label={t("chat.placeholder")}
         />
+        {canListen && !draft.trim() && (
+          <button
+            type="button"
+            className={styles.mic}
+            data-listening={listening || undefined}
+            onClick={() => void listen()}
+            disabled={sending}
+            aria-label={listening ? t("chat.stopVoice") : t("chat.voice")}
+          >
+            <Mic size={18} />
+          </button>
+        )}
         <button type="submit" className={styles.send} disabled={!draft.trim() || sending} aria-label={t("chat.send")}>
           <ArrowUp size={18} />
         </button>

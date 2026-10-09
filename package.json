@@ -27,6 +27,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.131.0",
     "@aparajita/capacitor-secure-storage": "^8.0.1",
+    "@capacitor-community/text-to-speech": "^8.0.2",
     "@capacitor/android": "^8.5.2",
     "@capacitor/app": "^8.1.2",
     "@capacitor/camera": "^8.2.5",
@@ -41,6 +42,7 @@
     "@capacitor/splash-screen": "^8.0.2",
     "@capacitor/status-bar": "^8.0.4",
     "@capgo/capacitor-share-target": "^8.0.59",
+    "@capgo/capacitor-speech-recognition": "^8.4.1",
     "@google/genai": "^2.27.0",
     "@ionic/pwa-elements": "^3.4.0",
     "@sentry/nextjs": "^11.4.0",

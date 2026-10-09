@@ -223,3 +223,55 @@
     color: var(--text-subtle);
   }
 }
+
+// ---- Voice -------------------------------------------------------------------------
+
+.mic {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  background: var(--surface-strong);
+  color: var(--text);
+
+  &[data-listening] {
+    background: var(--danger);
+    color: #fff;
+    animation: listening 1.2s ease-in-out infinite;
+  }
+
+  &:disabled {
+    opacity: 0.35;
+  }
+}
+
+@keyframes listening {
+  50% {
+    box-shadow: 0 0 0 7px var(--danger-soft);
+  }
+}
+
+.answerActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.5rem;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: var(--radius-pill);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    font-weight: 600;
+
+    &[aria-pressed="true"] {
+      color: var(--accent-text);
+    }
+  }
+}

@@ -723,7 +723,15 @@
       ]
     },
     "alsoAsk": "You can also ask:",
-    "askAbout": "You can ask"
+    "askAbout": "You can ask",
+    "voice": "Ask your question aloud",
+    "stopVoice": "Stop listening",
+    "listening": "Listening…",
+    "voicePrompt": "Ask your question",
+    "voiceDenied": "Allow the microphone in the phone settings to talk to the app.",
+    "voiceUnavailable": "Voice isn’t available on this device.",
+    "listen": "Listen",
+    "stopListening": "Stop"
   },
   "legal": {
     "updated": "Last updated {date}",

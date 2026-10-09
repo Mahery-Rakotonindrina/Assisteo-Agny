@@ -10,6 +10,7 @@ android {
 apply from: "../capacitor-cordova-android-plugins/cordova.variables.gradle"
 dependencies {
     implementation project(':aparajita-capacitor-secure-storage')
+    implementation project(':capacitor-community-text-to-speech')
     implementation project(':capacitor-app')
     implementation project(':capacitor-camera')
     implementation project(':capacitor-filesystem')
@@ -21,6 +22,7 @@ dependencies {
     implementation project(':capacitor-splash-screen')
     implementation project(':capacitor-status-bar')
     implementation project(':capgo-capacitor-share-target')
+    implementation project(':capgo-capacitor-speech-recognition')
 
 }
 

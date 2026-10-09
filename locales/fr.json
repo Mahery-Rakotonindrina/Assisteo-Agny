@@ -723,7 +723,15 @@
       ]
     },
     "alsoAsk": "Tu peux aussi demander :",
-    "askAbout": "Tu peux demander"
+    "askAbout": "Tu peux demander",
+    "voice": "Poser la question à voix haute",
+    "stopVoice": "Arrêter l’écoute",
+    "listening": "Je t’écoute…",
+    "voicePrompt": "Pose ta question",
+    "voiceDenied": "Autorise le micro dans les réglages du téléphone pour parler à l’app.",
+    "voiceUnavailable": "La voix n’est pas disponible sur cet appareil.",
+    "listen": "Écouter",
+    "stopListening": "Arrêter"
   },
   "legal": {
     "updated": "Mise à jour le {date}",
