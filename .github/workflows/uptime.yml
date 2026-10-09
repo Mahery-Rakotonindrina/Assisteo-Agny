@@ -1,0 +1,88 @@
+name: Uptime
+
+# Every 10 minutes: does the site answer, and do its database and Redis
+# (/api/health?deep=1)? After three failed tries in a row, opens an issue
+# that mentions the owner: GitHub e-mails it and shows it in the GitHub app.
+# Once the site answers again, closes it with how long the outage lasted.
+# Needs the variable NEXT_PUBLIC_API_URL (already used by the APK build).
+# Schedules run on the default branch only, and may start a few minutes late.
+on:
+  schedule:
+    - cron: "5-59/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+concurrency:
+  group: uptime
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Check the site
+        id: check
+        env:
+          API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+        run: |
+          if [ -z "$API_URL" ]; then
+            echo "::notice::NEXT_PUBLIC_API_URL missing: no uptime check."
+            echo "state=skip" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          describe() { [ "$1" = "000" ] && echo "ne répond pas" || echo "répond HTTP $1"; }
+          for attempt in 1 2 3; do
+            problem=""
+            # curl fails when nothing answers: keep its "000" instead of stopping the step.
+            page=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 "$API_URL/" || true)
+            [ "$page" = "200" ] || problem="la page d'accueil $(describe "$page")"
+            health=$(curl -s -o health.json -w "%{http_code}" --max-time 20 "$API_URL/api/health?deep=1" || true)
+            if [ "$health" != "200" ]; then
+              down=$(jq -r '[.checks // {} | to_entries[] | select(.value == "down") | .key] | join(", ")' health.json 2>/dev/null || true)
+              problem="${problem:+$problem ; }l'API $(describe "$health")${down:+ (en panne : $down)}"
+            fi
+            [ -z "$problem" ] && break
+            echo "Try $attempt: $problem"
+            [ "$attempt" -lt 3 ] && sleep 45
+          done
+          if [ -z "$problem" ]; then
+            echo "Site up."
+            echo "state=up" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::Site down: $problem"
+            echo "state=down" >> "$GITHUB_OUTPUT"
+            echo "problem=$problem" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open or close the alert
+        if: steps.check.outputs.state == 'up' || steps.check.outputs.state == 'down'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          STATE: ${{ steps.check.outputs.state }}
+          PROBLEM: ${{ steps.check.outputs.problem }}
+          API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          open=$(gh issue list --label site-down --state open --limit 1 --json number,createdAt --jq '.[0] // empty')
+          if [ "$STATE" = "down" ] && [ -z "$open" ]; then
+            gh label create site-down --color B60205 --description "Alerte automatique : le site ne répond plus" --force > /dev/null
+            since=$(TZ=Indian/Antananarivo date "+%d/%m à %H:%M")
+            body=$(printf '%s\n' \
+              "@$OWNER le site ne répond plus depuis le $since (heure de Madagascar)." \
+              "" \
+              "**Problème :** $PROBLEM" \
+              "**Adresse :** $API_URL" \
+              "" \
+              "Trois essais à 45 secondes d'intervalle ont échoué. Ce ticket se fermera tout seul dès que le site répondra de nouveau (contrôle toutes les 10 minutes)." \
+              "" \
+              "À regarder : Vercel (dernier déploiement, page de statut), Supabase (projet mis en pause après une semaine sans activité ?), Upstash Redis.")
+            gh issue create --label site-down --title "🔴 Le site ne répond plus" --body "$body"
+          elif [ "$STATE" = "up" ] && [ -n "$open" ]; then
+            number=$(echo "$open" | jq -r .number)
+            minutes=$(( ( $(date +%s) - $(date -d "$(echo "$open" | jq -r .createdAt)" +%s) ) / 60 ))
+            gh issue close "$number" --comment "✅ Le site répond de nouveau. Panne d'au moins $minutes minutes (depuis l'alerte)."
+          fi

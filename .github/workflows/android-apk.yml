@@ -164,10 +164,13 @@ jobs:
           echo "Download: https://github.com/$GITHUB_REPOSITORY/releases/latest/download/AssisteoAgny.apk"
 
       # Optional: the installed apps learn about this version (and where to get it).
+      # With the admin's two-factor authentication on, the CRON_SECRET (already
+      # set for the reminders) must come with the token.
       - name: Announce the version to the installed apps
         if: steps.signing.outputs.release == 'true' && github.event_name == 'push'
         env:
           ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
           API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
         run: |
           if [ -z "$ADMIN_TOKEN" ]; then
@@ -175,8 +178,12 @@ jobs:
             exit 0
           fi
           url="https://github.com/$GITHUB_REPOSITORY/releases/latest/download/AssisteoAgny.apk"
+          auth=(-H "Authorization: Bearer $ADMIN_TOKEN" -H "X-Cron-Secret: $CRON_SECRET")
           # Keep the minimum version as it is; only the latest one and its link change.
-          current=$(curl -sf -H "Authorization: Bearer $ADMIN_TOKEN" "$API_URL/api/admin/app")
+          if ! current=$(curl -sf "${auth[@]}" "$API_URL/api/admin/app"); then
+            echo "::warning::Admin refused the announcement (two-factor on without the CRON_SECRET secret?): set the latest version ($ANDROID_VERSION_NAME) in Admin yourself."
+            exit 0
+          fi
           body=$(echo "$current" | jq -c --arg version "$ANDROID_VERSION_NAME" --arg url "$url" '.latest = $version | .downloadUrl = $url')
-          curl -sf -X PUT -H "Authorization: Bearer $ADMIN_TOKEN" -H "Content-Type: application/json" -d "$body" "$API_URL/api/admin/app" > /dev/null
+          curl -sf -X PUT "${auth[@]}" -H "Content-Type: application/json" -d "$body" "$API_URL/api/admin/app" > /dev/null
           echo "Installed apps now offer $ANDROID_VERSION_NAME."

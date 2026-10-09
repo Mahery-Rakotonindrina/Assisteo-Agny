@@ -28,8 +28,6 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Valeurs nutritionnelles estimées par portion (calories, protéines, glucides, lipides)
 - [x] Recette complète : portions, temps, difficulté, ingrédients, étapes, astuce du chef
 - [x] Conseils
-- [ ] Valeurs nutritionnelles fiables via une base de référence (Open Food Facts, Ciqual)
-- [ ] Code-barres des produits emballés
 - [ ] Journal alimentaire du jour, avec objectifs
 - [ ] Allergènes et régimes (sans gluten, halal…)
 - [ ] Liste de courses tirée d'une recette
@@ -188,6 +186,6 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Suivi des erreurs (Sentry) sans données personnelles
 - [x] Sauvegarde chiffrée de la base chaque semaine, avec restauration
 - [x] Tests automatiques à chaque envoi, mises à jour de dépendances (Dependabot)
-- [ ] Alerte si le site tombe
-- [ ] Test automatique de restauration des sauvegardes
-- [ ] Double authentification pour l'admin
+- [x] Alerte si le site tombe (contrôle toutes les 10 min, base et Redis compris, ticket GitHub qui te mentionne, fermé au retour)
+- [x] Test automatique de restauration des sauvegardes (chaque semaine sur la vraie sauvegarde, et à chaque envoi de code sur des données d'exemple)
+- [x] Double authentification pour l'admin (appli d'authentification + codes de secours)

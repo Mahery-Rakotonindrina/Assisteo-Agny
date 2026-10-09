@@ -1,6 +1,9 @@
 name: Database backup
 
-# Weekly encrypted backup of the account data (history, settings, keys).
+# Weekly encrypted backup of the account data (history, settings, keys,
+# parcels, lists, subscriptions), then a restore test: the file is restored
+# into a throwaway Postgres and every row must read back identical. If the
+# test fails, an issue mentions the owner.
 # Needs the repository secrets POSTGRES_URL_NON_POOLING and BACKUP_PASSPHRASE
 # (docs/backups.md). The file is encrypted: the passphrase never leaves the
 # secrets, so the artifact is safe to keep even on a public repository.
@@ -9,10 +12,21 @@ on:
     - cron: "0 3 * * 0"
   workflow_dispatch:
 
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   backup:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 12
     steps:
       - name: Check secrets
         id: check
@@ -52,3 +66,28 @@ jobs:
           name: database-backup
           path: backups/*.agny
           retention-days: 90
+
+      # Into the throwaway Postgres of this job, which disappears with it.
+      - name: Restore test
+        if: steps.check.outputs.run == 'true'
+        env:
+          CHECK_DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: node scripts/db-restore-check.mjs backups/*.agny
+
+      - name: Alert the owner
+        if: failure() && steps.check.outputs.run == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          OWNER: ${{ github.repository_owner }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh label create backup-failed --color B60205 --description "Alerte automatique : sauvegarde ou restauration en échec" --force > /dev/null
+          body=$(printf '%s\n' \
+            "@$OWNER la sauvegarde hebdomadaire de la base, ou son test de restauration, a échoué." \
+            "" \
+            "Détails (sans données personnelles) : $RUN_URL" \
+            "" \
+            "Tant que ce n'est pas réglé, la dernière sauvegarde utilisable est peut-être plus ancienne. Relance le workflow « Database backup » une fois corrigé, puis ferme ce ticket.")
+          gh issue create --label backup-failed --title "🔴 Sauvegarde de la base en échec" --body "$body"
