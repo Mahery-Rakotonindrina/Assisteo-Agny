@@ -55,3 +55,38 @@
     color-scheme: light dark;
   }
 }
+
+.billState {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.billNote {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.8rem;
+  font-size: 0.86rem;
+  font-weight: 600;
+
+  span {
+    color: var(--text-muted);
+    font-weight: 500;
+
+    &[data-overdue] {
+      color: var(--danger);
+      font-weight: 600;
+    }
+  }
+
+  button {
+    margin-left: auto;
+    color: var(--text-subtle);
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-decoration: underline;
+  }
+}

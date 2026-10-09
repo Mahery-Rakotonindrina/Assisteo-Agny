@@ -39,6 +39,10 @@ export type Allergen = (typeof allergens)[number];
 export const paperKinds = ["id_card", "passport", "driving_license", "vehicle_registration", "insurance", "warranty", "certificate", "other"] as const;
 export type PaperKind = (typeof paperKinds)[number];
 
+/** What a bill is for, to sum up spending by kind. */
+export const billKinds = ["electricity_water", "phone_internet", "tv", "rent", "school", "health", "other"] as const;
+export type BillKind = (typeof billKinds)[number];
+
 /** Diets a food is checked against. */
 export const diets = ["vegetarian", "vegan", "gluten_free", "lactose_free", "halal", "low_sugar", "low_salt"] as const;
 export type Diet = (typeof diets)[number];
@@ -117,6 +121,17 @@ export const AnalysisSchema = z.object({
         .describe(
           "When it is a personal paper worth keeping: id_card (national ID, CNI), passport, driving_license, vehicle_registration (carte grise), insurance, warranty (guarantee card or receipt with a warranty), certificate (birth, residence, diploma, tax…), other; null for bills, letters, receipts and other documents.",
         ),
+      bill: z
+        .object({
+          issuer: z.string().nullable().describe("Who asks for the payment, e.g. JIRAMA, Telma, Orange, Airtel, Canal+, a school; null if not shown."),
+          kind: z.enum(billKinds).describe("electricity_water (JIRAMA…), phone_internet, tv, rent, school, health or other."),
+          amount: z.number().nullable().describe("The total to pay (or paid), as a plain number in the bill's currency; null if not legible."),
+          currency: z.string().nullable().describe("ISO code of that amount: MGA for ariary, EUR, USD…; null if not shown."),
+          period: z.string().nullable().describe("The period billed, e.g. 'septembre 2026', or null."),
+          dueDate: z.string().nullable().describe("The payment deadline as YYYY-MM-DD, or null."),
+        })
+        .nullable()
+        .describe("Only for a bill, invoice or receipt with an amount to pay or paid; null otherwise."),
     })
     .nullable()
     .describe("Only for documents, null otherwise."),
@@ -219,7 +234,7 @@ export function normalizeStoredAnalysis(raw: unknown): unknown {
     parcel: null,
     list: null,
     ...analysis,
-    document: document ? { expiresOn: null, isInsurance: false, paper: null, ...document } : null,
+    document: document ? { expiresOn: null, isInsurance: false, paper: null, bill: null, ...document } : null,
   };
 }
 

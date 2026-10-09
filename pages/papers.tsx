@@ -1,10 +1,13 @@
 import Head from "next/head";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { motion } from "motion/react";
 import { useMemo } from "react";
-import { BellRing, ChevronRight, FileText, ScanLine } from "lucide-react";
+import { BellRing, ChevronRight, FileText, FolderLock, Receipt, ScanLine } from "lucide-react";
+import { BillsPanel } from "@/components/BillsPanel";
 import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
+import { SegmentedControl } from "@/components/SegmentedControl";
 import { useHistory } from "@/hooks/useHistory";
 import { useNow } from "@/hooks/useNow";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -15,9 +18,11 @@ import styles from "@/styles/Papers.module.scss";
 
 const groups: PaperStatus[] = ["expired", "soon", "valid", "undated"];
 
-/** "Mes papiers": ID cards, insurance, warranties… and when they expire. */
+/** "Mes papiers": ID cards, insurance, warranties… and when they expire; and the bills (?tab=bills). */
 export default function PapersPage() {
   const { t, locale } = useTranslation();
+  const router = useRouter();
+  const tab = router.query.tab === "bills" ? "bills" : "papers";
   const now = useNow(60_000);
   const { entries, isLoading } = useHistory();
   const papers = useMemo(() => listPapers(entries, now), [entries, now]);
@@ -41,10 +46,24 @@ export default function PapersPage() {
       <motion.div className={styles.page} variants={stagger} initial="hidden" animate="show">
         <motion.header variants={rise} className={styles.header}>
           <h1>{t("papers.title")}</h1>
-          <p>{t("papers.subtitle")}</p>
+          <p>{tab === "bills" ? t("bills.subtitle") : t("papers.subtitle")}</p>
         </motion.header>
 
-        {!isLoading && papers.length === 0 ? (
+        <motion.div variants={rise}>
+          <SegmentedControl
+            ariaLabel={t("papers.title")}
+            value={tab}
+            onChange={(next) => void router.replace({ pathname: router.pathname, query: next === "bills" ? { tab: next } : {} }, undefined, { shallow: true })}
+            options={[
+              { value: "papers", label: t("papers.tab"), icon: <FolderLock /> },
+              { value: "bills", label: t("bills.tab"), icon: <Receipt /> },
+            ]}
+          />
+        </motion.div>
+
+        {tab === "bills" ? (
+          <BillsPanel entries={entries} loading={isLoading} />
+        ) : !isLoading && papers.length === 0 ? (
           <motion.div variants={rise}>
             <EmptyState
               title={t("papers.emptyTitle")}

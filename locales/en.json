@@ -1333,6 +1333,41 @@
       "warranty": "Warranty",
       "certificate": "Certificate",
       "other": "Other paper"
+    },
+    "tab": "Papers"
+  },
+  "bills": {
+    "tab": "Bills",
+    "title": "My bills",
+    "subtitle": "Electricity, phone, rent…: what you spend each month, and what is left to pay.",
+    "emptyTitle": "No bills followed",
+    "emptyBody": "Take a photo of an electricity, phone or internet bill: the amount is read and added to your spending.",
+    "scan": "Scan a bill",
+    "thisMonth": "This month",
+    "toPay": "Left to pay",
+    "months": "Spending over the last 6 months",
+    "unpriced": "{count} bill(s) without an amount in ariary: open them to type it.",
+    "noAmount": "amount to type",
+    "amount": "Amount (Ar)",
+    "readAmount": "Read: {amount}",
+    "state": "Payment",
+    "markPaid": "Mark as paid",
+    "paidOn": "Paid on {date}",
+    "dueOn": "Due by {date}",
+    "overdueSince": "Overdue since {date}",
+    "noDue": "No due date read",
+    "follow": "Follow as a bill",
+    "unfollow": "Stop following",
+    "shortcutToPay": "{amount} to pay",
+    "shortcutPaid": "All paid",
+    "kinds": {
+      "electricity_water": "Water and electricity",
+      "phone_internet": "Phone, internet",
+      "tv": "TV",
+      "rent": "Rent",
+      "school": "School",
+      "health": "Health",
+      "other": "Other"
     }
   }
 }

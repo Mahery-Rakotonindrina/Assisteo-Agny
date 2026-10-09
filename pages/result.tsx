@@ -46,6 +46,7 @@ import { ReminderSheet } from "@/components/ReminderSheet";
 import { ScanChat } from "@/components/ScanChat";
 import {
   AnswerFeedback,
+  BillControls,
   ConfidenceBadge,
   DietCard,
   MealLogger,
@@ -783,6 +784,7 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
           )}
         </div>
         {!example && <PaperControls entry={entry} />}
+        {!example && <BillControls entry={entry} />}
       </Section>
     );
   }

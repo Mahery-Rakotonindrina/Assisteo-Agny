@@ -13,6 +13,10 @@ export function PaperControls({ entry }: { entry: HistoryEntry }) {
   const { t } = useTranslation();
   const kind = paperKind(entry);
   const expiry = paperExpiry(entry);
+  // A bill is followed in "Mes factures" instead, unless the user filed it as a paper.
+  const isBill = Boolean((entry.analysis.document?.bill || entry.expense) && !entry.expense?.hidden);
+
+  if (isBill && !kind) return null;
 
   const setKind = (value: string) => {
     haptics.tap();

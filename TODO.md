@@ -41,7 +41,7 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] ⭐ « Mes listes » : listes (courses, tâches) reconnues sur une photo, cases à cocher, ajout et modification des éléments, partage, synchronisées
 - [x] Prix en ariary par article sur les listes de courses, total estimé et dépensé : le dernier prix payé est repris automatiquement, total dans le partage
 - [x] « Mes papiers » : CNI, assurances, garanties, avec suivi des expirations : rangés par l’IA ou à la main, expirés / bientôt (60 jours) / valides, date corrigeable, raccourci sur l’accueil
-- [ ] Factures (JIRAMA, téléphone…) : montant lu, suivi des dépenses
+- [x] Factures (JIRAMA, téléphone…) : montant lu, suivi des dépenses : onglet Factures de Mes papiers, ce mois-ci, reste à payer, 6 derniers mois, par type, payée ou en retard
 - [ ] Export du document en PDF propre
 
 ## 4. Véhicules

@@ -1333,6 +1333,41 @@
       "warranty": "Garantie",
       "certificate": "Certificat, attestation",
       "other": "Autre papier"
+    },
+    "tab": "Papiers"
+  },
+  "bills": {
+    "tab": "Factures",
+    "title": "Mes factures",
+    "subtitle": "JIRAMA, téléphone, loyer… : ce que tu dépenses chaque mois, et ce qui reste à payer.",
+    "emptyTitle": "Aucune facture suivie",
+    "emptyBody": "Prends en photo une facture JIRAMA, de téléphone ou d’internet : le montant est lu et ajouté à tes dépenses.",
+    "scan": "Scanner une facture",
+    "thisMonth": "Ce mois-ci",
+    "toPay": "Reste à payer",
+    "months": "Dépenses des 6 derniers mois",
+    "unpriced": "{count} facture(s) sans montant en ariary : ouvre-les pour le saisir.",
+    "noAmount": "montant à saisir",
+    "amount": "Montant (Ar)",
+    "readAmount": "Lu : {amount}",
+    "state": "Paiement",
+    "markPaid": "Marquer payée",
+    "paidOn": "Payée le {date}",
+    "dueOn": "À payer avant le {date}",
+    "overdueSince": "En retard depuis le {date}",
+    "noDue": "Pas de date limite lue",
+    "follow": "Suivre comme facture",
+    "unfollow": "Ne plus suivre",
+    "shortcutToPay": "{amount} à payer",
+    "shortcutPaid": "Tout est payé",
+    "kinds": {
+      "electricity_water": "Eau et électricité",
+      "phone_internet": "Téléphone, internet",
+      "tv": "Télévision",
+      "rent": "Loyer",
+      "school": "École",
+      "health": "Santé",
+      "other": "Autre"
     }
   }
 }

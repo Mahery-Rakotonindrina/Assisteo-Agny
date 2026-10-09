@@ -38,6 +38,11 @@ export type HistoryEntry = {
   paper?: PaperKind | "none";
   /** The expiry date corrected by the user, as YYYY-MM-DD. */
   expiresOn?: string;
+  /**
+   * Bills ("Mes factures"): the amount in ariary corrected by the user, when it was paid,
+   * or `hidden` to stop following it. Present on any document the user follows as a bill.
+   */
+  expense?: { amountMga?: number; paidAt?: number; hidden?: boolean };
   /** Food journal: each time this food was eaten. */
   meals?: MealLog[];
   /** The user's "was this right?" vote, kept on this device. */

@@ -12,3 +12,4 @@ export { DietCard } from "./DietCard";
 export { MealLogger } from "./MealLogger";
 export { RecipeShopping } from "./RecipeShopping";
 export { PaperControls } from "./PaperControls";
+export { BillControls } from "./BillControls";
