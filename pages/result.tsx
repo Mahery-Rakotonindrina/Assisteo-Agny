@@ -41,6 +41,7 @@ import { DeepAnalysis } from "@/components/DeepAnalysis";
 import { CategoryBadge } from "@/components/CategoryBadge";
 import { CodeList } from "@/components/CodeList";
 import { DocumentText } from "@/components/DocumentText";
+import { FolderPicker } from "@/components/FolderPicker";
 import { PhotoViewer } from "@/components/PhotoViewer";
 import { ReminderSheet } from "@/components/ReminderSheet";
 import { ScanChat } from "@/components/ScanChat";
@@ -478,6 +479,7 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
               </p>
             )}
             <ConfidenceBadge value={analysis.confidence} label={t(`result.confidenceLevels.${level}`)} />
+            {!example && <FolderPicker entry={entry} />}
             {!example && !meta.demo && <DeepAnalysis entry={entry} />}
             {level === "low" && (
               <div className={styles.uncertain} role="note">

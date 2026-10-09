@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { animate, motion, useMotionValue, useTransform, type PanInfo } from "motion/react";
 import { useRef } from "react";
-import { BellRing, ChevronRight, Lock, Trash2 } from "lucide-react";
+import { BellRing, ChevronRight, Folder, Lock, Star, Trash2 } from "lucide-react";
 import { categoryIcons } from "@/components/CategoryBadge";
 import { useNow } from "@/hooks/useNow";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -66,6 +66,12 @@ export function HistoryItem({ entry, onDelete, variant = "row" }: HistoryItemPro
       <span className={styles.body}>
         <span className={styles.title}>{title}</span>
         <span className={styles.summary}>{summary}</span>
+        {entry.folder && (
+          <span className={styles.folder}>
+            <Folder size={12} strokeWidth={2.4} />
+            {entry.folder}
+          </span>
+        )}
         {reminderAt !== null && (
           <span className={styles.reminder} aria-label={t("history.reminderOn", { date: formatReminder(reminderAt, now, locale) })}>
             {forced ? <Lock size={12} strokeWidth={2.4} /> : <BellRing size={12} strokeWidth={2.4} />}
@@ -75,6 +81,7 @@ export function HistoryItem({ entry, onDelete, variant = "row" }: HistoryItemPro
       </span>
       <span className={styles.meta}>
         <span className={styles.time}>{formatTime(entry.createdAt, locale)}</span>
+        {entry.favorite && <Star size={14} className={styles.star} fill="currentColor" aria-label={t("folders.favorite")} />}
         <ChevronRight size={16} className={styles.chevron} />
       </span>
     </Link>

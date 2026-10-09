@@ -34,6 +34,9 @@ export type HistoryEntry = {
   reminderAt?: number;
   /** Follow-up conversation about this scan. */
   chat?: ChatEntry[];
+  /** Starred by the user, and the folder they put it in (synced). */
+  favorite?: boolean;
+  folder?: string;
   /** "Mes papiers": the user's choice of kind ("none": not a paper), over the AI's. */
   paper?: PaperKind | "none";
   /** The expiry date corrected by the user, as YYYY-MM-DD. */

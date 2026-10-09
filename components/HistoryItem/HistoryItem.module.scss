@@ -209,3 +209,19 @@
     background: var(--danger);
   }
 }
+
+// The folder it is in, and the star of a favourite.
+.folder {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  align-self: flex-start;
+  margin-top: 0.3rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.star {
+  color: var(--cat-food);
+}

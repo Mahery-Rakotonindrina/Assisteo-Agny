@@ -1393,5 +1393,15 @@
     "keyPoints": "Key points",
     "dates": "Dates",
     "footer": "Assisteo Agny"
+  },
+  "folders": {
+    "title": "Favourites and folders",
+    "favorite": "Favourite",
+    "favorites": "Favourites",
+    "addFavorite": "Add to favourites",
+    "addToFolder": "Put in a folder",
+    "new": "New folder",
+    "newPlaceholder": "New folder (e.g. Home)",
+    "remove": "Take out of the folder"
   }
 }

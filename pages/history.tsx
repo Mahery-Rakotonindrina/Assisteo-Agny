@@ -1,7 +1,7 @@
 import Head from "next/head";
 import { AnimatePresence, motion } from "motion/react";
 import { useDeferredValue, useMemo, useState, useSyncExternalStore } from "react";
-import { ScanLine, Search } from "lucide-react";
+import { Folder, ScanLine, Search, Star } from "lucide-react";
 import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
 import { HistoryItem } from "@/components/HistoryItem";
@@ -13,6 +13,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { categories, type Category } from "@/lib/ai/schema";
 import { exampleImage } from "@/lib/examples";
 import { formatDay, startOfDay } from "@/lib/format";
+import { folderList, inCollection, type Collection } from "@/lib/historyFilters";
 import { easeOut, rise, spring, stagger } from "@/lib/motion";
 import { haptics } from "@/services/device";
 import { historyStore } from "@/services/historyStore";
@@ -67,6 +68,8 @@ export default function HistoryPage() {
   const toast = useToast();
   const { entries, isLoading } = useHistory();
   const [filter, setFilter] = useState<Filter>("all");
+  // Favourites or a folder, on top of the category.
+  const [collection, setCollection] = useState<Collection>("all");
   const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query);
   const showSwipeHint = useSyncExternalStore(subscribeSwipeHint, readSwipeHint, () => false);
@@ -83,6 +86,7 @@ export default function HistoryPage() {
     const needle = deferredQuery.trim().toLowerCase();
     const visible = entries.filter((entry) => {
       if (filter !== "all" && entry.analysis.category !== filter) return false;
+      if (!inCollection(entry, collection)) return false;
       if (!needle) return true;
       const { title, summary, tags } = entry.analysis;
       return [title, summary, ...tags].some((text) => text.toLowerCase().includes(needle));
@@ -100,7 +104,7 @@ export default function HistoryPage() {
       label: day === today ? t("history.today") : day === today - 86_400_000 ? t("history.yesterday") : formatDay(day, locale),
       items,
     }));
-  }, [deferredQuery, entries, filter, locale, now, t]);
+  }, [collection, deferredQuery, entries, filter, locale, now, t]);
 
   const remove = async (entry: HistoryEntry) => {
     dismissSwipeHint();
@@ -111,6 +115,12 @@ export default function HistoryPage() {
   };
 
   const filters: Filter[] = ["all", ...categories.filter((category) => counts.has(category))];
+  const favorites = entries.filter((entry) => entry.favorite).length;
+  const folders = folderList(entries);
+  const collections: Array<{ value: Collection; label: string; count: number; icon: React.ReactNode }> = [
+    ...(favorites > 0 ? [{ value: "favorites" as const, label: t("folders.favorites"), count: favorites, icon: <Star size={13} /> }] : []),
+    ...folders.map((folder) => ({ value: `folder:${folder.name}` as Collection, label: folder.name, count: folder.count, icon: <Folder size={13} /> })),
+  ];
 
   return (
     <>
@@ -176,6 +186,25 @@ export default function HistoryPage() {
                   );
                 })}
               </div>
+              {collections.length > 0 && (
+                <div className={styles.collections} role="group" aria-label={t("folders.title")}>
+                  {collections.map(({ value, label, count, icon }) => (
+                    <button
+                      key={value}
+                      type="button"
+                      aria-pressed={collection === value}
+                      onClick={() => {
+                        haptics.tap();
+                        setCollection(collection === value ? "all" : value);
+                      }}
+                    >
+                      {icon}
+                      {label}
+                      <span>{count}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
               {showSwipeHint && <p className={styles.hint}>{t("history.swipeHint")}</p>}
             </motion.div>
 

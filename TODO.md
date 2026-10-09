@@ -79,7 +79,7 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Suppression par glissement, effacement total
 - [x] Photos anciennes allégées (les 60 dernières gardées en grand)
 - [x] Synchronisé entre appareils
-- [ ] Favoris, dossiers
+- [x] Favoris, dossiers : étoile et dossier sous le titre d’un scan, filtres « Favoris » et par dossier dans l’historique, synchronisés
 - [ ] Filtre par date
 - [ ] Export ou partage groupé (PDF)
 
