@@ -3,28 +3,34 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { Apple, ArrowRight, Box, Car, FileText, FlaskConical, ImageUp, Lightbulb, RotateCcw, Sparkles, X } from "lucide-react";
+import { Apple, ArrowRight, Box, Car, Check, CloudOff, FileText, Files, FlaskConical, ImageUp, Lightbulb, QrCode, RotateCcw, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/Button";
 import { CaptureOrb } from "@/components/CaptureOrb";
+import { CodeList } from "@/components/CodeList";
 import { DropZone } from "@/components/DropZone";
 import { HistoryItem } from "@/components/HistoryItem";
 import { NextReminder } from "@/components/NextReminder";
+import { PagesTray } from "@/components/PagesTray";
+import { PendingScans } from "@/components/PendingScans";
 import { PlanBadge } from "@/components/PlanBadge";
 import { PlanNotice } from "@/components/PlanWelcome";
 import { ScanStage } from "@/components/ScanStage";
 import { ScanWait } from "@/components/ScanWait";
 import { SegmentedControl } from "@/components/SegmentedControl";
+import { useToast } from "@/components/Toast";
 import { PLANS_HREF, TrialOver, TrialPill } from "@/components/Trial";
 import { useAiStatus } from "@/hooks/useAiStatus";
 import { useHistory } from "@/hooks/useHistory";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import { useNow } from "@/hooks/useNow";
+import { usePlan } from "@/hooks/usePlan";
 import { useScan } from "@/hooks/useScan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTrial } from "@/hooks/useTrial";
 import type { ScanMode } from "@/lib/ai/schema";
 import { exampleIds, exampleImage } from "@/lib/examples";
 import { easeOut, rise, stagger } from "@/lib/motion";
+import { incomingShare } from "@/services/incomingShare";
 import styles from "@/styles/Scan.module.scss";
 
 const modeIcons = { auto: Sparkles, food: Apple, document: FileText, vehicle: Car, object: Box } as const;
@@ -56,7 +62,10 @@ export default function ScanPage() {
   }
   const [picked, setPicked] = useState(false);
   const picking = router.isReady && router.query.pick === "1" && !picked;
-  const { state, start, startWithFile, retry, reset, canRetry } = useScan(mode);
+  const { state, start, startWithFile, startWithSrc, retry, reset, analyzeAnyway, canRetry, pages } = useScan(mode);
+  const { has } = usePlan();
+  const multiPage = has("multiPage");
+  const toast = useToast();
   const { entries, isLoading: historyLoading } = useHistory();
   const aiStatus = useAiStatus();
   const isDesktop = useIsDesktop();
@@ -66,6 +75,25 @@ export default function ScanPage() {
   const ModeIcon = modeIcons[mode];
   const now = useNow(60_000);
   const hasReminder = entries.some((entry) => entry.reminderAt && entry.reminderAt > now);
+
+  // Photos shared from another app (Android): one is analysed right away;
+  // several become the pages of one document (Premium), else the first one.
+  const beginPages = pages.begin;
+  useEffect(() => {
+    const take = () => {
+      if (state.phase !== "idle") return;
+      const images = incomingShare.take();
+      if (!images) return;
+      if (images.length > 1 && multiPage) {
+        beginPages(images);
+        return;
+      }
+      if (images.length > 1) toast(t("share.onlyFirst"));
+      void startWithSrc(images[0]);
+    };
+    take();
+    return incomingShare.subscribe(take);
+  }, [beginPages, multiPage, startWithSrc, state.phase, t, toast]);
 
   // Pasting an image anywhere on the screen starts an analysis.
   useEffect(() => {
@@ -203,9 +231,23 @@ export default function ScanPage() {
                   <div className={styles.drop}>
                     <DropZone onFile={(file) => void startWithFile(file)} onWebcam={() => void start("camera")} />
                   </div>
+                  {/* Several pages in one analysis: Premium and up; the others see the offer. */}
+                  <div className={styles.multi}>
+                    {multiPage ? (
+                      <Button variant="secondary" icon={<Files />} onClick={() => pages.begin()}>
+                        {t("pages.start")}
+                      </Button>
+                    ) : (
+                      <Button variant="ghost" icon={<Files />} href="/plans">
+                        {t("pages.start")} <PlanBadge plan="premium" />
+                      </Button>
+                    )}
+                  </div>
                 </>
               )}
             </motion.div>
+
+            <PendingScans />
 
             {hasReminder && (
               <motion.div variants={rise} className={styles.reminderSlot}>
@@ -247,6 +289,18 @@ export default function ScanPage() {
               </motion.section>
             )}
           </motion.div>
+        ) : state.phase === "collecting" ? (
+          <motion.div key="pages" className={styles.working} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.15 } }}>
+            <PagesTray
+              pages={pages.list}
+              adding={pages.adding}
+              onAdd={(source) => void pages.add(source)}
+              onRemove={pages.remove}
+              onMove={pages.move}
+              onAnalyze={() => void pages.analyze()}
+              onCancel={reset}
+            />
+          </motion.div>
         ) : (
           <motion.div
             key="stage"
@@ -259,13 +313,37 @@ export default function ScanPage() {
               <ScanStage
                 key={state.phase === "analyzing" ? state.startedAt : "static"}
                 src={state.phase === "error" ? state.previewSrc! : state.previewSrc}
-                steps={state.phase === "preparing" ? [t("scan.preparing")] : list("scan.steps")}
+                steps={state.phase === "preparing" ? [t("scan.preparing")] : state.phase === "analyzing" ? list("scan.steps") : []}
                 scanning={busy}
               />
             ) : null}
 
+            {state.phase === "analyzing" && state.pageCount > 1 && (
+              <p className={styles.pagesNote}>
+                <Files size={15} /> {t("pages.analyzing", { count: state.pageCount })}
+              </p>
+            )}
+
             {state.phase === "analyzing" && (
               <ScanWait mode={mode} modeIcon={<ModeIcon />} startedAt={state.startedAt} />
+            )}
+
+            {state.phase === "codes" && (
+              <motion.div className={styles.codes} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: easeOut }}>
+                <h2>
+                  <QrCode size={18} /> {t("codes.found", { count: state.codes.length })}
+                </h2>
+                <p>{t("codes.free")}</p>
+                <CodeList codes={state.codes} />
+              </motion.div>
+            )}
+
+            {state.phase === "queued" && (
+              <motion.div className={styles.queued} role="status" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: easeOut }}>
+                <CloudOff size={22} />
+                <h2>{t("queue.queuedTitle")}</h2>
+                <p>{t("queue.queuedBody")}</p>
+              </motion.div>
             )}
 
             {state.phase === "error" && (
@@ -282,7 +360,20 @@ export default function ScanPage() {
             )}
 
             <div className={styles.actions}>
-              {state.phase === "error" && planErrors.has(state.error) ? (
+              {state.phase === "codes" ? (
+                <>
+                  <Button size="lg" icon={<Check />} onClick={reset}>
+                    {t("codes.done")}
+                  </Button>
+                  <Button size="lg" variant="secondary" icon={<Sparkles />} onClick={analyzeAnyway}>
+                    {t("codes.analyze")}
+                  </Button>
+                </>
+              ) : state.phase === "queued" ? (
+                <Button size="lg" icon={<Check />} onClick={reset}>
+                  {t("queue.ok")}
+                </Button>
+              ) : state.phase === "error" && planErrors.has(state.error) ? (
                 <>
                   <Button size="lg" href={PLANS_HREF} icon={<Sparkles />}>
                     {t("trial.seeOffers")}

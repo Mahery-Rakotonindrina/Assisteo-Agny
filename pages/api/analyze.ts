@@ -75,6 +75,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   if (override && !hasFeature(current.plan, "ownKey")) {
     return sendError(res, 403, "plan_required", "Your own AI key needs a subscription.");
   }
+  // Several pages in one scan: Premium and up, own key or not.
+  if ((parsed.data.pages?.length ?? 0) > 0 && !hasFeature(current.plan, "multiPage")) {
+    return sendError(res, 403, "plan_required", "Multi-page scans need the Premium plan.");
+  }
   // A deep analysis uses the server's bigger model; with an own key, the user's model applies.
   const deep = Boolean(parsed.data.deep) && !override;
   if (deep && !hasFeature(current.plan, "deepAnalysis")) {

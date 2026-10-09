@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { motion } from "motion/react";
 import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
-import { BellRing, Camera, Check, ChevronRight, Cpu, Download, FileText, Globe, Info, Monitor, Moon, Palette, RotateCcw, Send, ShieldCheck, Smartphone, Sun, Trash2, Vibrate, X } from "lucide-react";
+import { BellRing, Camera, Check, ChevronRight, Cpu, Download, FileText, Globe, Info, Monitor, Moon, Palette, RotateCcw, Send, ShieldCheck, SignalLow, Smartphone, Sun, Trash2, Vibrate, X } from "lucide-react";
 import { AccountSettings } from "@/components/AccountSettings";
 import { AiKeySettings } from "@/components/AiKeySettings";
 import { useAndroidDownload } from "@/hooks/useAndroidDownload";
@@ -21,6 +21,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { rise, stagger } from "@/lib/motion";
 import { useSettings, type ThemePreference } from "@/lib/settings/SettingsProvider";
 import { accountsAvailable } from "@/lib/supabase";
+import { connectionIsSlow, isSavingData, type DataSaverPreference } from "@/services/dataSaver";
 import { isNative } from "@/services/device";
 import { historyStore } from "@/services/historyStore";
 import { keepParcelThumbnails } from "@/services/parcelLinking";
@@ -233,6 +234,23 @@ export default function SettingsPage() {
         </Group>
 
         <Group title={t("settings.data")}>
+          <Row
+            icon={<SignalLow />}
+            label={t("settings.dataSaver")}
+            hint={
+              settings.dataSaver === "auto"
+                ? `${t("settings.dataSaverHint")} ${t(isSavingData("auto") ? (connectionIsSlow() ? "settings.dataSaverAutoOn" : "settings.dataSaverOn") : "settings.dataSaverAutoOff")}`
+                : t("settings.dataSaverHint")
+            }
+            stacked
+          >
+            <SegmentedControl
+              ariaLabel={t("settings.dataSaver")}
+              value={settings.dataSaver}
+              onChange={(dataSaver: DataSaverPreference) => update({ dataSaver })}
+              options={(["auto", "on", "off"] as const).map((value) => ({ value, label: t(`settings.dataSaverModes.${value}`) }))}
+            />
+          </Row>
           <Row
             icon={<Smartphone />}
             label={t("settings.storage", { count: entries.length, size: formatBytes(entries.reduce((total, entry) => total + entryPhotoBytes(entry), 0), locale) })}

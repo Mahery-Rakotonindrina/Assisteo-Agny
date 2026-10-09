@@ -2,8 +2,8 @@ import { ApiError, createPartFromBase64, FinishReason, GoogleGenAI, ThinkingLeve
 import { z } from "zod";
 import type { AiUsage, EngineOptions } from "./claude";
 import { AnalysisError } from "./errors";
-import { ASK_SYSTEM_PROMPT, buildAskContext, buildUserPrompt, SYSTEM_PROMPT } from "./prompt";
-import { AnalysisSchema, type Analysis, type AnalyzeRequest, type AskRequest } from "./schema";
+import { askSystemPrompt, buildUserPrompt, firstAskText, isReadTask, SYSTEM_PROMPT } from "./prompt";
+import { AnalysisSchema, imagesOf, type Analysis, type AnalyzeRequest, type AskRequest } from "./schema";
 
 // Free-tier friendly alternative to Claude (Google AI Studio key, no billing).
 // The "-latest" aliases always point at the current Flash models.
@@ -86,7 +86,10 @@ async function analyzeOnce(
 ): Promise<{ analysis: Analysis; model: string; usage?: AiUsage }> {
   const response = await client.models.generateContent({
     model,
-    contents: [createPartFromBase64(input.image, input.mediaType), buildUserPrompt(input.mode, input.locale)],
+    contents: [
+      ...imagesOf(input).map((page) => createPartFromBase64(page.image, page.mediaType)),
+      buildUserPrompt(input.mode, input.locale, imagesOf(input).length),
+    ],
     config: {
       systemInstruction: SYSTEM_PROMPT,
       responseMimeType: "application/json",
@@ -131,7 +134,7 @@ export async function askWithGemini(
     role: message.role === "assistant" ? "model" : "user",
     parts:
       index === 0
-        ? [createPartFromBase64(input.image, input.mediaType), { text: buildAskContext(input.analysis, input.locale) + message.content }]
+        ? [...imagesOf(input).map((page) => createPartFromBase64(page.image, page.mediaType)), { text: firstAskText(input, message.content) }]
         : [{ text: message.content }],
   }));
 
@@ -143,9 +146,10 @@ export async function askWithGemini(
         contents,
         // Chat replies favour speed: low thinking cuts answers from ~15 s to a few seconds.
         config: {
-          systemInstruction: ASK_SYSTEM_PROMPT,
+          systemInstruction: askSystemPrompt(input.task),
           abortSignal: signal,
-          httpOptions: { timeout: ATTEMPT_TIMEOUT_MS },
+          // Reading every page of a long document takes longer than a reply.
+          httpOptions: { timeout: isReadTask(input.task) ? DEEP_TIMEOUT_MS : ATTEMPT_TIMEOUT_MS },
           thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
         },
       });

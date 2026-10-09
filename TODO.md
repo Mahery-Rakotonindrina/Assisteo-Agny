@@ -15,13 +15,13 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Exemples à essayer avant le premier scan
 - [x] Notification « Résultat prêt » si on quitte l'app pendant l'analyse
 - [x] Analyse approfondie (Premium) avec l'IA la plus précise
-- [ ] Scanner plusieurs pages d'un coup (contrat, longue facture)
-- [ ] « Partager vers Assisteo » depuis WhatsApp ou la galerie (Android)
-- [ ] Lecture des codes-barres et QR codes
-- [ ] File d'attente hors ligne : la photo part quand le réseau revient
-- [ ] Mode « économie de données » pour la 3G
+- [x] Scanner plusieurs pages d'un coup (contrat, longue facture), jusqu'à 8 pages, une seule analyse — à partir de Premium
+- [x] « Partager vers Assisteo » depuis WhatsApp ou la galerie (Android, nouvel APK) ; plusieurs photos = plusieurs pages (Premium)
+- [x] Lecture des codes-barres et QR codes sur le téléphone, sans scan dépensé (lien, Wi-Fi, téléphone, contact…)
+- [x] File d'attente hors ligne : la photo part quand le réseau revient, avec notification du résultat
+- [x] Mode « économie de données » pour la 3G (auto, toujours, jamais) : photos ~2x plus légères
 - [ ] Version malgache
-- [ ] Copier le texte lu, traduire un document
+- [x] Copier le texte lu, traduire un document (français, anglais, malgache, chinois)
 
 ## 2. Aliments
 

@@ -54,8 +54,14 @@ export function DeepAnalysis({ entry }: { entry: HistoryEntry }) {
         mode: entry.mode,
         locale,
         deep: true,
+        // Every page of a multi-page scan this device still has.
+        ...(entry.pages?.length && { pages: entry.pages.map((page) => ({ image: page.slice(page.indexOf(",") + 1), mediaType: "image/jpeg" as const })) }),
       });
-      await historyStore.update(entry.id, { analysis, meta: { model: meta.model, demo: meta.demo, durationMs: meta.durationMs, deep: Boolean(meta.deep) } });
+      await historyStore.update(entry.id, {
+        analysis,
+        // Pages and codes stay; the model and the timing are the new analysis'.
+        meta: { ...entry.meta, model: meta.model, demo: meta.demo, durationMs: meta.durationMs, deep: Boolean(meta.deep) },
+      });
       planStore.setUsage({ ...(meta.quota && { scans: meta.quota.used }), ...(meta.deepQuota && { deep: meta.deepQuota.used }) });
       haptics.success();
       toast(t("deep.finished"));

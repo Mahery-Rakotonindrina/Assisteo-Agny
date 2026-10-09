@@ -13,6 +13,7 @@ import {
   ClipboardList,
   CookingPot,
   FileText,
+  Files,
   Hash,
   ListChecks,
   ListPlus,
@@ -23,7 +24,9 @@ import {
   PackageCheck,
   PackagePlus,
   Plus,
+  QrCode,
   RefreshCw,
+  ScanText,
   Share2,
   SlidersHorizontal,
   Sparkles,
@@ -34,6 +37,8 @@ import {
 import { Button } from "@/components/Button";
 import { DeepAnalysis } from "@/components/DeepAnalysis";
 import { CategoryBadge } from "@/components/CategoryBadge";
+import { CodeList } from "@/components/CodeList";
+import { DocumentText } from "@/components/DocumentText";
 import { PhotoViewer } from "@/components/PhotoViewer";
 import { ReminderSheet } from "@/components/ReminderSheet";
 import { ScanChat } from "@/components/ScanChat";
@@ -73,7 +78,10 @@ import { cancelReminder, expiryDate, INSURANCE_NOTICE_DAYS, insuranceReminderAt,
 import type { HistoryEntry } from "@/types/history";
 import styles from "@/styles/Result.module.scss";
 
-type TabId = "overview" | "list" | "parcel" | "nutrition" | "recipe" | "vehicle" | "document" | "chat";
+type TabId = "overview" | "list" | "parcel" | "nutrition" | "recipe" | "vehicle" | "document" | "text" | "chat";
+
+/** Photos of these kinds rarely hold text worth reading in full. */
+const withoutText = new Set(["food", "vehicle", "plant"]);
 type Action = "reminder" | "question" | "parcel" | "list";
 
 /** Gap between the header and the tabs (the .content flex gap). */
@@ -136,14 +144,16 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
   const barRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
-  // The full-screen photo is part of the URL (?photo=1), so the phone's back
-  // button closes it instead of leaving the page.
-  const photoOpen = router.query.photo === "1";
+  // The full-screen photo is part of the URL (?photo=1, ?photo=2 for the
+  // second page…), so the phone's back button closes it instead of leaving.
+  const photos = [entry.preview, ...(entry.pages ?? [])];
+  const photoNumber = Number(router.query.photo);
+  const photoOpen = Number.isInteger(photoNumber) && photoNumber >= 1;
   const openedPhotoHere = useRef(false);
-  const openPhoto = () => {
+  const openPhoto = (index = 0) => {
     haptics.tap();
     openedPhotoHere.current = true;
-    void router.push({ pathname: router.pathname, query: { ...router.query, photo: "1" } }, undefined, { shallow: true, scroll: false });
+    void router.push({ pathname: router.pathname, query: { ...router.query, photo: String(index + 1) } }, undefined, { shallow: true, scroll: false });
   };
   const closePhoto = () => {
     if (openedPhotoHere.current) {
@@ -194,6 +204,8 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
     analysis.recipe && { id: "recipe", label: t("result.tabs.recipe"), icon: <CookingPot /> },
     analysis.vehicle && { id: "vehicle", label: t("result.tabs.vehicle"), icon: <Car /> },
     analysis.document && { id: "document", label: t("result.tabs.document"), icon: <FileText /> },
+    // The full text, to copy or translate.
+    !example && !withoutText.has(analysis.category) && { id: "text", label: t("result.tabs.text"), icon: <ScanText /> },
     // Examples aren't real scans: nothing to ask the AI about.
     !example && { id: "chat", label: t("result.tabs.chat"), icon: <MessageCircle />, dot: (entry.chat?.length ?? 0) > 0 },
   ].filter(Boolean) as ResultTab[];
@@ -380,13 +392,18 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           >
-            <button type="button" className={styles.heroOpen} onClick={openPhoto} aria-label={t("result.openPhoto")}>
+            <button type="button" className={styles.heroOpen} onClick={() => openPhoto()} aria-label={t("result.openPhoto")}>
               {/* eslint-disable-next-line @next/next/no-img-element -- local data URL */}
               <img src={entry.preview} alt={analysis.title} />
             </button>
             <span className={styles.heroZoom} aria-hidden>
               <Maximize2 size={16} />
             </span>
+            {(meta.pageCount ?? 1) > 1 && (
+              <span className={styles.heroPages}>
+                <Files size={14} /> {t("pages.short", { count: meta.pageCount ?? 1 })}
+              </span>
+            )}
             <motion.div className={styles.heroBadge} variants={pop}>
               <CategoryBadge category={analysis.category} variant="glass" />
             </motion.div>
@@ -502,7 +519,7 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
         )}
       </AnimatePresence>
 
-      <PhotoViewer src={entry.preview} alt={analysis.title} open={photoOpen} onClose={closePhoto} />
+      <PhotoViewer src={photos[photoNumber - 1] ?? entry.preview} alt={analysis.title} open={photoOpen} onClose={closePhoto} />
 
       <ReminderSheet
         key={sheetKey}
@@ -550,6 +567,12 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
         );
       case "document":
         return analysis.document && renderDocument(analysis.document);
+      case "text":
+        return (
+          <Section title={t("text.title")} icon={<ScanText />}>
+            <DocumentText entry={entry} />
+          </Section>
+        );
       case "chat":
         return (
           <div
@@ -570,6 +593,27 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
             <Section title={t("result.summary")} icon={<Sparkles />}>
               <p className={styles.summary}>{analysis.summary}</p>
             </Section>
+
+            {(meta.pageCount ?? 1) > 1 && (
+              <Section title={t("pages.sectionTitle", { count: meta.pageCount ?? 1 })} icon={<Files />}>
+                <div className={styles.pageStrip}>
+                  {photos.map((src, index) => (
+                    <button key={index} type="button" onClick={() => openPhoto(index)} aria-label={t("pages.page", { number: index + 1 })}>
+                      {/* eslint-disable-next-line @next/next/no-img-element -- local data URL */}
+                      <img src={src} alt="" />
+                      <span>{index + 1}</span>
+                    </button>
+                  ))}
+                </div>
+                {photos.length < (meta.pageCount ?? 1) && <p className={styles.pagesElsewhere}>{t("pages.elsewhere")}</p>}
+              </Section>
+            )}
+
+            {meta.codes && meta.codes.length > 0 && (
+              <Section title={t("codes.section", { count: meta.codes.length })} icon={<QrCode />}>
+                <CodeList codes={meta.codes} />
+              </Section>
+            )}
 
             {analysis.facts.length > 0 && (
               <Section title={t("result.facts")} icon={<ClipboardList />}>

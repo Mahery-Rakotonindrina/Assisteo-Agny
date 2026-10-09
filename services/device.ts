@@ -46,4 +46,29 @@ export async function shareText(title: string, text: string): Promise<ShareOutco
   return "unavailable";
 }
 
+/** Puts text on the clipboard; false when the WebView refuses. */
+export async function copyText(text: string) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    // Older WebViews: the selection-based copy still works.
+    const area = document.createElement("textarea");
+    area.value = text;
+    area.setAttribute("readonly", "");
+    area.style.position = "fixed";
+    area.style.opacity = "0";
+    document.body.appendChild(area);
+    area.select();
+    const copied = document.execCommand("copy");
+    area.remove();
+    return copied;
+  }
+}
+
+/** Opens a web link, or a tel:, mailto:, sms: link, outside the app. */
+export function openExternal(href: string) {
+  window.open(href, "_blank", "noopener");
+}
+
 export const isNative = () => Capacitor.isNativePlatform();

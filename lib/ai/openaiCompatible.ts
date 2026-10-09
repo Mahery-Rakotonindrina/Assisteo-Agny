@@ -2,8 +2,10 @@ import type { AiUsage } from "./claude";
 import { z } from "zod";
 import { assertPublicHttpsUrl, UnsafeUrlError } from "@/lib/server/safeUrl";
 import { AnalysisError } from "./errors";
-import { ASK_SYSTEM_PROMPT, buildAskContext, buildUserPrompt, SYSTEM_PROMPT } from "./prompt";
-import { AnalysisSchema, type Analysis, type AnalyzeRequest, type AskRequest } from "./schema";
+import { askSystemPrompt, buildUserPrompt, firstAskText, SYSTEM_PROMPT } from "./prompt";
+import { AnalysisSchema, imagesOf, type Analysis, type AnalyzeRequest, type AskRequest, type PageImage } from "./schema";
+
+const imagePart = (page: PageImage) => ({ type: "image_url", image_url: { url: `data:${page.mediaType};base64,${page.image}` } });
 
 // Any provider that speaks the OpenAI chat completions API: OpenAI, Mistral,
 // Groq, OpenRouter, xAI, Together, self-hosted servers… Not every one supports
@@ -90,7 +92,7 @@ export async function analyzeWithOpenAICompatible(
   { apiKey, model, baseUrl }: Options,
 ): Promise<{ analysis: Analysis; model: string; usage?: AiUsage }> {
   await checkUrl(baseUrl);
-  const image = `data:${input.mediaType};base64,${input.image}`;
+  const images = imagesOf(input);
 
   for (const format of formats) {
     try {
@@ -105,8 +107,8 @@ export async function analyzeWithOpenAICompatible(
             {
               role: "user",
               content: [
-                { type: "text", text: buildUserPrompt(input.mode, input.locale) },
-                { type: "image_url", image_url: { url: image } },
+                { type: "text", text: buildUserPrompt(input.mode, input.locale, images.length) },
+                ...images.map(imagePart),
               ],
             },
           ],
@@ -137,16 +139,15 @@ export async function askWithOpenAICompatible(
   { apiKey, model, baseUrl }: Options,
 ): Promise<{ answer: string; model: string; usage?: AiUsage }> {
   await checkUrl(baseUrl);
-  const image = `data:${input.mediaType};base64,${input.image}`;
   const messages = [
-    { role: "system", content: ASK_SYSTEM_PROMPT },
+    { role: "system", content: askSystemPrompt(input.task) },
     ...input.messages.map((message, index) =>
       index === 0
         ? {
             role: "user",
             content: [
-              { type: "text", text: buildAskContext(input.analysis, input.locale) + message.content },
-              { type: "image_url", image_url: { url: image } },
+              { type: "text", text: firstAskText(input, message.content) },
+              ...imagesOf(input).map(imagePart),
             ],
           }
         : { role: message.role, content: message.content },

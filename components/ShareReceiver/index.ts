@@ -1,0 +1,1 @@
+export { ShareReceiver } from "./ShareReceiver";

@@ -1,0 +1,1 @@
+export { PagesTray } from "./PagesTray";

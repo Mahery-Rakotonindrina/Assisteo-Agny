@@ -1,4 +1,5 @@
-import type { Analysis, ChatMessage, ScanMode } from "@/lib/ai/schema";
+import type { Analysis, ChatMessage, ScanMode, TranslateLanguage } from "@/lib/ai/schema";
+import type { ScannedCode } from "@/lib/codes";
 
 export type ChatEntry = ChatMessage & { at: number };
 
@@ -14,8 +15,17 @@ export type HistoryEntry = {
   /** Medium JPEG data URL for the result screen. */
   preview: string;
   analysis: Analysis;
-  /** `deep`: analysed again with the more capable model (Premium). */
-  meta: { model: string; demo: boolean; durationMs: number; deep?: boolean };
+  /**
+   * `deep`: analysed again with the more capable model (Premium).
+   * `pageCount`: a document scanned in several pages. `codes`: QR codes and barcodes read on the photo.
+   */
+  meta: { model: string; demo: boolean; durationMs: number; deep?: boolean; pageCount?: number; codes?: ScannedCode[] };
+  /** A multi-page scan: the pages after the first (preview size), kept on this device. */
+  pages?: string[];
+  /** The full text of the document, read on demand, kept on this device. */
+  transcript?: { text: string; at: number };
+  /** That text translated, by language, kept on this device. */
+  translations?: Partial<Record<TranslateLanguage, { text: string; at: number }>>;
   /** Id of a scheduled local notification, if the user asked for a reminder. */
   reminderId?: number;
   /** When this device's local notification fires (device-local, like reminderId). */
@@ -37,4 +47,6 @@ export type HistoryEntry = {
   remote?: { preview: string; thumbnail: string };
   /** The preview was reduced to the thumbnail here; the account's copy still has to be. */
   compactRemote?: boolean;
+  /** Downloaded with the data saver on: only the thumbnail so far, the full photo comes later. */
+  previewPending?: boolean;
 };

@@ -34,7 +34,8 @@ function contentSecurityPolicy() {
   const connect = ["'self'", supabase, supabase?.replace(/^https:/, "wss:"), sentry, isDev && "ws:"].filter(Boolean);
   const directives = {
     "default-src": ["'self'"],
-    "script-src": ["'self'", "'unsafe-inline'", isDev && "'unsafe-eval'"],
+    // 'wasm-unsafe-eval' lets the QR code reader compile its WebAssembly (not JavaScript eval).
+    "script-src": ["'self'", "'unsafe-inline'", "'wasm-unsafe-eval'", isDev && "'unsafe-eval'"],
     "style-src": ["'self'", "'unsafe-inline'"],
     "img-src": ["'self'", "data:", "blob:", supabase],
     "media-src": ["'self'", "blob:"],

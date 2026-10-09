@@ -1,0 +1,1 @@
+export { DocumentText } from "./DocumentText";

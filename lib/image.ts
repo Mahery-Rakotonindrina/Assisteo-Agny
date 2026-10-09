@@ -10,7 +10,7 @@ export type EncodedImage = {
   height: number;
 };
 
-function loadImage(src: string): Promise<HTMLImageElement> {
+export function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const image = new Image();
     image.decoding = "async";
@@ -44,13 +44,29 @@ export async function encodeImage(src: string, maxEdge: number, quality: number)
   };
 }
 
+export type CaptureOptions = {
+  /** Data saver: about three times less data per photo, still legible. */
+  light?: boolean;
+  /** One page of several: a little smaller, so the pages fit in one request. */
+  page?: boolean;
+};
+
+/** Long edge and JPEG quality of the photo sent to the AI. */
+function uploadSize({ light, page }: CaptureOptions): [number, number] {
+  if (light) return [1100, 0.72];
+  // Claude downsizes anything over ~1568 px on the long edge anyway.
+  return page ? [1400, 0.8] : [1568, 0.85];
+}
+
 /** The three sizes the app needs from one capture. */
-export async function prepareCapture(src: string) {
+export async function prepareCapture(src: string, options: CaptureOptions = {}) {
+  const [maxEdge, quality] = uploadSize(options);
   const [upload, preview, thumbnail] = await Promise.all([
-    // Claude downsizes anything over ~1568 px on the long edge anyway.
-    encodeImage(src, 1568, 0.85),
-    encodeImage(src, 960, 0.8),
-    encodeImage(src, 320, 0.72),
+    encodeImage(src, maxEdge, quality),
+    options.light ? encodeImage(src, 720, 0.7) : encodeImage(src, 960, 0.8),
+    options.light ? encodeImage(src, 240, 0.66) : encodeImage(src, 320, 0.72),
   ]);
   return { upload, preview, thumbnail };
 }
+
+export type PreparedCapture = Awaited<ReturnType<typeof prepareCapture>>;

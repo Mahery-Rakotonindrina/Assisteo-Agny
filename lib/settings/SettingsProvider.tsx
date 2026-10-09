@@ -1,6 +1,7 @@
 import { Preferences } from "@capacitor/preferences";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { defaultLocale, locales, type Locale } from "@/i18n.config";
+import { setDataSaverPreference, type DataSaverPreference } from "@/services/dataSaver";
 import { setHapticsEnabled } from "@/services/device";
 
 export type ThemePreference = "system" | "light" | "dark";
@@ -11,6 +12,8 @@ export type Settings = {
   /** Notify when an analysis finishes while the app is in the background. */
   notifyOnResult: boolean;
   haptics: boolean;
+  /** Lighter photos on slow connections (this device only). */
+  dataSaver: DataSaverPreference;
   /** The first-run permission walkthrough has been completed or skipped. */
   onboardingDone: boolean;
   /** Last change to the synced fields, to settle edits from two devices. */
@@ -36,6 +39,7 @@ const defaults: Settings = {
   theme: "system",
   notifyOnResult: true,
   haptics: true,
+  dataSaver: "auto",
   onboardingDone: false,
   updatedAt: 0,
 };
@@ -77,6 +81,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     if (settings.theme === "system") delete root.dataset.theme;
     else root.dataset.theme = settings.theme;
     setHapticsEnabled(settings.haptics);
+    setDataSaverPreference(settings.dataSaver);
   }, [settings]);
 
   const update = useCallback((patch: Partial<Settings>, options: { fromSync?: boolean; updatedAt?: number } = {}) => {

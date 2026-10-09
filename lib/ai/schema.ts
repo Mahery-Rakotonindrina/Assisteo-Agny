@@ -197,6 +197,27 @@ export const imageMediaTypes = ["image/jpeg", "image/png", "image/webp"] as cons
 // ~5 MB decoded is Claude's per-image limit; base64 inflates by 4/3.
 export const MAX_IMAGE_BASE64_LENGTH = Math.floor((5 * 1024 * 1024 * 4) / 3);
 
+/** A multi-page scan (Premium and up) sends at most this many pages. */
+export const MAX_PAGES = 8;
+
+const PageSchema = z.object({
+  image: z.string().min(1).max(MAX_IMAGE_BASE64_LENGTH),
+  mediaType: z.enum(imageMediaTypes),
+});
+export type PageImage = z.infer<typeof PageSchema>;
+
+/** The pages after the first one, in order: a document scanned in several photos. */
+const ExtraPagesSchema = z.array(PageSchema).max(MAX_PAGES - 1).optional();
+
+/** Every photo of a request, the first one included. */
+export function imagesOf(input: { image: string; mediaType: PageImage["mediaType"]; pages?: PageImage[] }): PageImage[] {
+  return [{ image: input.image, mediaType: input.mediaType }, ...(input.pages ?? [])];
+}
+
+/** Languages a document's text can be translated into. */
+export const translateLanguages = ["fr", "en", "mg", "zh"] as const;
+export type TranslateLanguage = (typeof translateLanguages)[number];
+
 export const AnalyzeRequestSchema = z.object({
   image: z.string().min(1).max(MAX_IMAGE_BASE64_LENGTH),
   mediaType: z.enum(imageMediaTypes),
@@ -204,6 +225,8 @@ export const AnalyzeRequestSchema = z.object({
   locale: z.enum(["fr", "en"]),
   /** Analyse again with the more capable model (Premium and up). */
   deep: z.boolean().optional(),
+  /** Multi-page scan (Premium and up): the other pages. */
+  pages: ExtraPagesSchema,
 });
 
 export type AnalyzeRequest = z.infer<typeof AnalyzeRequestSchema>;
@@ -228,6 +251,11 @@ export const AskRequestSchema = z.object({
     .max(40)
     .refine((messages) => messages[messages.length - 1].role === "user", "The last message must be the user's question."),
   locale: z.enum(["fr", "en"]),
+  /** The other pages of a multi-page scan. */
+  pages: ExtraPagesSchema,
+  /** "transcribe": the full text, as written; "translate": that text in `target`. Default: a question. */
+  task: z.enum(["chat", "transcribe", "translate"]).optional(),
+  target: z.enum(translateLanguages).optional(),
 });
 export type AskRequest = Omit<z.infer<typeof AskRequestSchema>, "analysis"> & { analysis: Analysis };
 export type AskResponse = {

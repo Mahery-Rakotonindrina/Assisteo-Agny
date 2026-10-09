@@ -16,6 +16,7 @@ export function planPerks(plan: PlanId, limits: PlanLimits, t: Translate, locale
   if (hasFeature(plan, "parcelCosts")) perks.push(t("plans.features.parcelCosts"));
   if (hasFeature(plan, "ownKey")) perks.push(t("plans.features.ownKey"));
   if (hasFeature(plan, "deepAnalysis")) perks.push(limit(limits.deepPerMonth, "deep"), t("plans.features.priority"));
+  if (hasFeature(plan, "multiPage")) perks.push(t("plans.features.multiPage"));
   if (hasFeature(plan, "reseller")) perks.push(t("plans.features.clients"), t("plans.features.reseller"));
   return perks;
 }

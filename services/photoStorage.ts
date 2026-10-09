@@ -14,8 +14,9 @@ function dataUrlBytes(dataUrl: string) {
   return Math.round((dataUrl.length - dataUrl.indexOf(",") - 1) * 0.75);
 }
 
-export function entryPhotoBytes(entry: Pick<HistoryEntry, "preview" | "thumbnail">) {
-  return (entry.preview === entry.thumbnail ? 0 : dataUrlBytes(entry.preview)) + dataUrlBytes(entry.thumbnail);
+export function entryPhotoBytes(entry: Pick<HistoryEntry, "preview" | "thumbnail" | "pages">) {
+  const pages = (entry.pages ?? []).reduce((total, page) => total + dataUrlBytes(page), 0);
+  return (entry.preview === entry.thumbnail ? 0 : dataUrlBytes(entry.preview)) + dataUrlBytes(entry.thumbnail) + pages;
 }
 
 export function isCompacted(entry: Pick<HistoryEntry, "preview" | "thumbnail">) {
@@ -39,6 +40,8 @@ export function compactOldPhotos() {
         {
           ...entry,
           preview: entry.thumbnail,
+          // The other pages of a multi-page scan go too: the analysis keeps what they said.
+          pages: undefined,
           // Already uploaded: the sync engine overwrites the remote preview.
           ...(entry.remote && { compactRemote: true, dirty: true }),
         },
