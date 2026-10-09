@@ -31,7 +31,8 @@ test.describe("scan", () => {
     await expect(page.getByPlaceholder(/question/i)).toBeFocused();
     await page.getByPlaceholder(/question/i).fill("Ça se garde combien de temps ?");
     await page.getByRole("button", { name: /envoyer/i }).click();
-    await expect(page.getByText(/mode démo/)).toBeVisible({ timeout: 15_000 });
+    // The demo answer (the page also shows a "mode démo" note).
+    await expect(page.getByText(/Je suis en mode démo/)).toBeVisible({ timeout: 15_000 });
   });
 
   test("collects a thumbs-down with a reason", async ({ page }) => {
