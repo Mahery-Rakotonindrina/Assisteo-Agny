@@ -1,4 +1,4 @@
-import type { Analysis, ChatMessage, ScanMode, TranslateLanguage } from "@/lib/ai/schema";
+import type { Analysis, ChatMessage, PaperKind, ScanMode, TranslateLanguage } from "@/lib/ai/schema";
 import type { ScannedCode } from "@/lib/codes";
 import type { MealLog } from "@/lib/food";
 
@@ -34,6 +34,10 @@ export type HistoryEntry = {
   reminderAt?: number;
   /** Follow-up conversation about this scan. */
   chat?: ChatEntry[];
+  /** "Mes papiers": the user's choice of kind ("none": not a paper), over the AI's. */
+  paper?: PaperKind | "none";
+  /** The expiry date corrected by the user, as YYYY-MM-DD. */
+  expiresOn?: string;
   /** Food journal: each time this food was eaten. */
   meals?: MealLog[];
   /** The user's "was this right?" vote, kept on this device. */

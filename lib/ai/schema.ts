@@ -35,6 +35,10 @@ export type Category = (typeof categories)[number];
 export const allergens = ["gluten", "milk", "eggs", "peanuts", "nuts", "soy", "fish", "shellfish", "sesame"] as const;
 export type Allergen = (typeof allergens)[number];
 
+/** Personal papers kept in "Mes papiers". */
+export const paperKinds = ["id_card", "passport", "driving_license", "vehicle_registration", "insurance", "warranty", "certificate", "other"] as const;
+export type PaperKind = (typeof paperKinds)[number];
+
 /** Diets a food is checked against. */
 export const diets = ["vegetarian", "vegan", "gluten_free", "lactose_free", "halal", "low_sugar", "low_salt"] as const;
 export type Diet = (typeof diets)[number];
@@ -107,6 +111,12 @@ export const AnalysisSchema = z.object({
         .nullable()
         .describe("The date the document expires or is due, as YYYY-MM-DD (insurance end date, bill due date, ID expiry), or null if none is legible."),
       isInsurance: z.boolean().describe("True for any insurance document: certificate, policy, attestation, green card, renewal notice."),
+      paper: z
+        .enum(paperKinds)
+        .nullable()
+        .describe(
+          "When it is a personal paper worth keeping: id_card (national ID, CNI), passport, driving_license, vehicle_registration (carte grise), insurance, warranty (guarantee card or receipt with a warranty), certificate (birth, residence, diploma, tax…), other; null for bills, letters, receipts and other documents.",
+        ),
     })
     .nullable()
     .describe("Only for documents, null otherwise."),
@@ -209,7 +219,7 @@ export function normalizeStoredAnalysis(raw: unknown): unknown {
     parcel: null,
     list: null,
     ...analysis,
-    document: document ? { expiresOn: null, isInsurance: false, ...document } : null,
+    document: document ? { expiresOn: null, isInsurance: false, paper: null, ...document } : null,
   };
 }
 

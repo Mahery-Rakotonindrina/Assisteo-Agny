@@ -44,6 +44,11 @@
     color: var(--text-muted);
   }
 
+  small[data-urgent] {
+    color: var(--danger);
+    font-weight: 600;
+  }
+
   &:hover {
     border-color: var(--border-strong);
   }

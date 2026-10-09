@@ -11,7 +11,8 @@
     "back": "Back",
     "admin": "Admin",
     "lists": "Lists",
-    "food": "Food log"
+    "food": "Food log",
+    "papers": "Papers"
   },
   "scan": {
     "greeting": {
@@ -1205,7 +1206,8 @@
   },
   "shortcuts": {
     "label": "Shortcuts",
-    "foodHint": "What you ate today"
+    "foodHint": "What you ate today",
+    "papersHint": "ID, insurance, warranties"
   },
   "food": {
     "title": "Food journal",
@@ -1293,5 +1295,44 @@
     "myAllergiesHint": "A food that contains one shows a warning.",
     "myDiets": "My diet",
     "myDietsHint": "Foods that don’t fit are flagged."
+  },
+  "papers": {
+    "title": "My papers",
+    "subtitle": "ID, insurance, warranties: all in one place, with their expiry dates.",
+    "emptyTitle": "No papers yet",
+    "emptyBody": "Scan your ID card, driving licence, an insurance certificate or a warranty: they are kept here with their expiry date.",
+    "scan": "Scan a paper",
+    "count": "{count} paper(s)",
+    "shortcutUrgent": "{count} to renew",
+    "alertExpired": "{count} paper(s) expired",
+    "alertSoon": "{count} expiring within {days} days",
+    "groups": {
+      "expired": "Expired",
+      "soon": "Expiring soon",
+      "valid": "Valid",
+      "undated": "No expiry date"
+    },
+    "noDate": "No expiry date read",
+    "expiredOn": "Expired on {date}",
+    "expiresToday": "Expires today",
+    "expiresIn": "Expires on {date} · in {count} day(s)",
+    "validUntil": "Valid until {date}",
+    "reminderSet": "Reminder set",
+    "filed": "Kept in My papers ({kind}).",
+    "notFiled": "A paper to keep (ID, insurance, warranty…)? File it in My papers to follow its expiry.",
+    "open": "Open",
+    "kind": "My papers",
+    "notAPaper": "Not a paper to follow",
+    "expiry": "Expiry date",
+    "kinds": {
+      "id_card": "ID card",
+      "passport": "Passport",
+      "driving_license": "Driving licence",
+      "vehicle_registration": "Vehicle registration",
+      "insurance": "Insurance",
+      "warranty": "Warranty",
+      "certificate": "Certificate",
+      "other": "Other paper"
+    }
   }
 }

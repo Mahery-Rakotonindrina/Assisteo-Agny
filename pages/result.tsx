@@ -49,6 +49,7 @@ import {
   ConfidenceBadge,
   DietCard,
   MealLogger,
+  PaperControls,
   RecipeShopping,
   confidenceLevel,
   NutritionCard,
@@ -781,6 +782,7 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
             </div>
           )}
         </div>
+        {!example && <PaperControls entry={entry} />}
       </Section>
     );
   }

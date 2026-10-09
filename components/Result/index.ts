@@ -11,3 +11,4 @@ export { ResultTabs, type ResultTab } from "./ResultTabs";
 export { DietCard } from "./DietCard";
 export { MealLogger } from "./MealLogger";
 export { RecipeShopping } from "./RecipeShopping";
+export { PaperControls } from "./PaperControls";

@@ -11,7 +11,8 @@
     "back": "Retour",
     "admin": "Admin",
     "lists": "Listes",
-    "food": "Journal"
+    "food": "Journal",
+    "papers": "Papiers"
   },
   "scan": {
     "greeting": {
@@ -1205,7 +1206,8 @@
   },
   "shortcuts": {
     "label": "Raccourcis",
-    "foodHint": "Ce que tu as mangé aujourd’hui"
+    "foodHint": "Ce que tu as mangé aujourd’hui",
+    "papersHint": "CNI, assurances, garanties"
   },
   "food": {
     "title": "Journal alimentaire",
@@ -1293,5 +1295,44 @@
     "myAllergiesHint": "Un aliment qui en contient s’affiche avec une alerte.",
     "myDiets": "Mon régime",
     "myDietsHint": "Les aliments qui ne conviennent pas sont signalés."
+  },
+  "papers": {
+    "title": "Mes papiers",
+    "subtitle": "Pièces d’identité, assurances, garanties : tout au même endroit, avec leurs dates d’expiration.",
+    "emptyTitle": "Aucun papier pour l’instant",
+    "emptyBody": "Scanne ta CNI, ton permis, une attestation d’assurance ou une garantie : ils se rangent ici avec leur date d’expiration.",
+    "scan": "Scanner un papier",
+    "count": "{count} papier(s)",
+    "shortcutUrgent": "{count} à renouveler",
+    "alertExpired": "{count} papier(s) expiré(s)",
+    "alertSoon": "{count} expire(nt) dans moins de {days} jours",
+    "groups": {
+      "expired": "Expirés",
+      "soon": "Bientôt expirés",
+      "valid": "Valides",
+      "undated": "Sans date d’expiration"
+    },
+    "noDate": "Pas de date d’expiration lue",
+    "expiredOn": "Expiré depuis le {date}",
+    "expiresToday": "Expire aujourd’hui",
+    "expiresIn": "Expire le {date} · dans {count} jour(s)",
+    "validUntil": "Valide jusqu’au {date}",
+    "reminderSet": "Rappel prévu",
+    "filed": "Rangé dans Mes papiers ({kind}).",
+    "notFiled": "Un papier à garder (CNI, assurance, garantie…) ? Range-le dans Mes papiers pour suivre son expiration.",
+    "open": "Ouvrir",
+    "kind": "Mes papiers",
+    "notAPaper": "Pas un papier à suivre",
+    "expiry": "Date d’expiration",
+    "kinds": {
+      "id_card": "Carte d’identité",
+      "passport": "Passeport",
+      "driving_license": "Permis de conduire",
+      "vehicle_registration": "Carte grise",
+      "insurance": "Assurance",
+      "warranty": "Garantie",
+      "certificate": "Certificat, attestation",
+      "other": "Autre papier"
+    }
   }
 }
