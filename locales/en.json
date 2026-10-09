@@ -731,7 +731,10 @@
     "voiceDenied": "Allow the microphone in the phone settings to talk to the app.",
     "voiceUnavailable": "Voice isn’t available on this device.",
     "listen": "Listen",
-    "stopListening": "Stop"
+    "stopListening": "Stop",
+    "share": "Share",
+    "copied": "Answer copied: paste it in WhatsApp or a text message.",
+    "sharedFrom": "— Assisteo Agny, about “{title}”"
   },
   "legal": {
     "updated": "Last updated {date}",

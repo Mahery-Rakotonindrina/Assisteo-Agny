@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { Fragment, useEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent, type ReactNode } from "react";
-import { ArrowUp, Mic, RotateCcw, Sparkles, Square, Trash2, Volume2 } from "lucide-react";
+import { ArrowUp, Mic, RotateCcw, Share2, Sparkles, Square, Trash2, Volume2 } from "lucide-react";
 import { useToast } from "@/components/Toast";
 import { PLANS_HREF } from "@/components/Trial";
 import { useTranslation } from "@/hooks/useTranslation";
 import { easeOut } from "@/lib/motion";
 import { askAboutScan } from "@/services/chatService";
-import { haptics } from "@/services/device";
+import { haptics, shareText } from "@/services/device";
 import { historyStore } from "@/services/historyStore";
 import { planStore } from "@/services/plan";
 import { voice, VoiceError } from "@/services/voice";
@@ -151,6 +151,16 @@ export function ScanChat({ entry, initialQuestion, onInitialQuestion }: ScanChat
     }, 0);
   }, [initialQuestion, onInitialQuestion, send]);
 
+  /** Shares an answer with the question it answers, e.g. on WhatsApp. */
+  const shareAnswer = async (index: number) => {
+    haptics.tap();
+    // Not findLast: older Android WebViews lack it.
+    const question = chat.slice(0, index).reverse().find((message) => message.role === "user");
+    const lines = [...(question ? [`❓ ${question.content}`, ""] : []), chat[index].content, "", t("chat.sharedFrom", { title: entry.analysis.title })];
+    const text = lines.join("\n");
+    if ((await shareText(entry.analysis.title, text)) === "copied") toast(t("chat.copied"));
+  };
+
   const listen = async () => {
     if (listening) {
       voice.stopListening();
@@ -206,7 +216,7 @@ export function ScanChat({ entry, initialQuestion, onInitialQuestion }: ScanChat
       ) : (
         <div className={styles.thread} aria-live="polite">
           <AnimatePresence initial={false}>
-            {chat.map((message) => (
+            {chat.map((message, index) => (
               <motion.div
                 key={message.at}
                 className={`${styles.bubble} ${message.role === "user" ? styles.user : styles.assistant}`}
@@ -215,11 +225,17 @@ export function ScanChat({ entry, initialQuestion, onInitialQuestion }: ScanChat
                 transition={{ duration: 0.25, ease: easeOut }}
               >
                 {message.role === "user" ? <p>{message.content}</p> : renderAnswer(message.content)}
-                {message.role === "assistant" && canSpeak && (
+                {message.role === "assistant" && (
                   <div className={styles.answerActions}>
-                    <button type="button" onClick={() => void speak(message.at, message.content)} aria-pressed={speakingAt === message.at}>
-                      {speakingAt === message.at ? <Square size={13} /> : <Volume2 size={14} />}
-                      {speakingAt === message.at ? t("chat.stopListening") : t("chat.listen")}
+                    {canSpeak && (
+                      <button type="button" onClick={() => void speak(message.at, message.content)} aria-pressed={speakingAt === message.at}>
+                        {speakingAt === message.at ? <Square size={13} /> : <Volume2 size={14} />}
+                        {speakingAt === message.at ? t("chat.stopListening") : t("chat.listen")}
+                      </button>
+                    )}
+                    <button type="button" onClick={() => void shareAnswer(index)}>
+                      <Share2 size={13} />
+                      {t("chat.share")}
                     </button>
                   </div>
                 )}

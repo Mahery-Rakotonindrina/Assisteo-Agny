@@ -731,7 +731,10 @@
     "voiceDenied": "Autorise le micro dans les réglages du téléphone pour parler à l’app.",
     "voiceUnavailable": "La voix n’est pas disponible sur cet appareil.",
     "listen": "Écouter",
-    "stopListening": "Arrêter"
+    "stopListening": "Arrêter",
+    "share": "Partager",
+    "copied": "Réponse copiée : colle-la dans WhatsApp ou un SMS.",
+    "sharedFrom": "— Assisteo Agny, à propos de « {title} »"
   },
   "legal": {
     "updated": "Mise à jour le {date}",
