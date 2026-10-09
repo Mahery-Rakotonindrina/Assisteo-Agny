@@ -228,7 +228,18 @@
     "emptyCta": "Faire une première analyse",
     "noMatch": "Aucune analyse ne correspond à ta recherche.",
     "swipeHint": "Glisse vers la gauche pour supprimer",
-    "reminderOn": "Rappel le {date}"
+    "reminderOn": "Rappel le {date}",
+    "dates": {
+      "label": "Période",
+      "all": "Toutes les dates",
+      "today": "Aujourd’hui",
+      "week": "7 jours",
+      "month": "30 jours",
+      "thisMonth": "Ce mois-ci",
+      "custom": "Choisir les dates",
+      "from": "Du",
+      "to": "Au"
+    }
   },
   "settings": {
     "title": "Réglages",

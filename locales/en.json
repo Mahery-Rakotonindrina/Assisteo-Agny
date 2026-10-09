@@ -228,7 +228,18 @@
     "emptyCta": "Run your first analysis",
     "noMatch": "No analysis matches your search.",
     "swipeHint": "Swipe left to delete",
-    "reminderOn": "Reminder on {date}"
+    "reminderOn": "Reminder on {date}",
+    "dates": {
+      "label": "Period",
+      "all": "All dates",
+      "today": "Today",
+      "week": "7 days",
+      "month": "30 days",
+      "thisMonth": "This month",
+      "custom": "Pick dates",
+      "from": "From",
+      "to": "To"
+    }
   },
   "settings": {
     "title": "Settings",

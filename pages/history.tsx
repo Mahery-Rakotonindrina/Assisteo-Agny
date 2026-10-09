@@ -1,7 +1,7 @@
 import Head from "next/head";
 import { AnimatePresence, motion } from "motion/react";
 import { useDeferredValue, useMemo, useState, useSyncExternalStore } from "react";
-import { Folder, ScanLine, Search, Star } from "lucide-react";
+import { CalendarDays, Folder, ScanLine, Search, Star } from "lucide-react";
 import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
 import { HistoryItem } from "@/components/HistoryItem";
@@ -13,7 +13,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { categories, type Category } from "@/lib/ai/schema";
 import { exampleImage } from "@/lib/examples";
 import { formatDay, startOfDay } from "@/lib/format";
-import { folderList, inCollection, type Collection } from "@/lib/historyFilters";
+import { datePresets, dateRange, folderList, inCollection, inRange, type Collection, type DatePreset } from "@/lib/historyFilters";
 import { easeOut, rise, spring, stagger } from "@/lib/motion";
 import { haptics } from "@/services/device";
 import { historyStore } from "@/services/historyStore";
@@ -70,6 +70,10 @@ export default function HistoryPage() {
   const [filter, setFilter] = useState<Filter>("all");
   // Favourites or a folder, on top of the category.
   const [collection, setCollection] = useState<Collection>("all");
+  // A period: the last days, this month, or dates picked by the user.
+  const [datePreset, setDatePreset] = useState<DatePreset>("all");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
   const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query);
   const showSwipeHint = useSyncExternalStore(subscribeSwipeHint, readSwipeHint, () => false);
@@ -84,9 +88,11 @@ export default function HistoryPage() {
 
   const groups = useMemo(() => {
     const needle = deferredQuery.trim().toLowerCase();
+    const range = dateRange(datePreset, now, from, to);
     const visible = entries.filter((entry) => {
       if (filter !== "all" && entry.analysis.category !== filter) return false;
       if (!inCollection(entry, collection)) return false;
+      if (!inRange(entry.createdAt, range)) return false;
       if (!needle) return true;
       const { title, summary, tags } = entry.analysis;
       return [title, summary, ...tags].some((text) => text.toLowerCase().includes(needle));
@@ -104,7 +110,7 @@ export default function HistoryPage() {
       label: day === today ? t("history.today") : day === today - 86_400_000 ? t("history.yesterday") : formatDay(day, locale),
       items,
     }));
-  }, [collection, deferredQuery, entries, filter, locale, now, t]);
+  }, [collection, datePreset, deferredQuery, entries, filter, from, locale, now, t, to]);
 
   const remove = async (entry: HistoryEntry) => {
     dismissSwipeHint();
@@ -203,6 +209,34 @@ export default function HistoryPage() {
                       <span>{count}</span>
                     </button>
                   ))}
+                </div>
+              )}
+              <div className={styles.dates} role="group" aria-label={t("history.dates.label")}>
+                <CalendarDays size={15} aria-hidden />
+                {datePresets.map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    aria-pressed={datePreset === preset}
+                    onClick={() => {
+                      haptics.tap();
+                      setDatePreset(preset);
+                    }}
+                  >
+                    {t(`history.dates.${preset}`)}
+                  </button>
+                ))}
+              </div>
+              {datePreset === "custom" && (
+                <div className={styles.dateFields}>
+                  <label>
+                    <span>{t("history.dates.from")}</span>
+                    <input type="date" value={from} max={to || undefined} onChange={(event) => setFrom(event.target.value)} />
+                  </label>
+                  <label>
+                    <span>{t("history.dates.to")}</span>
+                    <input type="date" value={to} min={from || undefined} onChange={(event) => setTo(event.target.value)} />
+                  </label>
                 </div>
               )}
               {showSwipeHint && <p className={styles.hint}>{t("history.swipeHint")}</p>}

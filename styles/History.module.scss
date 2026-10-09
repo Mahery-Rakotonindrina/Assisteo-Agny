@@ -208,3 +208,58 @@
     }
   }
 }
+
+// The period: a row of choices, and two date fields for "pick dates".
+.dates {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.35rem;
+
+  > svg {
+    flex-shrink: 0;
+    color: var(--text-subtle);
+  }
+
+  button {
+    flex-shrink: 0;
+    height: 1.9rem;
+    padding: 0 0.7rem;
+    border-radius: var(--radius-pill);
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    font-weight: 600;
+    white-space: nowrap;
+
+    &[aria-pressed="true"] {
+      background: var(--surface-strong);
+      color: var(--text);
+    }
+  }
+}
+
+.dateFields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  input {
+    height: 2.5rem;
+    padding: 0 0.6rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+    font-size: 0.9rem;
+    color-scheme: light dark;
+  }
+}
