@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { animate, motion, useMotionValue, useTransform, type PanInfo } from "motion/react";
 import { useRef } from "react";
-import { BellRing, ChevronRight, Folder, Lock, Star, Trash2 } from "lucide-react";
+import { BellRing, Check, ChevronRight, Folder, Lock, Star, Trash2 } from "lucide-react";
 import { categoryIcons } from "@/components/CategoryBadge";
 import { useNow } from "@/hooks/useNow";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -18,11 +18,14 @@ type HistoryItemProps = {
   onDelete?: (entry: HistoryEntry) => void;
   /** "row" for phone lists, "tile" for desktop grids. */
   variant?: "row" | "tile";
+  /** Selection mode (exporting several scans): a tap ticks the scan instead of opening it. */
+  onToggle?: (entry: HistoryEntry) => void;
+  selected?: boolean;
 };
 
 const DELETE_THRESHOLD = -110;
 
-export function HistoryItem({ entry, onDelete, variant = "row" }: HistoryItemProps) {
+export function HistoryItem({ entry, onDelete, variant = "row", onToggle, selected = false }: HistoryItemProps) {
   const { locale, t } = useTranslation();
   const now = useNow();
   const x = useMotionValue(0);
@@ -45,17 +48,10 @@ export function HistoryItem({ entry, onDelete, variant = "row" }: HistoryItemPro
     }
   };
 
-  const card = (
-    <Link
-      href={{ pathname: "/result", query: { id: entry.id } }}
-      className={`${styles.card} ${variant === "tile" ? styles.tile : ""}`}
-      draggable={false}
-      onClick={(event) => {
-        // A swipe ends with a click; don't navigate in that case.
-        if (dragged.current) event.preventDefault();
-      }}
-      style={{ "--cat": `var(--cat-${category})` } as React.CSSProperties}
-    >
+  const cardClass = `${styles.card} ${variant === "tile" ? styles.tile : ""}`;
+  const catStyle = { "--cat": `var(--cat-${category})` } as React.CSSProperties;
+  const content = (
+    <>
       <span className={styles.thumb}>
         {/* eslint-disable-next-line @next/next/no-img-element -- local data URL */}
         <img src={entry.thumbnail} alt="" draggable={false} />
@@ -79,6 +75,34 @@ export function HistoryItem({ entry, onDelete, variant = "row" }: HistoryItemPro
           </span>
         )}
       </span>
+    </>
+  );
+
+  if (onToggle) {
+    return (
+      <div className={styles.item}>
+        <button type="button" className={cardClass} style={catStyle} aria-pressed={selected} onClick={() => onToggle(entry)}>
+          {content}
+          <span className={styles.tick} data-on={selected || undefined} aria-hidden>
+            {selected && <Check size={14} strokeWidth={3} />}
+          </span>
+        </button>
+      </div>
+    );
+  }
+
+  const card = (
+    <Link
+      href={{ pathname: "/result", query: { id: entry.id } }}
+      className={cardClass}
+      draggable={false}
+      onClick={(event) => {
+        // A swipe ends with a click; don't navigate in that case.
+        if (dragged.current) event.preventDefault();
+      }}
+      style={catStyle}
+    >
+      {content}
       <span className={styles.meta}>
         <span className={styles.time}>{formatTime(entry.createdAt, locale)}</span>
         {entry.favorite && <Star size={14} className={styles.star} fill="currentColor" aria-label={t("folders.favorite")} />}

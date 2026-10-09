@@ -225,3 +225,30 @@
 .star {
   color: var(--cat-food);
 }
+
+// Selection mode: a round tick instead of the time and chevron.
+button.card {
+  width: 100%;
+  text-align: left;
+
+  &[aria-pressed="true"] {
+    border-color: var(--accent-mark);
+  }
+}
+
+.tick {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  margin-left: auto;
+  border-radius: 50%;
+  border: 2px solid var(--border-strong);
+  color: var(--accent-ink);
+
+  &[data-on] {
+    border-color: var(--accent);
+    background: var(--accent);
+  }
+}

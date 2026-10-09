@@ -263,3 +263,49 @@
     color-scheme: light dark;
   }
 }
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+// Selection mode: stays in view while ticking scans.
+.selectBar {
+  @include glass;
+  position: sticky;
+  top: calc(var(--safe-top) + 0.5rem);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.5rem 0.5rem 0.5rem 0.9rem;
+  border-radius: 22px;
+  box-shadow: var(--shadow-md);
+
+  > span {
+    flex: 1;
+    font-size: 0.88rem;
+    font-weight: 600;
+  }
+
+  .selectAll {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--accent-text);
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+}
+
+.selectClose {
+  display: grid;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+  color: var(--text-muted);
+}

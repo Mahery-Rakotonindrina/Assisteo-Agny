@@ -1414,5 +1414,14 @@
     "new": "New folder",
     "newPlaceholder": "New folder (e.g. Home)",
     "remove": "Take out of the folder"
+  },
+  "historyPdf": {
+    "export": "Export",
+    "title": "My scans",
+    "caption": "{count} scan(s) from {from} to {to} · exported on {date} with Assisteo Agny",
+    "selected": "{count} picked",
+    "all": "All",
+    "none": "None",
+    "makePdf": "PDF"
   }
 }

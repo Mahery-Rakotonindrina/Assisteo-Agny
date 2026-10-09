@@ -81,7 +81,7 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Synchronisé entre appareils
 - [x] Favoris, dossiers : étoile et dossier sous le titre d’un scan, filtres « Favoris » et par dossier dans l’historique, synchronisés
 - [x] Filtre par date : aujourd’hui, 7 jours, 30 jours, ce mois-ci ou dates choisies (du… au…), avec la catégorie, le dossier et la recherche
-- [ ] Export ou partage groupé (PDF)
+- [x] Export ou partage groupé (PDF) : « Exporter » dans l’historique, scans cochés (ou tous ceux affichés) dans un seul PDF partagé — à partir de Lite
 
 ## 8. Rappels
 

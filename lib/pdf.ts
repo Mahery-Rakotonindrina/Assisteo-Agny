@@ -76,6 +76,12 @@ export class PdfWriter {
     this.lines(text, 20, "bold", 20, 2);
   }
 
+  /** The name of one item among several (history exports). */
+  subtitle(text: string) {
+    this.ensure(12);
+    this.lines(text, 14, "bold", 20, 1);
+  }
+
   caption(text: string) {
     this.lines(text, 9, "normal", 110, 5);
   }

@@ -1414,5 +1414,14 @@
     "new": "Nouveau dossier",
     "newPlaceholder": "Nouveau dossier (ex. Maison)",
     "remove": "Sortir du dossier"
+  },
+  "historyPdf": {
+    "export": "Exporter",
+    "title": "Mes scans",
+    "caption": "{count} scan(s) du {from} au {to} · exporté le {date} avec Assisteo Agny",
+    "selected": "{count} choisi(s)",
+    "all": "Tout",
+    "none": "Aucun",
+    "makePdf": "PDF"
   }
 }

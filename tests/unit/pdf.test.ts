@@ -21,6 +21,7 @@ describe("pdf", () => {
     pdf.fullPageImage(photo);
     pdf.newPage();
     pdf.title("Attestation d'assurance");
+    pdf.subtitle("Mes scans");
     pdf.heading("Points clés");
     pdf.bullets(Array.from({ length: 80 }, (_, index) => `Point ${index + 1}`));
     pdf.image(photo, 40);
