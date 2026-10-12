@@ -1,4 +1,5 @@
 import { clear, createStore, del, get, set, values } from "idb-keyval";
+import { normalizeStoredAnalysis, type Analysis } from "@/lib/ai/schema";
 import type { HistoryEntry } from "@/types/history";
 
 // IndexedDB works the same in the browser and in the Capacitor WebView, and
@@ -30,6 +31,12 @@ function isEntry(value: unknown): value is HistoryEntry {
   return Boolean(entry?.id && entry.analysis?.title && entry.analysis.category && entry.thumbnail);
 }
 
+// Scans saved by an older version lack the fields added since (questions,
+// diet, paper, bill…): give them their empty values, as the sync does.
+function upgrade(entry: HistoryEntry): HistoryEntry {
+  return { ...entry, analysis: normalizeStoredAnalysis(entry.analysis) as Analysis };
+}
+
 function isVisible(entry: HistoryEntry) {
   return !entry.deletedAt;
 }
@@ -47,12 +54,13 @@ export const historyStore = {
     return entries
       .filter(isEntry)
       .filter(isVisible)
+      .map(upgrade)
       .sort((a, b) => b.createdAt - a.createdAt);
   },
 
   async get(id: string) {
     const entry = await get<unknown>(id, db());
-    return isEntry(entry) && isVisible(entry) ? entry : undefined;
+    return isEntry(entry) && isVisible(entry) ? upgrade(entry) : undefined;
   },
 
   async save(entry: HistoryEntry) {
@@ -96,12 +104,12 @@ export const historyStore = {
 
   /** Every record, including tombstones and not-yet-synced entries. */
   async raw(): Promise<HistoryEntry[]> {
-    return (await values<unknown>(db())).filter(isEntry);
+    return (await values<unknown>(db())).filter(isEntry).map(upgrade);
   },
 
   async rawGet(id: string) {
     const entry = await get<unknown>(id, db());
-    return isEntry(entry) ? entry : undefined;
+    return isEntry(entry) ? upgrade(entry) : undefined;
   },
 
   /** Writes exactly what the sync engine computed (no dirty/updatedAt bump). */
