@@ -1,0 +1,29 @@
+name: Branches
+
+# The branch rule: feature branches go into develop through a pull request;
+# only develop goes into master, and only the owner merges it. This check
+# fails a pull request to master that comes from any other branch. Make it
+# required in GitHub (Settings → Rules) so such a pull request can't be merged.
+on:
+  pull_request:
+    branches: [master]
+    types: [opened, reopened, synchronize, edited]
+
+permissions: {}
+
+jobs:
+  source:
+    name: Only develop goes to master
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check where the pull request comes from
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          REPO: ${{ github.repository }}
+        run: |
+          if [ "$HEAD_REF" != "develop" ] || [ "$HEAD_REPO" != "$REPO" ]; then
+            echo "::error::Only develop can be merged into master. This pull request comes from '$HEAD_REF' ($HEAD_REPO): open it against develop instead."
+            exit 1
+          fi
+          echo "develop → master: allowed."
