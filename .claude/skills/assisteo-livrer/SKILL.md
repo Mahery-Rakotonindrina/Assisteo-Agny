@@ -1,20 +1,21 @@
 ---
 name: assisteo-livrer
-description: Livre une modification d'Assisteo Agny. Couvre la case de TODO.md, le commit au format du projet, la branche de fonctionnalité et sa Pull Request vers develop, et le suivi de la CI GitHub. Jamais vers master : seul l'utilisateur fusionne develop dans master (mise en ligne du site et de l'APK Android). À utiliser quand l'utilisateur dit « commit », « pousse », « livre », « mets en ligne », « fusionne », « passe en prod » ou « nouvelle version de l'APK ».
+description: Livre une modification d'Assisteo Agny. Couvre la case de TODO.md, le commit au format du projet, la branche de fonctionnalité et sa Pull Request vers develop, et le suivi de la CI GitHub. Jamais vers master : seul l'utilisateur fusionne develop dans master (mise en ligne du site et de l'APK Android). À utiliser à la fin de chaque fonctionnalité demandée, et quand l'utilisateur dit « commit », « pousse », « livre », « mets en ligne », « fusionne », « passe en prod » ou « nouvelle version de l'APK ».
 ---
 
 # Livrer Assisteo Agny
 
-Dépôt : `Mahery-Rakotonindrina/Assisteo-Agny` (GitHub, public). Le CLI `gh` est installé dans `%LOCALAPPDATA%\Programs\gh\bin`. Il ne sert qu'une fois que l'utilisateur a fait `gh auth login` (vérifier avec `gh auth status`). Sans connexion, passer par `git` et les scripts ci-dessous.
+Dépôt : `Mahery-Rakotonindrina/Assisteo-Agny` (GitHub, public). Le CLI `gh` est installé dans `%LOCALAPPDATA%\Programs\gh\bin` et connecté au compte de l'utilisateur depuis le 2026-10-12 (vérifier avec `gh auth status`). Sans connexion, passer par `git` et les scripts ci-dessous.
 
 ## Branches (règle de l'utilisateur, 2026-10-12)
 
-- **Une branche par fonctionnalité**, partie de `develop` : `feat/<nom>`, `fix/<nom>` ou `chore/<nom>`. Elle revient dans `develop` **toujours par une Pull Request**, jamais vers `master`.
-- **Seule `develop` va dans `master`**, et **seul l'utilisateur** la fusionne. Claude ne pousse jamais sur `master`, ne fusionne rien dedans, n'ouvre pas de PR vers `master` et ne passe pas sur `master` en local : `.claude/settings.local.json` bloque ces commandes.
-- Le workflow `Branches` (`.github/workflows/branches.yml`) fait échouer toute PR vers `master` qui ne vient pas de `develop`.
+- **Une branche par fonctionnalité**, partie de `develop` : `feat/<nom>`, `fix/<nom>` ou `chore/<nom>`. Claude la crée **de lui-même, avant la première modification**. Elle revient dans `develop` **toujours par une Pull Request**, jamais vers `master`.
+- **Quand l'utilisateur demande une fonctionnalité**, Claude enchaîne sans attendre : branche → code → `assisteo-tester` → commit → push → PR vers `develop`. Il ne fusionne pas la PR : l'utilisateur la relit et la fusionne.
+- **Seule `develop` va dans `master`**, et **seul l'utilisateur** la fusionne. Claude ne pousse jamais sur `master`, ne fusionne rien dedans, n'ouvre pas de PR vers `master` et ne passe pas sur `master` en local : `.claude/settings.local.json` et le hook `~/.claude/hooks/assisteo-branch-guard.mjs` bloquent ces commandes (ce hook refuse toute PR qui ne vise pas `develop`).
+- Côté GitHub, deux règles protègent `master` (Settings → Rules → Rulesets) : « master : develop seulement » exige une PR avec les vérifications `Only develop goes to master` et `checks` au vert ; « master : moi seul » réserve les mises à jour aux administrateurs, donc à l'utilisateur. Le workflow `Branches` (`.github/workflows/branches.yml`) fait échouer toute PR vers `master` qui ne vient pas de `develop`.
 - `master` est la production. Chaque push sur `master` déploie le site sur Vercel et lance le workflow `Android APK`.
 
-## 1. Commit (seulement si l'utilisateur l'a demandé)
+## 1. Commit (d'office à la fin d'une fonctionnalité demandée ; sinon seulement sur demande)
 
 1. Le skill `assisteo-tester` est passé au vert.
 2. `TODO.md` est à jour (cases cochées, avec une précision courte).
