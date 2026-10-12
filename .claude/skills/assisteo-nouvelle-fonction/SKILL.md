@@ -9,6 +9,7 @@ L'app aide les gens à Madagascar à comprendre ce qu'ils photographient (docume
 
 ## Avant de coder
 
+- **La branche d'abord, sans attendre qu'on la demande** (règle de l'utilisateur). Avant la toute première modification : `git fetch -q origin && git switch -c feat/<nom> origin/develop` (`fix/<nom>` pour une correction). Jamais de modification directe sur `develop` ni sur `master`. À la fin, la fonctionnalité part dans une Pull Request vers `develop` (skill `assisteo-livrer`).
 - **Next.js 16 avec le Pages Router** (`pages/`), pas l'App Router. Comme le dit AGENTS.md, lire le guide concerné dans `node_modules/next/dist/docs/` avant d'utiliser une API Next.
 - **Un seul code, deux cibles.** `npm run build` produit le serveur déployé sur Vercel (pages + `pages/api/*`). `npm run build:mobile` produit un export statique dans `out/`, embarqué dans l'APK Android (Capacitor). Conséquences :
   - pas de `getServerSideProps` ni `getStaticProps` : les pages lisent leurs données côté client, via `/api/*` ;
@@ -56,5 +57,5 @@ Ordre des offres : `free < lite < premium < pro < unlimited` (`unlimited` = admi
 ## Pour finir
 
 1. Cocher la case dans `TODO.md`, avec une précision courte sur ce qui est fait (exemple : « — à partir de Premium »).
-2. Skill `assisteo-tester`, puis `assisteo-livrer`.
+2. Skill `assisteo-tester`, puis `assisteo-livrer` : commit, push de la branche et Pull Request vers `develop`, sans attendre qu'on le demande.
 3. Expliquer à l'utilisateur, en français et sans jargon, ce qui change pour les gens et ce qui lui reste à faire.
