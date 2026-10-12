@@ -1,21 +1,26 @@
 import Head from "next/head";
 import { AnimatePresence, motion } from "motion/react";
 import { useDeferredValue, useMemo, useState, useSyncExternalStore } from "react";
-import { ScanLine, Search } from "lucide-react";
+import { CalendarDays, CheckCheck, FileDown, Folder, ScanLine, Search, Star, X } from "lucide-react";
 import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
 import { HistoryItem } from "@/components/HistoryItem";
+import { PlanBadge } from "@/components/PlanBadge";
 import { useToast } from "@/components/Toast";
 import { useHistory } from "@/hooks/useHistory";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import { useNow } from "@/hooks/useNow";
+import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { categories, type Category } from "@/lib/ai/schema";
 import { exampleImage } from "@/lib/examples";
 import { formatDay, startOfDay } from "@/lib/format";
+import { datePresets, dateRange, folderList, inCollection, inRange, type Collection, type DatePreset } from "@/lib/historyFilters";
 import { easeOut, rise, spring, stagger } from "@/lib/motion";
+import { planFor } from "@/lib/plans";
 import { haptics } from "@/services/device";
 import { historyStore } from "@/services/historyStore";
+import { exportHistoryPdf } from "@/services/historyPdf";
 import { keepParcelThumbnails } from "@/services/parcelLinking";
 import { cancelNotification } from "@/services/notifications";
 import type { HistoryEntry } from "@/types/history";
@@ -67,6 +72,17 @@ export default function HistoryPage() {
   const toast = useToast();
   const { entries, isLoading } = useHistory();
   const [filter, setFilter] = useState<Filter>("all");
+  // Favourites or a folder, on top of the category.
+  const [collection, setCollection] = useState<Collection>("all");
+  // A period: the last days, this month, or dates picked by the user.
+  const [datePreset, setDatePreset] = useState<DatePreset>("all");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  // Selection mode: tick scans, then export them as one PDF (Lite and up).
+  const { has } = usePlan();
+  const [selecting, setSelecting] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(() => new Set());
+  const [exporting, setExporting] = useState(false);
   const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query);
   const showSwipeHint = useSyncExternalStore(subscribeSwipeHint, readSwipeHint, () => false);
@@ -81,8 +97,11 @@ export default function HistoryPage() {
 
   const groups = useMemo(() => {
     const needle = deferredQuery.trim().toLowerCase();
+    const range = dateRange(datePreset, now, from, to);
     const visible = entries.filter((entry) => {
       if (filter !== "all" && entry.analysis.category !== filter) return false;
+      if (!inCollection(entry, collection)) return false;
+      if (!inRange(entry.createdAt, range)) return false;
       if (!needle) return true;
       const { title, summary, tags } = entry.analysis;
       return [title, summary, ...tags].some((text) => text.toLowerCase().includes(needle));
@@ -100,7 +119,7 @@ export default function HistoryPage() {
       label: day === today ? t("history.today") : day === today - 86_400_000 ? t("history.yesterday") : formatDay(day, locale),
       items,
     }));
-  }, [deferredQuery, entries, filter, locale, now, t]);
+  }, [collection, datePreset, deferredQuery, entries, filter, from, locale, now, t, to]);
 
   const remove = async (entry: HistoryEntry) => {
     dismissSwipeHint();
@@ -110,7 +129,45 @@ export default function HistoryPage() {
     toast(t("result.deleted"));
   };
 
+  const visibleEntries = groups.flatMap((group) => group.items);
+  const toggle = (entry: HistoryEntry) => {
+    haptics.tap();
+    setSelected((current) => {
+      const next = new Set(current);
+      if (next.has(entry.id)) next.delete(entry.id);
+      else next.add(entry.id);
+      return next;
+    });
+  };
+  const stopSelecting = () => {
+    setSelecting(false);
+    setSelected(new Set());
+  };
+  const exportSelected = async () => {
+    haptics.press();
+    setExporting(true);
+    try {
+      const outcome = await exportHistoryPdf(
+        entries.filter((entry) => selected.has(entry.id)),
+        t,
+        locale,
+      );
+      if (outcome === "downloaded") toast(t("pdf.downloaded"));
+      if (outcome !== "cancelled") stopSelecting();
+    } catch {
+      toast(t("pdf.failed"), "error");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const filters: Filter[] = ["all", ...categories.filter((category) => counts.has(category))];
+  const favorites = entries.filter((entry) => entry.favorite).length;
+  const folders = folderList(entries);
+  const collections: Array<{ value: Collection; label: string; count: number; icon: React.ReactNode }> = [
+    ...(favorites > 0 ? [{ value: "favorites" as const, label: t("folders.favorites"), count: favorites, icon: <Star size={13} /> }] : []),
+    ...folders.map((folder) => ({ value: `folder:${folder.name}` as Collection, label: folder.name, count: folder.count, icon: <Folder size={13} /> })),
+  ];
 
   return (
     <>
@@ -120,7 +177,20 @@ export default function HistoryPage() {
 
       <motion.div className={styles.page} variants={stagger} initial="hidden" animate="show">
         <motion.header variants={rise} className={styles.header}>
-          <h1>{t("history.title")}</h1>
+          <div className={styles.headerRow}>
+            <h1>{t("history.title")}</h1>
+            {entries.length > 0 &&
+              !selecting &&
+              (has("pdfExport") ? (
+                <Button variant="secondary" size="md" icon={<FileDown />} onClick={() => setSelecting(true)}>
+                  {t("historyPdf.export")}
+                </Button>
+              ) : (
+                <Button variant="secondary" size="md" icon={<FileDown />} href="/plans">
+                  {t("historyPdf.export")} <PlanBadge plan={planFor("pdfExport")} />
+                </Button>
+              ))}
+          </div>
           {entries.length > 0 && <p>{t("history.count", { count: entries.length })}</p>}
         </motion.header>
 
@@ -176,8 +246,75 @@ export default function HistoryPage() {
                   );
                 })}
               </div>
+              {collections.length > 0 && (
+                <div className={styles.collections} role="group" aria-label={t("folders.title")}>
+                  {collections.map(({ value, label, count, icon }) => (
+                    <button
+                      key={value}
+                      type="button"
+                      aria-pressed={collection === value}
+                      onClick={() => {
+                        haptics.tap();
+                        setCollection(collection === value ? "all" : value);
+                      }}
+                    >
+                      {icon}
+                      {label}
+                      <span>{count}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+              <div className={styles.dates} role="group" aria-label={t("history.dates.label")}>
+                <CalendarDays size={15} aria-hidden />
+                {datePresets.map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    aria-pressed={datePreset === preset}
+                    onClick={() => {
+                      haptics.tap();
+                      setDatePreset(preset);
+                    }}
+                  >
+                    {t(`history.dates.${preset}`)}
+                  </button>
+                ))}
+              </div>
+              {datePreset === "custom" && (
+                <div className={styles.dateFields}>
+                  <label>
+                    <span>{t("history.dates.from")}</span>
+                    <input type="date" value={from} max={to || undefined} onChange={(event) => setFrom(event.target.value)} />
+                  </label>
+                  <label>
+                    <span>{t("history.dates.to")}</span>
+                    <input type="date" value={to} min={from || undefined} onChange={(event) => setTo(event.target.value)} />
+                  </label>
+                </div>
+              )}
               {showSwipeHint && <p className={styles.hint}>{t("history.swipeHint")}</p>}
             </motion.div>
+
+            {selecting && (
+              <div className={styles.selectBar} role="toolbar" aria-label={t("historyPdf.export")}>
+                <span>{t("historyPdf.selected", { count: selected.size })}</span>
+                <button
+                  type="button"
+                  className={styles.selectAll}
+                  onClick={() => setSelected(selected.size === visibleEntries.length ? new Set() : new Set(visibleEntries.map((entry) => entry.id)))}
+                >
+                  <CheckCheck size={15} />
+                  {selected.size === visibleEntries.length && visibleEntries.length > 0 ? t("historyPdf.none") : t("historyPdf.all")}
+                </button>
+                <Button size="md" icon={<FileDown />} onClick={() => void exportSelected()} disabled={selected.size === 0 || exporting}>
+                  {exporting ? t("pdf.making") : t("historyPdf.makePdf")}
+                </Button>
+                <button type="button" className={styles.selectClose} onClick={stopSelecting} aria-label={t("common.cancel")}>
+                  <X size={18} />
+                </button>
+              </div>
+            )}
 
             {groups.length === 0 && !isLoading ? (
               <p className={styles.noMatch}>{t("history.noMatch")}</p>
@@ -212,7 +349,9 @@ export default function HistoryPage() {
                               <HistoryItem
                                 entry={entry}
                                 variant={isDesktop ? "tile" : "row"}
-                                onDelete={(item) => void remove(item)}
+                                onDelete={selecting ? undefined : (item) => void remove(item)}
+                                onToggle={selecting ? toggle : undefined}
+                                selected={selected.has(entry.id)}
                               />
                             </motion.div>
                           ))}

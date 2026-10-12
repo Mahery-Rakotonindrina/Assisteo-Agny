@@ -3,7 +3,32 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { motion } from "motion/react";
 import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
-import { BellRing, Camera, Check, ChevronRight, Cpu, Download, FileText, Globe, Info, Monitor, Moon, Palette, RotateCcw, Send, ShieldCheck, SignalLow, Smartphone, Sun, Trash2, Vibrate, X } from "lucide-react";
+import {
+  BellRing,
+  BookOpen,
+  Camera,
+  Check,
+  ChevronRight,
+  Cpu,
+  Download,
+  FileText,
+  Globe,
+  HeartPulse,
+  Info,
+  Monitor,
+  Moon,
+  Palette,
+  RotateCcw,
+  Salad,
+  Send,
+  ShieldCheck,
+  SignalLow,
+  Smartphone,
+  Sun,
+  Trash2,
+  Vibrate,
+  X,
+} from "lucide-react";
 import { AccountSettings } from "@/components/AccountSettings";
 import { AiKeySettings } from "@/components/AiKeySettings";
 import { useAndroidDownload } from "@/hooks/useAndroidDownload";
@@ -18,6 +43,7 @@ import { useAiStatus } from "@/hooks/useAiStatus";
 import { useAppVersion } from "@/hooks/useAppVersion";
 import { useHistory } from "@/hooks/useHistory";
 import { useTranslation } from "@/hooks/useTranslation";
+import { allergens, diets } from "@/lib/ai/schema";
 import { rise, stagger } from "@/lib/motion";
 import { useSettings, type ThemePreference } from "@/lib/settings/SettingsProvider";
 import { accountsAvailable } from "@/lib/supabase";
@@ -64,7 +90,7 @@ export default function SettingsPage() {
   // "Add my API key" links land on the AI engine section.
   const section = router.isReady ? router.query.section : undefined;
   useEffect(() => {
-    const target = section === "ai" ? "ai-engine" : section === "account" ? "account" : section === "plan" ? "plan" : null;
+    const target = section === "ai" ? "ai-engine" : section === "account" ? "account" : section === "plan" ? "plan" : section === "food" ? "food" : null;
     if (!target) return;
     const timer = setTimeout(() => document.getElementById(target)?.scrollIntoView({ behavior: "smooth", block: "start" }), 350);
     return () => clearTimeout(timer);
@@ -157,6 +183,52 @@ export default function SettingsPage() {
 
         <Group id="plan" title={t("plans.section")}>
           <PlanSettings />
+        </Group>
+
+        <Group id="food" title={t("food.settingsSection")}>
+          <Row icon={<HeartPulse />} label={t("food.myAllergies")} hint={t("food.myAllergiesHint")} stacked>
+            <div className={styles.chips} role="group" aria-label={t("food.myAllergies")}>
+              {allergens.map((value) => {
+                const on = settings.allergies.includes(value);
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => update({ allergies: on ? settings.allergies.filter((item) => item !== value) : [...settings.allergies, value] })}
+                  >
+                    {on && <Check size={13} strokeWidth={3} />}
+                    {t(`food.allergens.${value}`)}
+                  </button>
+                );
+              })}
+            </div>
+          </Row>
+          <Row icon={<Salad />} label={t("food.myDiets")} hint={t("food.myDietsHint")} stacked>
+            <div className={styles.chips} role="group" aria-label={t("food.myDiets")}>
+              {diets.map((value) => {
+                const on = settings.diets.includes(value);
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => update({ diets: on ? settings.diets.filter((item) => item !== value) : [...settings.diets, value] })}
+                  >
+                    {on && <Check size={13} strokeWidth={3} />}
+                    {t(`food.diets.${value}`)}
+                  </button>
+                );
+              })}
+            </div>
+          </Row>
+          <Link href="/food" className={styles.linkRow}>
+            <span className={styles.rowIcon}>
+              <BookOpen />
+            </span>
+            <span className={styles.linkLabel}>{t("food.title")}</span>
+            <ChevronRight size={16} />
+          </Link>
         </Group>
 
         {android && (

@@ -10,12 +10,17 @@ import { useHistory } from "@/hooks/useHistory";
 import { useLists } from "@/hooks/useLists";
 import { useTranslation } from "@/hooks/useTranslation";
 import { listKinds } from "@/lib/ai/schema";
+import { formatAriary } from "@/lib/format";
+import { parseNumber } from "@/lib/money";
 import { easeOut, rise, stagger } from "@/lib/motion";
 import { haptics, shareText } from "@/services/device";
-import { compareLists, listProgress, listStore, type ListKind, type SavedList } from "@/services/listStore";
+import { compareLists, listProgress, listStore, listTotals, type ListKind, type SavedList } from "@/services/listStore";
 import styles from "@/styles/Lists.module.scss";
 
 const kindIcons = { shopping: ShoppingBasket, todo: ListChecks, other: ClipboardList } satisfies Record<ListKind, unknown>;
+
+/** A price typed in a field ("2 500", "2500 Ar"); undefined when empty. */
+const parsePrice = (value: FormDataEntryValue | string | null) => parseNumber(String(value ?? "")) ?? undefined;
 
 /** "Mes listes": shopping lists, to-do lists… to tick, read from a photo or written here. */
 export default function ListsPage() {
@@ -123,7 +128,7 @@ function NewList({ onDone }: { onDone: () => void }) {
 }
 
 function ListCard({ list, initiallyOpen, hasScan }: { list: SavedList; initiallyOpen: boolean; hasScan: (id: string) => boolean }) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const toast = useToast();
   // Opened from a scan once the address is read (it isn't on the first render).
   const [openChoice, setOpen] = useState<boolean | null>(null);
@@ -133,7 +138,11 @@ function ListCard({ list, initiallyOpen, hasScan }: { list: SavedList; initially
   const [confirmRemove, setConfirmRemove] = useState(false);
   const [text, setText] = useState("");
   const [quantity, setQuantity] = useState("");
+  const [price, setPrice] = useState("");
   const { done, total } = listProgress(list);
+  // Shopping lists have prices: what everything costs, and what is already bought.
+  const shopping = list.kind === "shopping";
+  const totals = listTotals(list);
   const finished = total > 0 && done === total;
   const KindIcon = kindIcons[list.kind];
 
@@ -141,13 +150,18 @@ function ListCard({ list, initiallyOpen, hasScan }: { list: SavedList; initially
     event.preventDefault();
     if (!text.trim()) return;
     haptics.tap();
-    await listStore.addItem(list.id, text, quantity);
+    await listStore.addItem(list.id, text, quantity, shopping ? parsePrice(price) : undefined);
     setText("");
     setQuantity("");
+    setPrice("");
   };
 
   const share = async () => {
-    const lines = list.items.map((item) => `${item.done ? "☑" : "☐"} ${item.text}${item.quantity ? ` — ${item.quantity}` : ""}`);
+    const lines = list.items.map(
+      (item) =>
+        `${item.done ? "☑" : "☐"} ${item.text}${item.quantity ? ` — ${item.quantity}` : ""}${shopping && item.priceMga ? ` — ${formatAriary(item.priceMga, locale)}` : ""}`,
+    );
+    if (shopping && totals.estimated > 0) lines.push("", t("lists.shareTotal", { total: formatAriary(totals.estimated, locale) }));
     const outcome = await shareText(list.title, lines.join("\n"));
     if (outcome === "copied") toast(t("lists.copied"));
   };
@@ -163,6 +177,7 @@ function ListCard({ list, initiallyOpen, hasScan }: { list: SavedList; initially
           <strong>{list.title}</strong>
           <small>
             {t(`lists.kinds.${list.kind}`)} · {finished ? t("lists.allDone") : t("lists.progress", { done, total })}
+            {shopping && totals.estimated > 0 && <> · {formatAriary(totals.estimated, locale)}</>}
           </small>
         </span>
         <ChevronDown size={18} className={`${styles.chevron} ${open ? styles.chevronOpen : ""}`} />
@@ -223,12 +238,26 @@ function ListCard({ list, initiallyOpen, hasScan }: { list: SavedList; initially
                           onSubmit={(event) => {
                             event.preventDefault();
                             const data = new FormData(event.currentTarget);
-                            void listStore.editItem(list.id, item.id, { text: String(data.get("text") ?? ""), quantity: String(data.get("quantity") ?? "") });
+                            void listStore.editItem(list.id, item.id, {
+                              text: String(data.get("text") ?? ""),
+                              quantity: String(data.get("quantity") ?? ""),
+                              priceMga: shopping ? parsePrice(data.get("price")) : item.priceMga,
+                            });
                             setEditingId(null);
                           }}
                         >
                           <input name="text" defaultValue={item.text} autoFocus aria-label={t("lists.itemText")} maxLength={200} />
                           <input name="quantity" defaultValue={item.quantity ?? ""} placeholder={t("lists.quantity")} aria-label={t("lists.quantity")} className={styles.qty} />
+                          {shopping && (
+                            <input
+                              name="price"
+                              defaultValue={item.priceMga ?? ""}
+                              inputMode="numeric"
+                              placeholder={t("lists.price")}
+                              aria-label={t("lists.price")}
+                              className={styles.qty}
+                            />
+                          )}
                           <button type="submit" className={styles.iconButton} aria-label={t("lists.save")}>
                             <Check size={16} />
                           </button>
@@ -237,6 +266,7 @@ function ListCard({ list, initiallyOpen, hasScan }: { list: SavedList; initially
                         <button type="button" className={styles.itemText} onClick={() => setEditingId(item.id)} aria-label={t("lists.editItem", { item: item.text })}>
                           <span>{item.text}</span>
                           {item.quantity && <small>{item.quantity}</small>}
+                          {shopping && item.priceMga && <small className={styles.price}>{formatAriary(item.priceMga, locale)}</small>}
                         </button>
                       )}
                       <button type="button" className={styles.iconButton} onClick={() => void listStore.removeItem(list.id, item.id)} aria-label={t("lists.removeItem", { item: item.text })}>
@@ -247,9 +277,33 @@ function ListCard({ list, initiallyOpen, hasScan }: { list: SavedList; initially
                 </ul>
               )}
 
-              <form className={styles.addItem} onSubmit={(event) => void add(event)}>
+              {shopping && totals.estimated > 0 && (
+                <div className={styles.totals}>
+                  <span>
+                    {t("lists.estimated")}
+                    <strong>{formatAriary(totals.estimated, locale)}</strong>
+                  </span>
+                  <span>
+                    {t("lists.spent")}
+                    <strong>{formatAriary(totals.spent, locale)}</strong>
+                  </span>
+                  {totals.unpriced > 0 && <small>{t("lists.unpriced", { count: totals.unpriced })}</small>}
+                </div>
+              )}
+
+              <form className={shopping ? `${styles.addItem} ${styles.addItemPriced}` : styles.addItem} onSubmit={(event) => void add(event)}>
                 <input value={text} onChange={(event) => setText(event.target.value)} placeholder={t("lists.addItem")} aria-label={t("lists.addItem")} maxLength={200} />
                 <input value={quantity} onChange={(event) => setQuantity(event.target.value)} placeholder={t("lists.quantity")} aria-label={t("lists.quantity")} className={styles.qty} />
+                {shopping && (
+                  <input
+                    value={price}
+                    onChange={(event) => setPrice(event.target.value)}
+                    inputMode="numeric"
+                    placeholder={t("lists.price")}
+                    aria-label={t("lists.price")}
+                    className={styles.qty}
+                  />
+                )}
                 <button type="submit" className={styles.addButton} aria-label={t("lists.addItemButton")} disabled={!text.trim()}>
                   <Plus size={18} />
                 </button>

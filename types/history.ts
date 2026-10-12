@@ -1,5 +1,6 @@
-import type { Analysis, ChatMessage, ScanMode, TranslateLanguage } from "@/lib/ai/schema";
+import type { Analysis, ChatMessage, PaperKind, ScanMode, TranslateLanguage } from "@/lib/ai/schema";
 import type { ScannedCode } from "@/lib/codes";
+import type { MealLog } from "@/lib/food";
 
 export type ChatEntry = ChatMessage & { at: number };
 
@@ -33,6 +34,20 @@ export type HistoryEntry = {
   reminderAt?: number;
   /** Follow-up conversation about this scan. */
   chat?: ChatEntry[];
+  /** Starred by the user, and the folder they put it in (synced). */
+  favorite?: boolean;
+  folder?: string;
+  /** "Mes papiers": the user's choice of kind ("none": not a paper), over the AI's. */
+  paper?: PaperKind | "none";
+  /** The expiry date corrected by the user, as YYYY-MM-DD. */
+  expiresOn?: string;
+  /**
+   * Bills ("Mes factures"): the amount in ariary corrected by the user, when it was paid,
+   * or `hidden` to stop following it. Present on any document the user follows as a bill.
+   */
+  expense?: { amountMga?: number; paidAt?: number; hidden?: boolean };
+  /** Food journal: each time this food was eaten. */
+  meals?: MealLog[];
   /** The user's "was this right?" vote, kept on this device. */
   feedback?: { vote: "up" | "down"; reason?: FeedbackReason; at: number };
 

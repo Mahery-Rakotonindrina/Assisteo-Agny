@@ -28,9 +28,9 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Valeurs nutritionnelles estimées par portion (calories, protéines, glucides, lipides)
 - [x] Recette complète : portions, temps, difficulté, ingrédients, étapes, astuce du chef
 - [x] Conseils
-- [ ] Journal alimentaire du jour, avec objectifs
-- [ ] Allergènes et régimes (sans gluten, halal…)
-- [ ] Liste de courses tirée d'une recette
+- [x] Journal alimentaire du jour, avec objectifs : « J’ai mangé ça » (repas, portions), totaux du jour face aux objectifs, 7 derniers jours, synchronisé
+- [x] Allergènes et régimes (sans gluten, halal…) : allergènes probables et régimes compatibles sur chaque aliment, alerte si ça touche tes allergies ou ton régime (Réglages → Alimentation)
+- [x] Liste de courses tirée d’une recette : les ingrédients vont dans une nouvelle liste ou une liste en cours, sans doublons
 
 ## 3. Documents et listes
 
@@ -39,10 +39,10 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Documents d'assurance reconnus, rappel d'échéance proposé
 - [x] Rappel proposé dès qu'il y a une date limite
 - [x] ⭐ « Mes listes » : listes (courses, tâches) reconnues sur une photo, cases à cocher, ajout et modification des éléments, partage, synchronisées
-- [ ] Prix en ariary par article sur les listes de courses, total estimé et dépensé
-- [ ] « Mes papiers » : CNI, assurances, garanties, avec suivi des expirations
-- [ ] Factures (JIRAMA, téléphone…) : montant lu, suivi des dépenses
-- [ ] Export du document en PDF propre
+- [x] Prix en ariary par article sur les listes de courses, total estimé et dépensé : le dernier prix payé est repris automatiquement, total dans le partage
+- [x] « Mes papiers » : CNI, assurances, garanties, avec suivi des expirations : rangés par l’IA ou à la main, expirés / bientôt (60 jours) / valides, date corrigeable, raccourci sur l’accueil
+- [x] Factures (JIRAMA, téléphone…) : montant lu, suivi des dépenses : onglet Factures de Mes papiers, ce mois-ci, reste à payer, 6 derniers mois, par type, payée ou en retard
+- [x] Export du document en PDF propre : photos des pages en A4, puis résumé, points clés, dates, actions et texte lu — à partir de Lite
 
 ## 4. Véhicules
 
@@ -68,9 +68,9 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Questions écrites, l'IA revoit la photo pour répondre
 - [x] Conversation gardée avec le scan et synchronisée
 - [x] Limite par jour selon l'offre
-- [ ] Questions suggérées sous forme de boutons
-- [ ] Question à la voix, réponse lue à voix haute
-- [ ] Partager une réponse
+- [x] Questions suggérées sous forme de boutons : 3 questions propres à chaque scan, proposées dans le Résumé et sous la conversation (celles déjà posées disparaissent)
+- [x] Question à la voix, réponse lue à voix haute : bouton micro (saisie vocale du téléphone), réponse lue automatiquement, bouton « Écouter » sur chaque réponse (Android : nouvel APK)
+- [x] Partager une réponse : bouton « Partager » sous chaque réponse, avec la question posée (WhatsApp, SMS…, sinon copiée)
 
 ## 7. Historique
 
@@ -79,9 +79,9 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Suppression par glissement, effacement total
 - [x] Photos anciennes allégées (les 60 dernières gardées en grand)
 - [x] Synchronisé entre appareils
-- [ ] Favoris, dossiers
-- [ ] Filtre par date
-- [ ] Export ou partage groupé (PDF)
+- [x] Favoris, dossiers : étoile et dossier sous le titre d’un scan, filtres « Favoris » et par dossier dans l’historique, synchronisés
+- [x] Filtre par date : aujourd’hui, 7 jours, 30 jours, ce mois-ci ou dates choisies (du… au…), avec la catégorie, le dossier et la recherche
+- [x] Export ou partage groupé (PDF) : « Exporter » dans l’historique, scans cochés (ou tous ceux affichés) dans un seul PDF partagé — à partir de Lite
 
 ## 8. Rappels
 
@@ -110,6 +110,7 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Synchronisé ; nombre de colis suivis selon l'offre
 - [x] ⭐ Taux de change yuan / dollar / euro → ariary pour préremplir le prix (taux du jour ou taux du transitaire)
 - [x] ⭐ Revendeurs : prix de vente, bénéfice, payé / reste à payer par le client (carte, vue Clients, export Excel)
+- [x] Envoi maritime (SEA) ou aérien (NORMAL) : détecté automatiquement (lu par l’IA sur la capture, ou déduit du n° de suivi / transitaire), modifiable à la main, badge, filtre, recherche et colonne dans l’export Excel
 - [ ] Suivi automatique sans rescanner, notification au changement de statut
 - [ ] Fret calculé au kilo (poids × tarif du transitaire)
 - [ ] Envoyer le statut au client par WhatsApp

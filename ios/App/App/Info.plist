@@ -57,6 +57,10 @@
 	<string>Assisteo Agny accède à tes photos pour analyser une image existante.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Assisteo Agny peut enregistrer des photos dans ta galerie.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Assisteo Agny utilise le micro quand tu poses une question à voix haute.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Assisteo Agny transforme ta question dite à voix haute en texte.</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

@@ -2,7 +2,25 @@ import Head from "next/head";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { useDeferredValue, useEffect, useState } from "react";
-import { Check, ChevronDown, Copy, ExternalLink, FileSpreadsheet, MapPin, Package, Pencil, RotateCcw, ScanLine, Search, Trash2, UserRound, Users, X } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  Copy,
+  ExternalLink,
+  FileSpreadsheet,
+  MapPin,
+  Package,
+  Pencil,
+  Plane,
+  RotateCcw,
+  ScanLine,
+  Search,
+  Ship,
+  Trash2,
+  UserRound,
+  Users,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
 import { ParcelClients } from "@/components/ParcelClients";
@@ -19,7 +37,8 @@ import { formatAriary, formatDate, formatDateTime, formatMonthYear, toDateInput 
 import { easeOut, rise, stagger } from "@/lib/motion";
 import { exportFileName, parcelsWorkbook, XLSX_TYPE } from "@/lib/parcelExport";
 import { inPeriod, isForClient, isValidRange, parcelDate, type DayRange, type Period } from "@/lib/parcelReport";
-import { compareParcels, matchesSearch, parcelStep, parcelSteps, parcelTone, trackingUrl } from "@/lib/parcels";
+import { compareParcels, matchesSearch, parcelStep, parcelSteps, parcelTone, shippingModeOf, trackingUrl } from "@/lib/parcels";
+import { shippingModes, type ShippingMode } from "@/lib/ai/schema";
 import { haptics } from "@/services/device";
 import { shareFile } from "@/services/fileShare";
 import { keepParcelThumbnails } from "@/services/parcelLinking";
@@ -53,6 +72,8 @@ export default function ParcelsPage() {
   const isReceived = (parcel: Parcel) => Boolean(parcel.receivedAt);
   const totalSpent = parcels.reduce((total, parcel) => total + parcelTotalMga(parcel), 0);
   const [query, setQuery] = useState("");
+  // Sea or air, as the forwarders sort them.
+  const [shipping, setShipping] = useState<ShippingMode | "all">("all");
   const deferredQuery = useDeferredValue(query);
   // Pro: the parcels by client, over a period, and one client's parcels.
   const reseller = usePlan().has("reseller");
@@ -113,6 +134,12 @@ export default function ParcelsPage() {
     a.localeCompare(b, locale),
   );
 
+  // "SEA", "Maritime", "NORMAL", "Aérien"… all find the parcels sent that way.
+  const shippingTexts = (parcel: Parcel) => {
+    const { mode } = shippingModeOf(parcel);
+    return mode ? [t(`parcel.shipping.${mode}`), mode === "sea" ? "SEA" : "NORMAL AIR"] : [];
+  };
+
   // Everything known about a parcel can be searched, in the user's language.
   const searchTexts = (parcel: Parcel) => {
     const { info } = parcel;
@@ -134,6 +161,7 @@ export default function ParcelsPage() {
       info.estimatedDelivery,
       info.destinationCity,
       info.total,
+      ...shippingTexts(parcel),
       info.lastEvent?.description,
       info.lastEvent?.location,
       info.lastEvent?.at,
@@ -148,8 +176,14 @@ export default function ParcelsPage() {
     ];
   };
   const visible = parcels
-    .filter((parcel) => matchesSearch(searchTexts(parcel), deferredQuery) && (!clientFilter || isForClient(parcel, clientFilter.name)))
+    .filter(
+      (parcel) =>
+        matchesSearch(searchTexts(parcel), deferredQuery) &&
+        (!clientFilter || isForClient(parcel, clientFilter.name)) &&
+        (shipping === "all" || shippingModeOf(parcel).mode === shipping),
+    )
     .sort(compareParcels);
+  const shippingCounts = Object.fromEntries(shippingModes.map((mode) => [mode, parcels.filter((parcel) => shippingModeOf(parcel).mode === mode).length]));
   const ongoing = visible.filter((parcel) => !isReceived(parcel));
   const received = visible.filter(isReceived);
   const allOngoing = parcels.filter((parcel) => !isReceived(parcel)).length;
@@ -241,7 +275,24 @@ export default function ParcelsPage() {
                 )}
               </motion.label>
             )}
-            {!showClients && (deferredQuery || clientFilter) && visible.length === 0 && <p className={styles.noMatch}>{t("parcels.noMatch")}</p>}
+            {!showClients && shippingModes.some((mode) => shippingCounts[mode] > 0) && (
+              <motion.div variants={rise} className={styles.shippingFilter} role="group" aria-label={t("parcel.shipping.label")}>
+                <button type="button" aria-pressed={shipping === "all"} onClick={() => setShipping("all")}>
+                  {t("parcel.shipping.all")}
+                </button>
+                {shippingModes.map((mode) => {
+                  const Icon = mode === "sea" ? Ship : Plane;
+                  return (
+                    <button key={mode} type="button" aria-pressed={shipping === mode} data-mode={mode} onClick={() => setShipping(shipping === mode ? "all" : mode)}>
+                      <Icon size={14} />
+                      {t(`parcel.shipping.${mode}`)}
+                      <span>{shippingCounts[mode]}</span>
+                    </button>
+                  );
+                })}
+              </motion.div>
+            )}
+            {!showClients && (deferredQuery || clientFilter || shipping !== "all") && visible.length === 0 && <p className={styles.noMatch}>{t("parcels.noMatch")}</p>}
             {!showClients && deferredQuery && visible.length > 0 && <p className={styles.matchCount}>{t("parcels.matchCount", { count: visible.length })}</p>}
             {!showClients && ongoing.length > 0 && (
               <motion.section variants={rise} className={styles.group}>
@@ -303,6 +354,8 @@ function ParcelRow({ parcel, thumbnail, clients, hasScan, reseller, received = f
   // The latest scan still in the history; deleted ones can't be opened.
   const lastScan = [...parcel.scanIds].reverse().find(hasScan);
   const total = parcelTotalMga(parcel);
+  const shipping = shippingModeOf(parcel);
+  const ShippingIcon = shipping.mode === "sea" ? Ship : Plane;
   const statusText = received
     ? parcel.receivedAt
       ? t("parcels.receivedOn", { date: formatDate(parcel.receivedAt, locale) })
@@ -336,6 +389,11 @@ function ParcelRow({ parcel, thumbnail, clients, hasScan, reseller, received = f
             </span>
           )}
           <span className={styles.status}>{statusText}</span>
+          {shipping.mode && (
+            <span className={styles.shipping} data-mode={shipping.mode} title={t(`parcel.shipping.source.${shipping.source}`)}>
+              <ShippingIcon size={12} /> {t(`parcel.shipping.${shipping.mode}`)}
+            </span>
+          )}
           {info.lastEvent && <small>{[info.lastEvent.description, info.lastEvent.at].filter(Boolean).join(" · ")}</small>}
           {total > 0 && <span className={styles.cost}>{formatAriary(total, locale)}</span>}
           {reseller && parcelDueMga(parcel) > 0 && <span className={styles.due}>{t("parcels.sale.dueShort", { amount: formatAriary(parcelDueMga(parcel), locale) })}</span>}

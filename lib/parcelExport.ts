@@ -1,5 +1,5 @@
 import type { Locale } from "@/i18n.config";
-import { eventTime } from "@/lib/parcels";
+import { eventTime, shippingModeOf } from "@/lib/parcels";
 import { parcelDueMga, parcelProfitMga, parcelTotalMga, type Parcel } from "@/services/parcelStore";
 import { formatAriary } from "./format";
 import { clientSummaries } from "./parcelReport";
@@ -32,6 +32,8 @@ export type ParcelRow = {
   orderNumber: string | null;
   trackingNumber: string | null;
   carrier: string | null;
+  /** "Aérien (NORMAL)" or "Maritime (SEA)". */
+  shipping: string | null;
   status: string;
   orderedAt: Date | null;
   receivedAt: Date | null;
@@ -58,6 +60,7 @@ export function parcelRows(parcels: Parcel[], t: Translate, locale: Locale): Par
       orderNumber: info.orderNumber,
       trackingNumber: info.trackingNumber,
       carrier: info.carrier,
+      shipping: ((mode) => (mode ? t(`parcel.shipping.${mode}`) : null))(shippingModeOf(parcel).mode),
       status: parcel.receivedAt ? t("parcels.receivedLabel") : t(`parcel.statuses.${info.status}`),
       orderedAt: excelDay(eventTime(info.orderedAt)),
       receivedAt: excelDay(parcel.receivedAt ?? null),
@@ -83,6 +86,7 @@ const parcelColumns: Array<{ key: keyof ParcelRow; width: number; kind?: "money"
   { key: "orderNumber", width: 22 },
   { key: "trackingNumber", width: 20 },
   { key: "carrier", width: 15 },
+  { key: "shipping", width: 17 },
   { key: "status", width: 16 },
   { key: "orderedAt", width: 13, kind: "day" },
   { key: "receivedAt", width: 13, kind: "day" },

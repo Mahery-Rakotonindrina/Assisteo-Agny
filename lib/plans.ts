@@ -22,10 +22,12 @@ export type PlanFeature =
   /** Analysing a scan again with a more capable (and costlier) model. */
   | "deepAnalysis"
   /** Scanning a document in several pages, analysed as one. */
-  | "multiPage";
+  | "multiPage"
+  /** Clean PDFs of a document, or of several scans from the history. */
+  | "pdfExport";
 
 /** The lowest plan that includes each feature. */
-const featureFrom: Record<PlanFeature, PlanId> = { ownKey: "lite", parcelCosts: "lite", reseller: "pro", deepAnalysis: "premium", multiPage: "premium" };
+const featureFrom: Record<PlanFeature, PlanId> = { ownKey: "lite", parcelCosts: "lite", reseller: "pro", deepAnalysis: "premium", multiPage: "premium", pdfExport: "lite" };
 
 /**
  * Full access is the administrators' plan: it shows the Admin menu. The admin

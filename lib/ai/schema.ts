@@ -29,7 +29,27 @@ export const parcelStatuses = [
   "unknown",
 ] as const;
 export type ParcelStatus = (typeof parcelStatuses)[number];
+
+/** How a parcel travels to Madagascar: by air ("NORMAL" at the forwarders) or by sea ("SEA"). */
+export const shippingModes = ["air", "sea"] as const;
+export type ShippingMode = (typeof shippingModes)[number];
 export type Category = (typeof categories)[number];
+
+/** The major food allergens, checked against the user's own (Settings → Food). */
+export const allergens = ["gluten", "milk", "eggs", "peanuts", "nuts", "soy", "fish", "shellfish", "sesame"] as const;
+export type Allergen = (typeof allergens)[number];
+
+/** Personal papers kept in "Mes papiers". */
+export const paperKinds = ["id_card", "passport", "driving_license", "vehicle_registration", "insurance", "warranty", "certificate", "other"] as const;
+export type PaperKind = (typeof paperKinds)[number];
+
+/** What a bill is for, to sum up spending by kind. */
+export const billKinds = ["electricity_water", "phone_internet", "tv", "rent", "school", "health", "other"] as const;
+export type BillKind = (typeof billKinds)[number];
+
+/** Diets a food is checked against. */
+export const diets = ["vegetarian", "vegan", "gluten_free", "lactose_free", "halal", "low_sugar", "low_salt"] as const;
+export type Diet = (typeof diets)[number];
 
 export const AnalysisSchema = z.object({
   category: z.enum(categories).describe("What the photo mainly shows."),
@@ -49,6 +69,9 @@ export const AnalysisSchema = z.object({
       }),
     )
     .describe("2 to 4 practical, specific suggestions for the user."),
+  questions: z
+    .array(z.string())
+    .describe("3 short follow-up questions the user would likely ask about this exact photo, in the user's language, under 60 characters each."),
   nutrition: z
     .object({
       portion: z.string().describe("The portion the estimate refers to."),
@@ -76,6 +99,18 @@ export const AnalysisSchema = z.object({
     .describe(
       "Only for food, null otherwise. For a prepared dish: how to make it at home. For a raw ingredient or product: a simple recipe that uses it.",
     ),
+  diet: z
+    .object({
+      allergens: z
+        .array(z.enum(allergens))
+        .describe("Major allergens it likely contains: from the visible ingredients, the label, or the usual recipe of the dish."),
+      diets: z
+        .array(z.object({ diet: z.enum(diets), fits: z.enum(["yes", "no", "unsure"]) }))
+        .describe("Every diet of the list, once each: whether this food fits it. 'unsure' when it depends on what can't be seen."),
+      note: z.string().nullable().describe("One short caution (hidden allergens, cross-contamination, how sure this is), or null."),
+    })
+    .nullable()
+    .describe("Allergens and diets. Only for food, null otherwise."),
   document: z
     .object({
       type: z.string().describe("Kind of document, e.g. invoice, letter, receipt."),
@@ -87,6 +122,23 @@ export const AnalysisSchema = z.object({
         .nullable()
         .describe("The date the document expires or is due, as YYYY-MM-DD (insurance end date, bill due date, ID expiry), or null if none is legible."),
       isInsurance: z.boolean().describe("True for any insurance document: certificate, policy, attestation, green card, renewal notice."),
+      paper: z
+        .enum(paperKinds)
+        .nullable()
+        .describe(
+          "When it is a personal paper worth keeping: id_card (national ID, CNI), passport, driving_license, vehicle_registration (carte grise), insurance, warranty (guarantee card or receipt with a warranty), certificate (birth, residence, diploma, tax…), other; null for bills, letters, receipts and other documents.",
+        ),
+      bill: z
+        .object({
+          issuer: z.string().nullable().describe("Who asks for the payment, e.g. JIRAMA, Telma, Orange, Airtel, Canal+, a school; null if not shown."),
+          kind: z.enum(billKinds).describe("electricity_water (JIRAMA…), phone_internet, tv, rent, school, health or other."),
+          amount: z.number().nullable().describe("The total to pay (or paid), as a plain number in the bill's currency; null if not legible."),
+          currency: z.string().nullable().describe("ISO code of that amount: MGA for ariary, EUR, USD…; null if not shown."),
+          period: z.string().nullable().describe("The period billed, e.g. 'septembre 2026', or null."),
+          dueDate: z.string().nullable().describe("The payment deadline as YYYY-MM-DD, or null."),
+        })
+        .nullable()
+        .describe("Only for a bill, invoice or receipt with an amount to pay or paid; null otherwise."),
     })
     .nullable()
     .describe("Only for documents, null otherwise."),
@@ -144,6 +196,12 @@ export const AnalysisSchema = z.object({
         .string()
         .nullable()
         .describe("Destination city or region only. Never the recipient's name, phone number or street address."),
+      shippingMode: z
+        .enum(shippingModes)
+        .nullable()
+        .describe(
+          "How it travels to Madagascar when the screen or label says so: sea for sea freight (SEA, 海运, maritime, bateau, conteneur), air for air freight (NORMAL, AIR, 空运, aérien, avion); null if not shown.",
+        ),
     })
     .nullable()
     .describe("Only for parcels (order, shipping or tracking screens and shipping labels), null otherwise."),
@@ -183,12 +241,14 @@ export function normalizeStoredAnalysis(raw: unknown): unknown {
   const analysis = raw as Record<string, unknown>;
   const document = analysis.document as Record<string, unknown> | null | undefined;
   return {
+    questions: [],
     recipe: null,
+    diet: null,
     vehicle: null,
-    parcel: null,
     list: null,
     ...analysis,
-    document: document ? { expiresOn: null, isInsurance: false, ...document } : null,
+    document: document ? { expiresOn: null, isInsurance: false, paper: null, bill: null, ...document } : null,
+    parcel: analysis.parcel ? { shippingMode: null, ...(analysis.parcel as Record<string, unknown>) } : null,
   };
 }
 

@@ -7,9 +7,9 @@ import { PlanBadge } from "@/components/PlanBadge";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { toDateInput } from "@/lib/format";
-import { parcelStatuses, type ParcelStatus } from "@/lib/ai/schema";
+import { parcelStatuses, type ParcelStatus, type ShippingMode } from "@/lib/ai/schema";
 import { spring } from "@/lib/motion";
-import type { ParcelInfo } from "@/lib/parcels";
+import { shippingModeOf, type ParcelInfo } from "@/lib/parcels";
 import { haptics } from "@/services/device";
 import { parcelStore, type Parcel } from "@/services/parcelStore";
 import styles from "./ParcelEditSheet.module.scss";
@@ -55,6 +55,9 @@ function Form({ parcel, onClose, clients }: Omit<Props, "open">) {
   const [title, setTitle] = useState(parcel.title);
   const [client, setClient] = useState(parcel.client ?? "");
   const [status, setStatus] = useState<ParcelStatus>(info.status);
+  // Sea or air: automatic (read on a scan, or guessed) unless the user picks one.
+  const [shipping, setShipping] = useState<ShippingMode | "auto">(parcel.shippingMode ?? "auto");
+  const detected = shippingModeOf({ ...parcel, shippingMode: undefined }).mode;
   const initialReceivedDay = parcel.receivedAt ? toDateInput(parcel.receivedAt) : "";
   const [receivedDay, setReceivedDay] = useState(initialReceivedDay);
   const [today] = useState(todayInput);
@@ -105,7 +108,7 @@ function Form({ parcel, onClose, clients }: Omit<Props, "open">) {
     };
     // An untouched day keeps the exact time it was marked received.
     const receivedAt = receivedDay === initialReceivedDay ? undefined : receivedDay ? pickedUpAt(receivedDay) : null;
-    await parcelStore.edit(parcel.id, { title, client, info: next, receivedAt });
+    await parcelStore.edit(parcel.id, { title, client, info: next, receivedAt, shippingMode: shipping === "auto" ? null : shipping });
     haptics.success();
     setSaving(false);
     onClose();
@@ -169,6 +172,13 @@ function Form({ parcel, onClose, clients }: Omit<Props, "open">) {
         </Field>
 
         <h3 className={styles.group}>{t("parcels.fields.shipping")}</h3>
+        <Field label={t("parcel.shipping.label")} hint={t("parcel.shipping.hint")}>
+          <select value={shipping} onChange={(event) => setShipping(event.target.value as ShippingMode | "auto")}>
+            <option value="auto">{detected ? t("parcel.shipping.auto", { mode: t(`parcel.shipping.${detected}`) }) : t("parcel.shipping.autoUnknown")}</option>
+            <option value="air">{t("parcel.shipping.air")}</option>
+            <option value="sea">{t("parcel.shipping.sea")}</option>
+          </select>
+        </Field>
         <div className={styles.grid}>
           <Field label={t("parcel.carrier")}>
             <input value={fields.carrier} onChange={(event) => set("carrier")(event.target.value)} />

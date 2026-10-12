@@ -10,7 +10,9 @@
     "settings": "Settings",
     "back": "Back",
     "admin": "Admin",
-    "lists": "Lists"
+    "lists": "Lists",
+    "food": "Food log",
+    "papers": "Papers"
   },
   "scan": {
     "greeting": {
@@ -226,7 +228,18 @@
     "emptyCta": "Run your first analysis",
     "noMatch": "No analysis matches your search.",
     "swipeHint": "Swipe left to delete",
-    "reminderOn": "Reminder on {date}"
+    "reminderOn": "Reminder on {date}",
+    "dates": {
+      "label": "Period",
+      "all": "All dates",
+      "today": "Today",
+      "week": "7 days",
+      "month": "30 days",
+      "thisMonth": "This month",
+      "custom": "Pick dates",
+      "from": "From",
+      "to": "To"
+    }
   },
   "settings": {
     "title": "Settings",
@@ -719,7 +732,20 @@
         "How does it work?",
         "What should I know?"
       ]
-    }
+    },
+    "alsoAsk": "You can also ask:",
+    "askAbout": "You can ask",
+    "voice": "Ask your question aloud",
+    "stopVoice": "Stop listening",
+    "listening": "Listening…",
+    "voicePrompt": "Ask your question",
+    "voiceDenied": "Allow the microphone in the phone settings to talk to the app.",
+    "voiceUnavailable": "Voice isn’t available on this device.",
+    "listen": "Listen",
+    "stopListening": "Stop",
+    "share": "Share",
+    "copied": "Answer copied: paste it in WhatsApp or a text message.",
+    "sharedFrom": "— Assisteo Agny, about “{title}”"
   },
   "legal": {
     "updated": "Last updated {date}",
@@ -814,7 +840,21 @@
     "inList": "This parcel is in your list ({status}).",
     "earlierUpdated": "You scanned it before on {date}: that scan now shows the latest status.",
     "openEarlier": "See the earlier scan",
-    "limitReached": "Your plan follows up to {count} parcels at once. Mark some as received, or move to a bigger plan."
+    "limitReached": "Your plan follows up to {count} parcels at once. Mark some as received, or move to a bigger plan.",
+    "shipping": {
+      "label": "Shipping",
+      "air": "Air (NORMAL)",
+      "sea": "Sea (SEA)",
+      "all": "All shipments",
+      "auto": "Automatic: {mode}",
+      "autoUnknown": "Automatic (not found yet)",
+      "hint": "Found on the screenshots (SEA, NORMAL, 海运, 空运…). Pick it if it is wrong.",
+      "source": {
+        "manual": "Picked by hand",
+        "scan": "Read on the screenshot",
+        "guess": "Guessed from the tracking number or forwarder"
+      }
+    }
   },
   "parcels": {
     "title": "My parcels",
@@ -934,7 +974,8 @@
         "salePriceMga": "Sale price",
         "paidMga": "Paid by the client",
         "dueMga": "Still to pay",
-        "profitMga": "Profit"
+        "profitMga": "Profit",
+        "shipping": "Shipping"
       },
       "working": "Preparing the file…",
       "sheetParcels": "Parcels",
@@ -1018,7 +1059,8 @@
       "reseller": "Totals per client, monthly recap and Excel export",
       "deep": "{count} deep analyses a month, with the most accurate AI",
       "deepUnlimited": "Unlimited deep analyses",
-      "multiPage": "Multi-page scans (contract, long invoice)"
+      "multiPage": "Multi-page scans (contract, long invoice)",
+      "pdfExport": "PDF export of documents and history"
     },
     "how": "How to subscribe",
     "step1": "Sign in",
@@ -1120,7 +1162,12 @@
     "viewShort": "My lists",
     "inList": "Kept in My lists.",
     "open": "Open",
-    "addItemButton": "Add the item"
+    "addItemButton": "Add the item",
+    "price": "Price (Ar)",
+    "estimated": "Estimated total",
+    "spent": "Spent",
+    "unpriced": "{count} item(s) without a price",
+    "shareTotal": "Estimated total: {total}"
   },
   "pages": {
     "start": "Several pages",
@@ -1196,5 +1243,200 @@
     "copy": "Copy the text",
     "copyTranslation": "Copy the translation",
     "copied": "Text copied"
+  },
+  "shortcuts": {
+    "label": "Shortcuts",
+    "foodHint": "What you ate today",
+    "papersHint": "ID, insurance, warranties"
+  },
+  "food": {
+    "title": "Food journal",
+    "subtitle": "What you eat each day, from your meal photos.",
+    "emptyTitle": "Your journal is empty",
+    "emptyBody": "Take a photo of your meal: the AI estimates the calories, then tap “I ate this”.",
+    "scanMeal": "Scan a meal",
+    "previousDay": "Previous day",
+    "nextDay": "Next day",
+    "ofGoal": "of {goal} kcal",
+    "kcalLeft": "{count} kcal left",
+    "kcalOver": "{count} kcal over your goal",
+    "kcal": "{count} kcal",
+    "todayKcal": "{count} kcal today",
+    "goals": "My goals",
+    "goalCalories": "Calories",
+    "goalsHint": "A common adult reference: 2000 kcal. A doctor or a dietitian can give you goals that suit you.",
+    "goalsSaved": "Goals saved",
+    "nothingYet": "Nothing logged that day.",
+    "fromScans": "From my scans",
+    "week": "Last 7 days",
+    "estimateNote": "Calories are estimates made from the photos.",
+    "meal": "Meal",
+    "meals": {
+      "breakfast": "Breakfast",
+      "lunch": "Lunch",
+      "dinner": "Dinner",
+      "snack": "Snack"
+    },
+    "portions": "Portions",
+    "portionCount": "{count} portion(s)",
+    "logButton": "I ate this · {kcal} kcal",
+    "logged": "Added to the journal ({meal})",
+    "loggedShort": "Added to today’s journal",
+    "removeLog": "Remove from the journal",
+    "openJournal": "See my journal",
+    "journalSection": "Food journal",
+    "journalShort": "Journal",
+    "inJournal": "In today’s journal",
+    "ate": "I ate this",
+    "ateShort": "Ate it",
+    "dietSection": "Allergens and diets",
+    "allergensTitle": "Likely allergens",
+    "noAllergen": "No major allergen spotted.",
+    "dietsTitle": "Diets",
+    "fits": {
+      "yes": "yes",
+      "no": "no",
+      "unsure": "check"
+    },
+    "estimate": "Estimated from the photo: check the label if you have an allergy.",
+    "setProfile": "Set my allergies",
+    "editProfile": "My allergies and diet",
+    "alertTitle": "Careful for you",
+    "alertAllergens": "Probably contains: {list}.",
+    "alertDiets": "Doesn’t fit your diet: {list}.",
+    "allergens": {
+      "gluten": "Gluten",
+      "milk": "Milk",
+      "eggs": "Eggs",
+      "peanuts": "Peanuts",
+      "nuts": "Tree nuts",
+      "soy": "Soy",
+      "fish": "Fish",
+      "shellfish": "Shellfish",
+      "sesame": "Sesame"
+    },
+    "diets": {
+      "vegetarian": "Vegetarian",
+      "vegan": "Vegan",
+      "gluten_free": "Gluten-free",
+      "lactose_free": "Lactose-free",
+      "halal": "Halal",
+      "low_sugar": "Low sugar (diabetes)",
+      "low_salt": "Low salt (blood pressure)"
+    },
+    "toShopping": "Add the ingredients to a shopping list",
+    "chooseList": "Which list?",
+    "newShoppingList": "New shopping list",
+    "shoppingTitle": "Shopping: {name}",
+    "addedTo": "{count} ingredient(s) added to “{list}”",
+    "shoppingMade": "Ingredients in “{list}”.",
+    "settingsSection": "Food",
+    "myAllergies": "My allergies",
+    "myAllergiesHint": "A food that contains one shows a warning.",
+    "myDiets": "My diet",
+    "myDietsHint": "Foods that don’t fit are flagged."
+  },
+  "papers": {
+    "title": "My papers",
+    "subtitle": "ID, insurance, warranties: all in one place, with their expiry dates.",
+    "emptyTitle": "No papers yet",
+    "emptyBody": "Scan your ID card, driving licence, an insurance certificate or a warranty: they are kept here with their expiry date.",
+    "scan": "Scan a paper",
+    "count": "{count} paper(s)",
+    "shortcutUrgent": "{count} to renew",
+    "alertExpired": "{count} paper(s) expired",
+    "alertSoon": "{count} expiring within {days} days",
+    "groups": {
+      "expired": "Expired",
+      "soon": "Expiring soon",
+      "valid": "Valid",
+      "undated": "No expiry date"
+    },
+    "noDate": "No expiry date read",
+    "expiredOn": "Expired on {date}",
+    "expiresToday": "Expires today",
+    "expiresIn": "Expires on {date} · in {count} day(s)",
+    "validUntil": "Valid until {date}",
+    "reminderSet": "Reminder set",
+    "filed": "Kept in My papers ({kind}).",
+    "notFiled": "A paper to keep (ID, insurance, warranty…)? File it in My papers to follow its expiry.",
+    "open": "Open",
+    "kind": "My papers",
+    "notAPaper": "Not a paper to follow",
+    "expiry": "Expiry date",
+    "kinds": {
+      "id_card": "ID card",
+      "passport": "Passport",
+      "driving_license": "Driving licence",
+      "vehicle_registration": "Vehicle registration",
+      "insurance": "Insurance",
+      "warranty": "Warranty",
+      "certificate": "Certificate",
+      "other": "Other paper"
+    },
+    "tab": "Papers"
+  },
+  "bills": {
+    "tab": "Bills",
+    "title": "My bills",
+    "subtitle": "Electricity, phone, rent…: what you spend each month, and what is left to pay.",
+    "emptyTitle": "No bills followed",
+    "emptyBody": "Take a photo of an electricity, phone or internet bill: the amount is read and added to your spending.",
+    "scan": "Scan a bill",
+    "thisMonth": "This month",
+    "toPay": "Left to pay",
+    "months": "Spending over the last 6 months",
+    "unpriced": "{count} bill(s) without an amount in ariary: open them to type it.",
+    "noAmount": "amount to type",
+    "amount": "Amount (Ar)",
+    "readAmount": "Read: {amount}",
+    "state": "Payment",
+    "markPaid": "Mark as paid",
+    "paidOn": "Paid on {date}",
+    "dueOn": "Due by {date}",
+    "overdueSince": "Overdue since {date}",
+    "noDue": "No due date read",
+    "follow": "Follow as a bill",
+    "unfollow": "Stop following",
+    "shortcutToPay": "{amount} to pay",
+    "shortcutPaid": "All paid",
+    "kinds": {
+      "electricity_water": "Water and electricity",
+      "phone_internet": "Phone, internet",
+      "tv": "TV",
+      "rent": "Rent",
+      "school": "School",
+      "health": "Health",
+      "other": "Other"
+    }
+  },
+  "pdf": {
+    "export": "Export as PDF",
+    "making": "Making the PDF…",
+    "downloaded": "PDF downloaded",
+    "failed": "The PDF couldn’t be made. Try again.",
+    "scannedOn": "Scanned on {date} with Assisteo Agny",
+    "keyPoints": "Key points",
+    "dates": "Dates",
+    "footer": "Assisteo Agny"
+  },
+  "folders": {
+    "title": "Favourites and folders",
+    "favorite": "Favourite",
+    "favorites": "Favourites",
+    "addFavorite": "Add to favourites",
+    "addToFolder": "Put in a folder",
+    "new": "New folder",
+    "newPlaceholder": "New folder (e.g. Home)",
+    "remove": "Take out of the folder"
+  },
+  "historyPdf": {
+    "export": "Export",
+    "title": "My scans",
+    "caption": "{count} scan(s) from {from} to {to} · exported on {date} with Assisteo Agny",
+    "selected": "{count} picked",
+    "all": "All",
+    "none": "None",
+    "makePdf": "PDF"
   }
 }

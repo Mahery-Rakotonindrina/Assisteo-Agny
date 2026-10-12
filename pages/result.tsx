@@ -2,9 +2,10 @@ import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import {
   ArrowLeft,
+  BookOpen,
   Bell,
   BellRing,
   CalendarDays,
@@ -15,6 +16,7 @@ import {
   FileText,
   Files,
   Hash,
+  HeartPulse,
   ListChecks,
   ListPlus,
   Lock,
@@ -39,12 +41,19 @@ import { DeepAnalysis } from "@/components/DeepAnalysis";
 import { CategoryBadge } from "@/components/CategoryBadge";
 import { CodeList } from "@/components/CodeList";
 import { DocumentText } from "@/components/DocumentText";
+import { FolderPicker } from "@/components/FolderPicker";
 import { PhotoViewer } from "@/components/PhotoViewer";
 import { ReminderSheet } from "@/components/ReminderSheet";
 import { ScanChat } from "@/components/ScanChat";
 import {
   AnswerFeedback,
+  BillControls,
   ConfidenceBadge,
+  DietCard,
+  MealLogger,
+  PaperControls,
+  PdfExportButton,
+  RecipeShopping,
   confidenceLevel,
   NutritionCard,
   ParcelCard,
@@ -65,15 +74,18 @@ import { useNow } from "@/hooks/useNow";
 import { useReminderTexts } from "@/hooks/useReminderTexts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { exampleEntry, isExampleId } from "@/lib/examples";
+import { dietAlerts, hasDietAlert } from "@/lib/food";
 import { sameParcel } from "@/lib/parcels";
 import { formatDateTime, formatDay } from "@/lib/format";
 import { easeOut, pop, rise, spring, stagger } from "@/lib/motion";
+import { useSettings } from "@/lib/settings/SettingsProvider";
 import { haptics, shareText } from "@/services/device";
 import { historyStore } from "@/services/historyStore";
 import { listStore } from "@/services/listStore";
 import { keepParcelThumbnails } from "@/services/parcelLinking";
 import { hasNewStatus, parcelStore } from "@/services/parcelStore";
 import { cancelNotification } from "@/services/notifications";
+import { foodJournal } from "@/services/foodJournal";
 import { cancelReminder, expiryDate, INSURANCE_NOTICE_DAYS, insuranceReminderAt, scheduleReminder } from "@/services/reminders";
 import type { HistoryEntry } from "@/types/history";
 import styles from "@/styles/Result.module.scss";
@@ -82,7 +94,7 @@ type TabId = "overview" | "list" | "parcel" | "nutrition" | "recipe" | "vehicle"
 
 /** Photos of these kinds rarely hold text worth reading in full. */
 const withoutText = new Set(["food", "vehicle", "plant"]);
-type Action = "reminder" | "question" | "parcel" | "list";
+type Action = "reminder" | "question" | "parcel" | "list" | "meal";
 
 /** Gap between the header and the tabs (the .content flex gap). */
 const CONTENT_GAP = 16;
@@ -138,6 +150,8 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
   // A parcel opens on its tracking details.
   const [tab, setTab] = useState<TabId>(analysis.parcel ? "parcel" : analysis.list ? "list" : "overview");
   const [composerFocused, setComposerFocused] = useState(false);
+  // A suggested question tapped on the overview: sent once the question tab opens.
+  const [askNow, setAskNow] = useState<string | null>(null);
   const [barSolid, setBarSolid] = useState(false);
   const [barTitled, setBarTitled] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -200,7 +214,7 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
     { id: "overview", label: t("result.tabs.overview"), icon: <Sparkles /> },
     analysis.list && { id: "list", label: t("result.tabs.list"), icon: <ListChecks /> },
     analysis.parcel && { id: "parcel", label: t("result.tabs.parcel"), icon: <Package /> },
-    analysis.nutrition && { id: "nutrition", label: t("result.tabs.nutrition"), icon: <Utensils /> },
+    (analysis.nutrition || analysis.diet) && { id: "nutrition", label: t("result.tabs.nutrition"), icon: <Utensils /> },
     analysis.recipe && { id: "recipe", label: t("result.tabs.recipe"), icon: <CookingPot /> },
     analysis.vehicle && { id: "vehicle", label: t("result.tabs.vehicle"), icon: <Car /> },
     analysis.document && { id: "document", label: t("result.tabs.document"), icon: <FileText /> },
@@ -219,6 +233,13 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
     const top = header.getBoundingClientRect().bottom + window.scrollY + CONTENT_GAP - offset;
     if (window.scrollY > top) window.scrollTo({ top, behavior: "instant" });
   };
+
+  const askQuestion = (question: string) => {
+    haptics.tap();
+    setAskNow(question);
+    changeTab("chat");
+  };
+  const clearAskNow = useCallback(() => setAskNow(null), []);
 
   const openQuestion = () => {
     haptics.tap();
@@ -267,6 +288,16 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
     toast(t("parcel.updated", { status: t(`parcel.statuses.${analysis.parcel!.status}`) }));
   };
 
+  // Food: the allergies and diets of the user, and the meals already logged today.
+  const { settings } = useSettings();
+  const alerts = dietAlerts(analysis.diet, settings);
+  const eatenToday = (entry.meals ?? []).some((log) => new Date(log.at).toDateString() === new Date(now).toDateString());
+  const logMeal = async () => {
+    haptics.success();
+    await foodJournal.add(entry.id);
+    toast(t("food.loggedShort"));
+  };
+
   const reminderFirst =
     forcedAt !== null ||
     reminderActive ||
@@ -280,9 +311,11 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
           ? ["parcel", "question"]
           : analysis.list
             ? ["list", "question"]
-            : reminderFirst
-              ? ["reminder", "question"]
-              : ["question", "reminder"]) as Action[])
+            : analysis.nutrition && analysis.category === "food"
+              ? ["meal", "question"]
+              : reminderFirst
+                ? ["reminder", "question"]
+                : ["question", "reminder"]) as Action[])
   ).filter(
     // The question tab has its own composer.
     (action) => !(action === "question" && tab === "chat"),
@@ -446,6 +479,7 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
               </p>
             )}
             <ConfidenceBadge value={analysis.confidence} label={t(`result.confidenceLevels.${level}`)} />
+            {!example && <FolderPicker entry={entry} />}
             {!example && !meta.demo && <DeepAnalysis entry={entry} />}
             {level === "low" && (
               <div className={styles.uncertain} role="note">
@@ -461,6 +495,22 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
                       {t("result.pickType")}
                     </Button>
                   </div>
+                </div>
+              </div>
+            )}
+            {hasDietAlert(alerts) && (
+              <div className={styles.uncertain} role="alert">
+                <TriangleAlert size={18} />
+                <div>
+                  <strong>{t("food.alertTitle")}</strong>
+                  <p>
+                    {[
+                      alerts.allergens.length > 0 && t("food.alertAllergens", { list: alerts.allergens.map((value) => t(`food.allergens.${value}`)).join(", ") }),
+                      alerts.against.length > 0 && t("food.alertDiets", { list: alerts.against.map((value) => t(`food.diets.${value}`)).join(", ") }),
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                  </p>
                 </div>
               </div>
             )}
@@ -543,17 +593,34 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
         return analysis.parcel && renderParcel(analysis.parcel);
       case "nutrition":
         return (
-          analysis.nutrition && (
-            <Section title={t("result.nutrition")} icon={<Utensils />}>
-              <NutritionCard nutrition={analysis.nutrition} />
-            </Section>
-          )
+          <>
+            {analysis.nutrition && (
+              <Section title={t("result.nutrition")} icon={<Utensils />}>
+                <NutritionCard nutrition={analysis.nutrition} />
+              </Section>
+            )}
+            {analysis.nutrition && !example && (
+              <Section title={t("food.journalSection")} icon={<BookOpen />}>
+                <MealLogger entry={entry} />
+              </Section>
+            )}
+            {analysis.diet && (
+              <Section title={t("food.dietSection")} icon={<HeartPulse />}>
+                <DietCard diet={analysis.diet} />
+              </Section>
+            )}
+          </>
         );
       case "recipe":
         return (
           analysis.recipe && (
             <Section title={t("result.recipe")} icon={<CookingPot />}>
               <RecipeCard recipe={analysis.recipe} />
+              {!example && (
+                <div className={styles.afterCard}>
+                  <RecipeShopping entry={entry} />
+                </div>
+              )}
             </Section>
           )
         );
@@ -583,7 +650,7 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
             }}
           >
             <Section title={t("chat.title")} icon={<MessageCircle />}>
-              <ScanChat entry={entry} />
+              <ScanChat entry={entry} initialQuestion={askNow} onInitialQuestion={clearAskNow} />
             </Section>
           </div>
         );
@@ -631,6 +698,19 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
             {analysis.suggestions.length > 0 && (
               <Section title={t("result.suggestions")} icon={<Sparkles />}>
                 <SuggestionList suggestions={analysis.suggestions} />
+              </Section>
+            )}
+
+            {!example && analysis.questions.length > 0 && (
+              <Section title={t("chat.askAbout")} icon={<MessageCircle />}>
+                <div className={styles.questions}>
+                  {analysis.questions.map((question) => (
+                    <button key={question} type="button" onClick={() => askQuestion(question)}>
+                      <Sparkles size={13} />
+                      {question}
+                    </button>
+                  ))}
+                </div>
               </Section>
             )}
 
@@ -728,6 +808,13 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
             </div>
           )}
         </div>
+        {!example && (
+          <div className={styles.afterCard}>
+            <PdfExportButton entry={entry} />
+          </div>
+        )}
+        {!example && <PaperControls entry={entry} />}
+        {!example && <BillControls entry={entry} />}
       </Section>
     );
   }
@@ -802,6 +889,17 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
       ) : (
         <Button key="list" variant={slot === "primary" ? "primary" : "secondary"} icon={<ListPlus />} onClick={() => void addList()} className={className}>
           {slot === "secondary" ? t("lists.addShort") : t("lists.add")}
+        </Button>
+      );
+    }
+    if (action === "meal") {
+      return eatenToday ? (
+        <Button key="meal" variant="secondary" icon={<BookOpen />} href="/food" className={className}>
+          {slot === "secondary" ? t("food.journalShort") : t("food.inJournal")}
+        </Button>
+      ) : (
+        <Button key="meal" variant={slot === "primary" ? "primary" : "secondary"} icon={<Utensils />} onClick={() => void logMeal()} className={className}>
+          {slot === "secondary" ? t("food.ateShort") : t("food.ate")}
         </Button>
       );
     }

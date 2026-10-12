@@ -49,10 +49,13 @@ next-env.d.ts
 *.jks
 *.keystore
 
-# Coding-agent skills installed by the Vercel CLI (not part of the app)
+# Coding-agent skills installed by the skills CLI (not part of the app); the
+# project's own assisteo-* skills are kept in the repository.
 .agents/
-.claude/skills/
+.claude/skills/*
+!.claude/skills/assisteo-*/
 skills-lock.json
+.claude/settings.local.json
 
 # Playwright
 /test-results/

@@ -1,7 +1,7 @@
 import "fake-indexeddb/auto";
 import { beforeEach, describe, expect, it } from "vitest";
 import { mockAnalysis } from "@/lib/ai/mock";
-import { compareLists, listProgress, listStore, type SavedList } from "@/services/listStore";
+import { compareLists, listProgress, listStore, listTotals, type SavedList } from "@/services/listStore";
 import type { HistoryEntry } from "@/types/history";
 
 // The demo shopping list: 7 items, "Sucre" already crossed out.
@@ -76,5 +76,25 @@ describe("my lists", () => {
     });
     const sorted = [list("finished", [true, true], 30), list("old", [false], 10), list("new", [true, false], 20), list("empty", [], 5)].sort(compareLists);
     expect(sorted.map((item) => item.id)).toEqual(["new", "old", "empty", "finished"]);
+  });
+
+  it("prices a shopping list: estimate, spent, and the last price remembered", async () => {
+    const { id } = await listStore.create("Marché");
+    await listStore.addItem(id, "Riz", "5 kg", 14_999.6);
+    await listStore.addItem(id, "Huile", "1 L", 9000);
+    await listStore.addItem(id, "Sel");
+    let [list] = await listStore.list();
+    expect(list.items.map((item) => item.priceMga)).toEqual([15_000, 9000, undefined]);
+    await listStore.toggle(id, list.items[1].id);
+    [list] = await listStore.list();
+    expect(listTotals(list)).toEqual({ estimated: 24_000, spent: 9000, unpriced: 1 });
+
+    // A new list remembers what rice cost; an edit can clear a price.
+    const next = await listStore.create("Semaine");
+    await listStore.addItem(next.id, " riz ");
+    const rice = (await listStore.list()).find((item) => item.id === next.id)!.items[0];
+    expect(rice.priceMga).toBe(15_000);
+    await listStore.editItem(next.id, rice.id, { text: "Riz", priceMga: undefined });
+    expect((await listStore.list()).find((item) => item.id === next.id)!.items[0].priceMga).toBeUndefined();
   });
 });

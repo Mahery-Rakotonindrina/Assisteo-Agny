@@ -14,6 +14,7 @@ export function planPerks(plan: PlanId, limits: PlanLimits, t: Translate, locale
       ? [t("plans.perks.trialScans", { count: limits.scans }), limit(limits.questionsPerDay, "questions"), limit(limits.parcels, "parcels")]
       : [limit(limits.scans, "scans"), limit(limits.questionsPerDay, "questions"), limit(limits.parcels, "parcels")];
   if (hasFeature(plan, "parcelCosts")) perks.push(t("plans.features.parcelCosts"));
+  if (hasFeature(plan, "pdfExport")) perks.push(t("plans.features.pdfExport"));
   if (hasFeature(plan, "ownKey")) perks.push(t("plans.features.ownKey"));
   if (hasFeature(plan, "deepAnalysis")) perks.push(limit(limits.deepPerMonth, "deep"), t("plans.features.priority"));
   if (hasFeature(plan, "multiPage")) perks.push(t("plans.features.multiPage"));
