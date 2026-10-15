@@ -246,6 +246,14 @@
     "appearance": "Apparence",
     "language": "Langue",
     "theme": "Thème",
+    "textSize": "Taille du texte",
+    "textSizeHint": "Agrandit ou réduit tout le texte de l’app, sur cet appareil.",
+    "textSizes": {
+      "small": "Petit",
+      "normal": "Normal",
+      "large": "Grand",
+      "xlarge": "Très grand"
+    },
     "themes": {
       "system": "Auto",
       "light": "Clair",
@@ -261,8 +269,22 @@
     "haptics": "Retour haptique",
     "hapticsHint": "Vibrations légères lors des actions.",
     "data": "Données",
-    "storage": "{count} analyses · {size} de photos sur cet appareil",
+    "storageTotal": "Espace utilisé : {size}",
+    "storageMeasuring": "Calcul de l’espace utilisé…",
+    "storageParts": {
+      "photos": "Photos de {count} analyse(s)",
+      "analyses": "Analyses, discussions et repas",
+      "parcels": "Colis",
+      "lists": "Listes",
+      "queue": "{count} scan(s) en attente de réseau",
+      "other": "Autres (fichiers de l’app, cache)"
+    },
     "storageHint": "Pour gagner de la place, seules les {count} analyses les plus récentes gardent leur photo en grand ; les plus anciennes gardent une photo réduite.",
+    "storageLighten": "Alléger les photos",
+    "storageLightenConfirm": "Garder en grand seulement les {count} dernières ?",
+    "storageLightened": "{count} photo(s) allégée(s) : {size} libérés",
+    "storageNothing": "Rien à alléger : les photos anciennes sont déjà réduites.",
+    "storageFailed": "Les photos n’ont pas pu être allégées. Réessaie.",
     "clearHistory": "Effacer l'historique",
     "clearConfirm": "Effacer définitivement toutes les analyses ?",
     "cleared": "Historique effacé",
@@ -517,7 +539,7 @@
       },
       "noMatch": "Personne dans ce filtre.",
       "adminRole": "accès complet",
-      "adminHint": "Réservé aux administrateurs : tout sans limite, et le menu Admin dans l’app. La page admin demande toujours le jeton.",
+      "adminHint": "Fait de cette personne un administrateur : tout sans limite, le menu Admin, et l’espace admin avec son propre compte (sauf le journal et la double authentification). Seul le propriétaire nomme ou retire un admin.",
       "charts": {
         "split": "Abonnés actifs par offre",
         "monthly": "Encaissé par mois, par offre",
@@ -552,7 +574,7 @@
       "contact": "Contact pour envoyer la référence",
       "contactHint": "Un numéro de téléphone, ou un lien (WhatsApp : https://wa.me/261…, Messenger…)."
     },
-    "adminAccount": "Ton compte est administrateur : saisis le jeton pour ouvrir l’espace admin.",
+    "adminAccount": "Ton compte est administrateur : ouvre l’espace admin avec ton compte, ou avec le jeton.",
     "ai": {
       "title": "Coût de l’IA · {days} derniers jours",
       "subtitle": "Ce que la clé IA du serveur a coûté, et ce que chaque offre coûterait utilisée à fond.",
@@ -619,6 +641,84 @@
       "enabled": "Double authentification activée",
       "disabled": "Double authentification désactivée",
       "badCode": "Code incorrect, déjà utilisé, ou QR code expiré (15 min) : réessaie."
+    },
+    "unlockAccount": "Ouvrir avec mon compte",
+    "notAdminAccount": "Ce compte n’est pas administrateur. Le propriétaire doit te donner l’offre Admin ; sinon, saisis le jeton.",
+    "signedInOwner": "Ouvert avec le jeton (propriétaire)",
+    "signedInAs": "Ouvert avec ton compte : {email}",
+    "ownerOnly": "Réservé au propriétaire : nommer ou retirer un admin.",
+    "accounts": {
+      "title": "Comptes",
+      "subtitle": "Tous les comptes créés dans l’app, abonnés ou non, du plus récent au plus ancien.",
+      "total": "comptes",
+      "newThisMonth": "nouveaux ce mois",
+      "withPlan": "avec une offre",
+      "filters": {
+        "all": "Tous",
+        "paying": "Abonnés",
+        "free": "Sans offre",
+        "admins": "Admins"
+      },
+      "empty": "Aucun compte pour l’instant.",
+      "noEmail": "(sans e-mail)",
+      "joined": "Inscrit le {date}",
+      "seen": "connecté le {date}",
+      "neverSeen": "jamais connecté depuis",
+      "more": "Voir {count} de plus"
+    },
+    "log": {
+      "title": "Journal des actions",
+      "subtitle": "Ce qui a été fait dans l’espace admin, et par qui (les 500 dernières actions). Visible par toi seul.",
+      "empty": "Rien pour l’instant.",
+      "owner": "Toi (jeton)",
+      "github": "GitHub (nouvel APK)",
+      "more": "Voir {count} de plus",
+      "actions": {
+        "login": "Connexion",
+        "subscription_add": "Abonnement ajouté",
+        "subscription_edit": "Abonnement modifié",
+        "subscription_stop": "Accès arrêté",
+        "subscription_delete": "Abonnement supprimé",
+        "plans_save": "Offres modifiées",
+        "trial_save": "Essai gratuit modifié",
+        "app_save": "Versions de l’app modifiées",
+        "two_factor_on": "Double authentification activée",
+        "two_factor_off": "Double authentification désactivée",
+        "two_factor_codes": "Codes de secours renouvelés"
+      }
+    },
+    "export": {
+      "heading": "Export comptable",
+      "title": "Paiements",
+      "exportedOn": "Exporté le {date}",
+      "periods": {
+        "month": "Ce mois",
+        "lastMonth": "Mois dernier",
+        "year": "Cette année",
+        "all": "Tout"
+      },
+      "summary": "{count} paiement(s) · {amount}",
+      "button": "Exporter pour Excel",
+      "working": "Création du fichier…",
+      "downloaded": "Fichier Excel téléchargé",
+      "total": "Total",
+      "noMethod": "Non précisé",
+      "sheetPayments": "Paiements",
+      "sheetMonths": "Par mois",
+      "sheetMethods": "Par moyen",
+      "columns": {
+        "date": "Date",
+        "email": "E-mail",
+        "plan": "Offre",
+        "from": "Du",
+        "to": "Au",
+        "amount": "Montant",
+        "method": "Moyen de paiement",
+        "ref": "Référence",
+        "note": "Note",
+        "month": "Mois",
+        "count": "Paiements"
+      }
     }
   },
   "account": {
@@ -1098,7 +1198,7 @@
     "perks": {
       "everything": "Tout est inclus, sans limite",
       "trialScans": "{count} scans pour essayer",
-      "adminMenu": "Le menu Admin (la page demande toujours le jeton)"
+      "adminMenu": "Le menu Admin, et l’espace admin avec ton compte"
     },
     "openAdmin": "Ouvrir l’admin",
     "welcome": {

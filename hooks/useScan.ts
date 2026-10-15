@@ -62,7 +62,7 @@ export type PageCapture = PreparedCapture & { key: string };
 export function toErrorKind(error: unknown): ScanErrorKind {
   if (error instanceof ApiError) {
     const code = error.code;
-    return code === "method_not_allowed" || code === "ask_limit" || code === "deep_limit" || code === "second_factor" ? "unknown" : code;
+    return code === "method_not_allowed" || code === "owner_only" || code === "ask_limit" || code === "deep_limit" || code === "second_factor" ? "unknown" : code;
   }
   return "unknown";
 }

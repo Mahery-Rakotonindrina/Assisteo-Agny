@@ -13,7 +13,9 @@ import {
   Download,
   FileText,
   Globe,
+  HardDrive,
   HeartPulse,
+  ImageDown,
   Info,
   Monitor,
   Moon,
@@ -26,6 +28,7 @@ import {
   Smartphone,
   Sun,
   Trash2,
+  Type,
   Vibrate,
   X,
 } from "lucide-react";
@@ -45,13 +48,15 @@ import { useHistory } from "@/hooks/useHistory";
 import { useTranslation } from "@/hooks/useTranslation";
 import { allergens, diets } from "@/lib/ai/schema";
 import { rise, stagger } from "@/lib/motion";
-import { useSettings, type ThemePreference } from "@/lib/settings/SettingsProvider";
+import { formatBytes } from "@/lib/format";
+import { textSizes, useSettings, type TextSize, type ThemePreference } from "@/lib/settings/SettingsProvider";
 import { accountsAvailable } from "@/lib/supabase";
 import { connectionIsSlow, isSavingData, type DataSaverPreference } from "@/services/dataSaver";
 import { isNative } from "@/services/device";
 import { historyStore } from "@/services/historyStore";
 import { keepParcelThumbnails } from "@/services/parcelLinking";
-import { entryPhotoBytes, FULL_PHOTOS_KEPT } from "@/services/photoStorage";
+import { compactOldPhotos, FULL_PHOTOS_KEPT, LIGHT_PHOTOS_KEPT } from "@/services/photoStorage";
+import { measureStorage, type StorageUsage } from "@/services/storageUsage";
 import {
   getNotificationPermission,
   notify,
@@ -62,7 +67,7 @@ import { getPermission, requestPermission, type PermissionKind, type PermissionS
 import styles from "@/styles/Settings.module.scss";
 
 export default function SettingsPage() {
-  const { t, locale } = useTranslation();
+  const { t } = useTranslation();
   const router = useRouter();
   const toast = useToast();
   const { settings, update } = useSettings();
@@ -171,6 +176,14 @@ export default function SettingsPage() {
               value={settings.theme}
               onChange={(theme) => update({ theme })}
               options={themeOptions.map(({ value, icon }) => ({ value, icon, label: t(`settings.themes.${value}`) }))}
+            />
+          </Row>
+          <Row icon={<Type />} label={t("settings.textSize")} hint={t("settings.textSizeHint")} stacked>
+            <SegmentedControl
+              ariaLabel={t("settings.textSize")}
+              value={settings.textSize}
+              onChange={(textSize: TextSize) => update({ textSize })}
+              options={textSizes.map((value) => ({ value, label: t(`settings.textSizes.${value}`) }))}
             />
           </Row>
         </Group>
@@ -323,11 +336,7 @@ export default function SettingsPage() {
               options={(["auto", "on", "off"] as const).map((value) => ({ value, label: t(`settings.dataSaverModes.${value}`) }))}
             />
           </Row>
-          <Row
-            icon={<Smartphone />}
-            label={t("settings.storage", { count: entries.length, size: formatBytes(entries.reduce((total, entry) => total + entryPhotoBytes(entry), 0), locale) })}
-            hint={t("settings.storageHint", { count: FULL_PHOTOS_KEPT })}
-          />
+          <StorageRows entries={entries.length} />
           <div className={styles.rowAction}>
             <Button
               variant="danger"
@@ -394,12 +403,101 @@ function Group({ id, title, children }: { id?: string; title: string; children: 
 
 const noSubscribe = () => () => {};
 
-function formatBytes(bytes: number, locale: string) {
-  const [kb, mb] = locale === "fr" ? ["Ko", "Mo"] : ["KB", "MB"];
-  const megabytes = bytes / (1024 * 1024);
-  return megabytes >= 1
-    ? `${megabytes.toLocaleString(locale, { maximumFractionDigits: 1 })} ${mb}`
-    : `${Math.max(0, Math.round(bytes / 1024)).toLocaleString(locale)} ${kb}`;
+/** What the app keeps on this device, part by part, and a way to free space. */
+function StorageRows({ entries }: { entries: number }) {
+  const { t, locale } = useTranslation();
+  const toast = useToast();
+  const [usage, setUsage] = useState<StorageUsage | null>(null);
+  const [confirm, setConfirm] = useState(false);
+  const [working, setWorking] = useState(false);
+
+  // Measured again whenever the history changes (a scan added or deleted…).
+  useEffect(() => {
+    let cancelled = false;
+    measureStorage()
+      .then((result) => {
+        if (!cancelled) setUsage(result);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [entries]);
+
+  // Only the latest scans keep their full-size photo; the analyses all stay.
+  const lighten = async () => {
+    if (!confirm) {
+      setConfirm(true);
+      return;
+    }
+    setWorking(true);
+    try {
+      const before = usage?.photosBytes ?? 0;
+      const count = await compactOldPhotos(LIGHT_PHOTOS_KEPT);
+      const after = await measureStorage();
+      setUsage(after);
+      toast(count > 0 ? t("settings.storageLightened", { count, size: formatBytes(Math.max(0, before - after.photosBytes), locale) }) : t("settings.storageNothing"));
+    } catch {
+      toast(t("settings.storageFailed"), "error");
+    } finally {
+      setWorking(false);
+      setConfirm(false);
+    }
+  };
+
+  const parts = usage
+    ? [
+        { key: "photos", bytes: usage.photosBytes, label: t("settings.storageParts.photos", { count: usage.scans }) },
+        { key: "analyses", bytes: usage.analysesBytes, label: t("settings.storageParts.analyses") },
+        { key: "parcels", bytes: usage.parcelsBytes, label: t("settings.storageParts.parcels") },
+        { key: "lists", bytes: usage.listsBytes, label: t("settings.storageParts.lists") },
+        { key: "queue", bytes: usage.queueBytes, label: t("settings.storageParts.queue", { count: usage.queued }) },
+      ]
+    : [];
+  const known = parts.reduce((total, part) => total + part.bytes, 0);
+  const total = usage?.totalBytes ?? known;
+  // The browser's own bookkeeping and, on the web, the app's files.
+  const other = total - known;
+  const shown = [
+    ...parts.filter((part) => part.key === "photos" || part.bytes >= 1024),
+    ...(other >= 1024 ? [{ key: "other", bytes: other, label: t("settings.storageParts.other") }] : []),
+  ];
+
+  return (
+    <>
+      <Row
+        icon={<HardDrive />}
+        label={usage ? t("settings.storageTotal", { size: formatBytes(total, locale) }) : t("settings.storageMeasuring")}
+        hint={t("settings.storageHint", { count: FULL_PHOTOS_KEPT })}
+        stacked
+      >
+        {usage && (
+          <ul className={styles.storage}>
+            {shown.map((part) => (
+              <li key={part.key}>
+                <span>{part.label}</span>
+                <strong>{formatBytes(part.bytes, locale)}</strong>
+                <span className={styles.storageBar} aria-hidden>
+                  <span style={{ width: `${Math.max(2, Math.round((part.bytes / Math.max(total, 1)) * 100))}%` }} />
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Row>
+      <div className={styles.rowAction}>
+        <Button
+          variant="secondary"
+          icon={<ImageDown />}
+          onClick={() => void lighten()}
+          disabled={!usage || usage.scans <= LIGHT_PHOTOS_KEPT || working}
+          block
+        >
+          {confirm ? t("settings.storageLightenConfirm", { count: LIGHT_PHOTOS_KEPT }) : t("settings.storageLighten")}
+        </Button>
+      </div>
+    </>
+  );
 }
 
 type RowProps = {

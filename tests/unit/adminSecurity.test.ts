@@ -1,6 +1,11 @@
 import { randomBytes } from "node:crypto";
 import type { NextApiRequest, NextApiResponse } from "next";
-import { beforeAll, describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
+
+// One admin account besides the owner: admin@example.com has the admin plan.
+vi.mock("@/lib/server/subscriptions", () => ({
+  planForEmail: async (email: string) => ({ plan: email === "admin@example.com" ? "unlimited" : "premium", endsAt: null }),
+}));
 
 process.env.ADMIN_TOKEN = "admin-token-for-tests-0123456789";
 process.env.CRON_SECRET = "cron-secret-for-tests";
@@ -11,7 +16,7 @@ const { issueAdminSession, verifyAdminSession, ADMIN_SESSION_MS } = await import
 const twoFactor = await import("@/lib/server/adminTwoFactor");
 const { guardAdmin } = await import("@/lib/server/adminAuth");
 
-function call(headers: Record<string, string>, options?: { machine?: boolean }) {
+function call(headers: Record<string, string>, options?: { machine?: boolean; ownerOnly?: boolean }) {
   const req = { headers, socket: { remoteAddress: `10.0.0.${Math.floor(Math.random() * 250)}` } } as unknown as NextApiRequest;
   const res = {
     statusCode: 200,
@@ -24,7 +29,7 @@ function call(headers: Record<string, string>, options?: { machine?: boolean }) 
     },
     setHeader() {},
   };
-  return guardAdmin(req, res as unknown as NextApiResponse, options).then((ok) => ({ ok, status: res.statusCode }));
+  return guardAdmin(req, res as unknown as NextApiResponse, options).then((actor) => ({ ok: Boolean(actor), status: res.statusCode }));
 }
 
 describe("TOTP codes", () => {
@@ -59,14 +64,37 @@ describe("TOTP codes", () => {
 describe("admin sessions", () => {
   it("expire, and stop working when the epoch or the token changes", () => {
     const { session } = issueAdminSession("epoch-1", 1000);
-    expect(verifyAdminSession(session, "epoch-1", 2000)).toBe(true);
-    expect(verifyAdminSession(session, "epoch-1", 1000 + ADMIN_SESSION_MS + 1)).toBe(false);
-    expect(verifyAdminSession(session, "epoch-2", 2000)).toBe(false);
-    expect(verifyAdminSession(session.replace(/\.\d+\./, ".9999999999999."), "epoch-1", 2000)).toBe(false);
+    expect(verifyAdminSession(session, "epoch-1", 2000)).toBe("owner");
+    expect(verifyAdminSession(session, "epoch-1", 1000 + ADMIN_SESSION_MS + 1)).toBeNull();
+    expect(verifyAdminSession(session, "epoch-2", 2000)).toBeNull();
+    expect(verifyAdminSession(session.replace(/\.\d+\./, ".9999999999999."), "epoch-1", 2000)).toBeNull();
     const token = process.env.ADMIN_TOKEN;
     process.env.ADMIN_TOKEN = "another-token-entirely-0123456789";
-    expect(verifyAdminSession(session, "epoch-1", 2000)).toBe(false);
+    expect(verifyAdminSession(session, "epoch-1", 2000)).toBeNull();
     process.env.ADMIN_TOKEN = token;
+  });
+
+  it("name who opened them, and that name can't be swapped", () => {
+    const { session } = issueAdminSession("epoch-1", 1000, "admin@example.com");
+    expect(verifyAdminSession(session, "epoch-1", 2000)).toBe("admin@example.com");
+    const parts = session.split(".");
+    parts[3] = Buffer.from("owner").toString("base64url");
+    expect(verifyAdminSession(parts.join("."), "epoch-1", 2000)).toBeNull();
+  });
+});
+
+describe("other admins", () => {
+  const sessionOf = async (actor: string) => issueAdminSession(twoFactor.sessionEpoch(await twoFactor.twoFactorState()), Date.now(), actor).session;
+
+  it("get in while their admin plan runs, not after", async () => {
+    expect(await call({ authorization: `Bearer ${await sessionOf("admin@example.com")}` })).toEqual({ ok: true, status: 200 });
+    // An admin whose admin plan ended (here: a Premium subscriber) is refused.
+    expect(await call({ authorization: `Bearer ${await sessionOf("former@example.com")}` })).toEqual({ ok: false, status: 401 });
+  });
+
+  it("can't do what only the owner may", async () => {
+    expect(await call({ authorization: `Bearer ${await sessionOf("admin@example.com")}` }, { ownerOnly: true })).toEqual({ ok: false, status: 403 });
+    expect(await call({ authorization: `Bearer ${await sessionOf("owner")}` }, { ownerOnly: true })).toEqual({ ok: true, status: 200 });
   });
 });
 

@@ -438,6 +438,8 @@ export type ApiErrorCode =
   | "deep_limit"
   /** The admin token is right: a code from the authenticator app is needed (or was wrong). */
   | "second_factor"
+  /** An admin other than the owner tried what only the owner may do (the second factor, admin rights). */
+  | "owner_only"
   | "method_not_allowed";
 
 export type ApiErrorBody = {

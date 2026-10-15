@@ -246,6 +246,14 @@
     "appearance": "Appearance",
     "language": "Language",
     "theme": "Theme",
+    "textSize": "Text size",
+    "textSizeHint": "Makes all the app’s text bigger or smaller, on this device.",
+    "textSizes": {
+      "small": "Small",
+      "normal": "Normal",
+      "large": "Large",
+      "xlarge": "Extra large"
+    },
     "themes": {
       "system": "Auto",
       "light": "Light",
@@ -261,8 +269,22 @@
     "haptics": "Haptic feedback",
     "hapticsHint": "Light vibrations on actions.",
     "data": "Data",
-    "storage": "{count} analyses · {size} of photos on this device",
+    "storageTotal": "Space used: {size}",
+    "storageMeasuring": "Measuring the space used…",
+    "storageParts": {
+      "photos": "Photos of {count} analysis(es)",
+      "analyses": "Analyses, chats and meals",
+      "parcels": "Parcels",
+      "lists": "Lists",
+      "queue": "{count} scan(s) waiting for the network",
+      "other": "Other (app files, cache)"
+    },
     "storageHint": "To save space, only the {count} most recent analyses keep their full-size photo; older ones keep a smaller one.",
+    "storageLighten": "Make photos lighter",
+    "storageLightenConfirm": "Keep only the latest {count} at full size?",
+    "storageLightened": "{count} photo(s) made lighter: {size} freed",
+    "storageNothing": "Nothing to lighten: the older photos are already reduced.",
+    "storageFailed": "The photos couldn’t be made lighter. Try again.",
     "clearHistory": "Clear history",
     "clearConfirm": "Permanently delete every analysis?",
     "cleared": "History cleared",
@@ -517,7 +539,7 @@
       },
       "noMatch": "Nobody in this filter.",
       "adminRole": "full access",
-      "adminHint": "For administrators only: everything unlimited, and the Admin menu in the app. The admin page still asks for the token.",
+      "adminHint": "Makes this person an admin: everything without limits, the Admin menu, and the admin space with their own account (except the log and the two-step sign-in). Only the owner makes or removes an admin.",
       "charts": {
         "split": "Active subscribers by plan",
         "monthly": "Received per month, by plan",
@@ -552,7 +574,7 @@
       "contact": "Contact to send the reference",
       "contactHint": "A phone number, or a link (WhatsApp: https://wa.me/261…, Messenger…)."
     },
-    "adminAccount": "Your account is an administrator: enter the token to open the admin.",
+    "adminAccount": "Your account is an admin: open the admin space with your account, or with the token.",
     "ai": {
       "title": "AI cost · last {days} days",
       "subtitle": "What the server's AI key cost, and what each plan would cost used to the full.",
@@ -619,6 +641,84 @@
       "enabled": "Two-factor authentication on",
       "disabled": "Two-factor authentication off",
       "badCode": "Wrong or used code, or the QR code expired (15 min): try again."
+    },
+    "unlockAccount": "Open with my account",
+    "notAdminAccount": "This account isn’t an admin. The owner has to give you the Admin plan; otherwise, enter the token.",
+    "signedInOwner": "Opened with the token (owner)",
+    "signedInAs": "Opened with your account: {email}",
+    "ownerOnly": "Only the owner can make or remove an admin.",
+    "accounts": {
+      "title": "Accounts",
+      "subtitle": "Every account created in the app, subscribed or not, newest first.",
+      "total": "accounts",
+      "newThisMonth": "new this month",
+      "withPlan": "with a plan",
+      "filters": {
+        "all": "All",
+        "paying": "Subscribers",
+        "free": "No plan",
+        "admins": "Admins"
+      },
+      "empty": "No account yet.",
+      "noEmail": "(no e-mail)",
+      "joined": "Joined on {date}",
+      "seen": "signed in on {date}",
+      "neverSeen": "never signed in since",
+      "more": "Show {count} more"
+    },
+    "log": {
+      "title": "Action log",
+      "subtitle": "What was done in the admin space, and by whom (the latest 500 actions). Only you see it.",
+      "empty": "Nothing yet.",
+      "owner": "You (token)",
+      "github": "GitHub (new APK)",
+      "more": "Show {count} more",
+      "actions": {
+        "login": "Sign-in",
+        "subscription_add": "Subscription added",
+        "subscription_edit": "Subscription edited",
+        "subscription_stop": "Access stopped",
+        "subscription_delete": "Subscription deleted",
+        "plans_save": "Plans changed",
+        "trial_save": "Free trial changed",
+        "app_save": "App versions changed",
+        "two_factor_on": "Two-step sign-in turned on",
+        "two_factor_off": "Two-step sign-in turned off",
+        "two_factor_codes": "Recovery codes renewed"
+      }
+    },
+    "export": {
+      "heading": "Accounting export",
+      "title": "Payments",
+      "exportedOn": "Exported on {date}",
+      "periods": {
+        "month": "This month",
+        "lastMonth": "Last month",
+        "year": "This year",
+        "all": "All"
+      },
+      "summary": "{count} payment(s) · {amount}",
+      "button": "Export for Excel",
+      "working": "Making the file…",
+      "downloaded": "Excel file downloaded",
+      "total": "Total",
+      "noMethod": "Not given",
+      "sheetPayments": "Payments",
+      "sheetMonths": "Per month",
+      "sheetMethods": "Per method",
+      "columns": {
+        "date": "Date",
+        "email": "E-mail",
+        "plan": "Plan",
+        "from": "From",
+        "to": "To",
+        "amount": "Amount",
+        "method": "Payment method",
+        "ref": "Reference",
+        "note": "Note",
+        "month": "Month",
+        "count": "Payments"
+      }
     }
   },
   "account": {
@@ -1098,7 +1198,7 @@
     "perks": {
       "everything": "Everything included, no limit",
       "trialScans": "{count} scans to try",
-      "adminMenu": "The Admin menu (the page still asks for the token)"
+      "adminMenu": "The Admin menu, and the admin space with your account"
     },
     "openAdmin": "Open the admin",
     "welcome": {

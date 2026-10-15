@@ -173,3 +173,13 @@
   font-size: 0.85rem;
   color: var(--text-muted);
 }
+
+// Who opened the admin space: the owner (token) or an admin's account.
+.header .signedIn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent-text);
+}

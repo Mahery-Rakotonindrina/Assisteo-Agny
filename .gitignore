@@ -56,6 +56,9 @@ next-env.d.ts
 !.claude/skills/assisteo-*/
 skills-lock.json
 .claude/settings.local.json
+# The agents' own notes and their hand-over notes stay on this machine.
+.claude/agent-memory-local/
+.claude/passation/
 
 # Playwright
 /test-results/
