@@ -167,8 +167,8 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Moteur IA : IA Assisteo ou sa propre clé (Gemini, Claude, OpenAI, Mistral, Groq, OpenRouter, xAI, Together, autre), test de la clé, liste des modèles
 - [x] Effacer l'historique ; pages Confidentialité et Conditions ; présentation au premier lancement
 - [ ] Malgache
-- [ ] Taille du texte
-- [ ] Espace de stockage utilisé
+- [x] Taille du texte — Petit, Normal, Grand, Très grand (Réglages → Apparence), propre à chaque appareil, appliquée dès l’ouverture de l’app
+- [x] Espace de stockage utilisé — total sur l’appareil et détail (photos, analyses, colis, listes, scans en attente, autres) ; « Alléger les photos » : seules les 10 dernières restent en grand
 
 ## 14. Plateformes
 

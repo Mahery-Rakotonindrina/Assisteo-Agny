@@ -8,9 +8,18 @@ import { setHapticsEnabled } from "@/services/device";
 
 export type ThemePreference = "system" | "light" | "dark";
 
+/** Text size of the whole app, on this device (everything is sized in rem). */
+export const textSizes = ["small", "normal", "large", "xlarge"] as const;
+export type TextSize = (typeof textSizes)[number];
+
+/** Read before the first paint by pages/_document.tsx, so the text never jumps. */
+export const TEXT_SIZE_KEY = "text-size";
+
 export type Settings = {
   locale: Locale;
   theme: ThemePreference;
+  /** This device only: a phone and a computer rarely want the same. */
+  textSize: TextSize;
   /** Notify when an analysis finishes while the app is in the background. */
   notifyOnResult: boolean;
   haptics: boolean;
@@ -44,6 +53,7 @@ const STORAGE_KEY = "settings.v1";
 const defaults: Settings = {
   locale: defaultLocale,
   theme: "system",
+  textSize: "normal",
   notifyOnResult: true,
   haptics: true,
   dataSaver: "auto",
@@ -93,6 +103,20 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     setHapticsEnabled(settings.haptics);
     setDataSaverPreference(settings.dataSaver);
   }, [settings]);
+
+  // The text size waits for the stored settings: until then, the size put
+  // there before the first paint (pages/_document.tsx) stays, so it never jumps.
+  useEffect(() => {
+    if (!ready) return;
+    const root = document.documentElement;
+    if (settings.textSize === "normal") delete root.dataset.textSize;
+    else root.dataset.textSize = settings.textSize;
+    try {
+      localStorage.setItem(TEXT_SIZE_KEY, settings.textSize);
+    } catch {
+      // Private mode: the size applies once the settings are read.
+    }
+  }, [ready, settings.textSize]);
 
   const update = useCallback((patch: Partial<Settings>, options: { fromSync?: boolean; updatedAt?: number } = {}) => {
     setSettings((current) => {

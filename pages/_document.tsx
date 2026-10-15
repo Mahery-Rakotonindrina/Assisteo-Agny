@@ -24,11 +24,12 @@ export default function Document() {
           />
         ))}
         {/* Capacitor injects its bridge before page scripts: tag native builds
-            before first paint so desktop styles never flash on tablets. */}
+            before first paint so desktop styles never flash on tablets. The
+            chosen text size is applied then too, so the text never jumps. */}
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "if(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform())document.documentElement.classList.add('native')",
+              "if(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform())document.documentElement.classList.add('native');try{var s=localStorage.getItem('text-size');if(s&&s!=='normal')document.documentElement.dataset.textSize=s}catch(e){}",
           }}
         />
       </Head>
