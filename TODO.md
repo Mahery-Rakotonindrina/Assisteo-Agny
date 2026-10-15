@@ -115,7 +115,7 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [ ] Fret calculé au kilo (poids × tarif du transitaire)
 - [ ] Envoyer le statut au client par WhatsApp
 - [ ] Regrouper les colis par envoi (lot, conteneur)
-- [ ] Export pour un seul client
+- [x] Relevé PDF pour un seul client (Pro) : bouton « Relevé » sur chaque client de la vue Clients, sur la période choisie, à partager par WhatsApp — statut, envoi, n° de suivi, montant, payé, reste à payer ; jamais le prix d’achat, les frais ni le bénéfice
 
 ## 10. Compte et synchronisation
 
