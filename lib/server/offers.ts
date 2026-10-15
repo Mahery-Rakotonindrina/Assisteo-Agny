@@ -8,7 +8,7 @@ import {
   markRewarded,
   parentOf,
   returnPromoUse,
-  setDiscount,
+  swapDiscount,
   takePromoUse,
   unmarkRedeemed,
   unmarkRewarded,
@@ -24,10 +24,13 @@ import { addSubscriptions, subscriptionsForEmail } from "./subscriptions";
 // by another, or whose code was turned off, expired or deleted, gives its use
 // back; the payment then only forgets it.
 
+/** Whether a discount's code is still the very one it was entered with (not deleted, nor made again since). */
+const sameCode = (promo: PromoCode | null, discount: PendingDiscount): promo is PromoCode => promo !== null && promo.createdAt === discount.since;
+
 /** Gives back what a discount took when entered: its use, and the account's right to enter it. */
 async function giveBack(email: string, discount: PendingDiscount) {
-  // A deleted code has no counter left to give back to.
-  if (!(await getPromoCode(discount.code))) return;
+  // A deleted code (or a new one under the same name) has nothing of this discount's to give back.
+  if (!sameCode(await getPromoCode(discount.code), discount)) return;
   await returnPromoUse(discount.code);
   await unmarkRedeemed(discount.code, email);
 }
@@ -39,9 +42,8 @@ export async function enterDiscountCode(email: string, promo: PromoCode): Promis
     await unmarkRedeemed(promo.code, email);
     return "used_up";
   }
-  const previous = await getDiscount(email);
-  await setDiscount(email, { code: promo.code, percent: promo.percent });
-  if (previous && previous.code !== promo.code) await giveBack(email, previous);
+  const previous = await swapDiscount(email, { code: promo.code, percent: promo.percent, since: promo.createdAt });
+  if (previous) await giveBack(email, previous);
   return "ok";
 }
 
@@ -49,7 +51,8 @@ export async function enterDiscountCode(email: string, promo: PromoCode): Promis
 export async function pendingDiscount(email: string, now = Date.now()): Promise<PendingDiscount | null> {
   const discount = await getDiscount(email);
   if (!discount) return null;
-  if (discountStillValid(await getPromoCode(discount.code), now)) return discount;
+  const promo = await getPromoCode(discount.code);
+  if (sameCode(promo, discount) && discountStillValid(promo, now)) return discount;
   if (await clearDiscount(email)) await giveBack(email, discount);
   return null;
 }

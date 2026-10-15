@@ -60,7 +60,7 @@ describe("discount codes", () => {
     await Promise.all([savePromoCode(first), savePromoCode(second)]);
     expect(await enterDiscountCode("d@example.com", first)).toBe("ok");
     expect(await enterDiscountCode("d@example.com", second)).toBe("ok");
-    expect(await getDiscount("d@example.com")).toEqual({ code: "SECOND", percent: 30 });
+    expect(await getDiscount("d@example.com")).toEqual({ code: "SECOND", percent: 30, since: now });
     expect(await promoUses("FIRST")).toBe(0);
     // Free again, for someone else (or the same account).
     expect(await enterDiscountCode("e@example.com", first)).toBe("ok");
@@ -70,7 +70,7 @@ describe("discount codes", () => {
     const promo = discount("OFF", { maxUses: 1 });
     await savePromoCode(promo);
     expect(await enterDiscountCode("f@example.com", promo)).toBe("ok");
-    expect(await pendingDiscount("f@example.com", now)).toEqual({ code: "OFF", percent: 20 });
+    expect(await pendingDiscount("f@example.com", now)).toEqual({ code: "OFF", percent: 20, since: now });
     await savePromoCode({ ...promo, active: false });
     expect(await pendingDiscount("f@example.com", now)).toBeNull();
     expect(await getDiscount("f@example.com")).toBeNull();
@@ -90,5 +90,34 @@ describe("discount codes", () => {
     await afterPayment("owner", ["h@example.com"], 4000, now);
     expect(await getDiscount("h@example.com")).toBeNull();
     expect(await promoUses("GONE")).toBe(0);
+  });
+
+  it("from a deleted code never count for a new code under the same name", async () => {
+    await savePromoCode(discount("AGAIN", { maxUses: 5 }));
+    expect(await enterDiscountCode("i@example.com", discount("AGAIN", { maxUses: 5 }))).toBe("ok");
+    await deletePromoCode("AGAIN");
+    const remade = discount("AGAIN", { maxUses: 5, createdAt: now + 60_000 });
+    await savePromoCode(remade);
+    expect(await enterDiscountCode("j@example.com", remade)).toBe("ok");
+    // The old discount is not the new code's: dropped, and nothing given back to the new counter.
+    expect(await pendingDiscount("i@example.com", now)).toBeNull();
+    expect(await promoUses("AGAIN")).toBe(1);
+    // Entering the new code replaces the old discount without touching the new counter either.
+    expect(await enterDiscountCode("j2@example.com", remade)).toBe("ok");
+    expect(await promoUses("AGAIN")).toBe(2);
+  });
+
+  it("entered twice at once by the same account give the replaced one back exactly once", async () => {
+    const old = discount("OLD", { maxUses: 3 });
+    const one = discount("ONE");
+    const two = discount("TWO2");
+    await Promise.all([savePromoCode(old), savePromoCode(one), savePromoCode(two)]);
+    expect(await enterDiscountCode("k@example.com", old)).toBe("ok");
+    expect(await promoUses("OLD")).toBe(1);
+    await Promise.all([enterDiscountCode("k@example.com", one), enterDiscountCode("k@example.com", two)]);
+    expect(await promoUses("OLD")).toBe(0);
+    // One of the two waits, the other was replaced and gave its use back.
+    const waiting = await getDiscount("k@example.com");
+    expect([(await promoUses("ONE")) + (await promoUses("TWO2")), waiting?.code === "ONE" || waiting?.code === "TWO2"]).toEqual([1, true]);
   });
 });

@@ -46,11 +46,6 @@ async function getValue<T>(key: string) {
   return (memory.values.get(key) as T | undefined) ?? null;
 }
 
-async function setValue(key: string, value: unknown) {
-  if (redis) await redis.set(key, value);
-  else memory.values.set(key, value);
-}
-
 /** Deletes keys; returns how many existed (atomic in Redis: only one caller gets them). */
 async function delValue(...keys: string[]) {
   if (redis) return redis.del(...keys);
@@ -120,10 +115,22 @@ export async function unmarkRedeemed(code: string, email: string) {
 
 // ---- Discounts ----------------------------------------------------------------
 
-export type PendingDiscount = { code: string; percent: number };
+/** `since`: when its code was created, so a code deleted then made again under the same name is another code. */
+export type PendingDiscount = { code: string; percent: number; since: number };
 
 export const getDiscount = (email: string) => getValue<PendingDiscount>(discountKey(email));
-export const setDiscount = (email: string, discount: PendingDiscount) => setValue(discountKey(email), discount);
+
+/** Keeps a discount for this account and returns the one it replaces, in one step (two at once can't both get it). */
+export async function swapDiscount(email: string, discount: PendingDiscount) {
+  if (redis) {
+    // SET … GET answers the value it replaced (null when there was none).
+    const previous = await redis.set<PendingDiscount>(discountKey(email), discount, { get: true });
+    return previous && previous !== "OK" ? previous : null;
+  }
+  const previous = (memory.values.get(discountKey(email)) as PendingDiscount | undefined) ?? null;
+  memory.values.set(discountKey(email), discount);
+  return previous;
+}
 /** Forgets the waiting discount: true for the one caller that removed it. */
 export const clearDiscount = async (email: string) => (await delValue(discountKey(email))) > 0;
 
