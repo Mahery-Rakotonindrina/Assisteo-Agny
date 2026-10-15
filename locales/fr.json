@@ -951,6 +951,18 @@
       "profit": "Bénéfice : {amount}",
       "dueShort": "reste {amount}"
     },
+    "statement": {
+      "short": "Relevé",
+      "button": "Relevé PDF de {name}, à lui envoyer",
+      "title": "Relevé de colis · {name}",
+      "caption": "{count} colis ({period}) · établi le {date}",
+      "allTime": "depuis le début",
+      "receivedOn": "Reçu le {date}",
+      "amount": "Montant",
+      "paid": "Payé",
+      "due": "Reste à payer",
+      "total": "Total"
+    },
     "export": {
       "button": "Exporter pour Excel",
       "title": "Mes colis",
@@ -1056,7 +1068,7 @@
       "allPremium": "Tout Premium, et :",
       "priority": "Priorité quand l’IA est très demandée",
       "clients": "Un client par colis : pour qui est chaque colis",
-      "reseller": "Totaux par client, récap du mois et export pour Excel",
+      "reseller": "Totaux par client, récap du mois, export pour Excel et relevé PDF à envoyer à chaque client",
       "deep": "{count} analyses approfondies par mois, avec l’IA la plus précise",
       "deepUnlimited": "Analyses approfondies sans limite",
       "multiPage": "Scan de plusieurs pages (contrat, longue facture)",

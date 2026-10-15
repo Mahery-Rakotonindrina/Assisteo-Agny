@@ -66,6 +66,11 @@
   padding: 0;
   list-style: none;
 
+  li {
+    display: flex;
+    gap: 0.4rem;
+  }
+
   button {
     @include card;
     display: flex;
@@ -75,6 +80,23 @@
     padding: 0.8rem 0.9rem;
     border-radius: var(--radius-md);
     text-align: left;
+  }
+}
+
+// The client's statement, beside their line.
+.list .statement {
+  flex-direction: column;
+  justify-content: center;
+  flex-shrink: 0;
+  gap: 0.15rem;
+  width: auto;
+  padding: 0.5rem 0.7rem;
+  color: var(--accent-text);
+  font-size: 0.7rem;
+  font-weight: 700;
+
+  &:disabled {
+    opacity: 0.5;
   }
 }
 

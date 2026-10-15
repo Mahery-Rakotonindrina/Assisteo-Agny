@@ -1,4 +1,4 @@
-import { ChevronRight, UserRound } from "lucide-react";
+import { ChevronRight, FileText, UserRound } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatAriary, formatDate } from "@/lib/format";
 import { clientSummaries, isValidRange, periods, type DayRange, type Period } from "@/lib/parcelReport";
@@ -18,6 +18,9 @@ type Props = {
   onPick: (client: string | null) => void;
   /** Extra actions under the totals (the export). */
   actions?: React.ReactNode;
+  /** Makes the statement to send to this client (PDF); busy while one is made. */
+  onStatement: (client: string) => void;
+  statementBusy: boolean;
 };
 
 /** Reseller view (Pro): what each client's parcels cost, over a period. */
@@ -27,7 +30,7 @@ const dayTime = (day: string) => {
   return new Date(year, month - 1, date).getTime();
 };
 
-export function ParcelClients({ parcels, period, onPeriod, range, onRange, today, onPick, actions }: Props) {
+export function ParcelClients({ parcels, period, onPeriod, range, onRange, today, onPick, actions, onStatement, statementBusy }: Props) {
   const { t, locale } = useTranslation();
   const summaries = clientSummaries(parcels);
   const total = summaries.reduce((sum, client) => sum + client.totalMga, 0);
@@ -97,6 +100,18 @@ export function ParcelClients({ parcels, period, onPeriod, range, onRange, today
                 <span className={styles.amount}>{formatAriary(client.totalMga, locale)}</span>
                 <ChevronRight size={16} className={styles.chevron} />
               </button>
+              {client.name && (
+                <button
+                  type="button"
+                  className={styles.statement}
+                  onClick={() => onStatement(client.name!)}
+                  disabled={statementBusy}
+                  aria-label={t("parcels.statement.button", { name: client.name })}
+                >
+                  <FileText size={17} />
+                  <span>{t("parcels.statement.short")}</span>
+                </button>
+              )}
             </li>
           ))}
         </ul>
