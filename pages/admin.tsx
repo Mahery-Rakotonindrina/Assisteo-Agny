@@ -1,8 +1,10 @@
 import Head from "next/head";
 import { motion } from "motion/react";
 import { useEffect, useState, type FormEvent } from "react";
-import { Download, Gauge, Gift, KeyRound, LockKeyhole, Smartphone, LogOut, MessageCircle, Minus, Plus, Save, ShieldAlert, Wifi } from "lucide-react";
+import { Download, Gauge, Gift, KeyRound, LockKeyhole, Smartphone, LogOut, MessageCircle, Minus, Plus, Save, ShieldAlert, UserRound, Wifi } from "lucide-react";
+import { AdminAccounts } from "@/components/AdminAccounts";
 import { AdminAiCost } from "@/components/AdminAiCost";
+import { AdminLog } from "@/components/AdminLog";
 import { AdminPlans } from "@/components/AdminPlans";
 import { AdminStats } from "@/components/AdminStats";
 import { AdminSubscriptions } from "@/components/AdminSubscriptions";
@@ -12,6 +14,7 @@ import { useToast } from "@/components/Toast";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { rise, stagger } from "@/lib/motion";
+import { authHeaders } from "@/services/account";
 import { httpClient } from "@/services/httpClient";
 import { ApiError } from "@/types/api";
 import type { AdminLoginResponse } from "@/pages/api/admin/login";
@@ -27,6 +30,17 @@ function readToken() {
     return sessionStorage.getItem(TOKEN_KEY) ?? "";
   } catch {
     return "";
+  }
+}
+
+/** Who opened a session ("owner" or an admin's e-mail): written in it, signed by the server. */
+function sessionActor(session: string) {
+  const part = session.split(".")[3];
+  if (!part) return null;
+  try {
+    return new TextDecoder().decode(Uint8Array.from(atob(part.replace(/-/g, "+").replace(/_/g, "/")), (char) => char.charCodeAt(0)));
+  } catch {
+    return null;
   }
 }
 
@@ -103,6 +117,19 @@ export default function AdminPage() {
     }
   };
 
+  // Another admin: their own account, signed in to the app, with the admin plan.
+  const unlockWithAccount = async () => {
+    setUnlocking(true);
+    try {
+      const login = await httpClient.post<AdminLoginResponse>("/api/admin/login", { account: true }, { headers: await authHeaders() });
+      apply(await fetchConfig(login.session), login.session);
+    } catch (err) {
+      setError(err instanceof ApiError && err.status === 401 ? t("admin.notAdminAccount") : err instanceof ApiError && err.status === 429 ? t("admin.tooMany") : t("admin.error"));
+    } finally {
+      setUnlocking(false);
+    }
+  };
+
   // Restore the session after a reload.
   useEffect(() => {
     const saved = readToken();
@@ -141,6 +168,9 @@ export default function AdminPage() {
   };
 
   const dirty = config !== null && (config.limit !== limit || config.ipLimit !== ipLimit || config.askLimit !== askLimit || config.dailyLimit !== dailyLimit);
+  // The owner (admin token) sees everything; another admin, all but the second factor and the log.
+  const actor = token ? sessionActor(token) : null;
+  const owner = actor === "owner";
 
   return (
     <>
@@ -153,9 +183,15 @@ export default function AdminPage() {
         <motion.header variants={rise} className={styles.header}>
           <h1>{t("admin.title")}</h1>
           <p>{t("admin.subtitle")}</p>
+          {config && actor && (
+            <p className={styles.signedIn}>
+              <UserRound size={14} /> {owner ? t("admin.signedInOwner") : t("admin.signedInAs", { email: actor })}
+            </p>
+          )}
         </motion.header>
 
-        {config && <AdminSubscriptions token={token} />}
+        {config && <AdminSubscriptions token={token} owner={owner} />}
+        {config && <AdminAccounts token={token} />}
         {config && <AdminPlans token={token} />}
         {config && <AdminAiCost token={token} />}
         {config && <AdminStats token={token} />}
@@ -203,6 +239,11 @@ export default function AdminPage() {
             <Button type="submit" block disabled={!draftToken.trim() || (needCode && !draftCode.trim()) || unlocking}>
               {t("admin.unlock")}
             </Button>
+            {isAdmin && !needCode && (
+              <Button variant="secondary" block icon={<UserRound />} onClick={() => void unlockWithAccount()} disabled={unlocking}>
+                {t("admin.unlockAccount")}
+              </Button>
+            )}
           </motion.form>
         ) : (
           <motion.form variants={rise} className={styles.card} onSubmit={(event) => void save(event)}>
@@ -261,7 +302,8 @@ export default function AdminPage() {
         )}
 
         {config && <AppVersionCard token={token} />}
-        {config && <AdminTwoFactor token={token} onSession={keepSession} />}
+        {config && owner && <AdminLog token={token} />}
+        {config && owner && <AdminTwoFactor token={token} onSession={keepSession} />}
       </motion.div>
     </>
   );

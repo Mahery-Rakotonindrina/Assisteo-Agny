@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import QRCode from "qrcode";
 import { z } from "zod";
 import { guardAdmin } from "@/lib/server/adminAuth";
+import { logAdminAction } from "@/lib/server/adminLog";
 import { issueAdminSession } from "@/lib/server/adminSession";
 import {
   checkSecondFactor,
@@ -36,9 +37,10 @@ const ActionSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("recovery"), code: z.string().min(1).max(40) }),
 ]);
 
-/** Admin-only: the second factor of /admin (authenticator app + recovery codes). */
+/** Owner-only: the second factor of /admin (authenticator app + recovery codes). */
 export default async function handler(req: NextApiRequest, res: NextApiResponse<AdminTwoFactorResponse | unknown>) {
-  if (!(await guardAdmin(req, res))) return;
+  const actor = await guardAdmin(req, res, { ownerOnly: true });
+  if (!actor) return;
   const reply = async (extra: Partial<AdminTwoFactorResponse> = {}) =>
     res.status(200).json({ ...(await twoFactorState()), available: twoFactorAvailable(), durable: twoFactorIsDurable, ...extra } satisfies AdminTwoFactorResponse);
 
@@ -66,6 +68,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     if (state.enabled) return sendError(res, 409, "invalid_request", "Already on.");
     const recoveryCodes = await confirmTwoFactor(body.code);
     if (!recoveryCodes) return sendError(res, 400, "second_factor", "Wrong code, or the setup expired: start again.");
+    await logAdminAction(actor.id, "two_factor_on");
     return reply({ recoveryCodes, session: issueAdminSession(sessionEpoch(await twoFactorState())) });
   }
 
@@ -73,7 +76,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   if (!(await checkSecondFactor(body.code))) return sendError(res, 400, "second_factor", "Wrong or already used code.");
   if (body.action === "disable") {
     await disableTwoFactor();
+    await logAdminAction(actor.id, "two_factor_off");
     return reply({ session: issueAdminSession(sessionEpoch(await twoFactorState())) });
   }
-  return reply({ recoveryCodes: (await renewRecoveryCodes()) ?? [] });
+  const recoveryCodes = (await renewRecoveryCodes()) ?? [];
+  await logAdminAction(actor.id, "two_factor_codes");
+  return reply({ recoveryCodes });
 }

@@ -1,17 +1,20 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import type { PlansConfig } from "@/lib/plans";
 import { guardAdmin } from "@/lib/server/adminAuth";
+import { logAdminAction } from "@/lib/server/adminLog";
 import { sendError } from "@/lib/server/http";
 import { getPlansConfig, PlansConfigSchema, setPlansConfig } from "@/lib/server/planConfig";
 
 /** Admin-only: read or change the plans' prices, limits and payment instructions. */
 export default async function handler(req: NextApiRequest, res: NextApiResponse<PlansConfig | unknown>) {
-  if (!(await guardAdmin(req, res))) return;
+  const actor = await guardAdmin(req, res);
+  if (!actor) return;
   if (req.method === "GET") return res.status(200).json(await getPlansConfig());
   if (req.method === "PUT") {
     const parsed = PlansConfigSchema.safeParse(req.body);
     if (!parsed.success) return sendError(res, 400, "invalid_request", parsed.error.issues[0]?.message ?? "Invalid settings.");
     await setPlansConfig(parsed.data);
+    await logAdminAction(actor.id, "plans_save");
     return res.status(200).json(parsed.data);
   }
   res.setHeader("Allow", "GET, PUT");

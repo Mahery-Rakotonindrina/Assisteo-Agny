@@ -1,22 +1,31 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { z } from "zod";
-import { isAdminToken } from "@/lib/server/adminAuth";
-import { issueAdminSession } from "@/lib/server/adminSession";
+import { isAdminAccount, isAdminToken } from "@/lib/server/adminAuth";
+import { logAdminAction } from "@/lib/server/adminLog";
+import { issueAdminSession, OWNER } from "@/lib/server/adminSession";
 import { checkSecondFactor, sessionEpoch, twoFactorState } from "@/lib/server/adminTwoFactor";
 import { clientIp, sendError } from "@/lib/server/http";
 import { rateLimit } from "@/lib/server/rateLimit";
+import { verifyAccount } from "@/lib/server/supabaseAdmin";
 
-export type AdminLoginResponse = { session: string; expiresAt: number; twoFactor: boolean };
+/** `actor`: "owner", or the admin's e-mail. */
+export type AdminLoginResponse = { session: string; expiresAt: number; twoFactor: boolean; actor: string };
 
-const LoginSchema = z.object({
-  token: z.string().min(1).max(500),
-  code: z.string().max(40).optional(),
-});
+const LoginSchema = z.union([
+  z.object({
+    token: z.string().min(1).max(500),
+    code: z.string().max(40).optional(),
+  }),
+  // An admin with their own account: its session in "Authorization: Bearer …".
+  z.object({ account: z.literal(true) }),
+]);
 
 /**
- * Signs in to /admin: the ADMIN_TOKEN, then a code from the authenticator app
- * when the second factor is on. Answers "second_factor" when the token is
- * right but the code is missing or wrong.
+ * Signs in to /admin. The owner: the ADMIN_TOKEN, then a code from the
+ * authenticator app when the second factor is on ("second_factor" when the
+ * token is right but the code is missing or wrong). Another admin: signed in
+ * to the app with an account that has the admin plan ("unlimited"), which
+ * only the owner grants or takes back.
  */
 export default async function handler(req: NextApiRequest, res: NextApiResponse<AdminLoginResponse | unknown>) {
   if (req.method !== "POST") {
@@ -34,14 +43,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
   const parsed = LoginSchema.safeParse(req.body);
   if (!parsed.success) return sendError(res, 400, "invalid_request", "Send the admin token.");
-  if (!isAdminToken(parsed.data.token.trim())) return sendError(res, 401, "invalid_key", "Invalid admin token.");
-
   const state = await twoFactorState();
+
+  if ("account" in parsed.data) {
+    const account = await verifyAccount(req).catch(() => null);
+    if (!account?.email || !(await isAdminAccount(account.email))) return sendError(res, 401, "invalid_key", "This account is not an admin.");
+    const { session, expiresAt } = issueAdminSession(sessionEpoch(state), Date.now(), account.email);
+    await logAdminAction(account.email, "login");
+    return res.status(200).json({ session, expiresAt, twoFactor: state.enabled, actor: account.email } satisfies AdminLoginResponse);
+  }
+
+  if (!isAdminToken(parsed.data.token.trim())) return sendError(res, 401, "invalid_key", "Invalid admin token.");
   if (state.enabled) {
     const code = parsed.data.code?.trim();
     if (!code) return sendError(res, 401, "second_factor", "Enter the code from your authenticator app.");
     if (!(await checkSecondFactor(code))) return sendError(res, 401, "second_factor", "Wrong or already used code.");
   }
   const { session, expiresAt } = issueAdminSession(sessionEpoch(state));
-  return res.status(200).json({ session, expiresAt, twoFactor: state.enabled } satisfies AdminLoginResponse);
+  await logAdminAction(OWNER, "login");
+  return res.status(200).json({ session, expiresAt, twoFactor: state.enabled, actor: OWNER } satisfies AdminLoginResponse);
 }
