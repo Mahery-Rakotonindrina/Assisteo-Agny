@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "motion/react";
-import { Camera, ChevronLeft, ChevronRight, Files, ImageUp, ScanText, X } from "lucide-react";
+import { Camera, ChevronLeft, ChevronRight, Files, ImageUp, Package, ScanText, X } from "lucide-react";
 import { Button } from "@/components/Button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { MAX_PAGES } from "@/lib/ai/schema";
@@ -15,11 +15,13 @@ type PagesTrayProps = {
   onRemove: (index: number) => void;
   onMove: (index: number, offset: -1 | 1) => void;
   onAnalyze: () => void;
+  /** Screenshots of different parcels: one scan per photo, each into "Mes colis". */
+  onAnalyzeEach: () => void;
   onCancel: () => void;
 };
 
 /** The pages of a document, taken one by one (or picked together), before one analysis of them all. */
-export function PagesTray({ pages, adding, onAdd, onRemove, onMove, onAnalyze, onCancel }: PagesTrayProps) {
+export function PagesTray({ pages, adding, onAdd, onRemove, onMove, onAnalyze, onAnalyzeEach, onCancel }: PagesTrayProps) {
   const { t } = useTranslation();
   const full = pages.length >= MAX_PAGES;
 
@@ -84,6 +86,14 @@ export function PagesTray({ pages, adding, onAdd, onRemove, onMove, onAnalyze, o
         <Button size="lg" icon={<ScanText />} onClick={onAnalyze} disabled={pages.length === 0 || adding} block>
           {pages.length > 1 ? t("pages.analyze", { count: pages.length }) : t("pages.analyzeOne")}
         </Button>
+        {pages.length > 1 && (
+          <>
+            <Button variant="secondary" size="lg" icon={<Package />} onClick={onAnalyzeEach} disabled={adding} block>
+              {t("pages.eachParcel", { count: pages.length })}
+            </Button>
+            <p className={styles.eachHint}>{t("pages.eachParcelHint")}</p>
+          </>
+        )}
         <Button variant="ghost" onClick={onCancel} block>
           {t("scan.cancel")}
         </Button>

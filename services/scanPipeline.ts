@@ -6,7 +6,7 @@ import type { HistoryEntry } from "@/types/history";
 import { ApiError } from "@/types/api";
 import { analysisService } from "./analysisService";
 import { createId, historyStore } from "./historyStore";
-import { updateEarlierParcelScans } from "./parcelLinking";
+import { followScannedParcel, updateEarlierParcelScans, type ParcelFollowOutcome } from "./parcelLinking";
 import { planStore } from "./plan";
 import { insuranceReminderAt, scheduleReminder } from "./reminders";
 
@@ -20,6 +20,8 @@ export type ScanJob = {
   first: { upload: EncodedImage; preview: EncodedImage; thumbnail: EncodedImage };
   pages: Array<{ upload: EncodedImage; preview: EncodedImage }>;
   codes: ScannedCode[];
+  /** One of several parcel screenshots scanned one by one: its parcel goes straight into "Mes colis". */
+  followParcel?: boolean;
 };
 
 /** The texts of the automatic insurance reminder (they follow the language). */
@@ -54,7 +56,10 @@ export async function sendScan(job: ScanJob, signal?: AbortSignal) {
   );
 }
 
-/** Saves a finished scan in the history with what follows from it (reminder, parcel). Returns its id. */
+/**
+ * Saves a finished scan in the history with what follows from it (reminder,
+ * parcel). Returns its id, and for a `followParcel` job what became of its parcel.
+ */
 export async function saveScan(job: ScanJob, { analysis, meta }: AnalyzeResponse, insuranceTexts: InsuranceTexts, createdAt = Date.now()) {
   const used = meta.quota ?? meta.trial;
   if (used) planStore.setUsage({ scans: used.used });
@@ -87,5 +92,11 @@ export async function saveScan(job: ScanJob, { analysis, meta }: AnalyzeResponse
     const saved = await historyStore.get(id);
     if (saved) await updateEarlierParcelScans(saved).catch(() => undefined);
   }
-  return id;
+
+  let parcel: ParcelFollowOutcome | undefined;
+  if (job.followParcel) {
+    const saved = await historyStore.get(id);
+    parcel = saved ? await followScannedParcel(saved, planStore.get()?.limits.parcels ?? 0).catch(() => undefined) : "notParcel";
+  }
+  return { id, parcel };
 }
