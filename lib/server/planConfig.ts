@@ -1,11 +1,13 @@
 import { z } from "zod";
-import { defaultPlansConfig, soldPlans, type PlansConfig } from "@/lib/plans";
+import { defaultYearPrice } from "@/lib/offers";
+import { defaultPlansConfig, soldPlans, type PlanOffer, type PlansConfig } from "@/lib/plans";
 import { redis } from "./redis";
 
 // Prices, limits and payment instructions of the plans, editable from /admin.
 
 const Offer = z.object({
   priceMga: z.number().int().min(0).max(10_000_000),
+  yearPriceMga: z.number().int().min(0).max(100_000_000),
   scans: z.number().int().min(0).max(100_000),
   questionsPerDay: z.number().int().min(0).max(10_000),
   parcels: z.number().int().min(0).max(10_000),
@@ -25,13 +27,22 @@ export const PlansConfigSchema = z.object({
 const KEY = "config:plans";
 let memory: PlansConfig | null = null;
 
+/**
+ * A stored offer over the defaults. Saved before the yearly price existed,
+ * it gets ten times its own monthly price (two months offered).
+ */
+export function mergeOffer(plan: (typeof soldPlans)[number], stored: Partial<PlanOffer> | undefined): PlanOffer {
+  const offer = { ...defaultPlansConfig.offers[plan], ...stored };
+  return stored?.yearPriceMga === undefined && stored?.priceMga !== undefined ? { ...offer, yearPriceMga: defaultYearPrice(offer.priceMga) } : offer;
+}
+
 export async function getPlansConfig(): Promise<PlansConfig> {
   const stored = redis ? await redis.get<Partial<PlansConfig>>(KEY).catch(() => null) : memory;
   return {
     ...defaultPlansConfig,
     ...stored,
     // Per plan, so a setting added later gets its default.
-    offers: Object.fromEntries(soldPlans.map((plan) => [plan, { ...defaultPlansConfig.offers[plan], ...stored?.offers?.[plan] }])) as PlansConfig["offers"],
+    offers: Object.fromEntries(soldPlans.map((plan) => [plan, mergeOffer(plan, stored?.offers?.[plan])])) as PlansConfig["offers"],
     payment: { ...defaultPlansConfig.payment, ...stored?.payment },
   };
 }

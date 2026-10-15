@@ -1,8 +1,8 @@
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { motion } from "motion/react";
-import { useState } from "react";
-import { ArrowLeft, Check, Copy, ExternalLink, LogIn, MessageCircle, Phone, RefreshCw } from "lucide-react";
+import { useState, type FormEvent } from "react";
+import { ArrowLeft, BadgePercent, Check, Copy, ExternalLink, Gift, LogIn, MessageCircle, Phone, RefreshCw, Share2, Sparkles, TicketCheck } from "lucide-react";
 import { Button } from "@/components/Button";
 import { PlanIcon } from "@/components/PlanBadge";
 import { useToast } from "@/components/Toast";
@@ -10,10 +10,14 @@ import { useAccount } from "@/lib/account/AccountProvider";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatAriary, formatDate, formatNumber } from "@/lib/format";
+import { config } from "@/lib/config";
 import { rise, stagger } from "@/lib/motion";
+import { defaultYearPrice, discountedPrice, monthsFree, TRIAL_DAYS } from "@/lib/offers";
 import { defaultPlansConfig, planRank, soldPlans, type PlanOffer, type SoldPlanId } from "@/lib/plans";
-import { haptics } from "@/services/device";
+import { haptics, shareText } from "@/services/device";
+import { redeemCode, startPremiumTrial } from "@/services/offers";
 import { planStore } from "@/services/plan";
+import { ApiError } from "@/types/api";
 import styles from "@/styles/Plans.module.scss";
 
 const fallbackOffers = soldPlans.map((id) => ({ id, ...defaultPlansConfig.offers[id] }));
@@ -26,8 +30,61 @@ export default function PlansPage() {
   const { plan, id } = usePlan();
   const { email } = useAccount();
   const [refreshing, setRefreshing] = useState(false);
+  const [code, setCode] = useState("");
+  const [busy, setBusy] = useState<"trial" | "code" | null>(null);
   const offers = plan?.offers ?? fallbackOffers;
   const payment = plan?.payment ?? defaultPlansConfig.payment;
+  const discount = email ? (plan?.discount ?? null) : null;
+  const referralCode = email ? (plan?.referralCode ?? null) : null;
+  const canTry = Boolean(email && plan?.trialEligible) && planRank[id] < planRank.premium;
+  const price = (value: number) => (discount ? discountedPrice(value, discount.percent) : value);
+
+  const startTrial = async () => {
+    setBusy("trial");
+    try {
+      await startPremiumTrial();
+      haptics.tap();
+    } catch (error) {
+      toast(error instanceof ApiError && error.code === "refused" ? t("plans.trialOffer.used") : t("plans.codes.failed"), "error");
+      void planStore.refresh();
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const redeem = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!code.trim()) return;
+    setBusy("code");
+    try {
+      const result = await redeemCode(code);
+      if (!result.ok) {
+        toast(t(`plans.codes.refused.${result.reason}`), "error");
+        return;
+      }
+      haptics.tap();
+      setCode("");
+      if (result.kind === "discount") toast(t("plans.codes.discountDone", { percent: result.percent }));
+      else if (result.kind === "referral") toast(t("plans.codes.referralDone"));
+      // An access: the plan is fetched again, and the welcome screen shows it.
+      else toast(t("plans.codes.accessDone", { plan: t(`plans.names.${result.plan}`) }));
+    } catch (error) {
+      toast(error instanceof ApiError && error.code === "rate_limited" ? t("plans.codes.tooMany") : t("plans.codes.failed"), "error");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  // The app's web address: the server's in the Android app, this page's origin on the web.
+  const shareMessage = () => t("plans.referral.message", { code: referralCode ?? "", link: `${config.apiBaseUrl || window.location.origin}/plans` });
+  const shareReferral = async () => {
+    haptics.tap();
+    if ((await shareText(t("plans.referral.title"), shareMessage())) === "copied") toast(t("plans.copied"));
+  };
+  const whatsappReferral = () => {
+    haptics.tap();
+    window.open(`https://wa.me/?text=${encodeURIComponent(shareMessage())}`, "_blank", "noopener,noreferrer");
+  };
 
   const back = () => {
     if (window.history.length > 1) router.back();
@@ -43,6 +100,15 @@ export default function PlansPage() {
     const deep = offer.deepPerMonth === 0 ? t("plans.features.deepUnlimited") : t("plans.features.deep", { count: formatNumber(offer.deepPerMonth, locale) });
     if (offerId === "premium") return [t("plans.features.allLite"), ...limits, deep, t("plans.features.priority")];
     return [t("plans.features.allPremium"), ...limits, deep, t("plans.features.clients"), t("plans.features.reseller")];
+  };
+
+  /** "or 50 000 Ar a year: 2 months free" (a plan cached by an older version has no yearly price). */
+  const yearly = (offer: PlanOffer) => {
+    const yearPriceMga = offer.yearPriceMga ?? defaultYearPrice(offer.priceMga);
+    if (!yearPriceMga) return null;
+    const free = monthsFree({ priceMga: offer.priceMga, yearPriceMga });
+    const values = { price: formatAriary(price(yearPriceMga), locale), count: free };
+    return <p className={styles.year}>{free > 0 ? t("plans.perYearFree", values) : t("plans.perYear", values)}</p>;
   };
 
   const copy = async (value: string) => {
@@ -89,6 +155,22 @@ export default function PlansPage() {
           </motion.p>
         )}
 
+        {discount && (
+          <motion.p variants={rise} className={styles.discount}>
+            <BadgePercent size={16} /> {t("plans.codes.discountWaiting", { percent: discount.percent, code: discount.code })}
+          </motion.p>
+        )}
+
+        {canTry && (
+          <motion.section variants={rise} className={styles.trial} data-plan="premium">
+            <h2>{t("plans.trialOffer.title", { days: TRIAL_DAYS })}</h2>
+            <p>{t("plans.trialOffer.body", { days: TRIAL_DAYS })}</p>
+            <Button icon={<Sparkles />} onClick={() => void startTrial()} disabled={busy !== null}>
+              {t("plans.trialOffer.cta", { days: TRIAL_DAYS })}
+            </Button>
+          </motion.section>
+        )}
+
         <motion.div variants={rise} className={styles.offers}>
           {offers.map((offer) => {
             const isCurrent = id === offer.id;
@@ -105,8 +187,10 @@ export default function PlansPage() {
                   {offer.id === "premium" && !isCurrent && !included && <span className={styles.tag}>{t("plans.recommended")}</span>}
                 </div>
                 <p className={styles.price}>
-                  <strong>{formatAriary(offer.priceMga, locale)}</strong> <span>{t("plans.perMonth")}</span>
+                  {discount && <s className={styles.was}>{formatAriary(offer.priceMga, locale)}</s>}
+                  <strong>{formatAriary(price(offer.priceMga), locale)}</strong> <span>{t("plans.perMonth")}</span>
                 </p>
+                {yearly(offer)}
                 <p className={styles.pitch}>{t(`plans.pitch.${offer.id}`)}</p>
                 <ul>
                   {features(offer, offer.id).map((line, index) => (
@@ -119,6 +203,52 @@ export default function PlansPage() {
             );
           })}
         </motion.div>
+
+        <motion.section variants={rise} className={styles.extras}>
+          <h2>
+            <TicketCheck size={18} /> {t("plans.codes.title")}
+          </h2>
+          {email ? (
+            <form className={styles.codeForm} onSubmit={(event) => void redeem(event)}>
+              <input
+                value={code}
+                onChange={(event) => setCode(event.target.value.slice(0, 24))}
+                placeholder={t("plans.codes.placeholder")}
+                aria-label={t("plans.codes.title")}
+                autoCapitalize="characters"
+                autoComplete="off"
+                spellCheck={false}
+              />
+              <Button type="submit" variant="secondary" size="md" disabled={!code.trim() || busy !== null}>
+                {t("plans.codes.apply")}
+              </Button>
+            </form>
+          ) : (
+            <p>{t("plans.codes.signIn")}</p>
+          )}
+          <p>{t("plans.codes.hint")}</p>
+        </motion.section>
+
+        {referralCode && (
+          <motion.section variants={rise} className={styles.extras}>
+            <h2>
+              <Gift size={18} /> {t("plans.referral.title")}
+            </h2>
+            <p>{t("plans.referral.body")}</p>
+            <p className={styles.referralCode}>{referralCode}</p>
+            <div className={styles.contact}>
+              <Button variant="secondary" size="md" icon={<MessageCircle />} onClick={whatsappReferral}>
+                {t("plans.referral.whatsapp")}
+              </Button>
+              <Button variant="ghost" size="md" icon={<Share2 />} onClick={() => void shareReferral()}>
+                {t("plans.referral.share")}
+              </Button>
+              <Button variant="ghost" size="md" icon={<Copy />} onClick={() => void copy(referralCode)}>
+                {t("plans.referral.copy")}
+              </Button>
+            </div>
+          </motion.section>
+        )}
 
         <motion.section variants={rise} className={styles.how}>
           <h2>{t("plans.how")}</h2>

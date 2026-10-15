@@ -33,6 +33,6 @@ describe("AI cost", () => {
     expect(costs[0]).toMatchObject({ kind: "scan", calls: 10, unpriced: [] });
     expect(costs[0].usdPerCall).toBeCloseTo(0.03);
     expect(costs[2]).toMatchObject({ kind: "question", calls: 2, usd: 0, unpriced: ["mystery-model"] });
-    expect(planWorstCaseUsd({ priceMga: 5000, scans: 60, questionsPerDay: 10, parcels: 15, deepPerMonth: 0 }, costs)).toBeCloseTo(1.8);
+    expect(planWorstCaseUsd({ priceMga: 5000, yearPriceMga: 50000, scans: 60, questionsPerDay: 10, parcels: 15, deepPerMonth: 0 }, costs)).toBeCloseTo(1.8);
   });
 });
