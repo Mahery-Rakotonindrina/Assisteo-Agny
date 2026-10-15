@@ -1,29 +1,18 @@
 import type { Locale } from "@/i18n.config";
 import { eventTime, shippingModeOf } from "@/lib/parcels";
 import { parcelDueMga, parcelProfitMga, parcelTotalMga, type Parcel } from "@/services/parcelStore";
+import { ARIARY, DAY, excelDay, loadExcel, sheetHeading, sum, type ExportHeading, type TableColumn } from "./excel";
 import { formatAriary } from "./format";
 import { clientSummaries } from "./parcelReport";
 
 // Reseller tools (Pro): the parcels as an Excel workbook. Two sheets, each a
 // real Excel table (header, stripes, filters, a totals row): the parcels,
 // then a recap per client. Amounts are numbers shown as "120 000 Ar", so
-// they read like the app and still add up. ExcelJS is loaded only here,
-// when exporting: it is too big for the app's first load.
+// they read like the app and still add up (shared bits in ./excel).
 
 type Translate = (key: string, params?: Record<string, string | number>) => string;
 
-export const XLSX_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-
-/** Shown "120 000 Ar"; the value stays a number. */
-const ARIARY = '#,##0" Ar"';
-const DAY = "dd/mm/yyyy";
-
-/** A calendar day for Excel, which reads dates as UTC (a local midnight could show the day before). */
-const excelDay = (time: number | null) => {
-  if (time === null) return null;
-  const date = new Date(time);
-  return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-};
+export { XLSX_TYPE, type ExportHeading } from "./excel";
 
 export type ParcelRow = {
   client: string | null;
@@ -101,34 +90,16 @@ const parcelColumns: Array<{ key: keyof ParcelRow; width: number; kind?: "money"
   { key: "profitMga", width: 17, kind: "money" },
 ];
 
-// ExcelJS writes the totals row's value (read by previews that don't compute), its types forget it.
-type TableColumn = import("exceljs").TableColumnProperties & { totalsRowResult?: number };
-
-const sum = (values: Array<number | null>) => values.reduce<number>((total, value) => total + (value ?? 0), 0);
-
-export type ExportHeading = {
-  /** "Mes colis · octobre 2026" */
-  title: string;
-  /** "Exporté le 8 oct. 2026" */
-  subtitle: string;
-};
-
 /** The workbook's bytes (.xlsx). */
 export async function parcelsWorkbook(parcels: Parcel[], t: Translate, locale: Locale, heading: ExportHeading): Promise<ArrayBuffer> {
-  const loaded = await import("exceljs");
-  const Excel = (loaded.default ?? loaded) as typeof import("exceljs");
+  const Excel = await loadExcel();
   const workbook = new Excel.Workbook();
   workbook.creator = "Assisteo Agny";
   workbook.created = new Date();
 
   const label = (key: string) => t(`parcels.export.columns.${key}`);
   const rows = parcelRows(parcels, t, locale);
-  const head = (sheet: import("exceljs").Worksheet) => {
-    sheet.getCell("A1").value = heading.title;
-    sheet.getCell("A1").font = { bold: true, size: 15 };
-    sheet.getCell("A2").value = heading.subtitle;
-    sheet.getCell("A2").font = { size: 10, color: { argb: "FF6A707B" } };
-  };
+  const head = (sheet: import("exceljs").Worksheet) => sheetHeading(sheet, heading);
   // The table starts under the heading; its header row stays visible when scrolling.
   const TOP = 4;
 

@@ -13,6 +13,7 @@ import type { AdminSubscriptionsResponse } from "@/pages/api/admin/subscriptions
 import { httpClient } from "@/services/httpClient";
 import { ApiError } from "@/types/api";
 import { AdminCharts } from "./AdminCharts";
+import { PaymentsExport } from "./PaymentsExport";
 import styles from "./AdminSubscriptions.module.scss";
 
 const timestamp = () => Date.now();
@@ -125,7 +126,8 @@ function period(draft: Draft, now: number): { startsAt: string; endsAt: string |
 // ---- Card -------------------------------------------------------------------
 
 /** Who pays for what: subscriptions recorded by hand, the payment being made outside the app. */
-export function AdminSubscriptions({ token }: { token: string }) {
+/** `owner`: only the owner grants or takes back the admin plan ("unlimited"). */
+export function AdminSubscriptions({ token, owner }: { token: string; owner: boolean }) {
   const { t, locale } = useTranslation();
   const toast = useToast();
   const [rows, setRows] = useState<Subscription[] | null>(null);
@@ -164,8 +166,8 @@ export function AdminSubscriptions({ token }: { token: string }) {
       toast(done);
       reload();
       return true;
-    } catch {
-      toast(t("admin.error"), "error");
+    } catch (error) {
+      toast(error instanceof ApiError && error.code === "owner_only" ? t("admin.ownerOnly") : t("admin.error"), "error");
       return false;
     }
   };
@@ -287,6 +289,7 @@ export function AdminSubscriptions({ token }: { token: string }) {
       </div>
 
       <AdminCharts rows={rows} counts={perPlan} now={now} />
+      <PaymentsExport rows={rows} now={now} />
 
       <Button icon={<Plus />} block onClick={() => setDraft(newDraft(now))}>
         {t("admin.subs.add")}
@@ -422,6 +425,7 @@ export function AdminSubscriptions({ token }: { token: string }) {
       <SubscriptionSheet
         draft={draft}
         now={now}
+        owner={owner}
         onClose={() => setDraft(null)}
         onSave={async (body, editing) => {
           const ok = await run(
@@ -478,23 +482,37 @@ const noSubscribe = () => () => {};
 function SubscriptionSheet({
   draft,
   now,
+  owner,
   onClose,
   onSave,
 }: {
   draft: Draft | null;
   now: number;
+  owner: boolean;
   onClose: () => void;
   onSave: (body: SaveBody, editing: boolean) => Promise<void>;
 }) {
   const mounted = useSyncExternalStore(noSubscribe, () => true, () => false);
   if (!mounted) return null;
   return createPortal(
-    <AnimatePresence>{draft && <SheetForm key={draft.id ?? "new"} initial={draft} now={now} onClose={onClose} onSave={onSave} />}</AnimatePresence>,
+    <AnimatePresence>{draft && <SheetForm key={draft.id ?? "new"} initial={draft} now={now} owner={owner} onClose={onClose} onSave={onSave} />}</AnimatePresence>,
     document.body,
   );
 }
 
-function SheetForm({ initial, now, onClose, onSave }: { initial: Draft; now: number; onClose: () => void; onSave: (body: SaveBody, editing: boolean) => Promise<void> }) {
+function SheetForm({
+  initial,
+  now,
+  owner,
+  onClose,
+  onSave,
+}: {
+  initial: Draft;
+  now: number;
+  owner: boolean;
+  onClose: () => void;
+  onSave: (body: SaveBody, editing: boolean) => Promise<void>;
+}) {
   const { t, locale } = useTranslation();
   const [draft, setDraft] = useState(initial);
   const [saving, setSaving] = useState(false);
@@ -561,7 +579,9 @@ function SheetForm({ initial, now, onClose, onSave }: { initial: Draft; now: num
 
         <ChoiceGroup label={t("admin.subs.plan")}>
           <div className={styles.chips}>
-            {paidPlans.map((plan) => (
+            {paidPlans
+              .filter((plan) => owner || plan !== "unlimited")
+              .map((plan) => (
               <button key={plan} type="button" data-plan={plan} aria-pressed={draft.plan === plan} onClick={() => set("plan", plan)}>
                 <PlanIcon plan={plan} size={14} /> {t(`plans.names.${plan}`)}
               </button>

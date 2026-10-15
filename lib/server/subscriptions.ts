@@ -55,6 +55,11 @@ export async function listSubscriptions() {
   return check<Row[]>(await table().select("*").order("created_at", { ascending: false }).limit(5000)).map(fromRow);
 }
 
+export async function getSubscription(id: string) {
+  const row = check<Row | null>(await table().select("*").eq("id", id).maybeSingle());
+  return row ? fromRow(row) : null;
+}
+
 export async function addSubscriptions(inputs: SubscriptionInput[]) {
   return check<Row[]>(await table().insert(inputs.map(toRow)).select("*")).map(fromRow);
 }

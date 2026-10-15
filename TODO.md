@@ -155,9 +155,9 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Versions de l'app : minimale, dernière, lien de téléchargement
 - [x] ⭐ Relance automatique des abonnés avant la fin (notification 3 jours avant, le dernier jour, à la fin) + relance manuelle par e-mail ou WhatsApp depuis l'admin
 - [x] ⭐ Coût IA réel par scan, pour fixer les prix (Admin → Coût de l’IA : jetons mesurés, coût par appel, marge de chaque offre)
-- [ ] Liste de tous les comptes, pas seulement les abonnés
-- [ ] Export comptable des paiements (Excel)
-- [ ] Plusieurs administrateurs avec leur propre accès, journal des actions
+- [x] Liste de tous les comptes, pas seulement les abonnés — carte « Comptes » : inscrits, nouveaux du mois, offre de chacun, date d’inscription et de dernière connexion, recherche, filtres Abonnés / Sans offre / Admins
+- [x] Export comptable des paiements (Excel) — dans « Abonnés » : ce mois, mois dernier, cette année ou tout ; 3 feuilles : paiements, totaux par mois et par offre, totaux par moyen de paiement
+- [x] Plusieurs administrateurs avec leur propre accès, journal des actions — l’offre Admin donne l’accès avec son propre compte, retiré dès que l’offre s’arrête ; réservé au propriétaire (jeton) : nommer ou retirer un admin, double authentification, journal (500 dernières actions : qui, quoi, quand)
 
 ## 13. Réglages
 

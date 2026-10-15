@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { z } from "zod";
 import { guardAdmin } from "@/lib/server/adminAuth";
+import { logAdminAction } from "@/lib/server/adminLog";
 import { sendError } from "@/lib/server/http";
 import { getServerUsage, getTrialConfig, setTrialConfig, trialIsDurable, type TrialConfig } from "@/lib/server/trialStore";
 
@@ -15,7 +16,8 @@ const ConfigSchema = z.object({
 
 /** Admin-only: read or change the free trial limits at runtime. */
 export default async function handler(req: NextApiRequest, res: NextApiResponse<AdminTrialResponse | unknown>) {
-  if (!(await guardAdmin(req, res))) return;
+  const actor = await guardAdmin(req, res);
+  if (!actor) return;
 
   if (req.method === "GET") {
     const [config, usage] = await Promise.all([getTrialConfig(), getServerUsage()]);
@@ -26,6 +28,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const parsed = ConfigSchema.safeParse(req.body);
     if (!parsed.success) return sendError(res, 400, "invalid_request", parsed.error.issues[0]?.message ?? "Invalid settings.");
     await setTrialConfig(parsed.data);
+    const { limit, ipLimit, askLimit, dailyLimit } = parsed.data;
+    await logAdminAction(actor.id, "trial_save", `${limit} · ${ipLimit} · ${askLimit} · ${dailyLimit}`);
     const usage = await getServerUsage();
     return res.status(200).json({ ...parsed.data, durable: trialIsDurable, todayUsed: usage.used } satisfies AdminTrialResponse);
   }
