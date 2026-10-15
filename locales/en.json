@@ -1186,7 +1186,21 @@
     "analyzeOne": "Analyse",
     "analyzing": "{count} pages read together",
     "sectionTitle": "The {count} pages",
-    "elsewhere": "The other pages stayed on the device where the document was scanned."
+    "elsewhere": "The other pages stayed on the device where the document was scanned.",
+    "eachParcel": "One parcel per photo ({count} scans)",
+    "eachParcelHint": "Screenshots of different parcels? Each photo is analysed on its own, then added to My parcels, or updated if the parcel is already there.",
+    "parcelOf": "Parcel {number} of {total}"
+  },
+  "parcelBatch": {
+    "done": "Parcels: {details}",
+    "added": "{count} added",
+    "updated": "{count} updated",
+    "unchanged": "{count} already up to date",
+    "limit": "{count} not followed, your plan's limit is reached",
+    "notParcel": "{count} photo(s) without a parcel, kept in the history",
+    "queued": "{count} waiting for the network",
+    "failed": "{count} failed",
+    "skipped": "{count} not analysed"
   },
   "codes": {
     "found": "QR code found",

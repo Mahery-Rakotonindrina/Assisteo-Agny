@@ -11,6 +11,7 @@ import { haptics } from "@/services/device";
 import { notify } from "@/services/notifications";
 import { ensureCameraAccess } from "@/services/permissions";
 import { createId } from "@/services/historyStore";
+import type { ParcelFollowOutcome } from "@/services/parcelLinking";
 import { compactOldPhotos } from "@/services/photoStorage";
 import { planStore } from "@/services/plan";
 import { isOffline, saveScan, sendScan, type ScanJob } from "@/services/scanPipeline";
@@ -44,10 +45,16 @@ export type ScanState =
   | { phase: "preparing"; previewSrc: string }
   /** The photo is a QR code: its content, before (or instead of) an analysis. */
   | { phase: "codes"; previewSrc: string; codes: ScannedCode[] }
-  | { phase: "analyzing"; previewSrc: string; startedAt: number; pageCount: number }
+  | { phase: "analyzing"; previewSrc: string; startedAt: number; pageCount: number; batch?: { index: number; total: number } }
   /** No network: the scan waits on the device and leaves once it is back. */
   | { phase: "queued"; previewSrc: string }
   | { phase: "error"; previewSrc?: string; error: ScanErrorKind };
+
+/** What became of each photo of a batch of parcels (see analyzeEachPage). */
+export type ParcelBatchOutcome = ParcelFollowOutcome | "queued" | "failed" | "skipped";
+
+/** Refusals that would hit every other photo of a batch too: the batch stops. */
+const batchStoppers = new Set<ScanErrorKind>(["trial_exhausted", "plan_limit", "plan_required", "billing", "invalid_key", "rate_limited"]);
 
 /** A page of a multi-page scan, with a key that follows it when pages are reordered. */
 export type PageCapture = PreparedCapture & { key: string };
@@ -105,7 +112,7 @@ export function useScan(mode: ScanMode) {
 
       try {
         const response = await sendScan(job, controller.signal);
-        const id = await saveScan(job, response, reminderTexts.insurance);
+        const { id } = await saveScan(job, response, reminderTexts.insurance);
         haptics.success();
         if (settings.notifyOnResult && document.visibilityState === "hidden") {
           void notify({ title: t("notifications.readyTitle"), body: response.analysis.title, entryId: id });
@@ -268,6 +275,75 @@ export function useScan(mode: ScanMode) {
     await analyze({ mode, locale, first, pages: rest, codes });
   }, [analyze, locale, mode, pages]);
 
+  /**
+   * Each photo of the tray is its own parcel: scanned one after the other
+   * (one scan each), then added to "Mes colis" or brought up to date there.
+   * Resolves with what became of each photo, or null when nothing was done
+   * (cancelled, or no photo went through: the error screen shows).
+   */
+  const analyzeEachPage = useCallback(async (): Promise<ParcelBatchOutcome[] | null> => {
+    if (pages.length === 0) return null;
+    const photos = pages;
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+    lastJobRef.current = null;
+    setState({ phase: "preparing", previewSrc: photos[0].preview.dataUrl });
+    setPages([]);
+
+    const outcomes: ParcelBatchOutcome[] = [];
+    let stop: ScanErrorKind | null = null;
+    let lastError: ScanErrorKind = "unknown";
+    let offline = false;
+    for (const [index, photo] of photos.entries()) {
+      if (controller.signal.aborted) return null;
+      if (stop) {
+        outcomes.push("skipped");
+        continue;
+      }
+      const { codes } = await readCodes(photo.upload.dataUrl);
+      const job: ScanJob = { mode, locale, first: photo, pages: [], codes, followParcel: true };
+      // No network: this photo and the next ones wait, and follow their parcel once sent.
+      if (offline || (typeof navigator !== "undefined" && navigator.onLine === false)) {
+        offline = true;
+        await scanQueue.add(job);
+        outcomes.push("queued");
+        continue;
+      }
+      setState({ phase: "analyzing", previewSrc: photo.preview.dataUrl, startedAt: Date.now(), pageCount: 1, batch: { index, total: photos.length } });
+      try {
+        const response = await sendScan(job, controller.signal);
+        const { parcel } = await saveScan(job, response, reminderTexts.insurance);
+        outcomes.push(parcel ?? "failed");
+      } catch (error) {
+        if (controller.signal.aborted) return null;
+        if (isOffline(error)) {
+          offline = true;
+          await scanQueue.add(job);
+          outcomes.push("queued");
+          continue;
+        }
+        if (error instanceof ApiError && (error.code === "trial_exhausted" || error.code === "plan_limit")) planStore.markScansUsedUp();
+        lastError = toErrorKind(error);
+        if (batchStoppers.has(lastError)) stop = lastError;
+        outcomes.push(stop ? "skipped" : "failed");
+      }
+    }
+
+    if (controller.signal.aborted) return null;
+    if (outcomes.every((outcome) => outcome === "failed" || outcome === "skipped")) {
+      haptics.error();
+      setState({ phase: "error", error: lastError });
+      return null;
+    }
+    haptics.success();
+    void compactOldPhotos().catch(() => undefined);
+    const parcels = outcomes.some((outcome) => outcome === "added" || outcome === "updated" || outcome === "unchanged" || outcome === "limit" || outcome === "queued");
+    await router.push(parcels ? "/parcels" : "/history");
+    setState({ phase: "idle" });
+    return outcomes;
+  }, [locale, mode, pages, reminderTexts, router]);
+
   // ---- Retry, reset --------------------------------------------------------------
 
   /** From the codes screen: analyse the photo anyway. */
@@ -295,6 +371,6 @@ export function useScan(mode: ScanMode) {
     reset,
     analyzeAnyway,
     canRetry: state.phase === "error" && Boolean(state.previewSrc),
-    pages: { list: pages, adding: addingPage, begin: beginPages, add: addPage, remove: removePage, move: movePage, analyze: analyzePages },
+    pages: { list: pages, adding: addingPage, begin: beginPages, add: addPage, remove: removePage, move: movePage, analyze: analyzePages, analyzeEach: analyzeEachPage },
   };
 }

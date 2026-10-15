@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { Apple, ArrowRight, Box, Car, Check, CloudOff, FileText, Files, FlaskConical, ImageUp, Lightbulb, QrCode, RotateCcw, Sparkles, X } from "lucide-react";
+import { Apple, ArrowRight, Box, Car, Check, CloudOff, FileText, Files, FlaskConical, ImageUp, Lightbulb, Package, QrCode, RotateCcw, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/Button";
 import { CaptureOrb } from "@/components/CaptureOrb";
 import { CodeList } from "@/components/CodeList";
@@ -25,7 +25,7 @@ import { useHistory } from "@/hooks/useHistory";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import { useNow } from "@/hooks/useNow";
 import { usePlan } from "@/hooks/usePlan";
-import { useScan } from "@/hooks/useScan";
+import { useScan, type ParcelBatchOutcome } from "@/hooks/useScan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTrial } from "@/hooks/useTrial";
 import type { ScanMode } from "@/lib/ai/schema";
@@ -76,6 +76,17 @@ export default function ScanPage() {
   const ModeIcon = modeIcons[mode];
   const now = useNow(60_000);
   const hasReminder = entries.some((entry) => entry.reminderAt && entry.reminderAt > now);
+
+  // One parcel per photo: what became of them, in one message.
+  const reportParcels = (outcomes: ParcelBatchOutcome[]) => {
+    const kinds: ParcelBatchOutcome[] = ["added", "updated", "unchanged", "limit", "notParcel", "queued", "failed", "skipped"];
+    const details = kinds
+      .map((kind) => ({ kind, count: outcomes.filter((outcome) => outcome === kind).length }))
+      .filter(({ count }) => count > 0)
+      .map(({ kind, count }) => t(`parcelBatch.${kind}`, { count }));
+    const trouble = outcomes.some((outcome) => outcome === "limit" || outcome === "failed" || outcome === "skipped");
+    toast(t("parcelBatch.done", { details: details.join(" · ") }), trouble ? "error" : "success");
+  };
 
   // Photos shared from another app (Android): one is analysed right away;
   // several become the pages of one document (Premium), else the first one.
@@ -305,6 +316,7 @@ export default function ScanPage() {
               onRemove={pages.remove}
               onMove={pages.move}
               onAnalyze={() => void pages.analyze()}
+              onAnalyzeEach={() => void pages.analyzeEach().then((outcomes) => outcomes && reportParcels(outcomes))}
               onCancel={reset}
             />
           </motion.div>
@@ -324,6 +336,12 @@ export default function ScanPage() {
                 scanning={busy}
               />
             ) : null}
+
+            {state.phase === "analyzing" && state.batch && (
+              <p className={styles.pagesNote}>
+                <Package size={15} /> {t("pages.parcelOf", { number: state.batch.index + 1, total: state.batch.total })}
+              </p>
+            )}
 
             {state.phase === "analyzing" && state.pageCount > 1 && (
               <p className={styles.pagesNote}>
