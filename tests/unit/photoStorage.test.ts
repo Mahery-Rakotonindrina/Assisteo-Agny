@@ -2,7 +2,7 @@ import "fake-indexeddb/auto";
 import { beforeEach, describe, expect, it } from "vitest";
 import { mockAnalysis } from "@/lib/ai/mock";
 import { historyStore } from "@/services/historyStore";
-import { compactOldPhotos, entryPhotoBytes, FULL_PHOTOS_KEPT } from "@/services/photoStorage";
+import { compactOldPhotos, entryPhotoBytes, FULL_PHOTOS_KEPT, LIGHT_PHOTOS_KEPT } from "@/services/photoStorage";
 import type { HistoryEntry } from "@/types/history";
 
 const jpeg = (bytes: number) => `data:image/jpeg;base64,${"A".repeat(Math.ceil((bytes * 4) / 3))}`;
@@ -52,5 +52,14 @@ describe("compactOldPhotos", () => {
   it("does nothing while the history is short", async () => {
     for (let index = 0; index < 5; index++) await historyStore.rawPut(entry(index, true), { silent: true });
     expect(await compactOldPhotos()).toBe(0);
+  });
+
+  it("keeps fewer full photos when asked to free space, one pass after the other", async () => {
+    for (let index = 0; index < 15; index++) await historyStore.rawPut(entry(index, true), { silent: true });
+    // An automatic pass and the user's both run, in turn.
+    const [automatic, asked] = await Promise.all([compactOldPhotos(), compactOldPhotos(LIGHT_PHOTOS_KEPT)]);
+    expect([automatic, asked]).toEqual([0, 15 - LIGHT_PHOTOS_KEPT]);
+    const all = await historyStore.raw();
+    expect(all.filter((item) => item.preview !== item.thumbnail)).toHaveLength(LIGHT_PHOTOS_KEPT);
   });
 });

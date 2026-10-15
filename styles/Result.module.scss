@@ -384,6 +384,24 @@ $bar-height: calc(var(--safe-top) + 3.95rem);
 .grow {
   flex: 1;
   min-width: 0;
+  // A label too long for the bar stays in its own button.
+  overflow: hidden;
+}
+
+// Very large text (Settings): the actions no longer fit side by side,
+// and the page keeps room for the taller bar.
+:global(html[data-text-size="xlarge"]) .page {
+  padding-bottom: calc(8.5rem + var(--safe-bottom));
+}
+
+:global(html[data-text-size="xlarge"]) .actionBar {
+  flex-direction: column;
+
+  // Full width, at their own height (the primary's flex basis would squash it).
+  > * {
+    flex: none;
+    width: 100%;
+  }
 }
 
 .compact {

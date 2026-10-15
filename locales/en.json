@@ -246,6 +246,14 @@
     "appearance": "Appearance",
     "language": "Language",
     "theme": "Theme",
+    "textSize": "Text size",
+    "textSizeHint": "Makes all the app’s text bigger or smaller, on this device.",
+    "textSizes": {
+      "small": "Small",
+      "normal": "Normal",
+      "large": "Large",
+      "xlarge": "Extra large"
+    },
     "themes": {
       "system": "Auto",
       "light": "Light",
@@ -261,8 +269,22 @@
     "haptics": "Haptic feedback",
     "hapticsHint": "Light vibrations on actions.",
     "data": "Data",
-    "storage": "{count} analyses · {size} of photos on this device",
+    "storageTotal": "Space used: {size}",
+    "storageMeasuring": "Measuring the space used…",
+    "storageParts": {
+      "photos": "Photos of {count} analysis(es)",
+      "analyses": "Analyses, chats and meals",
+      "parcels": "Parcels",
+      "lists": "Lists",
+      "queue": "{count} scan(s) waiting for the network",
+      "other": "Other (app files, cache)"
+    },
     "storageHint": "To save space, only the {count} most recent analyses keep their full-size photo; older ones keep a smaller one.",
+    "storageLighten": "Make photos lighter",
+    "storageLightenConfirm": "Keep only the latest {count} at full size?",
+    "storageLightened": "{count} photo(s) made lighter: {size} freed",
+    "storageNothing": "Nothing to lighten: the older photos are already reduced.",
+    "storageFailed": "The photos couldn’t be made lighter. Try again.",
     "clearHistory": "Clear history",
     "clearConfirm": "Permanently delete every analysis?",
     "cleared": "History cleared",

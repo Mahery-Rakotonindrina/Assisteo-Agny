@@ -246,6 +246,14 @@
     "appearance": "Apparence",
     "language": "Langue",
     "theme": "Thème",
+    "textSize": "Taille du texte",
+    "textSizeHint": "Agrandit ou réduit tout le texte de l’app, sur cet appareil.",
+    "textSizes": {
+      "small": "Petit",
+      "normal": "Normal",
+      "large": "Grand",
+      "xlarge": "Très grand"
+    },
     "themes": {
       "system": "Auto",
       "light": "Clair",
@@ -261,8 +269,22 @@
     "haptics": "Retour haptique",
     "hapticsHint": "Vibrations légères lors des actions.",
     "data": "Données",
-    "storage": "{count} analyses · {size} de photos sur cet appareil",
+    "storageTotal": "Espace utilisé : {size}",
+    "storageMeasuring": "Calcul de l’espace utilisé…",
+    "storageParts": {
+      "photos": "Photos de {count} analyse(s)",
+      "analyses": "Analyses, discussions et repas",
+      "parcels": "Colis",
+      "lists": "Listes",
+      "queue": "{count} scan(s) en attente de réseau",
+      "other": "Autres (fichiers de l’app, cache)"
+    },
     "storageHint": "Pour gagner de la place, seules les {count} analyses les plus récentes gardent leur photo en grand ; les plus anciennes gardent une photo réduite.",
+    "storageLighten": "Alléger les photos",
+    "storageLightenConfirm": "Garder en grand seulement les {count} dernières ?",
+    "storageLightened": "{count} photo(s) allégée(s) : {size} libérés",
+    "storageNothing": "Rien à alléger : les photos anciennes sont déjà réduites.",
+    "storageFailed": "Les photos n’ont pas pu être allégées. Réessaie.",
     "clearHistory": "Effacer l'historique",
     "clearConfirm": "Effacer définitivement toutes les analyses ?",
     "cleared": "Historique effacé",

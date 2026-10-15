@@ -8,6 +8,8 @@ import { historyStore } from "./historyStore";
 
 /** Scans that keep their full-size photo. */
 export const FULL_PHOTOS_KEPT = 60;
+/** When the user asks to free space (Settings): only the latest keep it. */
+export const LIGHT_PHOTOS_KEPT = 10;
 
 /** Approximate bytes of a data URL (base64 is 4/3 of the binary). */
 function dataUrlBytes(dataUrl: string) {
@@ -23,18 +25,19 @@ export function isCompacted(entry: Pick<HistoryEntry, "preview" | "thumbnail">) 
   return entry.preview === entry.thumbnail;
 }
 
-let running: Promise<number> | null = null;
+let running: Promise<number> = Promise.resolve(0);
 
 /**
- * Replaces the preview of scans beyond the most recent ones by their
+ * Replaces the preview of scans beyond the `keep` most recent ones by their
  * thumbnail. Synced entries are flagged so the account's copy shrinks too.
- * Returns how many scans were compacted.
+ * One pass at a time: a call waits for the one running. Returns how many
+ * scans were compacted.
  */
-export function compactOldPhotos() {
-  running ??= (async () => {
+export function compactOldPhotos(keep = FULL_PHOTOS_KEPT) {
+  running = running.catch(() => 0).then(async () => {
     const entries = (await historyStore.raw()).filter((entry) => !entry.deletedAt).sort((a, b) => b.createdAt - a.createdAt);
     let compacted = 0;
-    for (const entry of entries.slice(FULL_PHOTOS_KEPT)) {
+    for (const entry of entries.slice(keep)) {
       if (isCompacted(entry) || !entry.thumbnail) continue;
       await historyStore.rawPut(
         {
@@ -51,8 +54,6 @@ export function compactOldPhotos() {
     }
     if (compacted) historyStore.notify();
     return compacted;
-  })().finally(() => {
-    running = null;
   });
   return running;
 }

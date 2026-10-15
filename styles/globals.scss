@@ -200,11 +200,24 @@ body {
   padding: 0;
 }
 
+// Text size (Settings): everything is in rem, so the root size scales the app.
+html[data-text-size="small"] {
+  font-size: 93.75%;
+}
+
+html[data-text-size="large"] {
+  font-size: 112.5%;
+}
+
+html[data-text-size="xlarge"] {
+  font-size: 125%;
+}
+
 body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-sans);
-  font-size: 16px;
+  font-size: 1rem;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

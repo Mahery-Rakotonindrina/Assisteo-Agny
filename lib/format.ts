@@ -37,6 +37,15 @@ export function startOfDay(timestamp: number) {
   return date.getTime();
 }
 
+/** A size on the device: "24,3 Mo" or "512 Ko" in French, "24.3 MB" or "512 KB" in English. */
+export function formatBytes(bytes: number, locale: Locale) {
+  const [kb, mb] = locale === "fr" ? ["Ko", "Mo"] : ["KB", "MB"];
+  const megabytes = bytes / (1024 * 1024);
+  return megabytes >= 1
+    ? `${megabytes.toLocaleString(localeTags[locale], { maximumFractionDigits: 1 })} ${mb}`
+    : `${Math.max(0, Math.round(bytes / 1024)).toLocaleString(localeTags[locale])} ${kb}`;
+}
+
 /** An amount in Malagasy ariary, e.g. "245 000 Ar" (no decimals). */
 export function formatAriary(value: number, locale: Locale) {
   return `${new Intl.NumberFormat(localeTags[locale], { maximumFractionDigits: 0 }).format(Math.round(value))} Ar`;
