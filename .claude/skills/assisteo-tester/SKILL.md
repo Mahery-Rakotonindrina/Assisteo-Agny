@@ -27,7 +27,7 @@ Les tests automatiques tournent en mode démo. Ils ne prouvent ni que l'IA réel
 2. Écrire un script dans le scratchpad à partir de [scripts/example-check.mjs](scripts/example-check.mjs), en important [scripts/live.mjs](scripts/live.mjs) par son chemin absolu.
 3. Le lancer avec **Node 22** : `OUT_DIR=<scratchpad>/live "$NVM_HOME/v22.23.3/node.exe" <script>`. Le `node` par défaut ici est le 20, qui n'a pas de `WebSocket` global.
 4. **Regarder les captures** (Read sur le `.png`). Un texte trouvé dans la page ne prouve pas que l'écran est bon : une fenêtre peut le recouvrir, ou il peut déborder.
-5. À la fin, arrêter le serveur (TaskStop sur la tâche, ou tuer le processus qui écoute le port 3130).
+5. À la fin, arrêter le serveur : sous Windows, TaskStop laisse tourner le processus `node` de `next start`. Tuer aussi le processus qui écoute le port 3130 (`netstat -ano | grep ":3130 "`), sinon le prochain test parle à l’ancienne version.
 
 ### Ce que donne `live.mjs`
 

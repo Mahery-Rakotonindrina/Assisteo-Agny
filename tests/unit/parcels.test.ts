@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { mockAnalysis } from "@/lib/ai/mock";
 import { compareParcels, isNewerParcel, sameParcel, type ParcelInfo } from "@/lib/parcels";
 import { historyStore } from "@/services/historyStore";
-import { keepParcelThumbnails, updateEarlierParcelScans } from "@/services/parcelLinking";
+import { followScannedParcel, keepParcelThumbnails, updateEarlierParcelScans } from "@/services/parcelLinking";
 import { hasNewStatus, parcelStore, parcelTotalMga } from "@/services/parcelStore";
 import type { HistoryEntry } from "@/types/history";
 
@@ -95,6 +95,35 @@ describe("following a parcel", () => {
     await keepParcelThumbnails(["photo-1"]);
     await historyStore.clear();
     expect((await parcelStore.list())[0].thumbnail).toBe(first.thumbnail);
+  });
+});
+
+describe("several parcel screenshots, one by one", () => {
+  beforeEach(async () => {
+    await historyStore.wipe();
+    await parcelStore.wipe();
+  });
+
+  it("adds new parcels, updates followed ones, never goes back in time", async () => {
+    const other = info({ trackingNumber: "SEA123", orderNumber: null });
+    expect(await followScannedParcel(scan("a", info(), 1000), 0)).toBe("added");
+    expect(await followScannedParcel(scan("b", other, 2000), 0)).toBe("added");
+    expect(await followScannedParcel(scan("c", delivered, 3000), 0)).toBe("updated");
+    // An older screenshot of the same parcel changes nothing.
+    expect(await followScannedParcel(scan("d", info(), 4000), 0)).toBe("unchanged");
+
+    const parcels = await parcelStore.list();
+    expect(parcels).toHaveLength(2);
+    const first = parcels.find((parcel) => sameParcel(parcel.info, info()))!;
+    expect(first.info.status).toBe("delivered");
+    expect(first.scanIds).toEqual(["a", "c"]);
+  });
+
+  it("leaves a scan that is not a parcel, and respects the plan's limit", async () => {
+    expect(await followScannedParcel({ ...scan("x", info(), 1000), analysis: { ...demoParcel, parcel: null } }, 0)).toBe("notParcel");
+    expect(await followScannedParcel(scan("a", info(), 1000), 1)).toBe("added");
+    expect(await followScannedParcel(scan("b", info({ trackingNumber: "SEA123", orderNumber: null }), 2000), 1)).toBe("limit");
+    expect(await parcelStore.list()).toHaveLength(1);
   });
 });
 

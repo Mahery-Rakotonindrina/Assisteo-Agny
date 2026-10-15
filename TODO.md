@@ -111,11 +111,12 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] ⭐ Taux de change yuan / dollar / euro → ariary pour préremplir le prix (taux du jour ou taux du transitaire)
 - [x] ⭐ Revendeurs : prix de vente, bénéfice, payé / reste à payer par le client (carte, vue Clients, export Excel)
 - [x] Envoi maritime (SEA) ou aérien (NORMAL) : détecté automatiquement (lu par l’IA sur la capture, ou déduit du n° de suivi / transitaire), modifiable à la main, badge, filtre, recherche et colonne dans l’export Excel
+- [x] Plusieurs captures de colis d'un coup : « Un colis par photo », chaque photo analysée à part (un scan chacune) puis ajoutée à Mes colis ou mise à jour, résumé à la fin — à partir de Premium, comme « Plusieurs pages »
 - [ ] Suivi automatique sans rescanner, notification au changement de statut
 - [ ] Fret calculé au kilo (poids × tarif du transitaire)
 - [ ] Envoyer le statut au client par WhatsApp
 - [ ] Regrouper les colis par envoi (lot, conteneur)
-- [ ] Export pour un seul client
+- [x] Relevé PDF pour un seul client (Pro) : bouton « Relevé » sur chaque client de la vue Clients, sur la période choisie, à partager par WhatsApp — statut, envoi, n° de suivi, montant, payé, reste à payer ; jamais le prix d’achat, les frais ni le bénéfice
 
 ## 10. Compte et synchronisation
 

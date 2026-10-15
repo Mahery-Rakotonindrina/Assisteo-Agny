@@ -951,6 +951,18 @@
       "profit": "Bénéfice : {amount}",
       "dueShort": "reste {amount}"
     },
+    "statement": {
+      "short": "Relevé",
+      "button": "Relevé PDF de {name}, à lui envoyer",
+      "title": "Relevé de colis · {name}",
+      "caption": "{count} colis ({period}) · établi le {date}",
+      "allTime": "depuis le début",
+      "receivedOn": "Reçu le {date}",
+      "amount": "Montant",
+      "paid": "Payé",
+      "due": "Reste à payer",
+      "total": "Total"
+    },
     "export": {
       "button": "Exporter pour Excel",
       "title": "Mes colis",
@@ -1056,7 +1068,7 @@
       "allPremium": "Tout Premium, et :",
       "priority": "Priorité quand l’IA est très demandée",
       "clients": "Un client par colis : pour qui est chaque colis",
-      "reseller": "Totaux par client, récap du mois et export pour Excel",
+      "reseller": "Totaux par client, récap du mois, export pour Excel et relevé PDF à envoyer à chaque client",
       "deep": "{count} analyses approfondies par mois, avec l’IA la plus précise",
       "deepUnlimited": "Analyses approfondies sans limite",
       "multiPage": "Scan de plusieurs pages (contrat, longue facture)",
@@ -1186,7 +1198,21 @@
     "analyzeOne": "Analyser",
     "analyzing": "{count} pages lues ensemble",
     "sectionTitle": "Les {count} pages",
-    "elsewhere": "Les autres pages sont restées sur l’appareil où le document a été scanné."
+    "elsewhere": "Les autres pages sont restées sur l’appareil où le document a été scanné.",
+    "eachParcel": "Un colis par photo ({count} scans)",
+    "eachParcelHint": "Des captures de colis différents ? Chaque photo est analysée à part, puis ajoutée à Mes colis, ou mise à jour si le colis y est déjà.",
+    "parcelOf": "Colis {number} sur {total}"
+  },
+  "parcelBatch": {
+    "done": "Colis : {details}",
+    "added": "{count} ajouté(s)",
+    "updated": "{count} mis à jour",
+    "unchanged": "{count} déjà à jour",
+    "limit": "{count} non suivi(s), limite de ton offre atteinte",
+    "notParcel": "{count} photo(s) sans colis, gardée(s) dans l’historique",
+    "queued": "{count} en attente de réseau",
+    "failed": "{count} en échec",
+    "skipped": "{count} non analysée(s)"
   },
   "codes": {
     "found": "QR code trouvé",

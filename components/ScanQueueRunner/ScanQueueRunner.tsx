@@ -35,7 +35,7 @@ export function ScanQueueRunner() {
         await scanQueue.update(item.id, { status: "sending" });
         try {
           const response = await sendScan(item);
-          const id = await saveScan(item, response, reminderTexts.insurance, item.createdAt);
+          const { id } = await saveScan(item, response, reminderTexts.insurance, item.createdAt);
           await scanQueue.remove(item.id);
           haptics.success();
           if (document.visibilityState === "visible") toast(t("queue.done", { title: response.analysis.title }));

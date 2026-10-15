@@ -951,6 +951,18 @@
       "profit": "Profit: {amount}",
       "dueShort": "{amount} due"
     },
+    "statement": {
+      "short": "Statement",
+      "button": "PDF statement for {name}, to send them",
+      "title": "Parcel statement · {name}",
+      "caption": "{count} parcel(s) ({period}) · issued on {date}",
+      "allTime": "since the start",
+      "receivedOn": "Received on {date}",
+      "amount": "Amount",
+      "paid": "Paid",
+      "due": "Still to pay",
+      "total": "Total"
+    },
     "export": {
       "button": "Export for Excel",
       "title": "My parcels",
@@ -1056,7 +1068,7 @@
       "allPremium": "Everything in Premium, plus:",
       "priority": "Priority when the AI is busy",
       "clients": "A client per parcel: who each parcel is for",
-      "reseller": "Totals per client, monthly recap and Excel export",
+      "reseller": "Totals per client, monthly recap, Excel export and a PDF statement to send each client",
       "deep": "{count} deep analyses a month, with the most accurate AI",
       "deepUnlimited": "Unlimited deep analyses",
       "multiPage": "Multi-page scans (contract, long invoice)",
@@ -1186,7 +1198,21 @@
     "analyzeOne": "Analyse",
     "analyzing": "{count} pages read together",
     "sectionTitle": "The {count} pages",
-    "elsewhere": "The other pages stayed on the device where the document was scanned."
+    "elsewhere": "The other pages stayed on the device where the document was scanned.",
+    "eachParcel": "One parcel per photo ({count} scans)",
+    "eachParcelHint": "Screenshots of different parcels? Each photo is analysed on its own, then added to My parcels, or updated if the parcel is already there.",
+    "parcelOf": "Parcel {number} of {total}"
+  },
+  "parcelBatch": {
+    "done": "Parcels: {details}",
+    "added": "{count} added",
+    "updated": "{count} updated",
+    "unchanged": "{count} already up to date",
+    "limit": "{count} not followed, your plan's limit is reached",
+    "notParcel": "{count} photo(s) without a parcel, kept in the history",
+    "queued": "{count} waiting for the network",
+    "failed": "{count} failed",
+    "skipped": "{count} not analysed"
   },
   "codes": {
     "found": "QR code found",

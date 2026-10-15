@@ -1,7 +1,7 @@
 import { isNewerParcel, sameParcel } from "@/lib/parcels";
 import type { HistoryEntry } from "@/types/history";
 import { historyStore } from "./historyStore";
-import { parcelMiniature, parcelStore } from "./parcelStore";
+import { hasNewStatus, parcelMiniature, parcelStore } from "./parcelStore";
 
 /**
  * A new screenshot of a parcel scanned before: the earlier scans take the new
@@ -32,6 +32,29 @@ export async function updateEarlierParcelScans(entry: HistoryEntry) {
     updated.push(other);
   }
   return updated;
+}
+
+/** What became of one photo of a batch of parcel screenshots. */
+export type ParcelFollowOutcome = "added" | "updated" | "unchanged" | "limit" | "notParcel";
+
+/**
+ * Parcel screenshots scanned one by one (see useScan): each scan starts
+ * following its parcel in "Mes colis", or brings the followed one up to date
+ * when it shows a later state. Choosing that mode is the user's confirmation.
+ * `limit`: parcels followed at once (not received yet) by the plan, 0 = no limit.
+ */
+export async function followScannedParcel(entry: HistoryEntry, limit: number): Promise<ParcelFollowOutcome> {
+  const info = entry.analysis.parcel;
+  if (!info) return "notParcel";
+  const followed = await parcelStore.findFor(info);
+  if (followed) {
+    if (!hasNewStatus(followed, info)) return "unchanged";
+    await parcelStore.applyScan(followed, entry);
+    return "updated";
+  }
+  if (limit > 0 && (await parcelStore.list()).filter((parcel) => !parcel.receivedAt).length >= limit) return "limit";
+  await parcelStore.add(entry);
+  return "added";
 }
 
 /**

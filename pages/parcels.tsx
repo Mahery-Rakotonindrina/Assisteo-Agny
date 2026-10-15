@@ -42,6 +42,7 @@ import { shippingModes, type ShippingMode } from "@/lib/ai/schema";
 import { haptics } from "@/services/device";
 import { shareFile } from "@/services/fileShare";
 import { keepParcelThumbnails } from "@/services/parcelLinking";
+import { exportClientStatement } from "@/services/parcelStatement";
 import { parcelDueMga, parcelStore, parcelTotalMga, type Parcel } from "@/services/parcelStore";
 import styles from "@/styles/Parcels.module.scss";
 
@@ -88,17 +89,8 @@ export default function ParcelsPage() {
   const toast = useToast();
   const periodParcels = parcels.filter((parcel) => inPeriod(parcel, period, now, range));
 
-  // The period's parcels as an Excel workbook, client by client, oldest first.
-  const exportParcels = async () => {
-    if (exporting) return;
-    haptics.tap();
-    setExporting(true);
-    const sorted = [...periodParcels].sort(
-      (a, b) =>
-        Number(!a.client?.trim()) - Number(!b.client?.trim()) ||
-        (a.client ?? "").localeCompare(b.client ?? "", locale) ||
-        parcelDate(a) - parcelDate(b),
-    );
+  // The chosen period, for a file name ("2026-10") and a heading ("octobre 2026").
+  const periodName = () => {
     const month = (offset: number) => {
       const date = new Date(now);
       return toDateInput(new Date(date.getFullYear(), date.getMonth() - offset, 1).getTime()).slice(0, 7);
@@ -111,12 +103,25 @@ export default function ParcelsPage() {
       const date = new Date(now);
       return new Date(date.getFullYear(), date.getMonth() - offset, 1).getTime();
     };
-    const { suffix, label } =
-      period === "custom"
-        ? { suffix: `${range.from}_au_${range.to}`, label: t("parcels.export.range", { from: formatDate(day(range.from), locale), to: formatDate(day(range.to), locale) }) }
-        : period === "all"
-          ? { suffix: `tout-${toDateInput(now)}`, label: t("parcels.export.allParcels") }
-          : { suffix: month(period === "month" ? 0 : 1), label: formatMonthYear(monthStart(period === "month" ? 0 : 1), locale) };
+    return period === "custom"
+      ? { suffix: `${range.from}_au_${range.to}`, label: t("parcels.export.range", { from: formatDate(day(range.from), locale), to: formatDate(day(range.to), locale) }) }
+      : period === "all"
+        ? { suffix: `tout-${toDateInput(now)}`, label: t("parcels.export.allParcels") }
+        : { suffix: month(period === "month" ? 0 : 1), label: formatMonthYear(monthStart(period === "month" ? 0 : 1), locale) };
+  };
+
+  // The period's parcels as an Excel workbook, client by client, oldest first.
+  const exportParcels = async () => {
+    if (exporting) return;
+    haptics.tap();
+    setExporting(true);
+    const sorted = [...periodParcels].sort(
+      (a, b) =>
+        Number(!a.client?.trim()) - Number(!b.client?.trim()) ||
+        (a.client ?? "").localeCompare(b.client ?? "", locale) ||
+        parcelDate(a) - parcelDate(b),
+    );
+    const { suffix, label } = periodName();
     try {
       const bytes = await parcelsWorkbook(sorted, t, locale, {
         title: `${t("parcels.export.title")} · ${label}`,
@@ -126,6 +131,26 @@ export default function ParcelsPage() {
       if (result === "downloaded") toast(t("parcels.export.downloaded"));
     } catch {
       toast(t("parcels.export.failed"), "error");
+    } finally {
+      setExporting(false);
+    }
+  };
+  // One client's statement for the period, to send them (PDF).
+  const exportStatement = async (client: string) => {
+    if (exporting) return;
+    haptics.tap();
+    setExporting(true);
+    try {
+      const result = await exportClientStatement(
+        client,
+        periodParcels.filter((parcel) => isForClient(parcel, client)),
+        period === "all" ? { ...periodName(), label: t("parcels.statement.allTime") } : periodName(),
+        t,
+        locale,
+      );
+      if (result === "downloaded") toast(t("pdf.downloaded"));
+    } catch {
+      toast(t("pdf.failed"), "error");
     } finally {
       setExporting(false);
     }
@@ -244,6 +269,8 @@ export default function ParcelsPage() {
                       </Button>
                     )
                   }
+                  onStatement={(client) => void exportStatement(client)}
+                  statementBusy={exporting}
                   onPick={(name) => {
                     setClientFilter({ name });
                     setQuery("");
