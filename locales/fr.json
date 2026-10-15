@@ -524,7 +524,10 @@
         "airtel": "Airtel Money",
         "cash": "Espèces",
         "bank": "Virement",
-        "other": "Autre"
+        "other": "Autre",
+        "trial": "Essai Premium",
+        "promo": "Code promo",
+        "referral": "Parrainage"
       },
       "ref": "Référence",
       "refHint": "La référence de la transaction Mobile Money, pour la retrouver.",
@@ -554,7 +557,8 @@
         "body": "Bonjour,\n\nTon offre {plan} sur Assisteo Agny se termine le {date}. Pour la renouveler et garder tes avantages, tout est expliqué ici : {link}\n\nMerci et à bientôt !",
         "subjectEnded": "Ton offre {plan} Assisteo Agny est terminée",
         "bodyEnded": "Bonjour,\n\nTon offre {plan} sur Assisteo Agny est terminée. Pour la renouveler et retrouver tes avantages, tout est expliqué ici : {link}\n\nMerci et à bientôt !"
-      }
+      },
+      "discount": "Réduction en attente : -{percent} % (code {code}). Le montant est déjà réduit ; elle sera utilisée avec ce paiement."
     },
     "plans": {
       "title": "Offres",
@@ -564,7 +568,8 @@
         "scans": "Scans / mois",
         "questionsPerDay": "Questions / jour",
         "parcels": "Colis suivis",
-        "deepPerMonth": "Analyses approfondies / mois"
+        "deepPerMonth": "Analyses approfondies / mois",
+        "yearPriceMga": "Prix (Ar / an)"
       },
       "zeroHint": "0 = sans limite. Admin : tout est sans limite.",
       "freeParcels": "Colis suivis sans offre",
@@ -572,7 +577,8 @@
       "instructions": "Comment payer",
       "instructionsPlaceholder": "Ex. Envoie le montant par MVola au 034 00 000 00 (Nom Prénom), avec ton e-mail en motif.",
       "contact": "Contact pour envoyer la référence",
-      "contactHint": "Un numéro de téléphone, ou un lien (WhatsApp : https://wa.me/261…, Messenger…)."
+      "contactHint": "Un numéro de téléphone, ou un lien (WhatsApp : https://wa.me/261…, Messenger…).",
+      "monthsFree": "{count} mois offerts sur l’année"
     },
     "adminAccount": "Ton compte est administrateur : ouvre l’espace admin avec ton compte, ou avec le jeton.",
     "ai": {
@@ -684,7 +690,13 @@
         "app_save": "Versions de l’app modifiées",
         "two_factor_on": "Double authentification activée",
         "two_factor_off": "Double authentification désactivée",
-        "two_factor_codes": "Codes de secours renouvelés"
+        "two_factor_codes": "Codes de secours renouvelés",
+        "promo_create": "Code promo créé",
+        "promo_enable": "Code promo activé",
+        "promo_disable": "Code promo désactivé",
+        "promo_delete": "Code promo supprimé",
+        "promo_discount_used": "Réduction utilisée",
+        "referral_reward": "Mois de parrainage offert"
       }
     },
     "export": {
@@ -719,6 +731,42 @@
         "month": "Mois",
         "count": "Paiements"
       }
+    },
+    "promo": {
+      "title": "Codes promo",
+      "subtitle": "À entrer dans « J’ai un code » sur la page des offres : un accès offert, ou une réduction sur le prochain paiement.",
+      "notDurable": "Sans Redis, les codes, réductions et parrainages restent en mémoire : ils peuvent être perdus au prochain redémarrage du serveur.",
+      "empty": "Aucun code pour l’instant.",
+      "new": "Nouveau code",
+      "create": "Créer le code",
+      "created": "Code créé",
+      "code": "Code",
+      "codeHint": "3 à 24 lettres, chiffres ou tirets.",
+      "kind": "Type",
+      "kinds": {
+        "access": "Accès offert",
+        "discount": "Réduction"
+      },
+      "days": "Nombre de jours",
+      "percent": "Réduction (%)",
+      "percentHint": "Utilisée au prochain paiement enregistré pour ce compte.",
+      "maxUses": "Utilisations max",
+      "maxUsesHint": "0 = sans limite",
+      "expiresAt": "Valable jusqu’au",
+      "expiresHint": "Facultatif",
+      "accessLine": "{plan} · {days} j",
+      "discountLine": "-{percent} %",
+      "uses": "{count} utilisations",
+      "usesOf": "{count} / {max} utilisations",
+      "expires": "jusqu’au {date}",
+      "off": "désactivé",
+      "enable": "Activer",
+      "disable": "Désactiver",
+      "enabled": "Code activé",
+      "disabled": "Code désactivé",
+      "delete": "Supprimer",
+      "confirmDelete": "Confirmer la suppression",
+      "deleted": "Code supprimé"
     }
   },
   "account": {
@@ -1215,6 +1263,45 @@
       "ended": "Tu es repassé·e sur l’essai gratuit. Renouvelle pour retrouver tes avantages.",
       "renew": "Renouveler",
       "dismiss": "Masquer"
+    },
+    "perYear": "ou {price} par an",
+    "perYearFree": "ou {price} par an : {count} mois offerts",
+    "trialOffer": {
+      "title": "Essaie Premium {days} jours",
+      "body": "Gratuit et sans engagement : toutes les fonctions Premium pendant {days} jours. Une seule fois par compte.",
+      "cta": "Essayer Premium {days} jours",
+      "used": "Tu as déjà profité de l’essai Premium."
+    },
+    "codes": {
+      "title": "J’ai un code",
+      "placeholder": "Ton code",
+      "apply": "Valider",
+      "signIn": "Connecte-toi pour utiliser un code.",
+      "hint": "Un code promo, ou le code de parrainage d’un proche.",
+      "discountDone": "Réduction de {percent} % enregistrée : elle s’applique à ton prochain paiement.",
+      "referralDone": "Code de parrainage enregistré. Merci !",
+      "accessDone": "C’est activé : {plan} offert !",
+      "discountWaiting": "Réduction de {percent} % ({code}) sur ton prochain paiement",
+      "tooMany": "Trop d’essais. Réessaie plus tard.",
+      "failed": "Impossible pour le moment. Réessaie.",
+      "refused": {
+        "unknown": "Ce code n’existe pas.",
+        "inactive": "Ce code n’est plus actif.",
+        "expired": "Ce code a expiré.",
+        "used_up": "Ce code a déjà servi le nombre de fois prévu.",
+        "already_used": "Tu as déjà utilisé ce code.",
+        "own_code": "C’est ton propre code de parrainage : partage-le plutôt !",
+        "already_referred": "Tu as déjà été parrainé·e.",
+        "already_paid": "Le parrainage est réservé aux personnes qui n’ont encore jamais payé d’offre."
+      }
+    },
+    "referral": {
+      "title": "Parraine tes proches",
+      "body": "Partage ton code. Quand une personne l’entre dans « J’ai un code » puis paie sa première offre, tu reçois 1 mois offert.",
+      "message": "Je t’invite sur Assisteo Agny : il t’aide à comprendre ce que tu photographies. Entre mon code {code} dans « J’ai un code » : {link}",
+      "whatsapp": "WhatsApp",
+      "share": "Partager",
+      "copy": "Copier le code"
     }
   },
   "deep": {

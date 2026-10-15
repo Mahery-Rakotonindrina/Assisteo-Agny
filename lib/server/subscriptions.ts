@@ -55,6 +55,12 @@ export async function listSubscriptions() {
   return check<Row[]>(await table().select("*").order("created_at", { ascending: false }).limit(5000)).map(fromRow);
 }
 
+/** Every row of one e-mail (empty without accounts). */
+export async function subscriptionsForEmail(email: string) {
+  if (!accountsEnabled) return [];
+  return check<Row[]>(await table().select("*").eq("email", email.toLowerCase())).map(fromRow);
+}
+
 export async function getSubscription(id: string) {
   const row = check<Row | null>(await table().select("*").eq("id", id).maybeSingle());
   return row ? fromRow(row) : null;

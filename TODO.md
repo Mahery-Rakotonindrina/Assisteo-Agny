@@ -139,8 +139,8 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Couleurs propres à chaque offre (badges, fond, bouton de scan)
 - [x] Pas de renouvellement automatique
 - [ ] Paiement Mobile Money dans l'app (MVola…), avec activation automatique
-- [ ] Codes promo, parrainage (1 mois offert)
-- [ ] Offre annuelle moins chère, Premium à l'essai 7 jours
+- [x] Codes promo, parrainage (1 mois offert) — codes créés dans l'Admin (accès offert ou réduction), « J'ai un code » sur la page Offres, mois offert au parrain au premier paiement du filleul
+- [x] Offre annuelle moins chère, Premium à l'essai 7 jours — prix annuel réglable (10 mois par défaut), essai une seule fois par compte
 - [ ] Reçu de paiement en PDF
 - [ ] Places famille réellement gérées dans Premium
 

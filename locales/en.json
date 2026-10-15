@@ -524,7 +524,10 @@
         "airtel": "Airtel Money",
         "cash": "Cash",
         "bank": "Bank transfer",
-        "other": "Other"
+        "other": "Other",
+        "trial": "Premium trial",
+        "promo": "Promo code",
+        "referral": "Referral"
       },
       "ref": "Reference",
       "refHint": "The Mobile Money transaction reference, to find it again.",
@@ -554,7 +557,8 @@
         "body": "Hello,\n\nYour {plan} plan on Assisteo Agny ends on {date}. To renew it and keep your perks, everything is explained here: {link}\n\nThank you, see you soon!",
         "subjectEnded": "Your Assisteo Agny {plan} plan has ended",
         "bodyEnded": "Hello,\n\nYour {plan} plan on Assisteo Agny has ended. To renew it and get your perks back, everything is explained here: {link}\n\nThank you, see you soon!"
-      }
+      },
+      "discount": "Discount waiting: -{percent} % (code {code}). The amount is already reduced; it will be used with this payment."
     },
     "plans": {
       "title": "Plans",
@@ -564,7 +568,8 @@
         "scans": "Scans / month",
         "questionsPerDay": "Questions / day",
         "parcels": "Parcels followed",
-        "deepPerMonth": "Deep analyses / month"
+        "deepPerMonth": "Deep analyses / month",
+        "yearPriceMga": "Price (Ar / year)"
       },
       "zeroHint": "0 = no limit. Admin: everything is unlimited.",
       "freeParcels": "Parcels followed without a plan",
@@ -572,7 +577,8 @@
       "instructions": "How to pay",
       "instructionsPlaceholder": "e.g. Send the amount by MVola to 034 00 000 00 (Full Name), with your e-mail as the reason.",
       "contact": "Contact to send the reference",
-      "contactHint": "A phone number, or a link (WhatsApp: https://wa.me/261…, Messenger…)."
+      "contactHint": "A phone number, or a link (WhatsApp: https://wa.me/261…, Messenger…).",
+      "monthsFree": "{count} months free over the year"
     },
     "adminAccount": "Your account is an admin: open the admin space with your account, or with the token.",
     "ai": {
@@ -684,7 +690,13 @@
         "app_save": "App versions changed",
         "two_factor_on": "Two-step sign-in turned on",
         "two_factor_off": "Two-step sign-in turned off",
-        "two_factor_codes": "Recovery codes renewed"
+        "two_factor_codes": "Recovery codes renewed",
+        "promo_create": "Promo code created",
+        "promo_enable": "Promo code turned on",
+        "promo_disable": "Promo code turned off",
+        "promo_delete": "Promo code deleted",
+        "promo_discount_used": "Discount used",
+        "referral_reward": "Referral month given"
       }
     },
     "export": {
@@ -719,6 +731,42 @@
         "month": "Month",
         "count": "Payments"
       }
+    },
+    "promo": {
+      "title": "Promo codes",
+      "subtitle": "Typed in “I have a code” on the offers page: an offered access, or a discount on the next payment.",
+      "notDurable": "Without Redis, codes, discounts and referrals stay in memory: they may be lost when the server restarts.",
+      "empty": "No code yet.",
+      "new": "New code",
+      "create": "Create the code",
+      "created": "Code created",
+      "code": "Code",
+      "codeHint": "3 to 24 letters, digits or dashes.",
+      "kind": "Type",
+      "kinds": {
+        "access": "Offered access",
+        "discount": "Discount"
+      },
+      "days": "Number of days",
+      "percent": "Discount (%)",
+      "percentHint": "Used on the next payment recorded for that account.",
+      "maxUses": "Max uses",
+      "maxUsesHint": "0 = no limit",
+      "expiresAt": "Valid until",
+      "expiresHint": "Optional",
+      "accessLine": "{plan} · {days} d",
+      "discountLine": "-{percent} %",
+      "uses": "{count} uses",
+      "usesOf": "{count} / {max} uses",
+      "expires": "until {date}",
+      "off": "off",
+      "enable": "Turn on",
+      "disable": "Turn off",
+      "enabled": "Code turned on",
+      "disabled": "Code turned off",
+      "delete": "Delete",
+      "confirmDelete": "Confirm deletion",
+      "deleted": "Code deleted"
     }
   },
   "account": {
@@ -1215,6 +1263,45 @@
       "ended": "You’re back on the free trial. Renew to get your perks back.",
       "renew": "Renew",
       "dismiss": "Hide"
+    },
+    "perYear": "or {price} a year",
+    "perYearFree": "or {price} a year: {count} months free",
+    "trialOffer": {
+      "title": "Try Premium for {days} days",
+      "body": "Free, no commitment: every Premium feature for {days} days. Once per account.",
+      "cta": "Try Premium for {days} days",
+      "used": "You already had the Premium trial."
+    },
+    "codes": {
+      "title": "I have a code",
+      "placeholder": "Your code",
+      "apply": "Apply",
+      "signIn": "Sign in to use a code.",
+      "hint": "A promo code, or a friend’s referral code.",
+      "discountDone": "{percent} % discount saved: it applies to your next payment.",
+      "referralDone": "Referral code saved. Thank you!",
+      "accessDone": "Activated: {plan} is on us!",
+      "discountWaiting": "{percent} % off ({code}) your next payment",
+      "tooMany": "Too many attempts. Try again later.",
+      "failed": "Not possible right now. Try again.",
+      "refused": {
+        "unknown": "This code doesn’t exist.",
+        "inactive": "This code is no longer active.",
+        "expired": "This code has expired.",
+        "used_up": "This code has been used as many times as planned.",
+        "already_used": "You already used this code.",
+        "own_code": "That’s your own referral code: share it instead!",
+        "already_referred": "You were already referred.",
+        "already_paid": "Referral is for people who have never paid for a plan yet."
+      }
+    },
+    "referral": {
+      "title": "Refer your friends",
+      "body": "Share your code. When someone enters it in “I have a code” and then pays for their first plan, you get 1 month free.",
+      "message": "Join me on Assisteo Agny: it helps you understand what you photograph. Enter my code {code} in “I have a code”: {link}",
+      "whatsapp": "WhatsApp",
+      "share": "Share",
+      "copy": "Copy the code"
     }
   },
   "deep": {
