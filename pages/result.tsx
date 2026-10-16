@@ -836,12 +836,13 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
           <motion.div variants={rise} className={styles.parcelNote} data-news={parcelHasNews || undefined}>
             <PackageCheck size={18} />
             <div>
-              {trackedParcel && parcelHasNews ? (
+              {/* The status it moves from: one of the parcels this scan updates (a shipment may have others already up to date). */}
+              {parcelsWithNews[0] ? (
                 <p>
-                  {trackedParcel.info.status === parcel.status
+                  {parcelsWithNews[0].info.status === parcel.status
                     ? t("parcel.newInfo", { detail: parcel.lastEvent?.description || parcel.statusLabel })
                     : t("parcel.newStatus", {
-                        from: t(`parcel.statuses.${trackedParcel.info.status}`),
+                        from: t(`parcel.statuses.${parcelsWithNews[0].info.status}`),
                         to: t(`parcel.statuses.${parcel.status}`),
                       })}
                 </p>
@@ -853,10 +854,16 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
                 <p className={styles.parcelEarlier}>
                   {parcelMatch.parcels.length > 1
                     ? t("parcel.matchShipment", { count: parcelMatch.parcels.length })
-                    : t(parcelMatch.by === "order" ? "parcel.matchOrder" : "parcel.matchTracking", { title: trackedParcel.title })}{" "}
-                  <button type="button" onClick={() => void addParcel(true)}>
-                    {t("parcel.notThisOne")}
-                  </button>
+                    : t(parcelMatch.by === "order" ? "parcel.matchOrder" : "parcel.matchTracking", { title: trackedParcel.title })}
+                  {/* The same order number is the same order: following it apart would only make a copy that is never updated. */}
+                  {parcelMatch.by === "tracking" && (
+                    <>
+                      {" "}
+                      <button type="button" onClick={() => void addParcel(true)}>
+                        {t("parcel.notThisOne")}
+                      </button>
+                    </>
+                  )}
                 </p>
               )}
               {firstEarlier && (
