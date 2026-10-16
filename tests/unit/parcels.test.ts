@@ -31,6 +31,15 @@ describe("parcel matching", () => {
     expect(sameParcel(base.parcel, info())).toBe(false);
   });
 
+  it("keeps two orders apart even when shipped under one tracking number", () => {
+    expect(sameParcel(info(), info({ orderNumber: "261015-2317143" }))).toBe(false);
+    // A carrier's page without the order number: the tracking number decides.
+    expect(sameParcel(info(), info({ orderNumber: null }))).toBe(true);
+    expect(sameParcel(info({ orderNumber: null }), info({ orderNumber: null, trackingNumber: "999" }))).toBe(false);
+    // Spaces and dashes don't count, on either number.
+    expect(sameParcel(info(), info({ orderNumber: info().orderNumber!.replace(/-/g, " ") }))).toBe(true);
+  });
+
   it("only treats later states as news", () => {
     expect(isNewerParcel(info(), delivered)).toBe(true);
     expect(isNewerParcel(delivered, info())).toBe(false);

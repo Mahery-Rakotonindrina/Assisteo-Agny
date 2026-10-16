@@ -33,20 +33,22 @@ export function parcelTone(status: ParcelStatus) {
 
 const normalise = (value: string | null | undefined) => (value ?? "").replace(/[\s-]/g, "").toUpperCase();
 
-/** Identity of a parcel across screenshots: tracking number first, else order number. */
-export function parcelKeys(parcel: Pick<ParcelInfo, "trackingNumber" | "orderNumber"> | null | undefined) {
-  if (!parcel) return [];
-  return [normalise(parcel.trackingNumber) && `T:${normalise(parcel.trackingNumber)}`, normalise(parcel.orderNumber) && `O:${normalise(parcel.orderNumber)}`].filter(
-    (key): key is string => Boolean(key),
-  );
-}
-
+/**
+ * Whether two screenshots show the same parcel. Two different order numbers
+ * are two parcels, even under one tracking number: a seller often ships two
+ * orders together. Otherwise (one of them without an order number, such as a
+ * carrier's tracking page) the tracking number decides. Spaces and dashes
+ * don't count.
+ */
 export function sameParcel(
   a: Pick<ParcelInfo, "trackingNumber" | "orderNumber"> | null | undefined,
   b: Pick<ParcelInfo, "trackingNumber" | "orderNumber"> | null | undefined,
 ) {
-  const keys = new Set(parcelKeys(a));
-  return parcelKeys(b).some((key) => keys.has(key));
+  if (!a || !b) return false;
+  const [orderA, orderB] = [normalise(a.orderNumber), normalise(b.orderNumber)];
+  if (orderA && orderB) return orderA === orderB;
+  const trackingA = normalise(a.trackingNumber);
+  return Boolean(trackingA) && trackingA === normalise(b.trackingNumber);
 }
 
 /** Parses "YYYY-MM-DD HH:mm" (or a date alone) as local time; null when absent or invalid. */
