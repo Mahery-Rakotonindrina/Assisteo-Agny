@@ -6,6 +6,7 @@ import { AdminAccounts } from "@/components/AdminAccounts";
 import { AdminAiCost } from "@/components/AdminAiCost";
 import { AdminLog } from "@/components/AdminLog";
 import { AdminPlans } from "@/components/AdminPlans";
+import { AdminPromoCodes } from "@/components/AdminPromoCodes";
 import { AdminStats } from "@/components/AdminStats";
 import { AdminSubscriptions } from "@/components/AdminSubscriptions";
 import { AdminTwoFactor } from "@/components/AdminTwoFactor";
@@ -193,6 +194,7 @@ export default function AdminPage() {
         {config && <AdminSubscriptions token={token} owner={owner} />}
         {config && <AdminAccounts token={token} />}
         {config && <AdminPlans token={token} />}
+        {config && <AdminPromoCodes token={token} />}
         {config && <AdminAiCost token={token} />}
         {config && <AdminStats token={token} />}
 

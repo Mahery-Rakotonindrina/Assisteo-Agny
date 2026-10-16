@@ -120,7 +120,11 @@ export type PlanLimits = {
   deepPerMonth: number;
 };
 
-export type PlanOffer = PlanLimits & { priceMga: number };
+export type PlanOffer = PlanLimits & {
+  priceMga: number;
+  /** The price of a year paid at once (cheaper than twelve months). */
+  yearPriceMga: number;
+};
 
 /** Prices, limits and how to pay: editable from /admin. */
 export type PlansConfig = {
@@ -133,9 +137,9 @@ export type PlansConfig = {
 
 export const defaultPlansConfig: PlansConfig = {
   offers: {
-    lite: { priceMga: 5000, scans: 60, questionsPerDay: 10, parcels: 15, deepPerMonth: 0 },
-    premium: { priceMga: 15000, scans: 300, questionsPerDay: 50, parcels: 0, deepPerMonth: 30 },
-    pro: { priceMga: 25000, scans: 600, questionsPerDay: 50, parcels: 0, deepPerMonth: 60 },
+    lite: { priceMga: 5000, yearPriceMga: 50000, scans: 60, questionsPerDay: 10, parcels: 15, deepPerMonth: 0 },
+    premium: { priceMga: 15000, yearPriceMga: 150000, scans: 300, questionsPerDay: 50, parcels: 0, deepPerMonth: 30 },
+    pro: { priceMga: 25000, yearPriceMga: 250000, scans: 600, questionsPerDay: 50, parcels: 0, deepPerMonth: 60 },
   },
   freeParcels: 3,
   payment: { instructions: "", contact: "" },
@@ -152,4 +156,11 @@ export type PlanResponse = {
   usage: { scans: number; questionsToday: number; deep: number };
   offers: Array<PlanOffer & { id: SoldPlanId }>;
   payment: PlansConfig["payment"];
+  // Missing from an older server or cache: treated as false / none.
+  /** Signed in and never had a trial nor Premium: may start the 7-day Premium trial. */
+  trialEligible?: boolean;
+  /** A discount code waiting for the next payment. */
+  discount?: { code: string; percent: number } | null;
+  /** The account's referral code, to share. */
+  referralCode?: string | null;
 };

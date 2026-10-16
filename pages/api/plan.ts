@@ -1,10 +1,15 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { activeProvider } from "@/lib/ai/provider";
 import { InstallIdSchema, installIdHeader } from "@/lib/ai/schema";
+import { referralCodeFor, trialEligible } from "@/lib/offers";
 import { soldPlans, type PlanResponse } from "@/lib/plans";
 import { applyCors, sendError } from "@/lib/server/http";
 import { limitsFor, resolvePlan } from "@/lib/server/plan";
+import { registerReferralCode, trialClaimed } from "@/lib/server/offerStore";
+import { pendingDiscount } from "@/lib/server/offers";
 import { getPlansConfig } from "@/lib/server/planConfig";
+import { reportError } from "@/lib/server/reportError";
+import { subscriptionsForEmail } from "@/lib/server/subscriptions";
 import { getAskUsage, getPlanUsage, getTrialUsage } from "@/lib/server/trialStore";
 
 /** The user's plan (from their account), its limits and usage, the offers and how to pay. */
@@ -23,6 +28,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     usage = { scans: trial.used, questionsToday, deep: 0 };
   } else usage = { scans: 0, questionsToday: 0, deep: 0 };
 
+  const offers = account?.email ? await accountOffers(account.id, account.email) : { trialEligible: false, discount: null, referralCode: null };
+
   res.setHeader("Cache-Control", "no-store");
   return res.status(200).json({
     enabled: activeProvider !== "demo",
@@ -33,5 +40,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     usage,
     offers: soldPlans.map((id) => ({ id, ...config.offers[id] })),
     payment: config.payment,
+    ...offers,
   } satisfies PlanResponse);
+}
+
+/** The account's Premium trial, waiting discount and referral code; nothing if unreadable. */
+async function accountOffers(id: string, email: string): Promise<Pick<PlanResponse, "trialEligible" | "discount" | "referralCode">> {
+  try {
+    const referralCode = referralCodeFor(id);
+    const [rows, claimed, discount, registered] = await Promise.all([
+      subscriptionsForEmail(email),
+      trialClaimed(email),
+      pendingDiscount(email),
+      registerReferralCode(referralCode, email),
+    ]);
+    // A code already taken by another account (very unlikely) is not shown.
+    return { trialEligible: !claimed && trialEligible(rows), discount, referralCode: registered ? referralCode : null };
+  } catch (error) {
+    await reportError(error, { route: "plan", kind: "offers" });
+    return { trialEligible: false, discount: null, referralCode: null };
+  }
 }

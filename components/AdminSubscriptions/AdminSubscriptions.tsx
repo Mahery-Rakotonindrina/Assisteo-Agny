@@ -8,7 +8,9 @@ import { useToast } from "@/components/Toast";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatAriary, formatDate, toDateInput } from "@/lib/format";
 import { easeOut, rise, spring } from "@/lib/motion";
-import { activePlan, durations, paidPlans, periodEnd, type ActivePlan, type Duration, type PaidPlanId, type Subscription } from "@/lib/plans";
+import { offeredMethods, suggestedAmount } from "@/lib/offers";
+import { activePlan, durations, paidPlans, periodEnd, type ActivePlan, type Duration, type PaidPlanId, type PlansConfig, type Subscription } from "@/lib/plans";
+import type { AdminDiscountResponse } from "@/pages/api/admin/promo-codes";
 import type { AdminSubscriptionsResponse } from "@/pages/api/admin/subscriptions";
 import { httpClient } from "@/services/httpClient";
 import { ApiError } from "@/types/api";
@@ -426,6 +428,7 @@ export function AdminSubscriptions({ token, owner }: { token: string; owner: boo
         draft={draft}
         now={now}
         owner={owner}
+        token={token}
         onClose={() => setDraft(null)}
         onSave={async (body, editing) => {
           const ok = await run(
@@ -483,19 +486,21 @@ function SubscriptionSheet({
   draft,
   now,
   owner,
+  token,
   onClose,
   onSave,
 }: {
   draft: Draft | null;
   now: number;
   owner: boolean;
+  token: string;
   onClose: () => void;
   onSave: (body: SaveBody, editing: boolean) => Promise<void>;
 }) {
   const mounted = useSyncExternalStore(noSubscribe, () => true, () => false);
   if (!mounted) return null;
   return createPortal(
-    <AnimatePresence>{draft && <SheetForm key={draft.id ?? "new"} initial={draft} now={now} owner={owner} onClose={onClose} onSave={onSave} />}</AnimatePresence>,
+    <AnimatePresence>{draft && <SheetForm key={draft.id ?? "new"} initial={draft} now={now} owner={owner} token={token} onClose={onClose} onSave={onSave} />}</AnimatePresence>,
     document.body,
   );
 }
@@ -504,12 +509,14 @@ function SheetForm({
   initial,
   now,
   owner,
+  token,
   onClose,
   onSave,
 }: {
   initial: Draft;
   now: number;
   owner: boolean;
+  token: string;
   onClose: () => void;
   onSave: (body: SaveBody, editing: boolean) => Promise<void>;
 }) {
@@ -522,7 +529,40 @@ function SheetForm({
   const badEmail = emails.find((email) => !EMAIL.test(email));
   const range = period(draft, now);
   const valid = emails.length > 0 && (!editing || emails.length === 1) && !badEmail && range !== null;
-  const amount = draft.amount.replace(/\D/g, "");
+  const [offers, setOffers] = useState<PlansConfig["offers"] | null>(null);
+  const [discount, setDiscount] = useState<AdminDiscountResponse["discount"]>(null);
+  // An amount typed by the admin (or an edited record's) is never replaced by a suggestion.
+  const [typed, setTyped] = useState(editing);
+  const single = !editing && emails.length === 1 && !badEmail ? emails[0] : null;
+
+  useEffect(() => {
+    httpClient
+      .get<PlansConfig>("/api/admin/plans", { headers: { Authorization: `Bearer ${token}` } })
+      .then((config) => setOffers(config.offers))
+      .catch(() => undefined);
+  }, [token]);
+
+  // The discount waiting for this e-mail's next payment (a promo code it entered).
+  useEffect(() => {
+    if (!single) return;
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      httpClient
+        .get<AdminDiscountResponse>(`/api/admin/promo-codes?email=${encodeURIComponent(single)}`, { headers: { Authorization: `Bearer ${token}` } })
+        .then((result) => {
+          if (!cancelled) setDiscount(result.discount);
+        })
+        .catch(() => undefined);
+    }, 400);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [single, token]);
+
+  const waiting = single ? discount : null;
+  const suggestion = !typed && offers && draft.plan !== "unlimited" ? suggestedAmount(offers[draft.plan], draft.duration, waiting?.percent ?? null) : null;
+  const amount = suggestion !== null ? String(suggestion) : draft.amount.replace(/\D/g, "");
 
   const save = async () => {
     if (!valid || !range) return;
@@ -627,12 +667,21 @@ function SheetForm({
         <h3 className={styles.group}>{t("admin.subs.payment")}</h3>
         <div className={styles.grid}>
           <Field label={t("admin.subs.amount")}>
-            <input inputMode="numeric" value={amount} onChange={(event) => set("amount", event.target.value)} placeholder="5000" />
+            <input
+              inputMode="numeric"
+              value={amount}
+              onChange={(event) => {
+                setTyped(true);
+                set("amount", event.target.value);
+              }}
+              placeholder="5000"
+            />
           </Field>
           <Field label={t("admin.subs.method")}>
             <select value={draft.method} onChange={(event) => set("method", event.target.value)}>
               <option value="">—</option>
-              {paymentMethods.map((method) => (
+              {/* An access given by the app (trial, promo code, referral) keeps its method when edited. */}
+              {[...paymentMethods, ...offeredMethods.filter((method) => method === draft.method)].map((method) => (
                 <option key={method} value={method}>
                   {t(`admin.subs.methods.${method}`)}
                 </option>
@@ -640,6 +689,7 @@ function SheetForm({
             </select>
           </Field>
         </div>
+        {waiting && <p className={styles.period}>{t("admin.subs.discount", { percent: waiting.percent, code: waiting.code })}</p>}
         <Field label={t("admin.subs.ref")} hint={t("admin.subs.refHint")}>
           <input value={draft.ref} onChange={(event) => set("ref", event.target.value.slice(0, 120))} />
         </Field>

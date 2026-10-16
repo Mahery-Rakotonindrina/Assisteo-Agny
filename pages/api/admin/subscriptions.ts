@@ -5,6 +5,7 @@ import { paidPlans, type Subscription } from "@/lib/plans";
 import { guardAdmin } from "@/lib/server/adminAuth";
 import { logAdminAction } from "@/lib/server/adminLog";
 import { sendError } from "@/lib/server/http";
+import { afterPayment } from "@/lib/server/offers";
 import { reportError } from "@/lib/server/reportError";
 import { accountsEnabled } from "@/lib/server/supabaseAdmin";
 import {
@@ -53,7 +54,8 @@ const StopSchema = z.object({ action: z.literal("stop"), email: Email });
 
 /**
  * Admin-only: the subscriptions recorded by the owner. GET lists them, POST
- * adds one per e-mail, PUT edits one, PATCH {action: "stop"} ends an
+ * adds one per e-mail (a payment then uses up a waiting discount and may
+ * reward a referrer, lib/server/offers.ts), PUT edits one, PATCH {action: "stop"} ends an
  * e-mail's access now, DELETE ?id= removes a record. The admin plan
  * ("unlimited") makes its holder an admin: only the owner grants, changes,
  * stops or removes it ("owner_only" for the other admins).
@@ -76,6 +78,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       if (fields.plan === "unlimited" && !actor.owner) return ownerOnly();
       const created = await addSubscriptions([...new Set(emails)].map((email) => ({ ...fields, email })));
       await logAdminAction(actor.id, "subscription_add", detail(created.map((row) => row.email).join(", "), fields.plan, fields.amountMga));
+      // A payment uses up a waiting discount, and may earn a referrer their month.
+      await afterPayment(actor.id, created.map((row) => row.email), fields.amountMga);
       return res.status(201).json({ subscriptions: created } satisfies AdminSubscriptionsResponse);
     }
 

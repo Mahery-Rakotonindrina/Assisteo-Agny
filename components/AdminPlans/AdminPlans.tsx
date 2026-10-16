@@ -6,11 +6,12 @@ import { PlanBadge } from "@/components/PlanBadge";
 import { useToast } from "@/components/Toast";
 import { useTranslation } from "@/hooks/useTranslation";
 import { rise } from "@/lib/motion";
+import { monthsFree } from "@/lib/offers";
 import { soldPlans, type PlanOffer, type PlansConfig } from "@/lib/plans";
 import { httpClient } from "@/services/httpClient";
 import styles from "./AdminPlans.module.scss";
 
-const offerFields: Array<keyof PlanOffer> = ["priceMga", "scans", "questionsPerDay", "parcels", "deepPerMonth"];
+const offerFields: Array<keyof PlanOffer> = ["priceMga", "yearPriceMga", "scans", "questionsPerDay", "parcels", "deepPerMonth"];
 
 /** Prices and limits of each plan, and how to pay: shown on the app's offers page. */
 export function AdminPlans({ token }: { token: string }) {
@@ -75,6 +76,7 @@ export function AdminPlans({ token }: { token: string }) {
               <label key={field} className={styles.field}>
                 <span>{t(`admin.plans.fields.${field}`)}</span>
                 <input inputMode="numeric" value={String(draft.offers[plan][field])} onChange={(event) => setOffer(plan, field, event.target.value)} />
+                {field === "yearPriceMga" && <small>{t("admin.plans.monthsFree", { count: monthsFree(draft.offers[plan]) })}</small>}
               </label>
             ))}
           </div>
