@@ -46,11 +46,12 @@ export type ParcelFollowOutcome = "added" | "updated" | "unchanged" | "limit" | 
 export async function followScannedParcel(entry: HistoryEntry, limit: number): Promise<ParcelFollowOutcome> {
   const info = entry.analysis.parcel;
   if (!info) return "notParcel";
-  const followed = await parcelStore.findFor(info);
-  if (followed) {
-    if (!scanHasNews(followed, info, entry.id)) return "unchanged";
-    await parcelStore.applyScan(followed, entry);
-    return "updated";
+  // Every order of its shipment, for a carrier's page (see parcelsFor).
+  const match = await parcelStore.matchFor(info);
+  if (match) {
+    const news = match.parcels.filter((parcel) => scanHasNews(parcel, info, entry.id));
+    for (const parcel of news) await parcelStore.applyScan(parcel, entry);
+    return news.length > 0 ? "updated" : "unchanged";
   }
   if (limit > 0 && (await parcelStore.list()).filter((parcel) => !parcel.receivedAt).length >= limit) return "limit";
   await parcelStore.add(entry);
