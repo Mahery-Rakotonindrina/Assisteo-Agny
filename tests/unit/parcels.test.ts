@@ -1,10 +1,10 @@
 import "fake-indexeddb/auto";
 import { beforeEach, describe, expect, it } from "vitest";
 import { mockAnalysis } from "@/lib/ai/mock";
-import { compareParcels, isNewerParcel, sameParcel, type ParcelInfo } from "@/lib/parcels";
+import { compareParcels, eventTime, isNewerParcel, parcelScanHasNews, sameParcel, type ParcelInfo } from "@/lib/parcels";
 import { historyStore } from "@/services/historyStore";
 import { followScannedParcel, keepParcelThumbnails, updateEarlierParcelScans } from "@/services/parcelLinking";
-import { hasNewStatus, parcelStore, parcelTotalMga } from "@/services/parcelStore";
+import { parcelStore, parcelTotalMga, scanHasNews } from "@/services/parcelStore";
 import type { HistoryEntry } from "@/types/history";
 
 // The demo parcel: in transit, last event 2026-10-07 17:21.
@@ -31,6 +31,15 @@ describe("parcel matching", () => {
     expect(sameParcel(base.parcel, info())).toBe(false);
   });
 
+  it("keeps two orders apart even when shipped under one tracking number", () => {
+    expect(sameParcel(info(), info({ orderNumber: "261015-2317143" }))).toBe(false);
+    // A carrier's page without the order number: the tracking number decides.
+    expect(sameParcel(info(), info({ orderNumber: null }))).toBe(true);
+    expect(sameParcel(info({ orderNumber: null }), info({ orderNumber: null, trackingNumber: "999" }))).toBe(false);
+    // Spaces and dashes don't count, on either number.
+    expect(sameParcel(info(), info({ orderNumber: info().orderNumber!.replace(/-/g, " ") }))).toBe(true);
+  });
+
   it("only treats later states as news", () => {
     expect(isNewerParcel(info(), delivered)).toBe(true);
     expect(isNewerParcel(delivered, info())).toBe(false);
@@ -38,6 +47,51 @@ describe("parcel matching", () => {
     // Without event times, the progress step decides; a problem always counts.
     expect(isNewerParcel(info({ lastEvent: null }), info({ lastEvent: null, status: "out_for_delivery" }))).toBe(true);
     expect(isNewerParcel(info({ lastEvent: null }), info({ lastEvent: null, status: "exception" }))).toBe(true);
+  });
+});
+
+describe("a new screenshot of a followed parcel", () => {
+  const event = (at: string | null, description = "Pris en charge par l'agence de Zhaoqing") => ({ description, location: "Zhaoqing, Guangdong", at });
+
+  it("reads the dates carriers write, and rejects impossible ones", () => {
+    expect(eventTime("2026-10-07 17:21")).toBe(new Date(2026, 9, 7, 17, 21).getTime());
+    expect(eventTime("2026/10/07 17:21")).toBe(new Date(2026, 9, 7, 17, 21).getTime());
+    expect(eventTime("07/10/2026 17:21")).toBe(new Date(2026, 9, 7, 17, 21).getTime());
+    expect(eventTime("7.10.2026")).toBe(new Date(2026, 9, 7).getTime());
+    expect(eventTime("31/02/2026")).toBeNull();
+    expect(eventTime("hier")).toBeNull();
+  });
+
+  it("is news when it moves on, or adds something at the same step", () => {
+    // Same status, a new event without a readable time (the bug: only "View my parcels").
+    expect(parcelScanHasNews(info(), info({ lastEvent: event(null, "Arrivé au centre de tri de Foshan") }))).toBe(true);
+    // Same status, a date written the carrier's way, later.
+    expect(parcelScanHasNews(info(), info({ lastEvent: event("08/10/2026 09:05", "Arrivé à Foshan") }))).toBe(true);
+    // Same time, an expected delivery day appears.
+    expect(parcelScanHasNews(info(), info({ estimatedDelivery: "2026-10-20" }))).toBe(true);
+    expect(parcelScanHasNews(info(), delivered)).toBe(true);
+  });
+
+  it("is not news when it says the same, or is older", () => {
+    expect(parcelScanHasNews(info(), info())).toBe(false);
+    // Same words, other case and spaces.
+    expect(parcelScanHasNews(info(), info({ statusLabel: "  EN TRANSIT " }))).toBe(false);
+    // An older screenshot, by date or by step.
+    expect(parcelScanHasNews(delivered, info())).toBe(false);
+    expect(parcelScanHasNews(info({ lastEvent: null }), info({ lastEvent: null, status: "shipped", statusLabel: "Expédié" }))).toBe(false);
+    // Missing details don't count as changes.
+    expect(parcelScanHasNews(info(), info({ carrier: null, trackingNumber: null }))).toBe(false);
+  });
+
+  it("is not news for a scan already applied to the parcel", async () => {
+    await historyStore.wipe();
+    await parcelStore.wipe();
+    const parcel = await parcelStore.add(scan("s1", info(), 1000));
+    const newer = info({ lastEvent: event(null, "Arrivé au centre de tri de Foshan") });
+    expect(scanHasNews(parcel, newer, "s2")).toBe(true);
+    const updated = await parcelStore.applyScan(parcel, scan("s2", newer, 2000));
+    expect(updated.info.lastEvent?.description).toBe("Arrivé au centre de tri de Foshan");
+    expect(scanHasNews(updated, newer, "s2")).toBe(false);
   });
 });
 
@@ -54,7 +108,7 @@ describe("following a parcel", () => {
     expect(await parcelStore.list()).toHaveLength(1);
 
     const second = scan("s2", delivered, 2000);
-    expect(hasNewStatus(parcel, delivered)).toBe(true);
+    expect(scanHasNews(parcel, delivered, "s2")).toBe(true);
     const updated = await parcelStore.applyScan(parcel, second);
     expect(updated.info.status).toBe("delivered");
     expect(updated.scanIds).toEqual(["s1", "s2"]);

@@ -83,7 +83,7 @@ import { haptics, shareText } from "@/services/device";
 import { historyStore } from "@/services/historyStore";
 import { listStore } from "@/services/listStore";
 import { keepParcelThumbnails } from "@/services/parcelLinking";
-import { hasNewStatus, parcelStore } from "@/services/parcelStore";
+import { parcelStore, scanHasNews } from "@/services/parcelStore";
 import { cancelNotification } from "@/services/notifications";
 import { foodJournal } from "@/services/foodJournal";
 import { cancelReminder, expiryDate, INSURANCE_NOTICE_DAYS, insuranceReminderAt, scheduleReminder } from "@/services/reminders";
@@ -254,7 +254,7 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
   const { parcels } = useParcels();
   const { entries } = useHistory();
   const trackedParcel = analysis.parcel ? parcels.find((parcel) => sameParcel(parcel.info, analysis.parcel)) : undefined;
-  const parcelHasNews = trackedParcel ? hasNewStatus(trackedParcel, analysis.parcel) : false;
+  const parcelHasNews = trackedParcel ? scanHasNews(trackedParcel, analysis.parcel, entry.id) : false;
   const earlierScans = analysis.parcel
     ? entries.filter((other) => other.id !== entry.id && other.createdAt < entry.createdAt && sameParcel(other.analysis.parcel, analysis.parcel))
     : [];
@@ -833,10 +833,12 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
             <div>
               {trackedParcel && parcelHasNews ? (
                 <p>
-                  {t("parcel.newStatus", {
-                    from: t(`parcel.statuses.${trackedParcel.info.status}`),
-                    to: t(`parcel.statuses.${parcel.status}`),
-                  })}
+                  {trackedParcel.info.status === parcel.status
+                    ? t("parcel.newInfo", { detail: parcel.lastEvent?.description || parcel.statusLabel })
+                    : t("parcel.newStatus", {
+                        from: t(`parcel.statuses.${trackedParcel.info.status}`),
+                        to: t(`parcel.statuses.${parcel.status}`),
+                      })}
                 </p>
               ) : trackedParcel ? (
                 <p>{t("parcel.inList", { status: t(`parcel.statuses.${trackedParcel.info.status}`) })}</p>
