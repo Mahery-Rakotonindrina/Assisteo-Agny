@@ -49,12 +49,22 @@ export function sameParcel(
   return parcelKeys(b).some((key) => keys.has(key));
 }
 
-/** Parses "YYYY-MM-DD HH:mm" (or a date alone) as local time; null when absent or invalid. */
+/**
+ * Parses an event date as local time: "YYYY-MM-DD HH:mm" as asked of the AI,
+ * also "YYYY/MM/DD" and "DD/MM/YYYY" (with -, / or .) as carriers write them,
+ * the time being optional. Null when absent or invalid.
+ */
 export function eventTime(at: string | null | undefined) {
-  const match = at?.match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?/);
+  const text = at?.trim() ?? "";
+  const yearFirst = text.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(?:[ T,]+(\d{1,2}):(\d{2}))?/);
+  const dayFirst = yearFirst ? null : text.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})(?:[ T,]+(\d{1,2}):(\d{2}))?/);
+  const match = yearFirst ?? dayFirst;
   if (!match) return null;
-  const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), Number(match[4] ?? 0), Number(match[5] ?? 0));
-  return Number.isNaN(date.getTime()) ? null : date.getTime();
+  const [year, month, day] = (yearFirst ? [match[1], match[2], match[3]] : [match[3], match[2], match[1]]).map(Number);
+  const date = new Date(year, month - 1, day, Number(match[4] ?? 0), Number(match[5] ?? 0));
+  // Rejects impossible days (31/02 would roll over into March).
+  if (Number.isNaN(date.getTime()) || date.getMonth() !== month - 1 || date.getDate() !== day) return null;
+  return date.getTime();
 }
 
 /**
@@ -68,6 +78,40 @@ export function isNewerParcel(current: ParcelInfo, next: ParcelInfo) {
   if (next.status === current.status) return false;
   // A problem can happen at any step; otherwise only moving forward counts.
   return next.status === "exception" || next.status === "returned" || parcelStep(next.status) > parcelStep(current.status);
+}
+
+const isProblem = (status: ParcelStatus) => status === "exception" || status === "returned";
+
+/** What a screenshot says beside the status: details added later (expected day, numbers, carrier…). */
+const details = (info: ParcelInfo) => [info.estimatedDelivery, info.trackingNumber, info.orderNumber, info.carrier, info.shippingMode, info.destinationCity, info.shippedAt];
+/** The carrier's own words about the last step. */
+const wording = (info: ParcelInfo) => [info.statusLabel, info.lastEvent?.description, info.lastEvent?.location, info.lastEvent?.at];
+
+/** Whether `next` fills or changes one of these values (spaces, case and accents aside). */
+const differs = (next: Array<string | null | undefined>, current: Array<string | null | undefined>) =>
+  next.some((value, index) => Boolean(value?.trim()) && normaliseSearch(value!) !== normaliseSearch(current[index] ?? ""));
+
+/**
+ * Whether a new screenshot of a followed parcel brings something to update:
+ * a later point of the journey, or, at the same point, a detail added or
+ * changed. Never an older screenshot: an earlier date, or an earlier step
+ * without dates to compare (a problem can happen at any step). Undated
+ * screenshots of the same step also count when the carrier's words changed
+ * (a new event without a readable time).
+ */
+export function parcelScanHasNews(current: ParcelInfo, next: ParcelInfo) {
+  if (isNewerParcel(current, next)) return true;
+  const a = eventTime(current.lastEvent?.at);
+  const b = eventTime(next.lastEvent?.at);
+  const dated = a !== null && b !== null;
+  if (dated && b < a) return false;
+  if (next.status !== current.status) {
+    if (isProblem(next.status)) return true;
+    const step = parcelStep(next.status) - parcelStep(current.status);
+    if (step < 0) return false;
+    if (step > 0) return true;
+  }
+  return differs(details(next), details(current)) || (!dated && differs(wording(next), wording(current)));
 }
 
 /** Order of "Mes colis" in progress: problems first, then along the journey, delivered last. */

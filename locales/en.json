@@ -985,6 +985,7 @@
     "view": "See my parcels",
     "viewShort": "My parcels",
     "newStatus": "This parcel is already in your list. New status: {from} → {to}.",
+    "newInfo": "This parcel is already in your list, and this screenshot has newer details: {detail}.",
     "inList": "This parcel is in your list ({status}).",
     "earlierUpdated": "You scanned it before on {date}: that scan now shows the latest status.",
     "openEarlier": "See the earlier scan",

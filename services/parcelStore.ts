@@ -1,7 +1,7 @@
 import { clear, createStore, del, get, set, values } from "idb-keyval";
 import type { ParcelStatus, ShippingMode } from "@/lib/ai/schema";
 import { encodeImage } from "@/lib/image";
-import { isNewerParcel, sameParcel, type ParcelInfo } from "@/lib/parcels";
+import { parcelScanHasNews, sameParcel, type ParcelInfo } from "@/lib/parcels";
 import type { HistoryEntry } from "@/types/history";
 import { createId } from "./historyStore";
 
@@ -234,9 +234,13 @@ export const parcelStore = {
   },
 };
 
-/** Whether this scan shows a later state than what the followed parcel has. */
-export function hasNewStatus(parcel: Parcel, info: ParcelInfo | null | undefined) {
-  return Boolean(info && isNewerParcel(parcel.info, info));
+/**
+ * Whether this scan brings the followed parcel something new (see
+ * parcelScanHasNews). `scanId`: a scan already applied to it has nothing more.
+ */
+export function scanHasNews(parcel: Parcel, info: ParcelInfo | null | undefined, scanId?: string) {
+  if (!info || (scanId && parcel.scanIds.includes(scanId))) return false;
+  return parcelScanHasNews(parcel.info, info);
 }
 
 /** Everything spent on a parcel, in ariary: price plus fees. */

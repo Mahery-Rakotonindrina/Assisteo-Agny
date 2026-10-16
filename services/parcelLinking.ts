@@ -1,7 +1,7 @@
 import { isNewerParcel, sameParcel } from "@/lib/parcels";
 import type { HistoryEntry } from "@/types/history";
 import { historyStore } from "./historyStore";
-import { hasNewStatus, parcelMiniature, parcelStore } from "./parcelStore";
+import { parcelMiniature, parcelStore, scanHasNews } from "./parcelStore";
 
 /**
  * A new screenshot of a parcel scanned before: the earlier scans take the new
@@ -48,7 +48,7 @@ export async function followScannedParcel(entry: HistoryEntry, limit: number): P
   if (!info) return "notParcel";
   const followed = await parcelStore.findFor(info);
   if (followed) {
-    if (!hasNewStatus(followed, info)) return "unchanged";
+    if (!scanHasNews(followed, info, entry.id)) return "unchanged";
     await parcelStore.applyScan(followed, entry);
     return "updated";
   }

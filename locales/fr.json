@@ -985,6 +985,7 @@
     "view": "Voir mes colis",
     "viewShort": "Mes colis",
     "newStatus": "Ce colis est déjà dans ta liste. Nouveau statut : {from} → {to}.",
+    "newInfo": "Ce colis est déjà dans ta liste, et cette capture a des infos plus récentes : {detail}.",
     "inList": "Ce colis est dans ta liste ({status}).",
     "earlierUpdated": "Tu l’avais déjà scanné le {date} : ce scan a été mis à jour avec le dernier statut.",
     "openEarlier": "Voir l’ancien scan",
