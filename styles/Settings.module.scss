@@ -13,6 +13,20 @@
   }
 }
 
+// A computer shows two columns that each stack their own cards, so a tall
+// card never leaves a hole beside it. On a phone the columns melt away and
+// the cards follow their own `order` (set on each group) in one list.
+.column {
+  display: contents;
+
+  @include desktop {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    min-width: 0;
+  }
+}
+
 .header {
   padding-top: 1.25rem;
 
@@ -192,6 +206,9 @@
 }
 
 .brandFooter {
+  // After every card, on a phone as on a computer.
+  order: 99;
+  grid-column: 1 / -1;
   display: flex;
   flex-direction: column;
   align-items: center;
