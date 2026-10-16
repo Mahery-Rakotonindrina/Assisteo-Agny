@@ -16,6 +16,14 @@ type AccountSheetProps = {
 };
 
 const RESEND_DELAY_S = 60;
+/**
+ * Sign-in codes are 8 digits, as Supabase sends them (Authentication → Email
+ * → OTP length). A full code is checked as soon as it is typed; from 6 digits
+ * a button checks it too, should that setting change (Supabase allows 6 to 10).
+ */
+const CODE_LENGTH = 8;
+const MIN_CODE_LENGTH = 6;
+const MAX_CODE_LENGTH = 10;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** Passwordless sign-in: e-mail, then the one-time code received by e-mail. */
@@ -181,15 +189,15 @@ export function AccountSheet({ open, onClose }: AccountSheetProps) {
                     type="text"
                     inputMode="numeric"
                     autoComplete="one-time-code"
-                    maxLength={8}
+                    maxLength={MAX_CODE_LENGTH}
+                    placeholder={"•".repeat(CODE_LENGTH)}
                     value={code}
                     aria-label={t("account.codeTitle")}
                     onChange={(event) => {
-                      const digits = event.target.value.replace(/\D/g, "").slice(0, 8);
+                      const digits = event.target.value.replace(/\D/g, "").slice(0, MAX_CODE_LENGTH);
                       setCode(digits);
                       setError(null);
-                      // Codes are 6 digits by default: submit as soon as it's complete.
-                      if (digits.length === 6 && !busy) void verify(digits);
+                      if (digits.length === CODE_LENGTH && !busy) void verify(digits);
                     }}
                     disabled={busy}
                   />
@@ -199,7 +207,7 @@ export function AccountSheet({ open, onClose }: AccountSheetProps) {
                     </p>
                   )}
                   {error && <p className={styles.error}>{t(`account.errors.${error}`)}</p>}
-                  {code.length > 6 && !busy && (
+                  {code.length >= MIN_CODE_LENGTH && !busy && (
                     <Button block onClick={() => void verify(code)}>
                       {t("account.verify")}
                     </Button>

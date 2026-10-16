@@ -163,3 +163,9 @@
     transform: rotate(360deg);
   }
 }
+
+// One dot per digit expected: the length is clear before typing.
+.code::placeholder {
+  color: var(--text-subtle);
+  opacity: 0.6;
+}

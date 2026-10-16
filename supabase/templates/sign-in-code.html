@@ -1,7 +1,8 @@
 <!--
   Supabase → Authentication → Emails → Templates.
   Paste this into BOTH "Magic Link" and "Confirm signup" (the app signs in with
-  the 6-digit code, never with the link). Subject: "Ton code Assisteo Agny : {{ .Token }}"
+  the code: 8 digits, as set in Authentication → Email → OTP length, which
+  components/AccountSheet expects; never with the link). Subject: "Ton code Assisteo Agny : {{ .Token }}"
 -->
 <!doctype html>
 <html lang="fr">
