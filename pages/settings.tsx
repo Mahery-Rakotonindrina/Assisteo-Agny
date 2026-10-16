@@ -166,221 +166,225 @@ export default function SettingsPage() {
           <h1>{t("settings.title")}</h1>
         </motion.header>
 
-        <Group title={t("settings.appearance")}>
-          <Row icon={<Globe />} label={t("settings.language")} stacked>
-            <LocaleSwitcher />
-          </Row>
-          <Row icon={<Palette />} label={t("settings.theme")} stacked>
-            <SegmentedControl
-              ariaLabel={t("settings.theme")}
-              value={settings.theme}
-              onChange={(theme) => update({ theme })}
-              options={themeOptions.map(({ value, icon }) => ({ value, icon, label: t(`settings.themes.${value}`) }))}
-            />
-          </Row>
-          <Row icon={<Type />} label={t("settings.textSize")} hint={t("settings.textSizeHint")} stacked>
-            <SegmentedControl
-              ariaLabel={t("settings.textSize")}
-              value={settings.textSize}
-              onChange={(textSize: TextSize) => update({ textSize })}
-              options={textSizes.map((value) => ({ value, label: t(`settings.textSizes.${value}`) }))}
-            />
-          </Row>
-        </Group>
-
-        {accountsAvailable && (
-          <Group id="account" title={t("account.section")}>
-            <AccountSettings />
-          </Group>
-        )}
-
-        <Group id="plan" title={t("plans.section")}>
-          <PlanSettings />
-        </Group>
-
-        <Group id="food" title={t("food.settingsSection")}>
-          <Row icon={<HeartPulse />} label={t("food.myAllergies")} hint={t("food.myAllergiesHint")} stacked>
-            <div className={styles.chips} role="group" aria-label={t("food.myAllergies")}>
-              {allergens.map((value) => {
-                const on = settings.allergies.includes(value);
-                return (
-                  <button
-                    key={value}
-                    type="button"
-                    aria-pressed={on}
-                    onClick={() => update({ allergies: on ? settings.allergies.filter((item) => item !== value) : [...settings.allergies, value] })}
-                  >
-                    {on && <Check size={13} strokeWidth={3} />}
-                    {t(`food.allergens.${value}`)}
-                  </button>
-                );
-              })}
-            </div>
-          </Row>
-          <Row icon={<Salad />} label={t("food.myDiets")} hint={t("food.myDietsHint")} stacked>
-            <div className={styles.chips} role="group" aria-label={t("food.myDiets")}>
-              {diets.map((value) => {
-                const on = settings.diets.includes(value);
-                return (
-                  <button
-                    key={value}
-                    type="button"
-                    aria-pressed={on}
-                    onClick={() => update({ diets: on ? settings.diets.filter((item) => item !== value) : [...settings.diets, value] })}
-                  >
-                    {on && <Check size={13} strokeWidth={3} />}
-                    {t(`food.diets.${value}`)}
-                  </button>
-                );
-              })}
-            </div>
-          </Row>
-          <Link href="/food" className={styles.linkRow}>
-            <span className={styles.rowIcon}>
-              <BookOpen />
-            </span>
-            <span className={styles.linkLabel}>{t("food.title")}</span>
-            <ChevronRight size={16} />
-          </Link>
-        </Group>
-
-        {android && (
-          <Group title={t("settings.androidApp")}>
-            <Row
-              icon={<Smartphone />}
-              label={t("settings.androidAppLabel")}
-              hint={android.version ? t("settings.androidAppHint", { version: android.version }) : t("settings.androidAppHintNoVersion")}
-            >
-              <Button href={android.url} size="md" icon={<Download />}>
-                {t("settings.androidAppDownload")}
-              </Button>
+        {/* Two columns on a computer, each stacking its own cards; on a phone, one list in the cards' order. */}
+        <div className={styles.column}>
+          <Group order={1} title={t("settings.appearance")}>
+            <Row icon={<Globe />} label={t("settings.language")} stacked>
+              <LocaleSwitcher />
+            </Row>
+            <Row icon={<Palette />} label={t("settings.theme")} stacked>
+              <SegmentedControl
+                ariaLabel={t("settings.theme")}
+                value={settings.theme}
+                onChange={(theme) => update({ theme })}
+                options={themeOptions.map(({ value, icon }) => ({ value, icon, label: t(`settings.themes.${value}`) }))}
+              />
+            </Row>
+            <Row icon={<Type />} label={t("settings.textSize")} hint={t("settings.textSizeHint")} stacked>
+              <SegmentedControl
+                ariaLabel={t("settings.textSize")}
+                value={settings.textSize}
+                onChange={(textSize: TextSize) => update({ textSize })}
+                options={textSizes.map((value) => ({ value, label: t(`settings.textSizes.${value}`) }))}
+              />
             </Row>
           </Group>
-        )}
 
-        <Group id="ai-engine" title={t("settings.aiEngine")}>
-          <AiKeySettings requestOpen={section === "ai"} />
-        </Group>
+          <Group order={3} id="plan" title={t("plans.section")}>
+            <PlanSettings />
+          </Group>
 
-        <Group title={t("settings.permissions")}>
-          {(
-            [
-              ["camera", cameraPermission, <Camera key="camera" />],
-              ["notifications", permission, <BellRing key="notifications" />],
-            ] as const
-          ).map(([kind, status, icon]) => (
+          <Group order={6} id="ai-engine" title={t("settings.aiEngine")}>
+            <AiKeySettings requestOpen={section === "ai"} />
+          </Group>
+
+          <Group order={9} title={t("settings.data")}>
             <Row
-              key={kind}
-              icon={icon}
-              label={t(kind === "camera" ? "settings.permissionCamera" : "settings.permissionNotifications")}
-              hint={t(`settings.permissionStatus.${status}`)}
+              icon={<SignalLow />}
+              label={t("settings.dataSaver")}
+              hint={
+                settings.dataSaver === "auto"
+                  ? `${t("settings.dataSaverHint")} ${t(isSavingData("auto") ? (connectionIsSlow() ? "settings.dataSaverAutoOn" : "settings.dataSaverOn") : "settings.dataSaverAutoOff")}`
+                  : t("settings.dataSaverHint")
+              }
+              stacked
             >
-              {status === "prompt" ? (
-                <Button size="md" onClick={() => void allow(kind)}>
-                  {t("settings.permissionAllow")}
-                </Button>
-              ) : (
-                <span className={styles.permission} data-status={status}>
-                  {status === "granted" ? <Check size={16} strokeWidth={3} /> : status === "denied" ? <X size={16} strokeWidth={3} /> : null}
-                </span>
-              )}
+              <SegmentedControl
+                ariaLabel={t("settings.dataSaver")}
+                value={settings.dataSaver}
+                onChange={(dataSaver: DataSaverPreference) => update({ dataSaver })}
+                options={(["auto", "on", "off"] as const).map((value) => ({ value, label: t(`settings.dataSaverModes.${value}`) }))}
+              />
             </Row>
-          ))}
-          {(cameraPermission === "denied" || permission === "denied") && (
-            <p className={styles.warning}>{t("settings.permissionDeniedHint")}</p>
-          )}
-          {native && (
+            <StorageRows entries={entries.length} />
             <div className={styles.rowAction}>
-              <Button variant="ghost" icon={<RotateCcw />} onClick={() => update({ onboardingDone: false })} block>
-                {t("settings.replayOnboarding")}
+              <Button
+                variant="danger"
+                icon={<Trash2 />}
+                onClick={() => void clearHistory()}
+                disabled={entries.length === 0}
+                block
+              >
+                {confirmClear ? t("settings.clearConfirm") : t("settings.clearHistory")}
               </Button>
             </div>
+          </Group>
+        </div>
+        <div className={styles.column}>
+          {accountsAvailable && (
+            <Group order={2} id="account" title={t("account.section")}>
+              <AccountSettings />
+            </Group>
           )}
-        </Group>
 
-        <Group title={t("settings.notifications")}>
-          <Row icon={<BellRing />} label={t("settings.notifyOnResult")} hint={t("settings.notifyOnResultHint")}>
-            <Toggle
-              label={t("settings.notifyOnResult")}
-              checked={settings.notifyOnResult && permission === "granted"}
-              onChange={(enabled) => void toggleNotifyOnResult(enabled)}
-              disabled={permission === "unsupported"}
-            />
-          </Row>
-          {permission === "denied" && <p className={styles.warning}>{t("settings.notificationsDenied")}</p>}
-          <Row icon={<Vibrate />} label={t("settings.haptics")} hint={t("settings.hapticsHint")}>
-            <Toggle label={t("settings.haptics")} checked={settings.haptics} onChange={(haptics) => update({ haptics })} />
-          </Row>
-          <div className={styles.rowAction}>
-            <Button variant="secondary" icon={<Send />} onClick={() => void sendTest()} disabled={permission === "unsupported"} block>
-              {t("settings.testNotification")}
-            </Button>
-          </div>
-        </Group>
-
-        <Group title={t("settings.data")}>
-          <Row
-            icon={<SignalLow />}
-            label={t("settings.dataSaver")}
-            hint={
-              settings.dataSaver === "auto"
-                ? `${t("settings.dataSaverHint")} ${t(isSavingData("auto") ? (connectionIsSlow() ? "settings.dataSaverAutoOn" : "settings.dataSaverOn") : "settings.dataSaverAutoOff")}`
-                : t("settings.dataSaverHint")
-            }
-            stacked
-          >
-            <SegmentedControl
-              ariaLabel={t("settings.dataSaver")}
-              value={settings.dataSaver}
-              onChange={(dataSaver: DataSaverPreference) => update({ dataSaver })}
-              options={(["auto", "on", "off"] as const).map((value) => ({ value, label: t(`settings.dataSaverModes.${value}`) }))}
-            />
-          </Row>
-          <StorageRows entries={entries.length} />
-          <div className={styles.rowAction}>
-            <Button
-              variant="danger"
-              icon={<Trash2 />}
-              onClick={() => void clearHistory()}
-              disabled={entries.length === 0}
-              block
-            >
-              {confirmClear ? t("settings.clearConfirm") : t("settings.clearHistory")}
-            </Button>
-          </div>
-        </Group>
-
-        <Group title={t("settings.about")}>
-          <Row icon={<Cpu />} label={t("settings.aiStatus")}>
-            <span className={styles.status} data-status={aiStatus.status}>
-              <span className={styles.statusDot} />
-              {aiLabel}
-            </span>
-          </Row>
-          {aiStatus.model && aiStatus.status === "live" && (
-            <Row icon={<span className={styles.mono}>AI</span>} label={t("settings.aiProvider")}>
-              <span className={styles.value}>{aiStatus.model}</span>
+          <Group order={4} id="food" title={t("food.settingsSection")}>
+            <Row icon={<HeartPulse />} label={t("food.myAllergies")} hint={t("food.myAllergiesHint")} stacked>
+              <div className={styles.chips} role="group" aria-label={t("food.myAllergies")}>
+                {allergens.map((value) => {
+                  const on = settings.allergies.includes(value);
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() => update({ allergies: on ? settings.allergies.filter((item) => item !== value) : [...settings.allergies, value] })}
+                    >
+                      {on && <Check size={13} strokeWidth={3} />}
+                      {t(`food.allergens.${value}`)}
+                    </button>
+                  );
+                })}
+              </div>
             </Row>
+            <Row icon={<Salad />} label={t("food.myDiets")} hint={t("food.myDietsHint")} stacked>
+              <div className={styles.chips} role="group" aria-label={t("food.myDiets")}>
+                {diets.map((value) => {
+                  const on = settings.diets.includes(value);
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() => update({ diets: on ? settings.diets.filter((item) => item !== value) : [...settings.diets, value] })}
+                    >
+                      {on && <Check size={13} strokeWidth={3} />}
+                      {t(`food.diets.${value}`)}
+                    </button>
+                  );
+                })}
+              </div>
+            </Row>
+            <Link href="/food" className={styles.linkRow}>
+              <span className={styles.rowIcon}>
+                <BookOpen />
+              </span>
+              <span className={styles.linkLabel}>{t("food.title")}</span>
+              <ChevronRight size={16} />
+            </Link>
+          </Group>
+
+          {android && (
+            <Group order={5} title={t("settings.androidApp")}>
+              <Row
+                icon={<Smartphone />}
+                label={t("settings.androidAppLabel")}
+                hint={android.version ? t("settings.androidAppHint", { version: android.version }) : t("settings.androidAppHintNoVersion")}
+              >
+                <Button href={android.url} size="md" icon={<Download />}>
+                  {t("settings.androidAppDownload")}
+                </Button>
+              </Row>
+            </Group>
           )}
-          <Row icon={<Info />} label={t("settings.version")}>
-            <span className={styles.value}>{appVersion}</span>
-          </Row>
-          <Link href="/privacy" className={styles.linkRow}>
-            <span className={styles.rowIcon}>
-              <ShieldCheck />
-            </span>
-            <span className={styles.linkLabel}>{t("legal.privacy")}</span>
-            <ChevronRight size={16} />
-          </Link>
-          <Link href="/terms" className={styles.linkRow}>
-            <span className={styles.rowIcon}>
-              <FileText />
-            </span>
-            <span className={styles.linkLabel}>{t("legal.terms")}</span>
-            <ChevronRight size={16} />
-          </Link>
-          <p className={styles.privacy}>{t("settings.privacy")}</p>
-        </Group>
+
+          <Group order={7} title={t("settings.permissions")}>
+            {(
+              [
+                ["camera", cameraPermission, <Camera key="camera" />],
+                ["notifications", permission, <BellRing key="notifications" />],
+              ] as const
+            ).map(([kind, status, icon]) => (
+              <Row
+                key={kind}
+                icon={icon}
+                label={t(kind === "camera" ? "settings.permissionCamera" : "settings.permissionNotifications")}
+                hint={t(`settings.permissionStatus.${status}`)}
+              >
+                {status === "prompt" ? (
+                  <Button size="md" onClick={() => void allow(kind)}>
+                    {t("settings.permissionAllow")}
+                  </Button>
+                ) : (
+                  <span className={styles.permission} data-status={status}>
+                    {status === "granted" ? <Check size={16} strokeWidth={3} /> : status === "denied" ? <X size={16} strokeWidth={3} /> : null}
+                  </span>
+                )}
+              </Row>
+            ))}
+            {(cameraPermission === "denied" || permission === "denied") && (
+              <p className={styles.warning}>{t("settings.permissionDeniedHint")}</p>
+            )}
+            {native && (
+              <div className={styles.rowAction}>
+                <Button variant="ghost" icon={<RotateCcw />} onClick={() => update({ onboardingDone: false })} block>
+                  {t("settings.replayOnboarding")}
+                </Button>
+              </div>
+            )}
+          </Group>
+
+          <Group order={8} title={t("settings.notifications")}>
+            <Row icon={<BellRing />} label={t("settings.notifyOnResult")} hint={t("settings.notifyOnResultHint")}>
+              <Toggle
+                label={t("settings.notifyOnResult")}
+                checked={settings.notifyOnResult && permission === "granted"}
+                onChange={(enabled) => void toggleNotifyOnResult(enabled)}
+                disabled={permission === "unsupported"}
+              />
+            </Row>
+            {permission === "denied" && <p className={styles.warning}>{t("settings.notificationsDenied")}</p>}
+            <Row icon={<Vibrate />} label={t("settings.haptics")} hint={t("settings.hapticsHint")}>
+              <Toggle label={t("settings.haptics")} checked={settings.haptics} onChange={(haptics) => update({ haptics })} />
+            </Row>
+            <div className={styles.rowAction}>
+              <Button variant="secondary" icon={<Send />} onClick={() => void sendTest()} disabled={permission === "unsupported"} block>
+                {t("settings.testNotification")}
+              </Button>
+            </div>
+          </Group>
+
+          <Group order={10} title={t("settings.about")}>
+            <Row icon={<Cpu />} label={t("settings.aiStatus")}>
+              <span className={styles.status} data-status={aiStatus.status}>
+                <span className={styles.statusDot} />
+                {aiLabel}
+              </span>
+            </Row>
+            {aiStatus.model && aiStatus.status === "live" && (
+              <Row icon={<span className={styles.mono}>AI</span>} label={t("settings.aiProvider")}>
+                <span className={styles.value}>{aiStatus.model}</span>
+              </Row>
+            )}
+            <Row icon={<Info />} label={t("settings.version")}>
+              <span className={styles.value}>{appVersion}</span>
+            </Row>
+            <Link href="/privacy" className={styles.linkRow}>
+              <span className={styles.rowIcon}>
+                <ShieldCheck />
+              </span>
+              <span className={styles.linkLabel}>{t("legal.privacy")}</span>
+              <ChevronRight size={16} />
+            </Link>
+            <Link href="/terms" className={styles.linkRow}>
+              <span className={styles.rowIcon}>
+                <FileText />
+              </span>
+              <span className={styles.linkLabel}>{t("legal.terms")}</span>
+              <ChevronRight size={16} />
+            </Link>
+            <p className={styles.privacy}>{t("settings.privacy")}</p>
+          </Group>
+        </div>
 
         <motion.footer variants={rise} className={styles.brandFooter}>
           <Logo size={30} />
@@ -392,9 +396,10 @@ export default function SettingsPage() {
   );
 }
 
-function Group({ id, title, children }: { id?: string; title: string; children: ReactNode }) {
+/** `order`: the card's place in the single list of a phone (see .column). */
+function Group({ id, title, order, children }: { id?: string; title: string; order: number; children: ReactNode }) {
   return (
-    <motion.section id={id} variants={rise} className={styles.group}>
+    <motion.section id={id} variants={rise} className={styles.group} style={{ order }}>
       <h2>{title}</h2>
       <div className={styles.card}>{children}</div>
     </motion.section>
