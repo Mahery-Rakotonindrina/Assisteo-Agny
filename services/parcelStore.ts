@@ -1,7 +1,7 @@
 import { clear, createStore, del, get, set, values } from "idb-keyval";
 import type { ParcelStatus, ShippingMode } from "@/lib/ai/schema";
 import { encodeImage } from "@/lib/image";
-import { parcelScanHasNews, sameParcel, type ParcelInfo } from "@/lib/parcels";
+import { parcelScanHasNews, parcelsFor, type ParcelInfo } from "@/lib/parcels";
 import type { HistoryEntry } from "@/types/history";
 import { createId } from "./historyStore";
 
@@ -109,17 +109,24 @@ export const parcelStore = {
     return (await values<Parcel>(db())).filter((parcel) => !parcel.deletedAt).sort((a, b) => b.updatedAt - a.updatedAt);
   },
 
-  /** The followed parcel this scan belongs to, if any. */
-  async findFor(info: ParcelInfo | null | undefined) {
-    if (!info) return undefined;
-    return (await parcelStore.list()).find((parcel) => sameParcel(parcel.info, info));
+  /** The followed parcels this scan is about, and why (see parcelsFor); null for a new parcel. */
+  async matchFor(info: ParcelInfo | null | undefined) {
+    return parcelsFor(await parcelStore.list(), info);
   },
 
-  /** Starts following the parcel shown on this scan. */
-  async add(entry: HistoryEntry) {
+  /** The followed parcel this scan belongs to, if any (the first of its shipment). */
+  async findFor(info: ParcelInfo | null | undefined) {
+    return (await parcelStore.matchFor(info))?.parcels[0];
+  },
+
+  /**
+   * Starts following the parcel shown on this scan. `separate`: the user says
+   * it is not the parcel it was taken for, so it is followed on its own.
+   */
+  async add(entry: HistoryEntry, { separate = false } = {}) {
     const info = entry.analysis.parcel;
     if (!info) throw new Error("This scan is not a parcel.");
-    const existing = await parcelStore.findFor(info);
+    const existing = separate ? undefined : await parcelStore.findFor(info);
     if (existing) return existing;
     const now = Date.now();
     const parcel: Parcel = {

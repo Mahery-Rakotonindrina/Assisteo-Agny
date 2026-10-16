@@ -75,7 +75,7 @@ import { useReminderTexts } from "@/hooks/useReminderTexts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { exampleEntry, isExampleId } from "@/lib/examples";
 import { dietAlerts, hasDietAlert } from "@/lib/food";
-import { sameParcel } from "@/lib/parcels";
+import { parcelsFor, sameParcel } from "@/lib/parcels";
 import { formatDateTime, formatDay } from "@/lib/format";
 import { easeOut, pop, rise, spring, stagger } from "@/lib/motion";
 import { useSettings } from "@/lib/settings/SettingsProvider";
@@ -253,8 +253,11 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
   // Parcels: the followed list ("Mes colis") and earlier scans of the same parcel.
   const { parcels } = useParcels();
   const { entries } = useHistory();
-  const trackedParcel = analysis.parcel ? parcels.find((parcel) => sameParcel(parcel.info, analysis.parcel)) : undefined;
-  const parcelHasNews = trackedParcel ? scanHasNews(trackedParcel, analysis.parcel, entry.id) : false;
+  // The parcel with this order number, or every order of this shipment (a carrier's page).
+  const parcelMatch = analysis.parcel ? parcelsFor(parcels, analysis.parcel) : null;
+  const trackedParcel = parcelMatch?.parcels[0];
+  const parcelsWithNews = parcelMatch ? parcelMatch.parcels.filter((parcel) => scanHasNews(parcel, analysis.parcel, entry.id)) : [];
+  const parcelHasNews = parcelsWithNews.length > 0;
   const earlierScans = analysis.parcel
     ? entries.filter((other) => other.id !== entry.id && other.createdAt < entry.createdAt && sameParcel(other.analysis.parcel, analysis.parcel))
     : [];
@@ -269,7 +272,8 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
     toast(t("lists.added"));
   };
 
-  const addParcel = async () => {
+  // `separate`: the user says it is not the parcel it was taken for.
+  const addParcel = async (separate = false) => {
     // Parcels followed at once (not received yet), per plan; 0 = no limit.
     if (parcelLimit > 0 && parcels.filter((parcel) => !parcel.receivedAt).length >= parcelLimit) {
       haptics.error();
@@ -278,14 +282,15 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
       return;
     }
     haptics.success();
-    await parcelStore.add(entry);
+    await parcelStore.add(entry, { separate });
     toast(t("parcel.added"));
   };
   const updateParcel = async () => {
-    if (!trackedParcel) return;
+    if (parcelsWithNews.length === 0) return;
     haptics.success();
-    await parcelStore.applyScan(trackedParcel, entry);
-    toast(t("parcel.updated", { status: t(`parcel.statuses.${analysis.parcel!.status}`) }));
+    for (const parcel of parcelsWithNews) await parcelStore.applyScan(parcel, entry);
+    const status = t(`parcel.statuses.${analysis.parcel!.status}`);
+    toast(parcelsWithNews.length > 1 ? t("parcel.updatedMany", { count: parcelsWithNews.length, status }) : t("parcel.updated", { status }));
   };
 
   // Food: the allergies and diets of the user, and the meals already logged today.
@@ -843,6 +848,17 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
               ) : trackedParcel ? (
                 <p>{t("parcel.inList", { status: t(`parcel.statuses.${trackedParcel.info.status}`) })}</p>
               ) : null}
+              {/* Why it is taken for a followed parcel, and a way out when it is not that one. */}
+              {trackedParcel && parcelMatch && (
+                <p className={styles.parcelEarlier}>
+                  {parcelMatch.parcels.length > 1
+                    ? t("parcel.matchShipment", { count: parcelMatch.parcels.length })
+                    : t(parcelMatch.by === "order" ? "parcel.matchOrder" : "parcel.matchTracking", { title: trackedParcel.title })}{" "}
+                  <button type="button" onClick={() => void addParcel(true)}>
+                    {t("parcel.notThisOne")}
+                  </button>
+                </p>
+              )}
               {firstEarlier && (
                 <p className={styles.parcelEarlier}>
                   {t("parcel.earlierUpdated", { date: formatDateTime(firstEarlier.createdAt, locale) })}{" "}

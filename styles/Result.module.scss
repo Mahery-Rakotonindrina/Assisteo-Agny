@@ -647,7 +647,8 @@ $bar-height: calc(var(--safe-top) + 3.95rem);
     margin-top: 0.3rem;
   }
 
-  a {
+  a,
+  button {
     font-weight: 600;
     color: var(--accent-text);
     text-decoration: underline;
