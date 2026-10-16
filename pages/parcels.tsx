@@ -1,7 +1,7 @@
 import Head from "next/head";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
-import { useDeferredValue, useEffect, useState } from "react";
+import { useDeferredValue, useEffect, useRef, useState } from "react";
 import {
   Check,
   ChevronDown,
@@ -85,6 +85,9 @@ export default function ParcelsPage() {
   const [range, setRange] = useState<DayRange>(thisMonthSoFar);
   const [exporting, setExporting] = useState(false);
   const [clientFilter, setClientFilter] = useState<{ name: string | null } | null>(null);
+  // One parcel open at a time: opening one closes the other.
+  const [openId, setOpenId] = useState<string | null>(null);
+  const toggle = (id: string) => setOpenId((current) => (current === id ? null : id));
   const showClients = reseller && view === "clients";
   const toast = useToast();
   const periodParcels = parcels.filter((parcel) => inPeriod(parcel, period, now, range));
@@ -332,6 +335,8 @@ export default function ParcelsPage() {
                     clients={clients}
                     hasScan={hasScan}
                     reseller={reseller}
+                    open={openId === parcel.id}
+                    onToggle={() => toggle(parcel.id)}
                   />
                 ))}
               </motion.section>
@@ -348,6 +353,8 @@ export default function ParcelsPage() {
                     hasScan={hasScan}
                     reseller={reseller}
                     received
+                    open={openId === parcel.id}
+                    onToggle={() => toggle(parcel.id)}
                   />
                 ))}
               </motion.section>
@@ -368,13 +375,22 @@ type ParcelRowProps = {
   received?: boolean;
   /** Pro: show what the client still owes. */
   reseller: boolean;
+  /** Its details are shown; the list keeps one parcel open at a time. */
+  open: boolean;
+  onToggle: () => void;
 };
 
-function ParcelRow({ parcel, thumbnail, clients, hasScan, reseller, received = false }: ParcelRowProps) {
+function ParcelRow({ parcel, thumbnail, clients, hasScan, reseller, received = false, open, onToggle }: ParcelRowProps) {
   const { t, locale } = useTranslation();
   const toast = useToast();
-  const [open, setOpen] = useState(false);
+  const card = useRef<HTMLElement>(null);
   const [confirmRemove, setConfirmRemove] = useState(false);
+  // The card closing above shrinks the page: bring this one back into view once it has.
+  useEffect(() => {
+    if (!open) return;
+    const timer = setTimeout(() => card.current?.scrollIntoView({ block: "nearest", behavior: "smooth" }), 280);
+    return () => clearTimeout(timer);
+  }, [open]);
   const [editing, setEditing] = useState(false);
   const { info } = parcel;
   const step = parcelStep(info.status);
@@ -402,8 +418,16 @@ function ParcelRow({ parcel, thumbnail, clients, hasScan, reseller, received = f
   };
 
   return (
-    <article className={styles.card} data-tone={received ? "done" : info.status === "delivered" ? "ok" : parcelTone(info.status)}>
-      <button type="button" className={styles.summary} onClick={() => setOpen((value) => !value)} aria-expanded={open}>
+    <article ref={card} className={styles.card} data-tone={received ? "done" : info.status === "delivered" ? "ok" : parcelTone(info.status)}>
+      <button
+        type="button"
+        className={styles.summary}
+        onClick={() => {
+          setConfirmRemove(false);
+          onToggle();
+        }}
+        aria-expanded={open}
+      >
         <span className={styles.thumb}>
           {/* eslint-disable-next-line @next/next/no-img-element -- local data URL */}
           {thumbnail ? <img src={thumbnail} alt="" /> : <Package size={20} />}
