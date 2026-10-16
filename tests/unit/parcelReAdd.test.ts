@@ -53,3 +53,44 @@ describe("a deleted parcel", () => {
     expect((await parcelStore.list()).map((parcel) => parcel.info.orderNumber).sort()).toEqual(["261015-2317143", "261015-5753117"]);
   });
 });
+
+describe("which followed parcels a screenshot is about", () => {
+  const withNumbers = (id: string, createdAt: number, numbers: { orderNumber: string | null; trackingNumber: string | null }, status: "shipped" | "in_transit" = "shipped"): HistoryEntry => ({
+    ...scan(id, createdAt),
+    analysis: { ...demo, parcel: { ...demo.parcel!, ...numbers, status, lastEvent: null } },
+  });
+
+  it("is the order first, else the whole shipment under the tracking number", async () => {
+    const { parcelMatch, parcelsFor } = await import("@/lib/parcels");
+    expect(parcelMatch({ orderNumber: "A-1", trackingNumber: "T" }, { orderNumber: "A 1", trackingNumber: null })).toBe("order");
+    expect(parcelMatch({ orderNumber: "A-1", trackingNumber: "T" }, { orderNumber: "B-2", trackingNumber: "T" })).toBeNull();
+    expect(parcelMatch({ orderNumber: "A-1", trackingNumber: "T" }, { orderNumber: null, trackingNumber: "t" })).toBe("tracking");
+    const followed = [
+      { id: "a", info: { ...demo.parcel!, orderNumber: "A-1", trackingNumber: "T" } },
+      { id: "b", info: { ...demo.parcel!, orderNumber: "B-2", trackingNumber: "T" } },
+    ];
+    expect(parcelsFor(followed, { orderNumber: "B-2", trackingNumber: "T" })).toMatchObject({ by: "order", parcels: [{ id: "b" }] });
+    expect(parcelsFor(followed, { orderNumber: null, trackingNumber: "T" })?.parcels.map((parcel) => parcel.id)).toEqual(["a", "b"]);
+    expect(parcelsFor(followed, { orderNumber: "C-3", trackingNumber: "T" })).toBeNull();
+  });
+
+  it("updates every order of a shipment from a carrier's page", async () => {
+    const { followScannedParcel } = await import("@/services/parcelLinking");
+    await parcelStore.wipe();
+    await parcelStore.add(withNumbers("a", 1000, { orderNumber: "A-1", trackingNumber: "T" }));
+    await parcelStore.add(withNumbers("b", 2000, { orderNumber: "B-2", trackingNumber: "T" }));
+    // The carrier's page: no order number, the shipment moved on.
+    expect(await followScannedParcel(withNumbers("c", 3000, { orderNumber: null, trackingNumber: "T" }, "in_transit"), 0)).toBe("updated");
+    expect((await parcelStore.list()).map((parcel) => parcel.info.status)).toEqual(["in_transit", "in_transit"]);
+  });
+
+  it("can be followed on its own when the user says it is another parcel", async () => {
+    await parcelStore.wipe();
+    const first = await parcelStore.add(withNumbers("a", 1000, { orderNumber: null, trackingNumber: "T" }));
+    const taken = withNumbers("b", 2000, { orderNumber: "B-2", trackingNumber: "T" });
+    expect(await parcelStore.findFor(taken.analysis.parcel)).toMatchObject({ id: first.id });
+    const apart = await parcelStore.add(taken, { separate: true });
+    expect(apart.id).not.toBe(first.id);
+    expect(await parcelStore.list()).toHaveLength(2);
+  });
+});

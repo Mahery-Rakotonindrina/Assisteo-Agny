@@ -31,24 +31,44 @@ export function parcelTone(status: ParcelStatus) {
   return "ok";
 }
 
-const normalise = (value: string | null | undefined) => (value ?? "").replace(/[\s-]/g, "").toUpperCase();
+/** A number as written anywhere: no spaces, dashes or dots, one case. */
+const normalise = (value: string | null | undefined) => (value ?? "").replace(/[\s\-.]/g, "").toUpperCase();
+
+type Numbers = Pick<ParcelInfo, "trackingNumber" | "orderNumber">;
+
+/** Why a screenshot is a followed parcel: the same order number, or (one of them without one) the same tracking number. */
+export type ParcelMatch = "order" | "tracking";
 
 /**
- * Whether two screenshots show the same parcel. Two different order numbers
- * are two parcels, even under one tracking number: a seller often ships two
- * orders together. Otherwise (one of them without an order number, such as a
- * carrier's tracking page) the tracking number decides. Spaces and dashes
- * don't count.
+ * How two screenshots show the same parcel, or null. A parcel is its order:
+ * two different order numbers are two parcels, even under one tracking
+ * number (a seller often ships several orders together). When one of them
+ * has no order number (a carrier's tracking page, an order followed before
+ * it was shipped), the tracking number decides.
  */
-export function sameParcel(
-  a: Pick<ParcelInfo, "trackingNumber" | "orderNumber"> | null | undefined,
-  b: Pick<ParcelInfo, "trackingNumber" | "orderNumber"> | null | undefined,
-) {
-  if (!a || !b) return false;
+export function parcelMatch(a: Numbers | null | undefined, b: Numbers | null | undefined): ParcelMatch | null {
+  if (!a || !b) return null;
   const [orderA, orderB] = [normalise(a.orderNumber), normalise(b.orderNumber)];
-  if (orderA && orderB) return orderA === orderB;
+  if (orderA && orderB) return orderA === orderB ? "order" : null;
   const trackingA = normalise(a.trackingNumber);
-  return Boolean(trackingA) && trackingA === normalise(b.trackingNumber);
+  return trackingA && trackingA === normalise(b.trackingNumber) ? "tracking" : null;
+}
+
+export function sameParcel(a: Numbers | null | undefined, b: Numbers | null | undefined) {
+  return parcelMatch(a, b) !== null;
+}
+
+/**
+ * The followed parcels a screenshot is about: the one with its order number;
+ * else every one under its tracking number, since a carrier's page tells
+ * about the whole shipment, all its orders. Null when it is a new parcel.
+ */
+export function parcelsFor<T extends { info: ParcelInfo }>(followed: T[], info: Numbers | null | undefined): { parcels: T[]; by: ParcelMatch } | null {
+  if (!info) return null;
+  const byOrder = followed.find((parcel) => parcelMatch(parcel.info, info) === "order");
+  if (byOrder) return { parcels: [byOrder], by: "order" };
+  const byTracking = followed.filter((parcel) => parcelMatch(parcel.info, info) === "tracking");
+  return byTracking.length > 0 ? { parcels: byTracking, by: "tracking" } : null;
 }
 
 /**
