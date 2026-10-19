@@ -151,6 +151,17 @@
   font-variant-numeric: tabular-nums;
 }
 
+.hourSelect {
+  flex: none;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-strong);
+  color: var(--text);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+}
+
 .mono {
   font-family: var(--font-mono);
   font-size: 0.7rem;

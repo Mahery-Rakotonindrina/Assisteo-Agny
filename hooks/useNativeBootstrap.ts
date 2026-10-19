@@ -6,6 +6,7 @@ import { useRouter } from "next/router";
 import { useEffect, useRef } from "react";
 import { useSettings } from "@/lib/settings/SettingsProvider";
 import { onNotificationTap } from "@/services/notifications";
+import { PARCEL_NOTIFICATION_PREFIX } from "@/services/parcelReminders";
 import { compactOldPhotos } from "@/services/photoStorage";
 
 /** One-time platform wiring: splash, status bar, Android back button, notification taps. */
@@ -37,7 +38,8 @@ export function useNativeBootstrap() {
     void compactOldPhotos().catch(() => undefined);
 
     void onNotificationTap((entryId) => {
-      void routerRef.current.push({ pathname: "/result", query: { id: entryId } });
+      if (entryId.startsWith(PARCEL_NOTIFICATION_PREFIX)) void routerRef.current.push("/parcels");
+      else void routerRef.current.push({ pathname: "/result", query: { id: entryId } });
     }).then((cleanup) => cleanups.push(cleanup));
 
     return () => cleanups.forEach((cleanup) => cleanup());
