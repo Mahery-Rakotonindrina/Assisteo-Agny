@@ -371,10 +371,16 @@
       "auto": "Auto (3G)",
       "on": "Always",
       "off": "Never"
-    }
+    },
+    "parcelNotify": "Parcels: notify on the expected delivery day",
+    "parcelNotifyHint": "A notification on the day a parcel should arrive.",
+    "parcelNotifyHour": "Notification time",
+    "parcelNotifyHourHint": "Madagascar time"
   },
   "notifications": {
-    "readyTitle": "Analysis ready ✨"
+    "readyTitle": "Analysis ready ✨",
+    "parcelTitle": "Your parcel arrives today",
+    "parcelBody": "{title}: expected delivery today"
   },
   "common": {
     "confirm": "Confirm",
@@ -1176,7 +1182,10 @@
       "loss": "Loss: {amount}",
       "locked": "Sale price, client payment and profit: with the Pro plan.",
       "dueShort": "{amount} due"
-    }
+    },
+    "expected": "Expected delivery: {date}",
+    "expectedToday": "Arrives today",
+    "expectedLate": "Expected on {date}: overdue"
   },
   "plans": {
     "names": {

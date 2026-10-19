@@ -32,7 +32,7 @@ type NotifyOptions = {
   body: string;
   /** Deliver later instead of now. */
   at?: Date;
-  /** History entry to open when the notification is tapped. */
+  /** History entry to open when the notification is tapped (or a parcel, see parcelReminders). */
   entryId?: string;
 };
 
@@ -56,6 +56,17 @@ export async function notify({ title, body, at, entryId }: NotifyOptions): Promi
 
 export async function cancelNotification(id: number) {
   await LocalNotifications.cancel({ notifications: [{ id }] }).catch(() => undefined);
+}
+
+/** Ids of the notifications still to come; null when the plugin can't tell. */
+export async function pendingNotificationIds(): Promise<Set<number> | null> {
+  if (!isSupported()) return null;
+  try {
+    const { notifications } = await LocalNotifications.getPending();
+    return new Set(notifications.map(({ id }) => id));
+  } catch {
+    return null;
+  }
 }
 
 /** Cancels every pending notification (account deleted). */

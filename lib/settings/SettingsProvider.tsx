@@ -22,6 +22,10 @@ export type Settings = {
   textSize: TextSize;
   /** Notify when an analysis finishes while the app is in the background. */
   notifyOnResult: boolean;
+  /** Notify on the expected delivery day of an awaited parcel… */
+  parcelNotify: boolean;
+  /** …at this hour (0-23), Madagascar time. */
+  parcelNotifyHour: number;
   haptics: boolean;
   /** Lighter photos on slow connections (this device only). */
   dataSaver: DataSaverPreference;
@@ -37,7 +41,7 @@ export type Settings = {
 };
 
 /** Preferences that follow the account across devices (the rest is per device). */
-export const syncedSettingKeys = ["locale", "theme", "notifyOnResult", "haptics", "allergies", "diets", "foodGoals"] as const;
+export const syncedSettingKeys = ["locale", "theme", "notifyOnResult", "parcelNotify", "parcelNotifyHour", "haptics", "allergies", "diets", "foodGoals"] as const;
 export type SyncedSettings = Pick<Settings, (typeof syncedSettingKeys)[number]>;
 
 type SettingsContextValue = {
@@ -55,6 +59,8 @@ const defaults: Settings = {
   theme: "system",
   textSize: "normal",
   notifyOnResult: true,
+  parcelNotify: true,
+  parcelNotifyHour: 8,
   haptics: true,
   dataSaver: "auto",
   allergies: [],

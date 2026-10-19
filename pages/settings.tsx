@@ -9,6 +9,7 @@ import {
   Camera,
   Check,
   ChevronRight,
+  Clock,
   Cpu,
   Download,
   FileText,
@@ -19,6 +20,7 @@ import {
   Info,
   Monitor,
   Moon,
+  Package,
   Palette,
   RotateCcw,
   Salad,
@@ -118,6 +120,18 @@ export default function SettingsPage() {
       }
     }
     update({ notifyOnResult: enabled });
+  };
+
+  const toggleParcelNotify = async (enabled: boolean) => {
+    if (enabled && permission !== "granted") {
+      const result = await requestNotificationPermission();
+      setPermission(result);
+      if (result !== "granted") {
+        toast(t("settings.notificationsDenied"), "error");
+        return;
+      }
+    }
+    update({ parcelNotify: enabled });
   };
 
   const sendTest = async () => {
@@ -342,6 +356,30 @@ export default function SettingsPage() {
                 disabled={permission === "unsupported"}
               />
             </Row>
+            <Row icon={<Package />} label={t("settings.parcelNotify")} hint={t("settings.parcelNotifyHint")}>
+              <Toggle
+                label={t("settings.parcelNotify")}
+                checked={settings.parcelNotify && permission === "granted"}
+                onChange={(enabled) => void toggleParcelNotify(enabled)}
+                disabled={permission === "unsupported"}
+              />
+            </Row>
+            {settings.parcelNotify && permission === "granted" && (
+              <Row icon={<Clock />} label={t("settings.parcelNotifyHour")} hint={t("settings.parcelNotifyHourHint")}>
+                <select
+                  className={styles.hourSelect}
+                  aria-label={t("settings.parcelNotifyHour")}
+                  value={settings.parcelNotifyHour}
+                  onChange={(event) => update({ parcelNotifyHour: Number(event.target.value) })}
+                >
+                  {Array.from({ length: 24 }, (_, hour) => (
+                    <option key={hour} value={hour}>
+                      {`${String(hour).padStart(2, "0")}:00`}
+                    </option>
+                  ))}
+                </select>
+              </Row>
+            )}
             {permission === "denied" && <p className={styles.warning}>{t("settings.notificationsDenied")}</p>}
             <Row icon={<Vibrate />} label={t("settings.haptics")} hint={t("settings.hapticsHint")}>
               <Toggle label={t("settings.haptics")} checked={settings.haptics} onChange={(haptics) => update({ haptics })} />
