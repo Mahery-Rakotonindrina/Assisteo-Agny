@@ -371,10 +371,16 @@
       "auto": "Auto (3G)",
       "on": "Toujours",
       "off": "Jamais"
-    }
+    },
+    "parcelNotify": "Colis : prévenir le jour de livraison prévue",
+    "parcelNotifyHint": "Une notification le jour où un colis doit arriver.",
+    "parcelNotifyHour": "Heure de la notification",
+    "parcelNotifyHourHint": "Heure de Madagascar"
   },
   "notifications": {
-    "readyTitle": "Analyse prête ✨"
+    "readyTitle": "Analyse prête ✨",
+    "parcelTitle": "Ton colis arrive aujourd'hui",
+    "parcelBody": "{title} : livraison prévue aujourd'hui"
   },
   "common": {
     "confirm": "Confirmer",
@@ -1176,7 +1182,10 @@
       "loss": "Perte : {amount}",
       "locked": "Prix de vente, paiement du client et bénéfice : avec l’offre Pro.",
       "dueShort": "Reste {amount}"
-    }
+    },
+    "expected": "Livraison prévue : {date}",
+    "expectedToday": "Arrive aujourd'hui",
+    "expectedLate": "Prévue le {date} : dépassée"
   },
   "plans": {
     "names": {

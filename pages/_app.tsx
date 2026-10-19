@@ -4,6 +4,7 @@ import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import { MotionConfig } from "motion/react";
 import { AppShell } from "@/components/AppShell";
 import { Onboarding } from "@/components/Onboarding";
+import { ParcelReminderKeeper } from "@/components/ParcelReminderKeeper";
 import { ReminderKeeper } from "@/components/ReminderKeeper";
 import { ScanQueueRunner } from "@/components/ScanQueueRunner";
 import { ShareReceiver } from "@/components/ShareReceiver";
@@ -60,6 +61,7 @@ export default function App({ Component, pageProps }: AppProps) {
               </AppShell>
               <Onboarding />
               <ReminderKeeper />
+              <ParcelReminderKeeper />
               <ScanQueueRunner />
               <ShareReceiver />
               <UpdateGate />

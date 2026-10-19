@@ -3,6 +3,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { useDeferredValue, useEffect, useRef, useState } from "react";
 import {
+  CalendarClock,
   Check,
   ChevronDown,
   Copy,
@@ -35,6 +36,7 @@ import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatAriary, formatDate, formatDateTime, formatMonthYear, toDateInput } from "@/lib/format";
 import { easeOut, rise, stagger } from "@/lib/motion";
+import { deliveryState, formatDay } from "@/lib/parcelDelivery";
 import { exportFileName, parcelsWorkbook, XLSX_TYPE } from "@/lib/parcelExport";
 import { inPeriod, isForClient, isValidRange, parcelDate, type DayRange, type Period } from "@/lib/parcelReport";
 import { compareParcels, matchesSearch, parcelStep, parcelSteps, parcelTone, shippingModeOf, trackingUrl } from "@/lib/parcels";
@@ -335,6 +337,7 @@ export default function ParcelsPage() {
                     clients={clients}
                     hasScan={hasScan}
                     reseller={reseller}
+                    now={now}
                     open={openId === parcel.id}
                     onToggle={() => toggle(parcel.id)}
                   />
@@ -353,6 +356,7 @@ export default function ParcelsPage() {
                     hasScan={hasScan}
                     reseller={reseller}
                     received
+                    now={now}
                     open={openId === parcel.id}
                     onToggle={() => toggle(parcel.id)}
                   />
@@ -375,12 +379,14 @@ type ParcelRowProps = {
   received?: boolean;
   /** Pro: show what the client still owes. */
   reseller: boolean;
+  /** To tell the expected delivery day against today. */
+  now: number;
   /** Its details are shown; the list keeps one parcel open at a time. */
   open: boolean;
   onToggle: () => void;
 };
 
-function ParcelRow({ parcel, thumbnail, clients, hasScan, reseller, received = false, open, onToggle }: ParcelRowProps) {
+function ParcelRow({ parcel, thumbnail, clients, hasScan, reseller, received = false, now, open, onToggle }: ParcelRowProps) {
   const { t, locale } = useTranslation();
   const toast = useToast();
   const card = useRef<HTMLElement>(null);
@@ -406,6 +412,14 @@ function ParcelRow({ parcel, thumbnail, clients, hasScan, reseller, received = f
     : info.status === "delivered"
       ? t("parcels.deliveredWaiting")
       : t(`parcel.statuses.${info.status}`);
+  const delivery = received ? null : deliveryState(parcel, now);
+  const deliveryText =
+    delivery &&
+    (delivery.when === "today"
+      ? t("parcels.expectedToday")
+      : delivery.when === "late"
+        ? t("parcels.expectedLate", { date: formatDay(delivery.day, locale, { weekday: false }) })
+        : t("parcels.expected", { date: formatDay(delivery.day, locale) }));
 
   const copy = async (value: string) => {
     try {
@@ -440,6 +454,11 @@ function ParcelRow({ parcel, thumbnail, clients, hasScan, reseller, received = f
             </span>
           )}
           <span className={styles.status}>{statusText}</span>
+          {delivery && (
+            <span className={styles.expected} data-when={delivery.when}>
+              <CalendarClock size={12} /> {deliveryText}
+            </span>
+          )}
           {shipping.mode && (
             <span className={styles.shipping} data-mode={shipping.mode} title={t(`parcel.shipping.source.${shipping.source}`)}>
               <ShippingIcon size={12} /> {t(`parcel.shipping.${shipping.mode}`)}
