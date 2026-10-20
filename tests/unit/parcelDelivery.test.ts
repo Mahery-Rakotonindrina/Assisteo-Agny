@@ -67,11 +67,14 @@ describe("expected delivery day", () => {
     expect(deliveryState(parcel("a"), Date.UTC(2026, 9, 20, 21, 30))?.when).toBe("late");
   });
 
-  it("says nothing once received, delivered or without a day", () => {
+  it("says nothing once received or without a day", () => {
     expect(deliveryState(parcel("a", { receivedAt: 1 }), MORNING_20)).toBeNull();
     expect(deliveryState(parcel("a", {}, { estimatedDelivery: null }), MORNING_20)).toBeNull();
-    // Delivered by the carrier (often to the forwarder's warehouse), even if not received yet.
-    expect(deliveryState(parcel("a", {}, { status: "delivered" }), Date.UTC(2026, 9, 25))).toBeNull();
+  });
+
+  it("keeps the day of a parcel delivered to the forwarder, not received yet (arrival in Madagascar)", () => {
+    // The owner's case: sea freight, at the forwarder's since 10 Oct, expected on 30 Nov.
+    expect(deliveryState(parcel("a", {}, { status: "delivered", estimatedDelivery: "2026-11-30" }), MORNING_20)).toMatchObject({ when: "upcoming" });
   });
 
   it("formats the day whatever the time zone", () => {
@@ -96,11 +99,11 @@ describe("delivery notification time", () => {
     expect(deliveryNotifyAt(parcel("a"), 9, MORNING_20)).toBe(MORNING_20 + 3_600_000);
   });
 
-  it("skips received, delivered or undated parcels", () => {
+  it("skips received or undated parcels, not those at the forwarder's", () => {
     const before = Date.UTC(2026, 9, 18);
     expect(deliveryNotifyAt(parcel("a", { receivedAt: 1 }), 8, before)).toBeNull();
-    expect(deliveryNotifyAt(parcel("a", {}, { status: "delivered" }), 8, before)).toBeNull();
     expect(deliveryNotifyAt(parcel("a", {}, { estimatedDelivery: null }), 8, before)).toBeNull();
+    expect(deliveryNotifyAt(parcel("a", {}, { status: "delivered" }), 8, before)).not.toBeNull();
   });
 });
 
