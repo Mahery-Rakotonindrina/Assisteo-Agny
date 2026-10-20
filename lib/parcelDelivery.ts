@@ -37,16 +37,16 @@ export function madagascarTime(day: CalendarDay, hour: number) {
 
 type Deliverable = { info: Pick<ParcelInfo, "estimatedDelivery" | "status">; receivedAt?: number };
 
-/** A parcel still awaited: not received, not delivered by the carrier. */
-const awaited = (parcel: Deliverable) => !parcel.receivedAt && parcel.info.status !== "delivered";
+/**
+ * A parcel still awaited: not in the user's hands yet. "Delivered" by the
+ * carrier often means the forwarder's warehouse abroad, and the expected day
+ * is then the forwarder's own (arrival in Madagascar): it still counts.
+ */
+const awaited = (parcel: Deliverable) => !parcel.receivedAt;
 
 export type DeliveryState = { when: "upcoming" | "today" | "late"; day: CalendarDay };
 
-/**
- * Where an awaited parcel stands against its expected day; null without one.
- * Once the carrier has delivered it (often to the forwarder's warehouse), the
- * day is no longer shown: "overdue" would mislead.
- */
+/** Where an awaited parcel stands against its expected day; null without one. */
 export function deliveryState(parcel: Deliverable, now: number): DeliveryState | null {
   if (!awaited(parcel)) return null;
   const day = expectedDay(parcel.info.estimatedDelivery);
