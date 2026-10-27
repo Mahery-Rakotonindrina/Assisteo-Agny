@@ -2,6 +2,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { AlarmClock, BellRing } from "lucide-react";
 import { useToast } from "@/components/Toast";
+import { usePlan } from "@/hooks/usePlan";
 import { useReminderTexts } from "@/hooks/useReminderTexts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDateTime } from "@/lib/format";
@@ -20,12 +21,13 @@ type ReminderSnoozeProps = {
 
 const labels: Record<SnoozeChoice, string> = { hour: "reminders.snoozeHour", tomorrow: "reminders.snoozeTomorrow", week: "reminders.snoozeWeek" };
 
-/** A reminder that has come: "remind me later", in an hour, tomorrow or in a week. */
+/** A reminder that has come: "remind me later", in an hour, tomorrow or in a week (paid plans only). */
 export function ReminderSnooze({ entry, linked = false, onSnoozed }: ReminderSnoozeProps) {
   const { t, locale } = useTranslation();
   const toast = useToast();
   const texts = useReminderTexts();
   const [busy, setBusy] = useState(false);
+  const { has } = usePlan();
   const title = entry.analysis.reminder?.title ?? entry.analysis.title;
 
   const snooze = async (choice: SnoozeChoice) => {
@@ -45,6 +47,8 @@ export function ReminderSnooze({ entry, linked = false, onSnoozed }: ReminderSno
       setBusy(false);
     }
   };
+
+  if (!has("reminders")) return null;
 
   return (
     <section className={styles.card} aria-labelledby={`snooze-${entry.id}`}>

@@ -1,4 +1,5 @@
 import { AnalysisSchema, normalizeStoredAnalysis, type Analysis } from "@/lib/ai/schema";
+import { activePlan, hasFeature, type PaidPlanId } from "@/lib/plans";
 import { nextOccurrence, parseRepeat } from "@/lib/reminderRepeat";
 
 // Decides which reminder pushes to send: pure, so it can be tested without
@@ -50,6 +51,22 @@ export function isPending(row: DueRow) {
 }
 
 /**
+ * The due reminders not handled yet, page after page: rows already pushed (or
+ * set aside for a user without a paid plan) stay in the time window for a
+ * while, and must not hide the ones still to send. At most `limit` rows, and
+ * `maxPages` reads.
+ */
+export async function collectPending(fetchPage: (from: number, to: number) => Promise<DueRow[]>, limit: number, maxPages: number) {
+  const pending: DueRow[] = [];
+  for (let page = 0; page < maxPages && pending.length < limit; page += 1) {
+    const rows = await fetchPage(page * limit, page * limit + limit - 1);
+    pending.push(...rows.filter(isPending));
+    if (rows.length < limit) break;
+  }
+  return pending.slice(0, limit);
+}
+
+/**
  * Whether this device shows the reminder by itself. Devices list "id@time"
  * (older apps: just the id), so a recurring reminder that already fired there
  * is pushed again for its next occurrence.
@@ -86,4 +103,29 @@ export function planPushes(rows: DueRow[], devices: PushDevice[], locales: Map<s
     }
   }
   return planned;
+}
+
+export type SubscriptionRow = { email: string; plan: PaidPlanId; starts_at: string; ends_at: string | null };
+
+/**
+ * The users whose plan includes reminders (Lite and up, the Premium trial
+ * included) right now: only they get reminder pushes, and only their
+ * recurring reminders move on. Subscriptions are kept by e-mail.
+ */
+export function paidReminderUsers(users: Array<{ id: string; email: string | null }>, subscriptions: SubscriptionRow[], now: number) {
+  const byEmail = new Map<string, SubscriptionRow[]>();
+  for (const row of subscriptions) {
+    const email = row.email.toLowerCase();
+    byEmail.set(email, [...(byEmail.get(email) ?? []), row]);
+  }
+  const paid = new Set<string>();
+  for (const user of users) {
+    const rows = user.email ? (byEmail.get(user.email.toLowerCase()) ?? []) : [];
+    const { plan } = activePlan(
+      rows.map((row) => ({ plan: row.plan, startsAt: row.starts_at, endsAt: row.ends_at })),
+      now,
+    );
+    if (hasFeature(plan, "reminders")) paid.add(user.id);
+  }
+  return paid;
 }

@@ -18,7 +18,8 @@
     "admin": "Admin",
     "lists": "Listes",
     "food": "Journal",
-    "papers": "Papiers"
+    "papers": "Papiers",
+    "garage": "Garage"
   },
   "scan": {
     "greeting": {
@@ -416,7 +417,7 @@
     "notificationsBody": "Pour te prévenir au bon moment, sans que tu aies à garder l’app ouverte.",
     "notificationsReasons": [
       "Savoir quand une analyse est prête",
-      "Recevoir tes rappels : aliment à finir, facture à payer, plante à arroser"
+      "Recevoir tes rappels, avec une offre à partir de Lite : aliment à finir, facture à payer, plante à arroser"
     ],
     "notificationsPrivacy": "Uniquement des notifications locales, aucune publicité.",
     "allow": "Autoriser l’accès",
@@ -868,7 +869,9 @@
     "calendar": "Ajouter à mon agenda",
     "calendarGoogle": "Google Agenda",
     "calendarOther": "Autre agenda (.ics)",
-    "calendarDownloaded": "Fichier d’agenda téléchargé : ouvre-le pour l’ajouter."
+    "calendarDownloaded": "Fichier d’agenda téléchargé : ouvre-le pour l’ajouter.",
+    "lockedInsurance": "Le rappel automatique avant l’échéance de l’assurance est inclus à partir de Lite.",
+    "lockedParcels": "Les notifications d’arrivée des colis sont incluses à partir de Lite."
   },
   "chat": {
     "title": "Une question sur ce scan ?",
@@ -1260,7 +1263,9 @@
       "deep": "{count} analyses approfondies par mois, avec l’IA la plus précise",
       "deepUnlimited": "Analyses approfondies sans limite",
       "multiPage": "Scan de plusieurs pages (contrat, longue facture)",
-      "pdfExport": "Export PDF des documents et de l’historique"
+      "pdfExport": "Export PDF des documents et de l’historique",
+      "garage": "Mon garage : entretien, rappels d’assurance et de vidange, pleins et dépenses",
+      "reminders": "Rappels : sur tes scans (avec répétition et report), assurance, arrivée des colis"
     },
     "how": "Comment s’abonner",
     "step1": "Connecte-toi",
@@ -1500,7 +1505,8 @@
   "shortcuts": {
     "label": "Raccourcis",
     "foodHint": "Ce que tu as mangé aujourd’hui",
-    "papersHint": "CNI, assurances, garanties"
+    "papersHint": "CNI, assurances, garanties",
+    "garageHint": "Entretien, pleins, rappels"
   },
   "food": {
     "title": "Journal alimentaire",
@@ -1703,7 +1709,7 @@
     "features": {
       "document": {
         "title": "Documents et factures",
-        "body": "Points clés, dates limites et actions à faire. Le montant des factures (JIRAMA, téléphone…) est suivi, avec un rappel avant l’échéance. Traduction en français, anglais, malgache ou chinois."
+        "body": "Points clés, dates limites et actions à faire. Le montant des factures (JIRAMA, téléphone…) est suivi ; avec une offre, un rappel arrive avant l’échéance. Traduction en français, anglais, malgache ou chinois."
       },
       "food": {
         "title": "Repas et aliments",
@@ -1739,11 +1745,11 @@
       },
       "questions": {
         "title": "Pose tes questions",
-        "body": "À l’écrit ou à la voix : l’IA revoit la photo pour te répondre. Tout reste dans ton historique, avec des rappels au bon moment."
+        "body": "À l’écrit ou à la voix : l’IA revoit la photo pour te répondre. Tout reste dans ton historique ; avec une offre, des rappels arrivent au bon moment."
       }
     },
     "plansTitle": "Gratuit pour commencer",
-    "plansBody": "Essaie avec des scans gratuits. Pour aller plus loin, les offres Lite, Premium et Pro donnent plus de scans, de questions et de colis suivis. Elles se paient par Mobile Money, en ariary, sans renouvellement automatique.",
+    "plansBody": "Essaie avec des scans gratuits. Pour aller plus loin, les offres Lite, Premium et Pro donnent plus de scans, de questions, de colis suivis et les rappels. Elles se paient par Mobile Money, en ariary, sans renouvellement automatique.",
     "plansCta": "Voir les offres et les prix",
     "faqTitle": "Questions fréquentes",
     "faq": {
@@ -1774,5 +1780,141 @@
     },
     "finalTitle": "Prêt à essayer ?",
     "finalBody": "Une première photo suffit pour voir ce que l’IA peut faire pour toi."
+  },
+  "garage": {
+    "title": "Mon garage",
+    "subtitle": "Tes véhicules, leur entretien, leurs pleins et leurs dépenses.",
+    "locked": "Mon garage est inclus à partir de Premium.",
+    "lockedScan": "Ajouter ce véhicule à ton garage est inclus à partir de Premium.",
+    "readOnly": "Ton offre ne comprend plus Mon garage : tes véhicules restent consultables, mais tu ne peux plus rien modifier et leurs rappels sont en pause. Repasse à Premium pour tout retrouver.",
+    "pitch": {
+      "sheet": "Une fiche par véhicule et un carnet d’entretien (vidange, pneus, freins…)",
+      "reminders": "Des rappels avant la fin de l’assurance et de la visite technique, et la vidange estimée au kilométrage",
+      "fuel": "Tes pleins, ta consommation en L/100 km et tes dépenses en ariary",
+      "registration": "Ta carte grise lue sur une photo pour remplir la fiche"
+    },
+    "emptyTitle": "Ton garage est vide",
+    "emptyBody": "Photographie ton véhicule ou ta carte grise pour créer sa fiche, ou ajoute-le à la main.",
+    "scanVehicle": "Scanner mon véhicule",
+    "scanRegistration": "Scanner la carte grise",
+    "add": "Ajouter un véhicule",
+    "create": "Créer la fiche",
+    "save": "Enregistrer",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "remove": "Supprimer ce véhicule",
+    "removeConfirm": "Oui, supprimer",
+    "defaultName": "Mon véhicule",
+    "count": "{count} véhicule(s)",
+    "shortcutDue": "{count} rappel(s) à voir",
+    "odometerValue": "{km} km au {date}",
+    "updateOdometer": "Mettre à jour le compteur",
+    "perDay": "Moyenne par jour",
+    "months": "{count} mois",
+    "advice": "Entretien conseillé",
+    "remindersTitle": "Rappels",
+    "remindOn": "Rappel le {date}",
+    "oilHint": "Ajoute ta dernière vidange au carnet (avec le kilométrage) pour estimer la prochaine.",
+    "noReminders": "Ajoute les dates d’assurance et de visite technique pour recevoir un rappel.",
+    "date": "Date",
+    "cost": "Montant (Ar)",
+    "saved": "C’est dans ton garage",
+    "inGarage": "Dans ton garage : {name}.",
+    "open": "Voir",
+    "updateVehicle": "Mettre à jour {name}",
+    "addFromScan": "Ajouter à mon garage",
+    "tabs": {
+      "sheet": "Fiche",
+      "log": "Carnet",
+      "fuel": "Pleins",
+      "costs": "Dépenses"
+    },
+    "kinds": {
+      "car": "Voiture",
+      "motorbike": "Moto ou scooter",
+      "other": "Autre"
+    },
+    "energies": {
+      "petrol": "Essence",
+      "diesel": "Diesel (gazole)",
+      "hybrid": "Hybride",
+      "electric": "Électrique",
+      "other": "Autre"
+    },
+    "fields": {
+      "name": "Nom",
+      "namePlaceholder": "Ex. : La Corolla",
+      "kind": "Type",
+      "energy": "Énergie",
+      "make": "Marque",
+      "model": "Modèle",
+      "year": "Année",
+      "plate": "Immatriculation",
+      "km": "Kilométrage",
+      "kmNow": "Kilométrage actuel",
+      "kmPlaceholder": "Ex. : 45 000",
+      "insuranceUntil": "Assurance jusqu’au",
+      "inspectionUntil": "Visite technique jusqu’au",
+      "noticeDays": "Me prévenir",
+      "noticeDaysValue": "{count} jour(s) avant",
+      "oilKm": "Vidange tous les (km)",
+      "oilMonths": "Ou tous les (mois)",
+      "oilInterval": "Vidange",
+      "fiscalPower": "Puissance fiscale",
+      "vin": "Numéro de série (VIN)"
+    },
+    "log": {
+      "kind": "Intervention",
+      "garage": "Garage",
+      "note": "Note",
+      "add": "Ajouter une intervention",
+      "empty": "Aucune intervention pour l’instant.",
+      "kinds": {
+        "oil": "Vidange",
+        "tyres": "Pneus",
+        "brakes": "Freins",
+        "battery": "Batterie",
+        "inspection": "Visite technique",
+        "other": "Autre"
+      }
+    },
+    "fuel": {
+      "last": "Dernier plein",
+      "average": "Moyenne /100 km",
+      "costPerKm": "Coût au km",
+      "hint": "La consommation se calcule entre deux pleins complets.",
+      "litres": "Litres",
+      "amount": "Montant payé (Ar)",
+      "full": "Plein complet",
+      "partial": "partiel",
+      "add": "Ajouter un plein"
+    },
+    "costs": {
+      "thisMonth": "Ce mois-ci",
+      "lastMonth": "Le mois dernier",
+      "sixMonths": "6 derniers mois",
+      "months": "Dépenses des 6 derniers mois",
+      "kind": "Dépense",
+      "label": "Détail",
+      "add": "Ajouter une dépense",
+      "hint": "Les pleins et les interventions du carnet sont comptés automatiquement.",
+      "kinds": {
+        "fuel": "Carburant",
+        "maintenance": "Entretien",
+        "insurance": "Assurance",
+        "other": "Autre"
+      }
+    },
+    "reminders": {
+      "insuranceTitle": "Assurance : {name}",
+      "insuranceBody": "L’assurance se termine le {date}. Pense à la renouveler.",
+      "inspectionTitle": "Visite technique : {name}",
+      "inspectionBody": "La visite technique est valable jusqu’au {date}. Prends rendez-vous.",
+      "oilChangeTitle": "Vidange : {name}",
+      "oilChangeBody": "Vidange à prévoir vers le {date}.",
+      "oilChangeByKm": "Vidange à prévoir vers {km} km (estimée le {date}).",
+      "odometerTitle": "Compteur : {name}",
+      "odometerBody": "Pas de relevé depuis {days} jours : mets à jour le kilométrage pour garder l’estimation de vidange juste."
+    }
   }
 }

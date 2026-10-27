@@ -17,7 +17,8 @@ export type ScheduledParcelReminders = Record<string, { id: number; at: number; 
 
 type Texts = { title: string; body: string };
 
-export type ParcelReminderOptions = { enabled: boolean; hour: number };
+/** `paid`: the plan includes reminders (Lite and up); false cancels them all, like the setting. */
+export type ParcelReminderOptions = { enabled: boolean; hour: number; paid?: boolean };
 
 export type ParcelReminderDeps = {
   permission: () => Promise<string>;
@@ -32,7 +33,7 @@ export type ParcelReminderDeps = {
 /** The notifications wanted now, by parcel id. */
 export function plannedParcelReminders(parcels: Parcel[], options: ParcelReminderOptions, now: number) {
   const planned = new Map<string, { at: number; title: string }>();
-  if (!options.enabled) return planned;
+  if (!options.enabled || options.paid === false) return planned;
   for (const parcel of parcels) {
     const at = deliveryNotifyAt(parcel, options.hour, now);
     if (at !== null) planned.set(parcel.id, { at, title: parcel.title });

@@ -1,5 +1,6 @@
 import { PARCEL_NOTIFICATION_PREFIX } from "./parcelReminders";
 import { isSnoozeAction } from "./reminders";
+import { VEHICLE_NOTIFICATION_PREFIX } from "./vehicleReminders";
 
 // What a tapped local notification does. One listener only (useNativeBootstrap):
 // when Android had closed the app, Capacitor hands the retained tap to the
@@ -14,9 +15,10 @@ type TapActions = {
   snoozed?: (at: number) => void;
 };
 
-/** Where the notification itself leads: "Mes colis", or the scan offering "remind me later". */
+/** Where the notification itself leads: "Mes colis", the vehicle in "Mon garage", or the scan offering "remind me later". */
 export function tapTarget(entryId: string): TapTarget {
   if (entryId.startsWith(PARCEL_NOTIFICATION_PREFIX)) return { pathname: "/parcels" };
+  if (entryId.startsWith(VEHICLE_NOTIFICATION_PREFIX)) return { pathname: "/garage", query: { open: entryId.slice(VEHICLE_NOTIFICATION_PREFIX.length) } };
   return { pathname: "/result", query: { id: entryId, reminded: "1" } };
 }
 
@@ -26,7 +28,8 @@ export function tapTarget(entryId: string): TapTarget {
  * fails, the scan opens so nothing is silently lost. Anything else opens.
  */
 export async function handleNotificationTap(entryId: string, actionId: string, notificationId: number, actions: TapActions) {
-  if (isSnoozeAction(actionId) && !entryId.startsWith(PARCEL_NOTIFICATION_PREFIX)) {
+  const isScan = !entryId.startsWith(PARCEL_NOTIFICATION_PREFIX) && !entryId.startsWith(VEHICLE_NOTIFICATION_PREFIX);
+  if (isSnoozeAction(actionId) && isScan) {
     const at = await actions.snooze(entryId, actionId, notificationId).catch(() => null);
     if (at !== null) {
       actions.snoozed?.(at);

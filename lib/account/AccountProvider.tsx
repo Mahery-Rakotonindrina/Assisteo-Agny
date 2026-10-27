@@ -10,6 +10,8 @@ import { accountKeyApi } from "@/services/accountKeyApi";
 import { cancelAllNotifications } from "@/services/notifications";
 import { listStore } from "@/services/listStore";
 import { startListSync, syncLists } from "@/services/listSync";
+import { vehicleStore } from "@/services/vehicleStore";
+import { startVehicleSync, syncVehicles } from "@/services/vehicleSync";
 import { parcelStore } from "@/services/parcelStore";
 import { startParcelSync, syncParcels } from "@/services/parcelSync";
 import { registerPush, unregisterPush } from "@/services/push";
@@ -77,6 +79,12 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!userId) return;
     return startListSync(userId);
+  }, [userId]);
+
+  // "Mon garage".
+  useEffect(() => {
+    if (!userId) return;
+    return startVehicleSync(userId);
   }, [userId]);
 
   // History.
@@ -154,9 +162,11 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await unregisterPush().catch(() => undefined);
     await sync.now()?.catch(() => undefined);
     await sync.stop({ wipe: true });
-    if (userId) await Promise.all([syncParcels(userId).catch(() => undefined), syncLists(userId).catch(() => undefined)]);
+    if (userId)
+      await Promise.all([syncParcels(userId).catch(() => undefined), syncLists(userId).catch(() => undefined), syncVehicles(userId).catch(() => undefined)]);
     await parcelStore.wipe();
     await listStore.wipe();
+    await vehicleStore.wipe();
     await aiKeyStore.clear({ fromSync: true });
     await signOutAccount();
   }, [userId]);
@@ -174,6 +184,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await sync.stop({ wipe: true });
     await parcelStore.wipe();
     await listStore.wipe();
+    await vehicleStore.wipe();
     await aiKeyStore.clear({ fromSync: true });
     await cancelAllNotifications();
     // The user no longer exists on the server: only forget the session here.

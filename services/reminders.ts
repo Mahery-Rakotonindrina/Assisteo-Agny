@@ -167,45 +167,77 @@ export async function advanceRecurring(entries: HistoryEntry[], now = Date.now()
 
 let reconciling: Promise<void> | null = null;
 
+let again: (() => Promise<void>) | null = null;
+
+type ReminderTexts = { insurance: (entry: HistoryEntry) => Texts; other: (entry: HistoryEntry) => Texts };
+
 /**
  * Brings this device's notifications in line with the history:
  * - insurance documents always get their 5-day notice;
  * - a reminder set (or moved) on another device gets scheduled here too;
  * - a reminder removed elsewhere is cancelled here.
+ * Below Lite (`paid: false`) every reminder notification is cancelled, the
+ * reminders themselves kept: they come back with a paid plan.
  * Never prompts for permission: it only acts where notifications are allowed.
  */
-export function reconcileReminders(texts: { insurance: (entry: HistoryEntry) => Texts; other: (entry: HistoryEntry) => Texts }) {
-  reconciling ??= (async () => {
+export function reconcileReminders(texts: ReminderTexts, options: { paid?: boolean } = {}) {
+  // A call made meanwhile (the plan changed…) runs once after, with its own options.
+  const run = () => reconcileOnce(texts, options);
+  if (reconciling) {
+    again = run;
+    return reconciling;
+  }
+  reconciling = (async () => {
     try {
-      const now = Date.now();
-      // The next month (or year) of a recurring reminder, even if the app wasn't opened in between.
-      await advanceRecurring(await historyStore.list(), now);
-      if ((await getNotificationPermission()) !== "granted") return;
-      for (const entry of await historyStore.list()) {
-        const forcedAt = insuranceReminderAt(entry.analysis, now);
-        if (forcedAt !== null && entry.reminderAt !== forcedAt) {
-          await scheduleReminder(entry, forcedAt, texts.insurance(entry), { ask: false });
-          continue;
-        }
-        const wanted = entry.reminderAt && entry.reminderAt > now ? entry.reminderAt : null;
-        if (wanted && (!entry.reminderId || entry.reminderScheduledAt !== wanted)) {
-          if (entry.reminderId) await cancelNotification(entry.reminderId);
-          const text = forcedAt !== null ? texts.insurance(entry) : texts.other(entry);
-          const reminderId = await notify({ ...text, at: new Date(wanted), entryId: entry.id, actionTypeId: REMINDER_ACTION_TYPE });
-          // Device-local fields only: rawPut keeps the entry's sync state untouched.
-          const latest = await historyStore.rawGet(entry.id);
-          if (latest && reminderId !== null) await historyStore.rawPut({ ...latest, reminderId, reminderScheduledAt: wanted }, { silent: true });
-        } else if (!wanted && entry.reminderId) {
-          await cancelNotification(entry.reminderId);
-          const latest = await historyStore.rawGet(entry.id);
-          if (latest) await historyStore.rawPut({ ...latest, reminderId: undefined, reminderScheduledAt: undefined }, { silent: true });
-        }
+      await run();
+      while (again) {
+        const next = again;
+        again = null;
+        await next();
       }
-      // The server pushes only the reminders this device doesn't hold.
-      await reportScheduledReminders().catch(() => undefined);
     } finally {
       reconciling = null;
     }
   })();
   return reconciling;
+}
+
+async function reconcileOnce(texts: ReminderTexts, { paid = true }: { paid?: boolean }) {
+  const now = Date.now();
+  // The next month (or year) of a recurring reminder, even if the app wasn't opened in between.
+  await advanceRecurring(await historyStore.list(), now);
+  if ((await getNotificationPermission()) !== "granted") return;
+  if (!paid) {
+    for (const entry of await historyStore.list()) {
+      if (!entry.reminderId) continue;
+      await cancelNotification(entry.reminderId);
+      // Device-local fields only: reminderAt stays, and syncs as it was.
+      const latest = await historyStore.rawGet(entry.id);
+      if (latest) await historyStore.rawPut({ ...latest, reminderId: undefined, reminderScheduledAt: undefined }, { silent: true });
+    }
+    await reportScheduledReminders().catch(() => undefined);
+    return;
+  }
+  for (const entry of await historyStore.list()) {
+    const forcedAt = insuranceReminderAt(entry.analysis, now);
+    if (forcedAt !== null && entry.reminderAt !== forcedAt) {
+      await scheduleReminder(entry, forcedAt, texts.insurance(entry), { ask: false });
+      continue;
+    }
+    const wanted = entry.reminderAt && entry.reminderAt > now ? entry.reminderAt : null;
+    if (wanted && (!entry.reminderId || entry.reminderScheduledAt !== wanted)) {
+      if (entry.reminderId) await cancelNotification(entry.reminderId);
+      const text = forcedAt !== null ? texts.insurance(entry) : texts.other(entry);
+      const reminderId = await notify({ ...text, at: new Date(wanted), entryId: entry.id, actionTypeId: REMINDER_ACTION_TYPE });
+      // Device-local fields only: rawPut keeps the entry's sync state untouched.
+      const latest = await historyStore.rawGet(entry.id);
+      if (latest && reminderId !== null) await historyStore.rawPut({ ...latest, reminderId, reminderScheduledAt: wanted }, { silent: true });
+    } else if (!wanted && entry.reminderId) {
+      await cancelNotification(entry.reminderId);
+      const latest = await historyStore.rawGet(entry.id);
+      if (latest) await historyStore.rawPut({ ...latest, reminderId: undefined, reminderScheduledAt: undefined }, { silent: true });
+    }
+  }
+  // The server pushes only the reminders this device doesn't hold.
+  await reportScheduledReminders().catch(() => undefined);
 }

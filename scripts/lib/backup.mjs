@@ -20,6 +20,7 @@ export const RESTORE_KEYS = {
   push_devices: ["user_id", "device_id"],
   parcels: ["user_id", "id"],
   lists: ["user_id", "id"],
+  vehicles: ["user_id", "id"],
   subscriptions: ["id"],
 };
 

@@ -5,10 +5,11 @@
 // A step does one thing: `go` (open a path), `click` (a button, link, tab or
 // FAQ question, by its visible text), `scan` ("document": pastes a page of
 // text; demo AI only), `offline` (true/false) or `wait` (ms). It may add
-// `expect` / `expectNot`: texts this user must (not) see afterwards.
+// `expect` / `expectNot`: texts this user must (not) see afterwards, as shown (innerText:
+// section titles styled in capitals read « MON OFFRE », not « Mon offre »).
 // Labels are written for the owner, in French.
 //
-// Add a screen to SCREENS when one is created (e.g. "/garage"), and a persona
+// Add a screen to SCREENS when one is created (e.g. "/plantes"), and a persona
 // when a new kind of user matters.
 
 /** The main screens, visited in order by personas with `tour: true`. */
@@ -20,6 +21,7 @@ export const SCREENS = [
   ["/parcels", "Mes colis"],
   ["/lists", "Mes listes"],
   ["/papers", "Mes papiers"],
+  ["/garage", "Mon garage"],
   ["/food", "Journal"],
   ["/plans", "Les offres"],
   ["/settings", "Réglages"],
@@ -73,7 +75,8 @@ export const PERSONAS = [
       { label: "Scanne un cours photocopié", scan: "document" },
       { label: "Va voir son historique", go: "/history", expect: ["Historique"] },
       { label: "Regarde ce que coûtent les offres", go: "/plans", expect: ["Les offres", "Lite", "Premium"] },
-      { label: "Vérifie ses réglages", go: "/settings", expect: ["Réglages", "Mon offre"] },
+      { label: "Vérifie ses réglages", go: "/settings", expect: ["Réglages", "Choisir une offre"] },
+      { label: "Ouvre « Mon garage » (réservé à Premium)", go: "/garage", expect: ["Mon garage", "Mon garage est inclus à partir de Premium.", "Premium"] },
     ],
   },
   {
@@ -104,6 +107,7 @@ export const PERSONAS = [
       { label: "Ouvre le journal des repas", go: "/food", expect: ["Journal alimentaire"] },
       { label: "Ouvre ses listes", go: "/lists", expect: ["Mes listes"] },
       { label: "Ouvre ses papiers", go: "/papers", expect: ["Mes papiers"] },
+      { label: "Ouvre son garage", go: "/garage", expect: ["Mon garage", "Ton garage est vide"], expectNot: ["Mon garage est inclus à partir de Premium."] },
       { label: "Vérifie son offre", go: "/settings", expect: ["Premium"] },
       { label: "Regarde la page des offres", go: "/plans", expect: ["Ton offre"] },
     ],

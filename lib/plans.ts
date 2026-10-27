@@ -24,10 +24,14 @@ export type PlanFeature =
   /** Scanning a document in several pages, analysed as one. */
   | "multiPage"
   /** Clean PDFs of a document, or of several scans from the history. */
-  | "pdfExport";
+  | "pdfExport"
+  /** "Mon garage": vehicles, service log, reminders, fuel and expenses. */
+  | "garage"
+  /** Reminders: on a scan (with repetition, snooze, calendar), insurance notices, parcel arrivals, the garage. */
+  | "reminders";
 
 /** The lowest plan that includes each feature. */
-const featureFrom: Record<PlanFeature, PlanId> = { ownKey: "lite", parcelCosts: "lite", reseller: "pro", deepAnalysis: "premium", multiPage: "premium", pdfExport: "lite" };
+const featureFrom: Record<PlanFeature, PlanId> = { ownKey: "lite", parcelCosts: "lite", reseller: "pro", deepAnalysis: "premium", multiPage: "premium", pdfExport: "lite", garage: "premium", reminders: "lite" };
 
 /**
  * Full access is the administrators' plan: it shows the Admin menu. The admin

@@ -102,3 +102,60 @@ test("a newcomer finds the discover page from the home screen", async ({ page })
   await link.click();
   await expect(page).toHaveURL(/\/decouvrir$/);
 });
+
+test("a free account sees My garage with the Premium label", async ({ page }) => {
+  await prepare(page);
+  await page.goto("/garage");
+  await expect(page.getByRole("heading", { level: 1, name: "Mon garage" })).toBeVisible();
+  await expect(page.getByText("Mon garage est inclus à partir de Premium.")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Voir les offres" }).first()).toBeVisible();
+});
+
+test("a Premium account adds a vehicle and two fills, and sees the consumption", async ({ page }) => {
+  await prepare(page);
+  // The demo server answers "free": pretend the account is Premium.
+  await page.route("**/api/plan", async (route) => {
+    const response = await route.fetch();
+    await route.fulfill({ response, json: { ...(await response.json()), plan: "premium" } });
+  });
+  await page.goto("/garage");
+  await page.getByRole("button", { name: "Ajouter un véhicule" }).click();
+  await page.getByLabel("Nom", { exact: true }).fill("La Corolla");
+  await page.getByRole("button", { name: "Créer la fiche" }).click();
+  await expect(page.getByRole("heading", { level: 2, name: "La Corolla" })).toBeVisible();
+
+  await page.getByRole("radio", { name: "Pleins" }).click();
+  for (const [km, litres] of [["10000", "40"], ["10500", "35"]]) {
+    await page.getByRole("button", { name: "Ajouter un plein" }).click();
+    await page.getByLabel("Kilométrage", { exact: true }).fill(km);
+    await page.getByLabel("Litres", { exact: true }).fill(litres);
+    await page.getByRole("button", { name: "Enregistrer" }).click();
+  }
+  // 35 litres over 500 km.
+  await expect(page.getByTestId("fuel-last")).toHaveText("7 L");
+});
+
+test("back on the free plan, the vehicles stay visible but read only", async ({ page }) => {
+  await prepare(page);
+  const premium = async (route: import("@playwright/test").Route) => {
+    const response = await route.fetch();
+    await route.fulfill({ response, json: { ...(await response.json()), plan: "premium" } });
+  };
+  await page.route("**/api/plan", premium);
+  await page.goto("/garage");
+  await page.getByRole("button", { name: "Ajouter un véhicule" }).click();
+  await page.getByLabel("Nom", { exact: true }).fill("La Corolla");
+  await page.getByRole("button", { name: "Créer la fiche" }).click();
+  await expect(page.getByRole("heading", { level: 2, name: "La Corolla" })).toBeVisible();
+
+  // The subscription ended: the demo server answers "free" again.
+  await page.unroute("**/api/plan", premium);
+  await page.goto("/garage");
+  await expect(page.getByText("Ton offre ne comprend plus Mon garage", { exact: false })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Ajouter un véhicule" })).toHaveCount(0);
+  await page.getByRole("button", { name: /La Corolla/ }).click();
+  await expect(page.getByRole("heading", { level: 2, name: "La Corolla" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Modifier" })).toHaveCount(0);
+  await page.getByRole("radio", { name: "Pleins" }).click();
+  await expect(page.getByRole("button", { name: "Ajouter un plein" })).toHaveCount(0);
+});
