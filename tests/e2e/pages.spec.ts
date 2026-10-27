@@ -81,3 +81,24 @@ test("the scanned photo opens full screen and closes with Escape or back", async
   await expect(viewer).toHaveCount(0);
   await expect(page).toHaveURL(/\/result\?example=food$/);
 });
+
+test("the discover page shows its title and opens a question", async ({ page }) => {
+  await prepare(page);
+  await page.goto("/decouvrir");
+  await expect(page.getByRole("heading", { level: 1, name: /L’IA qui t’explique/ })).toBeVisible();
+  const question = page.getByText("Faut-il créer un compte ?");
+  await expect(async () => {
+    await question.click();
+    await expect(page.locator("details[open]").filter({ hasText: "Faut-il créer un compte ?" })).toHaveCount(1);
+  }).toPass();
+});
+
+test("a newcomer finds the discover page from the home screen", async ({ page }) => {
+  await prepare(page);
+  await page.goto("/");
+  // Under the intro on a computer, under the examples on a phone: only one shows.
+  const link = page.getByRole("link", { name: "Découvrir tout ce que fait l’app" });
+  await expect(link).toHaveCount(1);
+  await link.click();
+  await expect(page).toHaveURL(/\/decouvrir$/);
+});

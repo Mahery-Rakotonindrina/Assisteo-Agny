@@ -9,6 +9,7 @@ export const OG_IMAGE = { path: "/og-image.png", width: 1200, height: 630 } as c
  */
 export const PUBLIC_PAGES: { path: string; updated?: string }[] = [
   { path: "/" },
+  { path: "/decouvrir" },
   { path: "/plans" },
   { path: "/privacy", updated: LEGAL_UPDATED_AT },
   { path: "/terms", updated: LEGAL_UPDATED_AT },
