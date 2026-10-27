@@ -1,4 +1,3 @@
-import Head from "next/head";
 import { AnimatePresence, motion } from "motion/react";
 import { useDeferredValue, useMemo, useState, useSyncExternalStore } from "react";
 import { CalendarDays, CheckCheck, FileDown, Folder, ScanLine, Search, Star, X } from "lucide-react";
@@ -6,6 +5,7 @@ import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
 import { HistoryItem } from "@/components/HistoryItem";
 import { PlanBadge } from "@/components/PlanBadge";
+import { Seo } from "@/components/Seo";
 import { useToast } from "@/components/Toast";
 import { useHistory } from "@/hooks/useHistory";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
@@ -171,9 +171,7 @@ export default function HistoryPage() {
 
   return (
     <>
-      <Head>
-        <title>{`${t("history.title")} · ${t("meta.title")}`}</title>
-      </Head>
+      <Seo title={`${t("history.title")} · ${t("meta.title")}`} noindex />
 
       <motion.div className={styles.page} variants={stagger} initial="hidden" animate="show">
         <motion.header variants={rise} className={styles.header}>

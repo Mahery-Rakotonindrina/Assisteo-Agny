@@ -1,4 +1,3 @@
-import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { AnimatePresence, motion } from "motion/react";
@@ -18,6 +17,7 @@ import { PlanNotice } from "@/components/PlanWelcome";
 import { ScanStage } from "@/components/ScanStage";
 import { ScanWait } from "@/components/ScanWait";
 import { SegmentedControl } from "@/components/SegmentedControl";
+import { Seo } from "@/components/Seo";
 import { useToast } from "@/components/Toast";
 import { PLANS_HREF, TrialOver, TrialPill } from "@/components/Trial";
 import { useAiStatus } from "@/hooks/useAiStatus";
@@ -29,8 +29,10 @@ import { useScan, type ParcelBatchOutcome } from "@/hooks/useScan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTrial } from "@/hooks/useTrial";
 import type { ScanMode } from "@/lib/ai/schema";
+import { config } from "@/lib/config";
 import { exampleIds, exampleImage } from "@/lib/examples";
 import { easeOut, rise, stagger } from "@/lib/motion";
+import { appStructuredData } from "@/lib/seo";
 import { incomingShare } from "@/services/incomingShare";
 import styles from "@/styles/Scan.module.scss";
 
@@ -122,10 +124,7 @@ export default function ScanPage() {
 
   return (
     <>
-      <Head>
-        <title>{t("meta.title")}</title>
-        <meta name="description" content={t("meta.description")} />
-      </Head>
+      <Seo title={t("meta.homeTitle")} description={t("meta.description")} structuredData={appStructuredData(config.siteUrl, t("meta.description"))} />
 
       <AnimatePresence mode="wait" initial={false}>
         {state.phase === "idle" ? (

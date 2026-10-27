@@ -1,10 +1,10 @@
-import Head from "next/head";
 import { useRouter } from "next/router";
 import { motion } from "motion/react";
 import { useState, type FormEvent } from "react";
 import { ArrowLeft, BadgePercent, Check, Copy, ExternalLink, Gift, LogIn, MessageCircle, Phone, RefreshCw, Share2, Sparkles, TicketCheck } from "lucide-react";
 import { Button } from "@/components/Button";
 import { PlanIcon } from "@/components/PlanBadge";
+import { Seo } from "@/components/Seo";
 import { useToast } from "@/components/Toast";
 import { useAccount } from "@/lib/account/AccountProvider";
 import { usePlan } from "@/hooks/usePlan";
@@ -134,9 +134,7 @@ export default function PlansPage() {
 
   return (
     <>
-      <Head>
-        <title>{`${t("plans.title")} · ${t("meta.title")}`}</title>
-      </Head>
+      <Seo title={`${t("plans.title")} · ${t("meta.title")}`} description={t("meta.plans")} path="/plans" />
       <motion.div className={styles.page} variants={stagger} initial="hidden" animate="show">
         <motion.header variants={rise} className={styles.header}>
           <Button variant="secondary" size="icon" onClick={back} aria-label={t("nav.back")}>
