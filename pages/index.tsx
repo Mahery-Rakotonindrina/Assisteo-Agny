@@ -290,6 +290,9 @@ export default function ScanPage() {
                     </Link>
                   ))}
                 </div>
+                <Link href="/decouvrir" className={styles.discoverMore}>
+                  {t("scan.discover")} <ArrowRight size={14} />
+                </Link>
               </motion.section>
             )}
 

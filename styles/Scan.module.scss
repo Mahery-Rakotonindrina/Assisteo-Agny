@@ -396,6 +396,21 @@
   color: var(--text-muted);
 }
 
+// Phones and the apps: the presentation page, for those who haven't scanned yet.
+.discoverMore {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--accent-text);
+
+  @include desktop {
+    display: none;
+  }
+}
+
 .examples {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

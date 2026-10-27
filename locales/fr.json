@@ -1320,7 +1320,7 @@
     "referral": {
       "title": "Parraine tes proches",
       "body": "Partage ton code. Quand une personne l’entre dans « J’ai un code » puis paie sa première offre, tu reçois 1 mois offert.",
-      "message": "Je t’invite sur Assisteo Agny : il t’aide à comprendre ce que tu photographies. Entre mon code {code} dans « J’ai un code » : {link}",
+      "message": "Je t’invite sur Assisteo Agny : il t’aide à comprendre ce que tu photographies. Pour ton offre, entre mon code {code} dans « J’ai un code », sur la page Les offres. Découvre l’app ici : {link}",
       "whatsapp": "WhatsApp",
       "share": "Partager",
       "copy": "Copier le code"

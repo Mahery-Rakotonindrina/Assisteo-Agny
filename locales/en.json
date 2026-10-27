@@ -1320,7 +1320,7 @@
     "referral": {
       "title": "Refer your friends",
       "body": "Share your code. When someone enters it in “I have a code” and then pays for their first plan, you get 1 month free.",
-      "message": "Join me on Assisteo Agny: it helps you understand what you photograph. Enter my code {code} in “I have a code”: {link}",
+      "message": "Join me on Assisteo Agny: it helps you understand what you photograph. For your plan, enter my code {code} in “I have a code” on the Plans page. See what it does: {link}",
       "whatsapp": "WhatsApp",
       "share": "Share",
       "copy": "Copy the code"

@@ -175,7 +175,7 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 
 - [x] Site web, mise en page ordinateur avec barre latérale, installable
 - [x] Référencement Google : titres et descriptions, robots.txt et sitemap, aperçu au partage (WhatsApp, Facebook), écrans privés exclus des résultats
-- [x] Page de présentation pour Google : ce que fait l'app, les offres, questions fréquentes — sur /decouvrir, lien depuis l'accueil sur ordinateur, dans le sitemap
+- [x] Page de présentation pour Google : ce que fait l'app, les offres, questions fréquentes — sur /decouvrir : lien depuis l'accueil (sous l'intro sur ordinateur, sous les exemples avant le premier scan sur téléphone), lien du message de parrainage, sitemap
 - [x] iPhone : ajout à l'écran d'accueil (icône, écran de démarrage)
 - [x] App Android signée, construite par GitHub à chaque mise en ligne
 - [x] Bandeau de mise à jour, mise à jour obligatoire possible
