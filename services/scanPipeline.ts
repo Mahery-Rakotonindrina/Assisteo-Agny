@@ -2,6 +2,7 @@ import type { Locale } from "@/i18n.config";
 import type { AnalyzeResponse, ScanMode } from "@/lib/ai/schema";
 import type { ScannedCode } from "@/lib/codes";
 import { encodeImage, type EncodedImage } from "@/lib/image";
+import { hasFeature } from "@/lib/plans";
 import type { HistoryEntry } from "@/types/history";
 import { ApiError } from "@/types/api";
 import { analysisService } from "./analysisService";
@@ -80,9 +81,10 @@ export async function saveScan(job: ScanJob, { analysis, meta }: AnalyzeResponse
     },
   });
 
-  // Insurance: the 5-day notice is scheduled right away, without asking.
+  // Insurance: the 5-day notice is scheduled right away (paid plans only: below
+  // Lite nothing is asked nor scheduled).
   const forcedAt = insuranceReminderAt(analysis);
-  if (forcedAt !== null) {
+  if (forcedAt !== null && hasFeature(planStore.get()?.plan ?? "free", "reminders")) {
     const saved = await historyStore.get(id);
     if (saved) await scheduleReminder(saved, forcedAt, insuranceTexts(saved));
   }

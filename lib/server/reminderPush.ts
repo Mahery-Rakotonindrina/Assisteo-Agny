@@ -51,6 +51,22 @@ export function isPending(row: DueRow) {
 }
 
 /**
+ * The due reminders not handled yet, page after page: rows already pushed (or
+ * set aside for a user without a paid plan) stay in the time window for a
+ * while, and must not hide the ones still to send. At most `limit` rows, and
+ * `maxPages` reads.
+ */
+export async function collectPending(fetchPage: (from: number, to: number) => Promise<DueRow[]>, limit: number, maxPages: number) {
+  const pending: DueRow[] = [];
+  for (let page = 0; page < maxPages && pending.length < limit; page += 1) {
+    const rows = await fetchPage(page * limit, page * limit + limit - 1);
+    pending.push(...rows.filter(isPending));
+    if (rows.length < limit) break;
+  }
+  return pending.slice(0, limit);
+}
+
+/**
  * Whether this device shows the reminder by itself. Devices list "id@time"
  * (older apps: just the id), so a recurring reminder that already fired there
  * is pushed again for its next occurrence.

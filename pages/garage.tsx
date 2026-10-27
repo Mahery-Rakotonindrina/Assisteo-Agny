@@ -25,7 +25,9 @@ import { planFor } from "@/lib/plans";
 export default function GaragePage() {
   const { t, locale } = useTranslation();
   const router = useRouter();
-  const { has } = usePlan();
+  const { plan, has } = usePlan();
+  // Until the plan is read (cache or server), neither the lock nor the read-only banner: a Premium user would see them flash.
+  const known = plan !== null;
   const now = useNow(60_000);
   const { vehicles, isLoading } = useVehicles();
   const [creating, setCreating] = useState(false);
@@ -49,13 +51,13 @@ export default function GaragePage() {
       <motion.div className={styles.page} variants={stagger} initial="hidden" animate="show">
         {header}
 
-        {readOnly && vehicles.length > 0 && (
+        {known && readOnly && vehicles.length > 0 && (
           <motion.div variants={rise}>
             <PlanLock plan={planFor("garage")} text={t("garage.readOnly")} />
           </motion.div>
         )}
 
-        {readOnly && isLoading ? null : readOnly && vehicles.length === 0 ? (
+        {!known || (readOnly && isLoading) ? null : readOnly && vehicles.length === 0 ? (
           <motion.div variants={rise} className={styles.locked}>
             <PlanLock plan={planFor("garage")} text={t("garage.locked")} />
             <ul>

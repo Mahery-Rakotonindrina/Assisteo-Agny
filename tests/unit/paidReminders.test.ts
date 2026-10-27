@@ -2,7 +2,7 @@ import "fake-indexeddb/auto";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mockAnalysis } from "@/lib/ai/mock";
 import { hasFeature, planFor } from "@/lib/plans";
-import { paidReminderUsers, type SubscriptionRow } from "@/lib/server/reminderPush";
+import { collectPending, paidReminderUsers, type DueRow, type SubscriptionRow } from "@/lib/server/reminderPush";
 import type { HistoryEntry } from "@/types/history";
 
 // Reminders are for paid plans (Lite and up): the device cancels its
@@ -114,5 +114,32 @@ describe("reminder cron", () => {
       now,
     );
     expect([...paid].sort()).toEqual(["lite", "trial"]);
+  });
+});
+
+describe("reminder cron batches", () => {
+  const due = (id: string, pushed: boolean): DueRow => ({
+    user_id: id.startsWith("free") ? "free-user" : "paid-user",
+    id,
+    analysis: {},
+    reminder_at: "2026-10-27T09:00:00Z",
+    reminder_pushed_at: pushed ? "2026-10-27T09:05:00Z" : null,
+  });
+
+  it("a free user's handled reminders never hide a paid user's", async () => {
+    // 450 rows a free user already had set aside, then the paid user's reminder.
+    const rows = [...Array.from({ length: 450 }, (_, index) => due(`free-${index}`, true)), due("paid", false)];
+    const fetchPage = vi.fn(async (from: number, to: number) => rows.slice(from, to + 1));
+    const pending = await collectPending(fetchPage, 200, 10);
+    expect(pending.map((row) => row.id)).toEqual(["paid"]);
+    expect(fetchPage).toHaveBeenCalledTimes(3);
+  });
+
+  it("stops at the limit, and after the last page", async () => {
+    const rows = Array.from({ length: 5 }, (_, index) => due(`paid-${index}`, false));
+    expect(await collectPending(async (from, to) => rows.slice(from, to + 1), 3, 10)).toHaveLength(3);
+    const fetchPage = vi.fn(async (from: number, to: number) => rows.slice(from, to + 1));
+    expect(await collectPending(fetchPage, 10, 10)).toHaveLength(5);
+    expect(fetchPage).toHaveBeenCalledTimes(1);
   });
 });
