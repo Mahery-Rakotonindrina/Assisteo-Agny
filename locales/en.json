@@ -18,7 +18,8 @@
     "admin": "Admin",
     "lists": "Lists",
     "food": "Food log",
-    "papers": "Papers"
+    "papers": "Papers",
+    "garage": "Garage"
   },
   "scan": {
     "greeting": {
@@ -232,6 +233,7 @@
     "yesterday": "Yesterday",
     "emptyTitle": "Nothing yet",
     "emptyBody": "Your analyses will show up here. Sign in to find them on your other devices too.",
+    "emptyBodySignedIn": "Your analyses will show up here, and on your other devices signed in to your account.",
     "emptyCta": "Run your first analysis",
     "noMatch": "No analysis matches your search.",
     "swipeHint": "Swipe left to delete",
@@ -415,7 +417,7 @@
     "notificationsBody": "So we can let you know at the right time, without keeping the app open.",
     "notificationsReasons": [
       "Know when an analysis is ready",
-      "Get your reminders: food to finish, a bill to pay, a plant to water"
+      "Get your reminders, with a plan from Lite: food to finish, a bill to pay, a plant to water"
     ],
     "notificationsPrivacy": "Local notifications only, no ads.",
     "allow": "Allow access",
@@ -850,7 +852,26 @@
     "insuranceBody": "Your insurance expires on {date}, in {days} days. Remember to renew it.",
     "insuranceNotice": "Automatic reminder on {date}, {days} days before the {expiry} expiry. It can’t be turned off.",
     "enableInsurance": "Turn on the insurance reminder",
-    "forcedLabel": "Automatic insurance reminder on {date}"
+    "forcedLabel": "Automatic insurance reminder on {date}",
+    "repeat": "Repeat",
+    "repeatOnce": "Once",
+    "repeatMonthly": "Every month",
+    "repeatYearly": "Every year",
+    "thenMonthly": "Then every month, on the same day.",
+    "thenYearly": "Then every year, on the same day.",
+    "arrived": "Time for your reminder",
+    "snoozeLater": "Remind me later",
+    "snoozeHour": "In 1 hour",
+    "snoozeTomorrow": "Tomorrow",
+    "snoozeWeek": "In a week",
+    "notifyHour": "In 1 h",
+    "notifyTomorrow": "Tomorrow",
+    "calendar": "Add to my calendar",
+    "calendarGoogle": "Google Calendar",
+    "calendarOther": "Other calendar (.ics)",
+    "calendarDownloaded": "Calendar file downloaded: open it to add the event.",
+    "lockedInsurance": "The automatic reminder before the insurance expires comes with Lite and up.",
+    "lockedParcels": "Parcel arrival notifications come with Lite and up."
   },
   "chat": {
     "title": "A question about this scan?",
@@ -1242,7 +1263,9 @@
       "deep": "{count} deep analyses a month, with the most accurate AI",
       "deepUnlimited": "Unlimited deep analyses",
       "multiPage": "Multi-page scans (contract, long invoice)",
-      "pdfExport": "PDF export of documents and history"
+      "pdfExport": "PDF export of documents and history",
+      "garage": "My garage: service log, insurance and oil change reminders, fuel and expenses",
+      "reminders": "Reminders: on your scans (with repeat and snooze), insurance, parcel arrivals"
     },
     "how": "How to subscribe",
     "step1": "Sign in",
@@ -1482,7 +1505,8 @@
   "shortcuts": {
     "label": "Shortcuts",
     "foodHint": "What you ate today",
-    "papersHint": "ID, insurance, warranties"
+    "papersHint": "ID, insurance, warranties",
+    "garageHint": "Service, fuel, reminders"
   },
   "food": {
     "title": "Food journal",
@@ -1685,7 +1709,7 @@
     "features": {
       "document": {
         "title": "Documents and bills",
-        "body": "Key points, deadlines and things to do. Bill amounts (JIRAMA, phone…) are tracked, with a reminder before the due date. Translation into French, English, Malagasy or Chinese."
+        "body": "Key points, deadlines and things to do. Bill amounts (JIRAMA, phone…) are tracked; with a plan, a reminder comes before the due date. Translation into French, English, Malagasy or Chinese."
       },
       "food": {
         "title": "Meals and food",
@@ -1721,11 +1745,11 @@
       },
       "questions": {
         "title": "Ask your questions",
-        "body": "Typed or spoken: the AI looks at the photo again to answer. Everything stays in your history, with reminders at the right time."
+        "body": "Typed or spoken: the AI looks at the photo again to answer. Everything stays in your history; with a plan, reminders come at the right time."
       }
     },
     "plansTitle": "Free to start",
-    "plansBody": "Try it with free scans. To go further, the Lite, Premium and Pro plans give more scans, questions and tracked parcels. They are paid with Mobile Money, in ariary, with no automatic renewal.",
+    "plansBody": "Try it with free scans. To go further, the Lite, Premium and Pro plans give more scans, questions, tracked parcels and reminders. They are paid with Mobile Money, in ariary, with no automatic renewal.",
     "plansCta": "See plans and prices",
     "faqTitle": "Frequently asked questions",
     "faq": {
@@ -1756,5 +1780,141 @@
     },
     "finalTitle": "Ready to try?",
     "finalBody": "One photo is enough to see what the AI can do for you."
+  },
+  "garage": {
+    "title": "My garage",
+    "subtitle": "Your vehicles, their service, their fuel and what they cost.",
+    "locked": "My garage comes with Premium and up.",
+    "lockedScan": "Adding this vehicle to your garage comes with Premium and up.",
+    "readOnly": "Your plan no longer includes My garage: your vehicles stay visible, but you can’t change anything and their reminders are paused. Go back to Premium to get it all back.",
+    "pitch": {
+      "sheet": "A sheet per vehicle and a service log (oil change, tyres, brakes…)",
+      "reminders": "Reminders before the insurance and the technical inspection end, and the oil change estimated from the mileage",
+      "fuel": "Your fuel fills, your consumption in L/100 km and your spending in ariary",
+      "registration": "Your registration certificate read from a photo to fill the sheet in"
+    },
+    "emptyTitle": "Your garage is empty",
+    "emptyBody": "Take a photo of your vehicle or its registration certificate to create its sheet, or add it by hand.",
+    "scanVehicle": "Scan my vehicle",
+    "scanRegistration": "Scan the registration",
+    "add": "Add a vehicle",
+    "create": "Create the sheet",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "remove": "Delete this vehicle",
+    "removeConfirm": "Yes, delete",
+    "defaultName": "My vehicle",
+    "count": "{count} vehicle(s)",
+    "shortcutDue": "{count} reminder(s) to see",
+    "odometerValue": "{km} km on {date}",
+    "updateOdometer": "Update the odometer",
+    "perDay": "Average per day",
+    "months": "{count} months",
+    "advice": "Recommended service",
+    "remindersTitle": "Reminders",
+    "remindOn": "Reminder on {date}",
+    "oilHint": "Add your last oil change to the log (with the mileage) to estimate the next one.",
+    "noReminders": "Add the insurance and inspection dates to get a reminder.",
+    "date": "Date",
+    "cost": "Amount (Ar)",
+    "saved": "It’s in your garage",
+    "inGarage": "In your garage: {name}.",
+    "open": "View",
+    "updateVehicle": "Update {name}",
+    "addFromScan": "Add to my garage",
+    "tabs": {
+      "sheet": "Sheet",
+      "log": "Log",
+      "fuel": "Fuel",
+      "costs": "Costs"
+    },
+    "kinds": {
+      "car": "Car",
+      "motorbike": "Motorbike or scooter",
+      "other": "Other"
+    },
+    "energies": {
+      "petrol": "Petrol",
+      "diesel": "Diesel",
+      "hybrid": "Hybrid",
+      "electric": "Electric",
+      "other": "Other"
+    },
+    "fields": {
+      "name": "Name",
+      "namePlaceholder": "E.g. The Corolla",
+      "kind": "Type",
+      "energy": "Fuel",
+      "make": "Make",
+      "model": "Model",
+      "year": "Year",
+      "plate": "Plate",
+      "km": "Mileage",
+      "kmNow": "Current mileage",
+      "kmPlaceholder": "E.g. 45,000",
+      "insuranceUntil": "Insurance until",
+      "inspectionUntil": "Inspection until",
+      "noticeDays": "Remind me",
+      "noticeDaysValue": "{count} day(s) before",
+      "oilKm": "Oil change every (km)",
+      "oilMonths": "Or every (months)",
+      "oilInterval": "Oil change",
+      "fiscalPower": "Fiscal power",
+      "vin": "Serial number (VIN)"
+    },
+    "log": {
+      "kind": "Work done",
+      "garage": "Garage",
+      "note": "Note",
+      "add": "Add a service",
+      "empty": "No service yet.",
+      "kinds": {
+        "oil": "Oil change",
+        "tyres": "Tyres",
+        "brakes": "Brakes",
+        "battery": "Battery",
+        "inspection": "Technical inspection",
+        "other": "Other"
+      }
+    },
+    "fuel": {
+      "last": "Last fill",
+      "average": "Average /100 km",
+      "costPerKm": "Cost per km",
+      "hint": "Consumption is worked out between two full fills.",
+      "litres": "Litres",
+      "amount": "Amount paid (Ar)",
+      "full": "Full tank",
+      "partial": "partial",
+      "add": "Add a fill"
+    },
+    "costs": {
+      "thisMonth": "This month",
+      "lastMonth": "Last month",
+      "sixMonths": "Last 6 months",
+      "months": "Spending over the last 6 months",
+      "kind": "Expense",
+      "label": "Detail",
+      "add": "Add an expense",
+      "hint": "Fuel fills and services from the log are counted automatically.",
+      "kinds": {
+        "fuel": "Fuel",
+        "maintenance": "Service",
+        "insurance": "Insurance",
+        "other": "Other"
+      }
+    },
+    "reminders": {
+      "insuranceTitle": "Insurance: {name}",
+      "insuranceBody": "The insurance ends on {date}. Remember to renew it.",
+      "inspectionTitle": "Inspection: {name}",
+      "inspectionBody": "The technical inspection is valid until {date}. Book an appointment.",
+      "oilChangeTitle": "Oil change: {name}",
+      "oilChangeBody": "Oil change due around {date}.",
+      "oilChangeByKm": "Oil change due around {km} km (estimated on {date}).",
+      "odometerTitle": "Odometer: {name}",
+      "odometerBody": "No reading for {days} days: update the mileage to keep the oil change estimate right."
+    }
   }
 }

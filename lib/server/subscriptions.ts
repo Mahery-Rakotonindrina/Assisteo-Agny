@@ -94,6 +94,19 @@ export async function stopSubscriptions(email: string, now = new Date()) {
   );
 }
 
+/** The subscriptions of these e-mails, in one read (the reminder cron). */
+export async function subscriptionRowsForEmails(emails: string[]) {
+  if (emails.length === 0 || !accountsEnabled) return [];
+  return check<Array<Pick<Row, "email" | "plan" | "starts_at" | "ends_at">>>(
+    await table()
+      .select("email, plan, starts_at, ends_at")
+      .in(
+        "email",
+        emails.map((email) => email.toLowerCase()),
+      ),
+  );
+}
+
 /** The plan an e-mail has right now; free when signed out or without accounts. */
 export async function planForEmail(email: string | null | undefined, now = Date.now()): Promise<ActivePlan> {
   if (!email || !accountsEnabled) return { plan: "free", endsAt: null };

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { motion } from "motion/react";
-import { BookOpen, Download, FolderLock, History, ListChecks, Package, ScanLine, Settings2, ShieldCheck, Smartphone, UserRound } from "lucide-react";
+import { BookOpen, Car, Download, FolderLock, History, ListChecks, Package, ScanLine, Settings2, ShieldCheck, Smartphone, UserRound } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { useAiStatus } from "@/hooks/useAiStatus";
 import { useAndroidDownload } from "@/hooks/useAndroidDownload";
@@ -18,6 +18,7 @@ const links = [
   { href: "/parcels", key: "parcels", Icon: Package },
   { href: "/lists", key: "lists", Icon: ListChecks },
   { href: "/papers", key: "papers", Icon: FolderLock },
+  { href: "/garage", key: "garage", Icon: Car },
   { href: "/food", key: "food", Icon: BookOpen },
   { href: "/settings", key: "settings", Icon: Settings2 },
 ] as const;

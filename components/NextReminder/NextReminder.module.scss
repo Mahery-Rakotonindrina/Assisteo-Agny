@@ -64,3 +64,9 @@
   flex-shrink: 0;
   color: var(--text-subtle);
 }
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}

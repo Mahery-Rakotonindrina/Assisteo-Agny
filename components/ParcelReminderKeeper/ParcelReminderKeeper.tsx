@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSettings } from "@/lib/settings/SettingsProvider";
 import { parcelStore, type Parcel } from "@/services/parcelStore";
@@ -6,23 +7,28 @@ import { reconcileParcelReminders } from "@/services/parcelReminders";
 
 /**
  * Keeps the "your parcel arrives today" notifications in line with the
- * parcels and the settings, at launch and whenever either changes.
+ * parcels, the settings and the plan (Lite and up), at launch and whenever
+ * one changes.
  */
 export function ParcelReminderKeeper() {
   const { t } = useTranslation();
   const { settings, ready } = useSettings();
   const { parcelNotify: enabled, parcelNotifyHour: hour } = settings;
-  const latest = useRef({ options: { enabled, hour }, texts: (parcel: Parcel) => ({ title: "", body: parcel.title }) });
+  const { plan, has } = usePlan();
+  // Unknown until the plan is read once (cache or server): nothing is cancelled meanwhile.
+  const known = plan !== null;
+  const paid = has("reminders");
+  const latest = useRef({ options: { enabled, hour, paid }, texts: (parcel: Parcel) => ({ title: "", body: parcel.title }) });
 
   useEffect(() => {
     latest.current = {
-      options: { enabled, hour },
+      options: { enabled, hour, paid },
       texts: (parcel) => ({ title: t("notifications.parcelTitle"), body: t("notifications.parcelBody", { title: parcel.title }) }),
     };
-  }, [enabled, hour, t]);
+  }, [enabled, hour, paid, t]);
 
   useEffect(() => {
-    if (!ready) return;
+    if (!ready || !known) return;
     let timer: ReturnType<typeof setTimeout> | undefined;
     const run = () => {
       clearTimeout(timer);
@@ -38,7 +44,7 @@ export function ParcelReminderKeeper() {
       document.removeEventListener("visibilitychange", onVisible);
     };
     // Settings changes re-run it; the texts follow through the ref.
-  }, [ready, enabled, hour]);
+  }, [ready, known, enabled, hour, paid]);
 
   return null;
 }

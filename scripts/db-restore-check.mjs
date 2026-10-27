@@ -77,6 +77,16 @@ function sampleBackup() {
         { user_id: ben, id: "parcel-2", data: { label: "Sac" }, updated_at: at(6), deleted_at: at(7) },
       ],
       lists: [{ user_id: ben, id: "list-1", data: { title: "Courses", kind: "shopping", items: [{ text: "Riz", quantity: "2 kg", done: false }] }, updated_at: at(6), deleted_at: null }],
+      vehicles: [
+        {
+          user_id: anna,
+          id: "vehicle-1",
+          data: { name: "La Corolla", kind: "car", plate: "1234 TBA", noticeDays: 5, fuel: [{ id: "f1", at: 1759900000000, km: 45000, litres: 40, full: true, amountMga: 200000 }], maintenance: [], expenses: [], odometer: [] },
+          updated_at: at(6),
+          deleted_at: null,
+        },
+        { user_id: ben, id: "vehicle-2", data: { name: "Moto" }, updated_at: at(6), deleted_at: at(7) },
+      ],
       subscriptions: [
         { id: randomUUID(), email: "anna@example.com", plan: "premium", starts_at: at(1), ends_at: at(31), amount_mga: 15000, payment_method: "mvola", payment_ref: "REF-1", note: "Payé en avance", created_at: at(1), updated_at: at(1) },
         { id: randomUUID(), email: "carla@example.com", plan: "unlimited", starts_at: at(2), ends_at: null, amount_mga: null, payment_method: null, payment_ref: null, note: null, created_at: at(2), updated_at: at(2) },

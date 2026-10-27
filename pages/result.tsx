@@ -41,8 +41,12 @@ import { CategoryBadge } from "@/components/CategoryBadge";
 import { CodeList } from "@/components/CodeList";
 import { DocumentText } from "@/components/DocumentText";
 import { FolderPicker } from "@/components/FolderPicker";
+import { GarageControls } from "@/components/Garage";
+import { PlanBadge } from "@/components/PlanBadge";
+import { PlanLock } from "@/components/PlanLock";
 import { PhotoViewer } from "@/components/PhotoViewer";
 import { ReminderSheet } from "@/components/ReminderSheet";
+import { ReminderSnooze } from "@/components/ReminderSnooze";
 import { ScanChat } from "@/components/ScanChat";
 import {
   AnswerFeedback,
@@ -69,6 +73,7 @@ import { useHistory, useHistoryEntry } from "@/hooks/useHistory";
 import { useLists } from "@/hooks/useLists";
 import { useParcels } from "@/hooks/useParcels";
 import { usePlan } from "@/hooks/usePlan";
+import { planFor } from "@/lib/plans";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import { useNow } from "@/hooks/useNow";
 import { useReminderTexts } from "@/hooks/useReminderTexts";
@@ -86,7 +91,9 @@ import { keepParcelThumbnails } from "@/services/parcelLinking";
 import { parcelStore, scanHasNews } from "@/services/parcelStore";
 import { cancelNotification } from "@/services/notifications";
 import { foodJournal } from "@/services/foodJournal";
-import { cancelReminder, expiryDate, INSURANCE_NOTICE_DAYS, insuranceReminderAt, scheduleReminder } from "@/services/reminders";
+import type { RepeatEvery } from "@/lib/reminderRepeat";
+import { addToCalendar, reminderEvent, type CalendarKind } from "@/services/calendarExport";
+import { cancelReminder, canSnooze, expiryDate, INSURANCE_NOTICE_DAYS, insuranceReminderAt, scheduleReminder } from "@/services/reminders";
 import type { HistoryEntry } from "@/types/history";
 import styles from "@/styles/Result.module.scss";
 
@@ -140,6 +147,11 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
   const reminderActive = Boolean(entry.reminderAt && entry.reminderAt > now);
   // Insurance documents get a mandatory notice 5 days before expiry: not editable.
   const forcedAt = insuranceReminderAt(analysis, now);
+  // Reminders come with a paid plan (Lite and up); otherwise the button leads to the plans.
+  const canRemind = usePlan().has("reminders");
+  // The reminder has come (or the scan was opened from its notification): offer to put it off.
+  const showSnooze = canRemind && forcedAt === null && Boolean(entry.reminderAt) && (router.query.reminded === "1" || canSnooze(entry, now));
+  const repeatLabel = reminderActive && entry.reminderRepeat ? t(entry.reminderRepeat.every === "monthly" ? "reminders.repeatMonthly" : "reminders.repeatYearly") : null;
   const isDesktop = useIsDesktop();
   const reminderTexts = useReminderTexts();
   const level = confidenceLevel(analysis.confidence);
@@ -355,8 +367,8 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
     setSheetOpen(true);
   };
 
-  const scheduleAt = async (at: number, texts = reminderTexts.other(entry)) => {
-    if (!(await scheduleReminder(entry, at, texts))) {
+  const scheduleAt = async (at: number, texts = reminderTexts.other(entry), repeat?: RepeatEvery | null) => {
+    if (!(await scheduleReminder(entry, at, texts, { repeat }))) {
       haptics.error();
       toast(t("result.reminderDenied"), "error");
       return false;
@@ -364,6 +376,18 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
     haptics.success();
     toast(t("result.reminderSet", { date: formatDateTime(at, locale) }));
     return true;
+  };
+
+  const addReminderToCalendar = async (kind: CalendarKind, at: number, repeat: RepeatEvery | null) => {
+    haptics.tap();
+    const outcome = await addToCalendar(kind, reminderEvent(entry, at, reminderTexts.other(entry), repeat));
+    if (outcome === "downloaded") toast(t("reminders.calendarDownloaded"));
+  };
+
+  const snoozed = () => {
+    // Done: the "remind me later" card goes away.
+    const { reminded: _reminded, ...query } = router.query;
+    void router.replace({ pathname: router.pathname, query }, undefined, { shallow: true, scroll: false });
   };
 
   const removeReminder = async () => {
@@ -481,6 +505,7 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
                 {!meta.demo && <> · {t("result.analyzedIn", { seconds: (meta.durationMs / 1000).toFixed(1) })}</>}
               </p>
             )}
+            {!example && showSnooze && <ReminderSnooze entry={entry} onSnoozed={snoozed} />}
             <ConfidenceBadge value={analysis.confidence} label={t(`result.confidenceLevels.${level}`)} />
             {!example && <FolderPicker entry={entry} />}
             {!example && !meta.demo && <DeepAnalysis entry={entry} />}
@@ -578,10 +603,12 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
         key={sheetKey}
         open={sheetOpen}
         current={reminderActive ? entry.reminderAt : undefined}
+        repeat={reminderActive ? entry.reminderRepeat?.every : undefined}
         suggestedHours={analysis.reminder?.delayHours}
-        onSchedule={async (at) => {
-          if (await scheduleAt(at)) setSheetOpen(false);
+        onSchedule={async (at, repeat) => {
+          if (await scheduleAt(at, undefined, repeat)) setSheetOpen(false);
         }}
+        onCalendar={addReminderToCalendar}
         onCancelReminder={removeReminder}
         onClose={() => setSheetOpen(false)}
       />
@@ -632,6 +659,7 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
           analysis.vehicle && (
             <Section title={t("result.vehicle")} icon={<Car />}>
               <VehicleCard vehicle={analysis.vehicle} />
+              {!example && <GarageControls entry={entry} />}
             </Section>
           )
         );
@@ -695,6 +723,13 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
                     </div>
                   ))}
                 </dl>
+              </Section>
+            )}
+
+            {/* A registration certificate: add it to the garage right from the summary (also under Document). */}
+            {!example && analysis.document?.registration && (
+              <Section title={t("garage.title")} icon={<Car />}>
+                <GarageControls entry={entry} bare />
               </Section>
             )}
 
@@ -786,7 +821,8 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
               ))}
             </div>
           )}
-          {forcedAt !== null && (
+          {forcedAt !== null && !canRemind && <PlanLock plan={planFor("reminders")} text={t("reminders.lockedInsurance")} />}
+          {forcedAt !== null && canRemind && (
             <p className={styles.insurance}>
               <Lock size={15} />
               <span>
@@ -816,6 +852,7 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
             <PdfExportButton entry={entry} />
           </div>
         )}
+        {!example && document.registration && <GarageControls entry={entry} />}
         {!example && <PaperControls entry={entry} />}
         {!example && <BillControls entry={entry} />}
       </Section>
@@ -938,6 +975,14 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
 
   function renderReminder(className: string, slot: "primary" | "secondary" | "panel") {
     const compact = slot === "secondary";
+    if (!canRemind) {
+      return (
+        <Button key="reminder" variant="secondary" icon={<Bell />} href="/plans" className={className}>
+          {compact ? t("result.remindShort") : analysis.category === "vehicle" ? t("result.remindMaintenance") : t("result.remind")}{" "}
+          <PlanBadge plan={planFor("reminders")} />
+        </Button>
+      );
+    }
     if (forcedAt !== null) {
       // Scheduled automatically; the button only acts if notifications are off.
       return (
@@ -960,7 +1005,7 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
     const label = compact
       ? t("result.remindShort")
       : reminderActive
-        ? formatDateTime(entry.reminderAt!, locale)
+        ? [formatDateTime(entry.reminderAt!, locale), repeatLabel].filter(Boolean).join(" · ")
         : analysis.category === "vehicle"
           ? t("result.remindMaintenance")
           : t("result.remind");

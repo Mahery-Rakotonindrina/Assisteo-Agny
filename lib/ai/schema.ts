@@ -47,6 +47,10 @@ export type PaperKind = (typeof paperKinds)[number];
 export const billKinds = ["electricity_water", "phone_internet", "tv", "rent", "school", "health", "other"] as const;
 export type BillKind = (typeof billKinds)[number];
 
+/** A vehicle's fuel, read on a registration certificate or chosen in "Mon garage". */
+export const vehicleEnergies = ["petrol", "diesel", "hybrid", "electric", "other"] as const;
+export type VehicleEnergy = (typeof vehicleEnergies)[number];
+
 /** Diets a food is checked against. */
 export const diets = ["vegetarian", "vegan", "gluten_free", "lactose_free", "halal", "low_sugar", "low_salt"] as const;
 export type Diet = (typeof diets)[number];
@@ -139,6 +143,18 @@ export const AnalysisSchema = z.object({
         })
         .nullable()
         .describe("Only for a bill, invoice or receipt with an amount to pay or paid; null otherwise."),
+      registration: z
+        .object({
+          plate: z.string().nullable().describe("Registration number exactly as printed (field A), e.g. '1234 TBA'; null if not legible."),
+          make: z.string().nullable().describe("Make (field D.1), e.g. Toyota; null if not legible."),
+          model: z.string().nullable().describe("Type or commercial name (fields D.2 / D.3), e.g. Corolla; null if not legible."),
+          firstRegistration: z.string().nullable().describe("Date of first registration (field B) as YYYY-MM-DD, or null."),
+          vin: z.string().nullable().describe("Vehicle identification number (field E), exactly as printed, or null."),
+          energy: z.enum(vehicleEnergies).nullable().describe("Fuel (field P.3): petrol (ES, essence), diesel (GO, gazole), hybrid, electric (EL), other; null if not shown."),
+          fiscalPower: z.number().nullable().describe("Fiscal horsepower (field P.6, CV) as a number, or null."),
+        })
+        .nullable()
+        .describe("Only for a vehicle registration certificate (carte grise); null otherwise."),
     })
     .nullable()
     .describe("Only for documents, null otherwise."),
@@ -247,7 +263,7 @@ export function normalizeStoredAnalysis(raw: unknown): unknown {
     vehicle: null,
     list: null,
     ...analysis,
-    document: document ? { expiresOn: null, isInsurance: false, paper: null, bill: null, ...document } : null,
+    document: document ? { expiresOn: null, isInsurance: false, paper: null, bill: null, registration: null, ...document } : null,
     parcel: analysis.parcel ? { shippingMode: null, ...(analysis.parcel as Record<string, unknown>) } : null,
   };
 }

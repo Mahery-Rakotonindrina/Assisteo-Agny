@@ -50,10 +50,10 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Prix neuf et d'occasion estimés
 - [x] Caractéristiques techniques
 - [x] Entretien avec fréquences, conseils, points faibles à vérifier avant achat
-- [ ] « Mon garage » : fiche véhicule et carnet d'entretien
-- [ ] Rappels : assurance, visite technique, vidange au kilométrage
-- [ ] Suivi du carburant et des dépenses
-- [ ] Lecture de la carte grise
+- [x] « Mon garage » : fiche véhicule et carnet d'entretien — à partir de Premium, plusieurs véhicules, ajout depuis un scan, synchronisé
+- [x] Rappels : assurance, visite technique, vidange au kilométrage — vidange estimée d'après les relevés, rappel du compteur après 30 jours, report et agenda
+- [x] Suivi du carburant et des dépenses — L/100 km entre pleins complets, coût au km, ce mois, mois dernier, 6 mois
+- [x] Lecture de la carte grise — « Ajouter à mon garage » ou « Mettre à jour », à partir de Premium
 
 ## 5. Plantes, objets et autres
 
@@ -89,9 +89,9 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Notifications du téléphone, et notifications push depuis le serveur même app fermée (Android)
 - [x] Carte « Prochain rappel » sur l'accueil
 - [x] Rappels d'assurance proposés automatiquement
-- [ ] Rappels récurrents (chaque mois, chaque année)
-- [ ] « Me rappeler plus tard »
-- [ ] Ajout au calendrier du téléphone
+- [x] Rappels récurrents (chaque mois, chaque année) : même jour d’origine (le 31 tombe au dernier jour des mois courts), continuent app fermée (push serveur)
+- [x] « Me rappeler plus tard » : dans 1 h, demain, dans une semaine (page du scan, accueil) ; boutons « Dans 1 h » et « Demain » sur la notification de l’app Android
+- [x] Ajout au calendrier du téléphone : lien Google Agenda ou fichier .ics, depuis la feuille de rappel
 - [ ] Notifications sur iPhone (web push)
 
 ## 9. Mes colis
@@ -134,6 +134,7 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Essai gratuit : 7 scans, questions par jour, 3 colis
 - [x] Lite, Premium, Pro (et Admin), avec quotas par mois et par jour
 - [x] Clé IA perso réservée aux abonnés
+- [x] Rappels réservés aux abonnés, à partir de Lite — rappels des scans, assurance, arrivée des colis, garage ; notifications annulées sous Lite et reprogrammées au retour, pas de push serveur (les rappels de fin d’offre et « Résultat prêt » restent pour tous)
 - [x] Page « Les offres » : prix, avantages, comment payer, contact
 - [x] « Mon offre » : compteurs, date de fin, ce qui est inclus
 - [x] Écran de bienvenue avec confettis, bandeau 3 jours avant la fin et à la fin

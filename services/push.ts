@@ -2,7 +2,7 @@ import { Capacitor } from "@capacitor/core";
 import { PushNotifications } from "@capacitor/push-notifications";
 import { supabase } from "@/lib/supabase";
 import { historyStore } from "./historyStore";
-import { notify } from "./notifications";
+import { notify, REMINDER_ACTION_TYPE } from "./notifications";
 import { getInstallId } from "./trial";
 
 // Server push for reminders (Android only for now). Local notifications stay
@@ -46,7 +46,10 @@ export async function registerPush(onOpen: (target: PushTarget) => void) {
     // Android only shows pushes by itself when the app is in the background.
     await PushNotifications.addListener("pushNotificationReceived", (notification) => {
       const entryId = typeof notification.data?.entryId === "string" ? notification.data.entryId : undefined;
-      void notify({ title: notification.title ?? "", body: notification.body ?? "", entryId }).catch(() => undefined);
+      // A scan reminder gets the same "in 1 h" / "tomorrow" buttons as a local one.
+      void notify({ title: notification.title ?? "", body: notification.body ?? "", entryId, actionTypeId: entryId ? REMINDER_ACTION_TYPE : undefined }).catch(
+        () => undefined,
+      );
     });
     await PushNotifications.addListener("pushNotificationActionPerformed", ({ notification }) => {
       const entryId = notification.data?.entryId;
@@ -78,7 +81,8 @@ export async function reportScheduledReminders() {
   const scheduled = (await historyStore.list())
     // Only reminders this device will show at the right time.
     .filter((entry) => entry.reminderId && entry.reminderAt && entry.reminderAt > now && entry.reminderScheduledAt === entry.reminderAt)
-    .map((entry) => entry.id)
+    // With the time: a recurring reminder that has fired here still needs pushing next month.
+    .map((entry) => `${entry.id}@${entry.reminderAt}`)
     .sort();
   const key = scheduled.join(",");
   if (key === lastReported) return;
