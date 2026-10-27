@@ -98,4 +98,29 @@ for (const { width, height, ratio } of iosSplashScreens) {
   await png(splashArt, [width * ratio, height * ratio], `public/splash/${width}x${height}@${ratio}x.png`, { scale: 0.5, flatten: true });
 }
 
-console.log("Icons and splash screens generated.");
+// ---- Share preview (Open Graph) ----------------------------------------------
+
+// Shown when a link to the site is shared (WhatsApp, Facebook…), 1200 × 630
+// (lib/seo.ts). Written in French, the site's default language.
+const font = 'font-family="Segoe UI, Helvetica, Arial, sans-serif"';
+const ogText = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630">
+  <defs>
+    <radialGradient id="glow" cx="15%" cy="100%" r="75%">
+      <stop offset="0" stop-color="#c6ff4d" stop-opacity="0.3"/>
+      <stop offset="1" stop-color="#c6ff4d" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#0b0c10"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <text x="450" y="270" ${font} font-size="84" font-weight="700" fill="#f3f4f6">Assisteo Agny</text>
+  <text x="450" y="345" ${font} font-size="40" fill="#c9cbd1">L’IA t’explique ce que</text>
+  <text x="450" y="397" ${font} font-size="40" fill="#c9cbd1">tu photographies.</text>
+  <text x="450" y="472" ${font} font-size="30" fill="#c6ff4d">Documents · Aliments · Objets · Colis</text>
+</svg>`;
+await sharp(Buffer.from(ogText))
+  .composite([{ input: await sharp(Buffer.from(icon), { density: 384 }).resize(300, 300).png().toBuffer(), left: 100, top: 165 }])
+  .flatten({ background: BG })
+  .png()
+  .toFile("public/og-image.png");
+
+console.log("Icons, splash screens and share preview generated.");

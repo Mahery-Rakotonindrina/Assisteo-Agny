@@ -1,4 +1,5 @@
 import { Html, Head, Main, NextScript } from "next/document";
+import { config } from "@/lib/config";
 import iosSplashScreens from "@/lib/iosSplashScreens.json";
 
 export default function Document() {
@@ -10,6 +11,7 @@ export default function Document() {
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Assisteo Agny" />
+        {config.googleSiteVerification && <meta name="google-site-verification" content={config.googleSiteVerification} />}
         <link rel="manifest" href="/manifest.webmanifest" />
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
         {/* iOS home screen: PNG only (an SVG makes iOS screenshot the page instead). */}

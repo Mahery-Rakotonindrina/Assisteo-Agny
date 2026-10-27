@@ -1,4 +1,3 @@
-import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { motion } from "motion/react";
@@ -8,6 +7,7 @@ import { BillsPanel } from "@/components/BillsPanel";
 import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
 import { SegmentedControl } from "@/components/SegmentedControl";
+import { Seo } from "@/components/Seo";
 import { useHistory } from "@/hooks/useHistory";
 import { useNow } from "@/hooks/useNow";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -40,9 +40,7 @@ export default function PapersPage() {
 
   return (
     <>
-      <Head>
-        <title>{`${t("papers.title")} · ${t("meta.title")}`}</title>
-      </Head>
+      <Seo title={`${t("papers.title")} · ${t("meta.title")}`} noindex />
       <motion.div className={styles.page} variants={stagger} initial="hidden" animate="show">
         <motion.header variants={rise} className={styles.header}>
           <h1>{t("papers.title")}</h1>

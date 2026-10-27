@@ -1,7 +1,11 @@
 {
   "meta": {
     "title": "Assisteo Agny",
-    "description": "Snap a photo, the AI explains what you're looking at."
+    "homeTitle": "Assisteo Agny · The AI that explains what you photograph",
+    "description": "Snap a document, food, an object or a parcel: the AI explains what you're looking at. Free to start, plans paid with Mobile Money in Madagascar.",
+    "plans": "Assisteo Agny's Lite, Premium and Pro plans: more scans, questions and tracked parcels. Prices in ariary, paid with Mobile Money.",
+    "privacy": "What data Assisteo Agny uses, where your photos go, where they are stored and what your rights are.",
+    "terms": "The rules of Assisteo Agny: the service, AI answers to double-check, the free trial, subscriptions and your account."
   },
   "nav": {
     "scan": "Scan",

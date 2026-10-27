@@ -1,10 +1,10 @@
-import Head from "next/head";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { useMemo, useState, type FormEvent } from "react";
 import { Camera, Check, ChevronLeft, ChevronRight, Plus, Target, X } from "lucide-react";
 import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
+import { Seo } from "@/components/Seo";
 import { useToast } from "@/components/Toast";
 import { useHistory } from "@/hooks/useHistory";
 import { useNow } from "@/hooks/useNow";
@@ -74,9 +74,7 @@ export default function FoodPage() {
 
   return (
     <>
-      <Head>
-        <title>{`${t("food.title")} · ${t("meta.title")}`}</title>
-      </Head>
+      <Seo title={`${t("food.title")} · ${t("meta.title")}`} noindex />
       <motion.div className={styles.page} variants={stagger} initial="hidden" animate="show">
         <motion.header variants={rise} className={styles.header}>
           <h1>{t("food.title")}</h1>

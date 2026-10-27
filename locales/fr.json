@@ -1,7 +1,11 @@
 {
   "meta": {
     "title": "Assisteo Agny",
-    "description": "Prends une photo, l'IA t'explique ce que tu vois."
+    "homeTitle": "Assisteo Agny · L'IA qui t'explique ce que tu photographies",
+    "description": "Prends en photo un document, un aliment, un objet ou un colis : l'IA t'explique ce que tu vois. Gratuit pour commencer, offres en Mobile Money à Madagascar.",
+    "plans": "Les offres Lite, Premium et Pro d'Assisteo Agny : plus de scans, de questions et de colis suivis. Prix en ariary, paiement par Mobile Money.",
+    "privacy": "Quelles données Assisteo Agny utilise, où partent tes photos, où elles sont stockées et quels sont tes droits.",
+    "terms": "Les règles d'Assisteo Agny : le service, les réponses de l'IA à vérifier, l'essai gratuit, les abonnements et ton compte."
   },
   "nav": {
     "scan": "Scanner",

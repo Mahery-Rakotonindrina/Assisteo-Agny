@@ -1,10 +1,10 @@
-import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { motion } from "motion/react";
 import { ArrowLeft, Mail } from "lucide-react";
 import { Button } from "@/components/Button";
 import { Logo } from "@/components/Logo";
+import { Seo } from "@/components/Seo";
 import { useTranslation } from "@/hooks/useTranslation";
 import { config } from "@/lib/config";
 import { LEGAL_UPDATED_AT, legalDocuments, type LegalKind } from "@/lib/legal";
@@ -26,9 +26,7 @@ export function LegalPage({ kind }: { kind: LegalKind }) {
 
   return (
     <>
-      <Head>
-        <title>{`${doc.title} · Assisteo Agny`}</title>
-      </Head>
+      <Seo title={`${doc.title} · Assisteo Agny`} description={t(`meta.${kind}`)} path={`/${kind}`} />
       <motion.article className={styles.page} variants={stagger} initial="hidden" animate="show">
         <motion.header variants={rise} className={styles.header}>
           <div className={styles.topRow}>

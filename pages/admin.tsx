@@ -1,4 +1,3 @@
-import Head from "next/head";
 import { motion } from "motion/react";
 import { useEffect, useState, type FormEvent } from "react";
 import { Download, Gauge, Gift, KeyRound, LockKeyhole, Smartphone, LogOut, MessageCircle, Minus, Plus, Save, ShieldAlert, UserRound, Wifi } from "lucide-react";
@@ -11,6 +10,7 @@ import { AdminStats } from "@/components/AdminStats";
 import { AdminSubscriptions } from "@/components/AdminSubscriptions";
 import { AdminTwoFactor } from "@/components/AdminTwoFactor";
 import { Button } from "@/components/Button";
+import { Seo } from "@/components/Seo";
 import { useToast } from "@/components/Toast";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -175,10 +175,7 @@ export default function AdminPage() {
 
   return (
     <>
-      <Head>
-        <title>{`${t("admin.title")} · ${t("meta.title")}`}</title>
-        <meta name="robots" content="noindex" />
-      </Head>
+      <Seo title={`${t("admin.title")} · ${t("meta.title")}`} noindex />
 
       <motion.div className={styles.page} variants={stagger} initial="hidden" animate="show">
         <motion.header variants={rise} className={styles.header}>

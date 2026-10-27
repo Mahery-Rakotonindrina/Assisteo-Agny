@@ -1,10 +1,10 @@
-import Head from "next/head";
 import { useRouter } from "next/router";
 import { AnimatePresence, motion } from "motion/react";
 import { useState, type FormEvent } from "react";
 import { Check, ChevronDown, ClipboardList, ListChecks, Pencil, Plus, RotateCcw, ScanLine, Share2, ShoppingBasket, Trash2, X } from "lucide-react";
 import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
+import { Seo } from "@/components/Seo";
 import { useToast } from "@/components/Toast";
 import { useHistory } from "@/hooks/useHistory";
 import { useLists } from "@/hooks/useLists";
@@ -40,9 +40,7 @@ export default function ListsPage() {
 
   return (
     <>
-      <Head>
-        <title>{`${t("lists.title")} · ${t("meta.title")}`}</title>
-      </Head>
+      <Seo title={`${t("lists.title")} · ${t("meta.title")}`} noindex />
       <motion.div className={styles.page} variants={stagger} initial="hidden" animate="show">
         <motion.header variants={rise} className={styles.header}>
           <h1>{t("lists.title")}</h1>

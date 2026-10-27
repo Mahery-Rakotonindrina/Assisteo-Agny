@@ -174,6 +174,8 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 ## 14. Plateformes
 
 - [x] Site web, mise en page ordinateur avec barre latérale, installable
+- [x] Référencement Google : titres et descriptions, robots.txt et sitemap, aperçu au partage (WhatsApp, Facebook), écrans privés exclus des résultats
+- [ ] Page de présentation pour Google : ce que fait l'app, les offres, questions fréquentes
 - [x] iPhone : ajout à l'écran d'accueil (icône, écran de démarrage)
 - [x] App Android signée, construite par GitHub à chaque mise en ligne
 - [x] Bandeau de mise à jour, mise à jour obligatoire possible
