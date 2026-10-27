@@ -12,6 +12,7 @@ import { useIsDesktop } from "@/hooks/useIsDesktop";
 import { useNow } from "@/hooks/useNow";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useAccount } from "@/lib/account/AccountProvider";
 import { categories, type Category } from "@/lib/ai/schema";
 import { exampleImage } from "@/lib/examples";
 import { formatDay, startOfDay } from "@/lib/format";
@@ -69,6 +70,7 @@ function subscribeSwipeHint(listener: () => void) {
 
 export default function HistoryPage() {
   const { t, locale } = useTranslation();
+  const { email } = useAccount();
   const toast = useToast();
   const { entries, isLoading } = useHistory();
   const [filter, setFilter] = useState<Filter>("all");
@@ -196,7 +198,7 @@ export default function HistoryPage() {
           <motion.div variants={rise}>
             <EmptyState
               title={t("history.emptyTitle")}
-              body={t("history.emptyBody")}
+              body={t(email ? "history.emptyBodySignedIn" : "history.emptyBody")}
               images={[exampleImage("food"), exampleImage("document"), exampleImage("object")]}
               action={
                 <Button href="/" icon={<ScanLine />}>

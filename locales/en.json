@@ -232,6 +232,7 @@
     "yesterday": "Yesterday",
     "emptyTitle": "Nothing yet",
     "emptyBody": "Your analyses will show up here. Sign in to find them on your other devices too.",
+    "emptyBodySignedIn": "Your analyses will show up here, and on your other devices signed in to your account.",
     "emptyCta": "Run your first analysis",
     "noMatch": "No analysis matches your search.",
     "swipeHint": "Swipe left to delete",
