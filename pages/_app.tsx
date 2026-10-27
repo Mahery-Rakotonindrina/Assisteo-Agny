@@ -10,6 +10,7 @@ import { ScanQueueRunner } from "@/components/ScanQueueRunner";
 import { ShareReceiver } from "@/components/ShareReceiver";
 import { ToastProvider } from "@/components/Toast";
 import { UpdateGate } from "@/components/UpdateGate";
+import { VehicleReminderKeeper } from "@/components/VehicleReminderKeeper";
 import { useNativeBootstrap } from "@/hooks/useNativeBootstrap";
 import { AccountProvider } from "@/lib/account/AccountProvider";
 import { SettingsProvider } from "@/lib/settings/SettingsProvider";
@@ -62,6 +63,7 @@ export default function App({ Component, pageProps }: AppProps) {
               <Onboarding />
               <ReminderKeeper />
               <ParcelReminderKeeper />
+              <VehicleReminderKeeper />
               <ScanQueueRunner />
               <ShareReceiver />
               <UpdateGate />

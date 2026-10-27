@@ -2,15 +2,17 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { isCron } from "@/lib/server/cronAuth";
 import { pushEnabled, sendPush } from "@/lib/server/fcm";
 import { sendError } from "@/lib/server/http";
-import { isPending, nextReminderAt, planPushes, type DueRow, type PushDevice, type PushLocale } from "@/lib/server/reminderPush";
+import { isPending, nextReminderAt, paidReminderUsers, planPushes, type DueRow, type PushDevice, type PushLocale } from "@/lib/server/reminderPush";
 import { reportError } from "@/lib/server/reportError";
+import { subscriptionRowsForEmails } from "@/lib/server/subscriptions";
 import { accountsEnabled, supabaseAdmin } from "@/lib/server/supabaseAdmin";
 
 // Every few minutes (GitHub Actions, .github/workflows/reminders.yml): pushes
 // reminders that are due to the user's Android devices that don't already
 // hold them as local notifications (see services/push.ts). A recurring
 // reminder then moves on to its next occurrence (reminder_at), which the
-// devices pick up at their next sync.
+// devices pick up at their next sync. Reminders are for paid plans (Lite and
+// up): other users get no push, and their reminders don't move on.
 
 export const config = { maxDuration: 60 };
 
@@ -19,6 +21,18 @@ const MAX_LATENESS_MS = 6 * 3600_000;
 const BATCH = 200;
 /** How far back a missed recurring reminder is still moved on to its next occurrence. */
 const MAX_CATCH_UP_MS = 400 * 86_400_000;
+
+/** Of these users, those with a paid plan right now: their e-mails, then one read of the subscriptions. */
+async function paidUsers(db: ReturnType<typeof supabaseAdmin>, userIds: string[], now: number) {
+  const users = await Promise.all(
+    userIds.map(async (id) => {
+      const { data } = await db.auth.admin.getUserById(id).catch(() => ({ data: null }));
+      return { id, email: data?.user?.email ?? null };
+    }),
+  );
+  const emails = users.map((user) => user.email).filter((email): email is string => Boolean(email));
+  return paidReminderUsers(users, await subscriptionRowsForEmails(emails), now);
+}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "GET" && req.method !== "POST") return sendError(res, 405, "method_not_allowed", "Use GET or POST.");
@@ -50,16 +64,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     .lte("reminder_at", new Date(now.getTime() - MAX_LATENESS_MS).toISOString())
     .gt("reminder_at", new Date(now.getTime() - MAX_CATCH_UP_MS).toISOString())
     .limit(BATCH);
+  const missedRows = (missed.data ?? []) as DueRow[];
+  const pending = (data as DueRow[]).filter(isPending);
+
+  let paid: Set<string>;
+  try {
+    paid = await paidUsers(db, [...new Set([...pending, ...missedRows].map((row) => row.user_id))], now.getTime());
+  } catch (planError) {
+    await reportError(planError, { route: "cron-reminders", step: "plans" });
+    return sendError(res, 502, "upstream_error", "Couldn't read plans.");
+  }
+
   let advanced = 0;
-  for (const row of (missed.data ?? []) as DueRow[]) {
+  for (const row of missedRows) {
+    if (!paid.has(row.user_id)) continue;
     const next = nextReminderAt(row, now.getTime());
     if (!next) continue;
     await db.from("analyses").update({ reminder_at: next, updated_at: now.toISOString() }).eq("user_id", row.user_id).eq("id", row.id);
     advanced += 1;
   }
 
-  const due = (data as DueRow[]).filter(isPending);
-  if (due.length === 0) return res.status(200).json({ due: 0, sent: 0, advanced });
+  // Below Lite: marked as handled (not pushed, not moved on), so they don't fill the next batches.
+  const unpaid = pending.filter((row) => !paid.has(row.user_id));
+  for (const row of unpaid) {
+    await db.from("analyses").update({ reminder_pushed_at: now.toISOString() }).eq("user_id", row.user_id).eq("id", row.id);
+  }
+  const due = pending.filter((row) => paid.has(row.user_id));
+  if (due.length === 0) return res.status(200).json({ due: 0, sent: 0, advanced, unpaid: unpaid.length });
 
   const userIds = [...new Set(due.map((row) => row.user_id))];
   const [devices, settings] = await Promise.all([
@@ -115,5 +146,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   for (const device of stale.values()) {
     await db.from("push_devices").delete().eq("user_id", device.user_id).eq("device_id", device.device_id);
   }
-  return res.status(200).json({ due: due.length, sent, retried, advanced, removedDevices: stale.size });
+  return res.status(200).json({ due: due.length, sent, retried, advanced, unpaid: unpaid.length, removedDevices: stale.size });
 }

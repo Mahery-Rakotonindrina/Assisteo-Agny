@@ -2,6 +2,7 @@ import Link from "next/link";
 import { BellRing, ChevronRight, Lock } from "lucide-react";
 import { ReminderSnooze } from "@/components/ReminderSnooze";
 import { useNow } from "@/hooks/useNow";
+import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatReminder } from "@/lib/format";
 import { arrivedAt, isForced } from "@/services/reminders";
@@ -10,11 +11,13 @@ import styles from "./NextReminder.module.scss";
 
 /**
  * The soonest upcoming reminder, on the home screen, and above it the latest
- * one that has come (to put it off). Renders nothing when there is none.
+ * one that has come (to put it off). Renders nothing when there is none, or
+ * below Lite (the reminders are paused, kept for a paid plan).
  */
 export function NextReminder({ entries }: { entries: HistoryEntry[] }) {
   const { t, locale } = useTranslation();
   const now = useNow(30_000);
+  const { has } = usePlan();
   const upcoming = entries
     .filter((entry) => entry.reminderAt && entry.reminderAt > now)
     .sort((a, b) => a.reminderAt! - b.reminderAt!);
@@ -23,7 +26,7 @@ export function NextReminder({ entries }: { entries: HistoryEntry[] }) {
     .map((entry) => ({ entry, at: arrivedAt(entry, now) }))
     .filter(({ at }) => at !== null)
     .sort((a, b) => b.at! - a.at!)[0]?.entry;
-  if (!next && !arrived) return null;
+  if (!has("reminders") || (!next && !arrived)) return null;
   if (!next) return <ReminderSnooze entry={arrived} linked />;
 
   const forced = isForced(next);

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { usePlan } from "@/hooks/usePlan";
 import { useReminderTexts } from "@/hooks/useReminderTexts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { historyStore } from "@/services/historyStore";
@@ -9,11 +10,16 @@ import { reconcileReminders, registerReminderActions } from "@/services/reminder
  * notices, reminders set on other devices, reminders removed elsewhere,
  * recurring reminders moved on. Also registers the "in 1 h" / "tomorrow"
  * buttons of the notifications (Android app; taps: useNativeBootstrap).
+ * Below Lite, the notifications are cancelled until the plan is paid again.
  */
 export function ReminderKeeper() {
   const texts = useReminderTexts();
   const textsRef = useRef(texts);
   const { t } = useTranslation();
+  const { plan, has } = usePlan();
+  // Unknown until the plan is read once (cache or server): nothing is cancelled meanwhile.
+  const known = plan !== null;
+  const paid = has("reminders");
 
   useEffect(() => {
     textsRef.current = texts;
@@ -25,10 +31,11 @@ export function ReminderKeeper() {
   }, [t]);
 
   useEffect(() => {
+    if (!known) return;
     let timer: ReturnType<typeof setTimeout> | undefined;
     const run = () => {
       clearTimeout(timer);
-      timer = setTimeout(() => void reconcileReminders(textsRef.current), 1200);
+      timer = setTimeout(() => void reconcileReminders(textsRef.current, { paid }), 1200);
     };
     run();
     const unsubscribe = historyStore.subscribe(run);
@@ -39,7 +46,7 @@ export function ReminderKeeper() {
       unsubscribe();
       document.removeEventListener("visibilitychange", onVisible);
     };
-  }, []);
+  }, [known, paid]);
 
   return null;
 }

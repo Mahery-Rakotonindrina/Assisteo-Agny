@@ -41,6 +41,9 @@ import { CategoryBadge } from "@/components/CategoryBadge";
 import { CodeList } from "@/components/CodeList";
 import { DocumentText } from "@/components/DocumentText";
 import { FolderPicker } from "@/components/FolderPicker";
+import { GarageControls } from "@/components/Garage";
+import { PlanBadge } from "@/components/PlanBadge";
+import { PlanLock } from "@/components/PlanLock";
 import { PhotoViewer } from "@/components/PhotoViewer";
 import { ReminderSheet } from "@/components/ReminderSheet";
 import { ReminderSnooze } from "@/components/ReminderSnooze";
@@ -70,6 +73,7 @@ import { useHistory, useHistoryEntry } from "@/hooks/useHistory";
 import { useLists } from "@/hooks/useLists";
 import { useParcels } from "@/hooks/useParcels";
 import { usePlan } from "@/hooks/usePlan";
+import { planFor } from "@/lib/plans";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import { useNow } from "@/hooks/useNow";
 import { useReminderTexts } from "@/hooks/useReminderTexts";
@@ -143,8 +147,10 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
   const reminderActive = Boolean(entry.reminderAt && entry.reminderAt > now);
   // Insurance documents get a mandatory notice 5 days before expiry: not editable.
   const forcedAt = insuranceReminderAt(analysis, now);
+  // Reminders come with a paid plan (Lite and up); otherwise the button leads to the plans.
+  const canRemind = usePlan().has("reminders");
   // The reminder has come (or the scan was opened from its notification): offer to put it off.
-  const showSnooze = forcedAt === null && Boolean(entry.reminderAt) && (router.query.reminded === "1" || canSnooze(entry, now));
+  const showSnooze = canRemind && forcedAt === null && Boolean(entry.reminderAt) && (router.query.reminded === "1" || canSnooze(entry, now));
   const repeatLabel = reminderActive && entry.reminderRepeat ? t(entry.reminderRepeat.every === "monthly" ? "reminders.repeatMonthly" : "reminders.repeatYearly") : null;
   const isDesktop = useIsDesktop();
   const reminderTexts = useReminderTexts();
@@ -653,6 +659,7 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
           analysis.vehicle && (
             <Section title={t("result.vehicle")} icon={<Car />}>
               <VehicleCard vehicle={analysis.vehicle} />
+              {!example && <GarageControls entry={entry} />}
             </Section>
           )
         );
@@ -716,6 +723,13 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
                     </div>
                   ))}
                 </dl>
+              </Section>
+            )}
+
+            {/* A registration certificate: add it to the garage right from the summary (also under Document). */}
+            {!example && analysis.document?.registration && (
+              <Section title={t("garage.title")} icon={<Car />}>
+                <GarageControls entry={entry} bare />
               </Section>
             )}
 
@@ -807,7 +821,8 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
               ))}
             </div>
           )}
-          {forcedAt !== null && (
+          {forcedAt !== null && !canRemind && <PlanLock plan={planFor("reminders")} text={t("reminders.lockedInsurance")} />}
+          {forcedAt !== null && canRemind && (
             <p className={styles.insurance}>
               <Lock size={15} />
               <span>
@@ -837,6 +852,7 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
             <PdfExportButton entry={entry} />
           </div>
         )}
+        {!example && document.registration && <GarageControls entry={entry} />}
         {!example && <PaperControls entry={entry} />}
         {!example && <BillControls entry={entry} />}
       </Section>
@@ -959,6 +975,14 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
 
   function renderReminder(className: string, slot: "primary" | "secondary" | "panel") {
     const compact = slot === "secondary";
+    if (!canRemind) {
+      return (
+        <Button key="reminder" variant="secondary" icon={<Bell />} href="/plans" className={className}>
+          {compact ? t("result.remindShort") : analysis.category === "vehicle" ? t("result.remindMaintenance") : t("result.remind")}{" "}
+          <PlanBadge plan={planFor("reminders")} />
+        </Button>
+      );
+    }
     if (forcedAt !== null) {
       // Scheduled automatically; the button only acts if notifications are off.
       return (

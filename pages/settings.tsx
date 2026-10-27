@@ -42,11 +42,14 @@ import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { Logo } from "@/components/Logo";
 import { SegmentedControl } from "@/components/SegmentedControl";
 import { Seo } from "@/components/Seo";
+import { PlanBadge } from "@/components/PlanBadge";
 import { Toggle } from "@/components/Toggle";
 import { useToast } from "@/components/Toast";
 import { useAiStatus } from "@/hooks/useAiStatus";
 import { useAppVersion } from "@/hooks/useAppVersion";
 import { useHistory } from "@/hooks/useHistory";
+import { usePlan } from "@/hooks/usePlan";
+import { planFor } from "@/lib/plans";
 import { useTranslation } from "@/hooks/useTranslation";
 import { allergens, diets } from "@/lib/ai/schema";
 import { rise, stagger } from "@/lib/motion";
@@ -73,6 +76,8 @@ export default function SettingsPage() {
   const router = useRouter();
   const toast = useToast();
   const { settings, update } = useSettings();
+  // Parcel arrival notifications are reminders: paid plans only (Lite and up).
+  const canRemind = usePlan().has("reminders");
   const android = useAndroidDownload();
   const { entries } = useHistory();
   const [permission, setPermission] = useState<NotificationPermission>("prompt");
@@ -81,6 +86,9 @@ export default function SettingsPage() {
   const appVersion = useAppVersion();
   // Server snapshot is false so the prerendered HTML matches the first client render.
   const native = useSyncExternalStore(noSubscribe, isNative, () => false);
+  // The connection is only known in the browser: read after hydration, like `native` (else a slow
+  // connection makes the first render differ from the prerendered HTML, React error #418).
+  const savingNow = useSyncExternalStore(noSubscribe, dataSaverState, () => "off" as const);
   const [confirmClear, setConfirmClear] = useState(false);
 
   // Re-read on return to the app: the user may have changed them in the OS settings.
@@ -216,7 +224,7 @@ export default function SettingsPage() {
               label={t("settings.dataSaver")}
               hint={
                 settings.dataSaver === "auto"
-                  ? `${t("settings.dataSaverHint")} ${t(isSavingData("auto") ? (connectionIsSlow() ? "settings.dataSaverAutoOn" : "settings.dataSaverOn") : "settings.dataSaverAutoOff")}`
+                  ? `${t("settings.dataSaverHint")} ${t(savingNow === "slow" ? "settings.dataSaverAutoOn" : savingNow === "on" ? "settings.dataSaverOn" : "settings.dataSaverAutoOff")}`
                   : t("settings.dataSaverHint")
               }
               stacked
@@ -355,14 +363,20 @@ export default function SettingsPage() {
               />
             </Row>
             <Row icon={<Package />} label={t("settings.parcelNotify")} hint={t("settings.parcelNotifyHint")}>
-              <Toggle
-                label={t("settings.parcelNotify")}
-                checked={settings.parcelNotify && permission === "granted"}
-                onChange={(enabled) => void toggleParcelNotify(enabled)}
-                disabled={permission === "unsupported"}
-              />
+              {canRemind ? (
+                <Toggle
+                  label={t("settings.parcelNotify")}
+                  checked={settings.parcelNotify && permission === "granted"}
+                  onChange={(enabled) => void toggleParcelNotify(enabled)}
+                  disabled={permission === "unsupported"}
+                />
+              ) : (
+                <Link href="/plans" aria-label={t("reminders.lockedParcels")}>
+                  <PlanBadge plan={planFor("reminders")} />
+                </Link>
+              )}
             </Row>
-            {settings.parcelNotify && permission === "granted" && (
+            {canRemind && settings.parcelNotify && permission === "granted" && (
               <Row icon={<Clock />} label={t("settings.parcelNotifyHour")} hint={t("settings.parcelNotifyHourHint")}>
                 <select
                   className={styles.hourSelect}
@@ -548,6 +562,12 @@ type RowProps = {
   stacked?: boolean;
   children?: ReactNode;
 };
+
+/** Whether the automatic data saver is on now, and why. */
+function dataSaverState() {
+  if (!isSavingData("auto")) return "off" as const;
+  return connectionIsSlow() ? ("slow" as const) : ("on" as const);
+}
 
 function Row({ icon, label, hint, stacked, children }: RowProps) {
   return (

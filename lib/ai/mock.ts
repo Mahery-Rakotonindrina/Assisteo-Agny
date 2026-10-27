@@ -168,6 +168,7 @@ const documentScan: Record<Locale, Analysis> = {
       isInsurance: false,
       paper: null,
       bill: { issuer: null, kind: "electricity_water", amount: 84.2, currency: "EUR", period: "Août – Sept.", dueDate: null },
+      registration: null,
     },
     vehicle: null,
     parcel: null,
@@ -203,6 +204,7 @@ const documentScan: Record<Locale, Analysis> = {
       isInsurance: false,
       paper: null,
       bill: { issuer: null, kind: "electricity_water", amount: 84.2, currency: "EUR", period: "Aug – Sept", dueDate: null },
+      registration: null,
     },
     vehicle: null,
     parcel: null,
@@ -539,10 +541,100 @@ const listScan: Record<Locale, Analysis> = {
   },
 };
 
+// Fictional registration certificate (plate and VIN made up) for demo mode.
+const registrationScan: Record<Locale, Analysis> = {
+  fr: {
+    category: "document",
+    title: "Carte grise Toyota Corolla",
+    summary: "Le certificat d'immatriculation d'une Toyota Corolla essence, mise en circulation en mars 2019. Garde-le dans la voiture : il est demandé lors des contrôles.",
+    confidence: 0.9,
+    tags: ["carte grise", "voiture", "toyota"],
+    facts: [
+      { label: "Immatriculation", value: "1234 TBA" },
+      { label: "Mise en circulation", value: "12/03/2019" },
+      { label: "Puissance fiscale", value: "7 CV" },
+    ],
+    suggestions: [
+      { kind: "action", title: "Ajoute-la à ton garage", detail: "Tu suivras l'assurance, la visite technique et les vidanges." },
+      { kind: "tip", title: "Garde une copie", detail: "Une photo dans Mes papiers t'aide en cas de perte." },
+    ],
+    questions: ["Que veut dire la case P.6 ?", "Que faire si je vends la voiture ?", "Quand passer la visite technique ?"],
+    nutrition: null,
+    recipe: null,
+    diet: null,
+    document: {
+      type: "Carte grise",
+      keyPoints: ["Toyota Corolla, essence", "Première mise en circulation le 12 mars 2019", "Puissance fiscale : 7 CV"],
+      dates: [{ label: "Mise en circulation", date: "12 mars 2019" }],
+      actionItems: ["Garder l'original dans le véhicule"],
+      expiresOn: null,
+      isInsurance: false,
+      paper: "vehicle_registration",
+      bill: null,
+      registration: {
+        plate: "1234 TBA",
+        make: "Toyota",
+        model: "Corolla",
+        firstRegistration: "2019-03-12",
+        vin: "JTDBR32E720000000",
+        energy: "petrol",
+        fiscalPower: 7,
+      },
+    },
+    vehicle: null,
+    parcel: null,
+    list: null,
+    reminder: null,
+  },
+  en: {
+    category: "document",
+    title: "Toyota Corolla registration",
+    summary: "The registration certificate of a petrol Toyota Corolla, first registered in March 2019. Keep it in the car: it is asked for at roadside checks.",
+    confidence: 0.9,
+    tags: ["registration", "car", "toyota"],
+    facts: [
+      { label: "Plate", value: "1234 TBA" },
+      { label: "First registered", value: "12/03/2019" },
+      { label: "Fiscal power", value: "7 CV" },
+    ],
+    suggestions: [
+      { kind: "action", title: "Add it to your garage", detail: "You'll follow the insurance, the inspection and the oil changes." },
+      { kind: "tip", title: "Keep a copy", detail: "A photo in My papers helps if you lose it." },
+    ],
+    questions: ["What does box P.6 mean?", "What do I do if I sell the car?", "When is the inspection due?"],
+    nutrition: null,
+    recipe: null,
+    diet: null,
+    document: {
+      type: "Registration certificate",
+      keyPoints: ["Toyota Corolla, petrol", "First registered on 12 March 2019", "Fiscal power: 7 CV"],
+      dates: [{ label: "First registered", date: "12 March 2019" }],
+      actionItems: ["Keep the original in the vehicle"],
+      expiresOn: null,
+      isInsurance: false,
+      paper: "vehicle_registration",
+      bill: null,
+      registration: {
+        plate: "1234 TBA",
+        make: "Toyota",
+        model: "Corolla",
+        firstRegistration: "2019-03-12",
+        vin: "JTDBR32E720000000",
+        energy: "petrol",
+        fiscalPower: 7,
+      },
+    },
+    vehicle: null,
+    parcel: null,
+    list: null,
+    reminder: null,
+  },
+};
+
 export function mockAnalysis(mode: ScanMode, locale: Locale): Analysis {
   if (mode !== "auto") return byMode[mode][locale];
   // New examples go last: tests rely on the order of the first ones.
-  const pool = [food, documentScan, vehicleScan, objectScan, parcelScan, listScan];
+  const pool = [food, documentScan, vehicleScan, objectScan, parcelScan, listScan, registrationScan];
   const pick = pool[autoCursor % pool.length];
   autoCursor += 1;
   return pick[locale];
