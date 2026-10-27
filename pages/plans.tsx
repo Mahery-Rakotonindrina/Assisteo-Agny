@@ -75,8 +75,9 @@ export default function PlansPage() {
     }
   };
 
-  // The app's web address: the server's in the Android app, this page's origin on the web.
-  const shareMessage = () => t("plans.referral.message", { code: referralCode ?? "", link: `${config.apiBaseUrl || window.location.origin}/plans` });
+  // The presentation page at the public address (the server's in the Android app),
+  // else this page's origin (local dev).
+  const shareMessage = () => t("plans.referral.message", { code: referralCode ?? "", link: `${config.siteUrl || window.location.origin}/decouvrir` });
   const shareReferral = async () => {
     haptics.tap();
     if ((await shareText(t("plans.referral.title"), shareMessage())) === "copied") toast(t("plans.copied"));

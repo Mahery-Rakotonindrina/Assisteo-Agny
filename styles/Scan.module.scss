@@ -31,6 +31,7 @@
 
 // Desktop-only blocks.
 .lead,
+.discover,
 .how,
 .drop {
   display: none;
@@ -157,6 +158,19 @@
 
   @include desktop {
     display: block;
+  }
+}
+
+// Desktop web only, like the intro: the presentation page for visitors.
+.discover {
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.6rem;
+  color: var(--accent-text);
+  font-weight: 600;
+
+  @include desktop {
+    display: inline-flex;
   }
 }
 
@@ -380,6 +394,21 @@
   margin-top: -0.35rem;
   font-size: 0.9rem;
   color: var(--text-muted);
+}
+
+// Phones and the apps: the presentation page, for those who haven't scanned yet.
+.discoverMore {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--accent-text);
+
+  @include desktop {
+    display: none;
+  }
 }
 
 .examples {

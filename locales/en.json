@@ -5,7 +5,9 @@
     "description": "Snap a document, food, an object or a parcel: the AI explains what you're looking at. Free to start, plans paid with Mobile Money in Madagascar.",
     "plans": "Assisteo Agny's Lite, Premium and Pro plans: more scans, questions and tracked parcels. Prices in ariary, paid with Mobile Money.",
     "privacy": "What data Assisteo Agny uses, where your photos go, where they are stored and what your rights are.",
-    "terms": "The rules of Assisteo Agny: the service, AI answers to double-check, the free trial, subscriptions and your account."
+    "terms": "The rules of Assisteo Agny: the service, AI answers to double-check, the free trial, subscriptions and your account.",
+    "discoverTitle": "Assisteo Agny: documents, meals and parcels explained by AI",
+    "discover": "Snap a bill, a meal, a parcel or a car: Assisteo Agny explains what it is and what to do. Free to start, plans in ariary."
   },
   "nav": {
     "scan": "Scan",
@@ -102,7 +104,8 @@
       "document": "Flat, whole page, no glare.",
       "vehicle": "Front three-quarters, all of it.",
       "object": "All of it, on a plain background."
-    }
+    },
+    "discover": "Discover everything the app does"
   },
   "errors": {
     "title": "The analysis didn't go through",
@@ -1317,7 +1320,7 @@
     "referral": {
       "title": "Refer your friends",
       "body": "Share your code. When someone enters it in “I have a code” and then pays for their first plan, you get 1 month free.",
-      "message": "Join me on Assisteo Agny: it helps you understand what you photograph. Enter my code {code} in “I have a code”: {link}",
+      "message": "Join me on Assisteo Agny: it helps you understand what you photograph. For your plan, enter my code {code} in “I have a code” on the Plans page. See what it does: {link}",
       "whatsapp": "WhatsApp",
       "share": "Share",
       "copy": "Copy the code"
@@ -1670,5 +1673,88 @@
     "all": "All",
     "none": "None",
     "makePdf": "PDF"
+  },
+  "discover": {
+    "eyebrow": "The photo assistant built for Madagascar",
+    "headline": "The AI that explains",
+    "headlineAccent": "what you photograph",
+    "lead": "A JIRAMA bill, a meal, a parcel ordered on Temu, a plant, a used car: take a photo and Assisteo Agny tells you what it is, what matters and what to do next.",
+    "try": "Try it for free",
+    "freeNote": "No account or bank card needed to start.",
+    "featuresTitle": "What Assisteo Agny does for you",
+    "features": {
+      "document": {
+        "title": "Documents and bills",
+        "body": "Key points, deadlines and things to do. Bill amounts (JIRAMA, phone…) are tracked, with a reminder before the due date. Translation into French, English, Malagasy or Chinese."
+      },
+      "food": {
+        "title": "Meals and food",
+        "body": "Estimated nutrition, a full recipe, storage tips, allergens and diets (halal, gluten-free…), and a daily journal against your goals."
+      },
+      "parcel": {
+        "title": "Parcels",
+        "body": "Capture the tracking screen (Pinduoduo, Taobao, Temu, AliExpress, Shein…): your parcel is tracked, with the expected delivery day, the fees in ariary and a notification on the day."
+      },
+      "vehicle": {
+        "title": "Vehicles",
+        "body": "Make and model, estimated new and used prices, specifications, maintenance and weak points to check before buying."
+      },
+      "object": {
+        "title": "Objects and plants",
+        "body": "Identification, use, care, value and warnings, for a device as well as a plant to water."
+      },
+      "list": {
+        "title": "Lists and papers",
+        "body": "A photo of a shopping list becomes a checklist, with prices in ariary. ID cards, insurance and warranties are filed, with an alert before they expire."
+      }
+    },
+    "examplesTitle": "See what the AI answers",
+    "howTitle": "How it works",
+    "steps": {
+      "photo": {
+        "title": "Take a photo",
+        "body": "With the camera, from your gallery, or shared from WhatsApp on Android."
+      },
+      "analysis": {
+        "title": "The AI analyses it",
+        "body": "In a few seconds it recognises the subject and writes what matters. Offline, the photo waits and leaves as soon as the connection is back."
+      },
+      "questions": {
+        "title": "Ask your questions",
+        "body": "Typed or spoken: the AI looks at the photo again to answer. Everything stays in your history, with reminders at the right time."
+      }
+    },
+    "plansTitle": "Free to start",
+    "plansBody": "Try it with free scans. To go further, the Lite, Premium and Pro plans give more scans, questions and tracked parcels. They are paid with Mobile Money, in ariary, with no automatic renewal.",
+    "plansCta": "See plans and prices",
+    "faqTitle": "Frequently asked questions",
+    "faq": {
+      "free": {
+        "q": "Is Assisteo Agny free?",
+        "a": "Yes, to start: free scans and questions, no bank card. Then you pick a Lite, Premium or Pro plan, paid with Mobile Money in ariary, with no automatic renewal."
+      },
+      "account": {
+        "q": "Do I need an account?",
+        "a": "No. An account, created with your email address, only lets you find your history, parcels and plan on all your devices."
+      },
+      "photos": {
+        "q": "What happens to my photos?",
+        "a": "Our server passes the photo to the AI, then forgets it. Without an account, your history stays on your phone. With one, it syncs between your devices and only you can see it."
+      },
+      "devices": {
+        "q": "Which devices does it work on?",
+        "a": "On Android with the app, and on any phone or computer in the browser. On iPhone, add the site to your home screen to open it like an app."
+      },
+      "network": {
+        "q": "What about a slow connection?",
+        "a": "Data saver mode makes photos lighter for 3G. Offline, the photo waits and leaves as soon as the connection is back, and you are told when the result is ready."
+      },
+      "mistakes": {
+        "q": "Can the AI be wrong?",
+        "a": "Yes: its answers are estimates to double-check. They don't replace the advice of a doctor, a mechanic, a lawyer or a financial adviser."
+      }
+    },
+    "finalTitle": "Ready to try?",
+    "finalBody": "One photo is enough to see what the AI can do for you."
   }
 }
