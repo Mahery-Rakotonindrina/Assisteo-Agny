@@ -5,7 +5,9 @@
     "description": "Prends en photo un document, un aliment, un objet ou un colis : l'IA t'explique ce que tu vois. Gratuit pour commencer, offres en Mobile Money à Madagascar.",
     "plans": "Les offres Lite, Premium et Pro d'Assisteo Agny : plus de scans, de questions et de colis suivis. Prix en ariary, paiement par Mobile Money.",
     "privacy": "Quelles données Assisteo Agny utilise, où partent tes photos, où elles sont stockées et quels sont tes droits.",
-    "terms": "Les règles d'Assisteo Agny : le service, les réponses de l'IA à vérifier, l'essai gratuit, les abonnements et ton compte."
+    "terms": "Les règles d'Assisteo Agny : le service, les réponses de l'IA à vérifier, l'essai gratuit, les abonnements et ton compte.",
+    "discoverTitle": "Assisteo Agny : documents, repas et colis expliqués par l’IA",
+    "discover": "Photographie une facture, un plat, un colis ou une voiture : Assisteo Agny t’explique ce que c’est et quoi faire. Gratuit pour commencer, offres en ariary."
   },
   "nav": {
     "scan": "Scanner",
@@ -102,7 +104,8 @@
       "document": "À plat, page entière, sans reflet.",
       "vehicle": "De trois quarts avant, en entier.",
       "object": "En entier, sur un fond simple."
-    }
+    },
+    "discover": "Découvrir tout ce que fait l’app"
   },
   "errors": {
     "title": "L'analyse n'a pas abouti",
@@ -1670,5 +1673,88 @@
     "all": "Tout",
     "none": "Aucun",
     "makePdf": "PDF"
+  },
+  "discover": {
+    "eyebrow": "L’assistant photo pensé pour Madagascar",
+    "headline": "L’IA qui t’explique",
+    "headlineAccent": "ce que tu photographies",
+    "lead": "Une facture JIRAMA, un plat, un colis commandé sur Temu, une plante, une voiture d’occasion : prends une photo, Assisteo Agny te dit ce que c’est, ce qu’il faut retenir et quoi faire ensuite.",
+    "try": "Essayer gratuitement",
+    "freeNote": "Sans compte ni carte bancaire pour commencer.",
+    "featuresTitle": "Ce qu’Assisteo Agny fait pour toi",
+    "features": {
+      "document": {
+        "title": "Documents et factures",
+        "body": "Points clés, dates limites et actions à faire. Le montant des factures (JIRAMA, téléphone…) est suivi, avec un rappel avant l’échéance. Traduction en français, anglais, malgache ou chinois."
+      },
+      "food": {
+        "title": "Repas et aliments",
+        "body": "Valeurs nutritionnelles estimées, recette complète, conservation, allergènes et régimes (halal, sans gluten…), et un journal du jour face à tes objectifs."
+      },
+      "parcel": {
+        "title": "Colis",
+        "body": "Capture l’écran de suivi (Pinduoduo, Taobao, Temu, AliExpress, Shein…) : ton colis est suivi, avec la date de livraison prévue, les frais en ariary et une notification le jour J."
+      },
+      "vehicle": {
+        "title": "Véhicules",
+        "body": "Marque et modèle, prix neuf et d’occasion estimés, caractéristiques, entretien et points faibles à vérifier avant d’acheter."
+      },
+      "object": {
+        "title": "Objets et plantes",
+        "body": "Identification, usage, entretien, valeur et mises en garde, pour un appareil comme pour une plante à arroser."
+      },
+      "list": {
+        "title": "Listes et papiers",
+        "body": "Une liste de courses en photo devient une liste à cocher, avec les prix en ariary. CNI, assurances et garanties sont rangées, avec une alerte avant l’expiration."
+      }
+    },
+    "examplesTitle": "Vois ce que l’IA répond",
+    "howTitle": "Comment ça marche",
+    "steps": {
+      "photo": {
+        "title": "Prends une photo",
+        "body": "Avec l’appareil photo, depuis ta galerie, ou partagée depuis WhatsApp sur Android."
+      },
+      "analysis": {
+        "title": "L’IA l’analyse",
+        "body": "En quelques secondes, elle reconnaît le sujet et rédige l’essentiel. Sans réseau, la photo attend et part dès que la connexion revient."
+      },
+      "questions": {
+        "title": "Pose tes questions",
+        "body": "À l’écrit ou à la voix : l’IA revoit la photo pour te répondre. Tout reste dans ton historique, avec des rappels au bon moment."
+      }
+    },
+    "plansTitle": "Gratuit pour commencer",
+    "plansBody": "Essaie avec des scans gratuits. Pour aller plus loin, les offres Lite, Premium et Pro donnent plus de scans, de questions et de colis suivis. Elles se paient par Mobile Money, en ariary, sans renouvellement automatique.",
+    "plansCta": "Voir les offres et les prix",
+    "faqTitle": "Questions fréquentes",
+    "faq": {
+      "free": {
+        "q": "Assisteo Agny est-il gratuit ?",
+        "a": "Oui pour commencer : des scans et des questions gratuits, sans carte bancaire. Ensuite, tu choisis une offre Lite, Premium ou Pro, payée par Mobile Money en ariary, sans renouvellement automatique."
+      },
+      "account": {
+        "q": "Faut-il créer un compte ?",
+        "a": "Non. Un compte, créé avec ton adresse e-mail, sert seulement à retrouver ton historique, tes colis et ton offre sur tous tes appareils."
+      },
+      "photos": {
+        "q": "Que deviennent mes photos ?",
+        "a": "Notre serveur transmet la photo à l’IA puis l’oublie. Sans compte, ton historique reste sur ton téléphone. Avec un compte, il est synchronisé entre tes appareils et toi seul y as accès."
+      },
+      "devices": {
+        "q": "Sur quels appareils ça marche ?",
+        "a": "Sur Android avec l’app, et sur n’importe quel téléphone ou ordinateur depuis le navigateur. Sur iPhone, ajoute le site à l’écran d’accueil pour l’ouvrir comme une app."
+      },
+      "network": {
+        "q": "Et avec une connexion lente ?",
+        "a": "Le mode économie de données allège les photos pour la 3G. Sans réseau, la photo attend et part dès que la connexion revient, puis tu es prévenu quand le résultat est prêt."
+      },
+      "mistakes": {
+        "q": "L’IA peut-elle se tromper ?",
+        "a": "Oui : ses réponses sont des estimations à vérifier. Elles ne remplacent pas l’avis d’un médecin, d’un mécanicien, d’un juriste ou d’un conseiller financier."
+      }
+    },
+    "finalTitle": "Prêt à essayer ?",
+    "finalBody": "Une première photo suffit pour voir ce que l’IA peut faire pour toi."
   }
 }

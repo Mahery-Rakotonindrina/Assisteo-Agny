@@ -81,3 +81,14 @@ test("the scanned photo opens full screen and closes with Escape or back", async
   await expect(viewer).toHaveCount(0);
   await expect(page).toHaveURL(/\/result\?example=food$/);
 });
+
+test("the discover page shows its title and opens a question", async ({ page }) => {
+  await prepare(page);
+  await page.goto("/decouvrir");
+  await expect(page.getByRole("heading", { level: 1, name: /L’IA qui t’explique/ })).toBeVisible();
+  const question = page.getByText("Faut-il créer un compte ?");
+  await expect(async () => {
+    await question.click();
+    await expect(page.locator("details[open]").filter({ hasText: "Faut-il créer un compte ?" })).toHaveCount(1);
+  }).toPass();
+});

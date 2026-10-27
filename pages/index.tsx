@@ -145,6 +145,9 @@ export default function ScanPage() {
                   {t("scan.headline")} <em>{t("scan.headlineAccent")}</em>
                 </h1>
                 <p className={styles.lead}>{t("scan.webIntro")}</p>
+                <Link href="/decouvrir" className={styles.discover}>
+                  {t("scan.discover")} <ArrowRight size={14} />
+                </Link>
                 {(trial.plan !== "free" ||
                   (trial.limited && !trial.exhausted && trial.remaining !== null && trial.limit !== null)) && (
                   <div className={styles.trial}>
