@@ -1,9 +1,18 @@
 import { AnalysisSchema, normalizeStoredAnalysis, type Analysis } from "@/lib/ai/schema";
+import { nextOccurrence, parseRepeat } from "@/lib/reminderRepeat";
 
 // Decides which reminder pushes to send: pure, so it can be tested without
 // Supabase or Firebase (the cron route does the I/O).
 
-export type DueRow = { user_id: string; id: string; analysis: unknown; reminder_at: string; reminder_pushed_at: string | null };
+export type DueRow = {
+  user_id: string;
+  id: string;
+  analysis: unknown;
+  reminder_at: string;
+  reminder_pushed_at: string | null;
+  /** The synced user fields, among them reminderRepeat (see services/sync.ts). */
+  meta?: { reminderRepeat?: unknown } | null;
+};
 export type PushDevice = { user_id: string; device_id: string; token: string; scheduled: string[] | null };
 export type PushLocale = "fr" | "en";
 export type PlannedPush = { device: PushDevice; entryId: string; title: string; body: string };
@@ -41,6 +50,26 @@ export function isPending(row: DueRow) {
 }
 
 /**
+ * Whether this device shows the reminder by itself. Devices list "id@time"
+ * (older apps: just the id), so a recurring reminder that already fired there
+ * is pushed again for its next occurrence.
+ */
+export function holdsReminder(device: PushDevice, row: DueRow) {
+  const scheduled = device.scheduled ?? [];
+  return scheduled.includes(row.id) || scheduled.includes(`${row.id}@${new Date(row.reminder_at).getTime()}`);
+}
+
+/**
+ * A recurring reminder that came due: when its next occurrence is, so it goes
+ * on even if the app isn't opened. Null for a one-off reminder.
+ */
+export function nextReminderAt(row: Pick<DueRow, "reminder_at" | "meta">, now: number) {
+  const repeat = parseRepeat(row.meta?.reminderRepeat);
+  if (!repeat) return null;
+  return new Date(nextOccurrence(repeat, Math.max(now, new Date(row.reminder_at).getTime()))).toISOString();
+}
+
+/**
  * One push per due reminder and per device of its owner that doesn't already
  * hold it as a local notification.
  */
@@ -52,7 +81,7 @@ export function planPushes(rows: DueRow[], devices: PushDevice[], locales: Map<s
     if (!analysis.success) continue;
     const message = reminderMessage(analysis.data, locales.get(row.user_id) ?? "fr");
     for (const device of devices) {
-      if (device.user_id !== row.user_id || device.scheduled?.includes(row.id)) continue;
+      if (device.user_id !== row.user_id || holdsReminder(device, row)) continue;
       planned.push({ device, entryId: row.id, ...message });
     }
   }
