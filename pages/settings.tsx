@@ -1,4 +1,3 @@
-import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { motion } from "motion/react";
@@ -42,6 +41,7 @@ import { Button } from "@/components/Button";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { Logo } from "@/components/Logo";
 import { SegmentedControl } from "@/components/SegmentedControl";
+import { Seo } from "@/components/Seo";
 import { Toggle } from "@/components/Toggle";
 import { useToast } from "@/components/Toast";
 import { useAiStatus } from "@/hooks/useAiStatus";
@@ -171,9 +171,7 @@ export default function SettingsPage() {
 
   return (
     <>
-      <Head>
-        <title>{`${t("settings.title")} · ${t("meta.title")}`}</title>
-      </Head>
+      <Seo title={`${t("settings.title")} · ${t("meta.title")}`} noindex />
 
       <motion.div className={styles.page} variants={stagger} initial="hidden" animate="show">
         <motion.header variants={rise} className={styles.header}>

@@ -6,6 +6,14 @@ import type { NextConfig } from "next";
 const packageVersion = JSON.parse(readFileSync("./package.json", "utf8")).version as string;
 const appVersion = process.env.ANDROID_VERSION_NAME ?? packageVersion;
 const appCommit = (process.env.VERCEL_GIT_COMMIT_SHA ?? process.env.GITHUB_SHA ?? "").slice(0, 7);
+// Public address used in canonical links, share previews and the sitemap:
+// NEXT_PUBLIC_SITE_URL when set, else the Vercel production domain (a custom
+// domain once one is added), else the API URL of the mobile build.
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "") ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  "";
 
 // Two build targets share one codebase:
 // - "web" (default): a regular Next.js server that also hosts the AI API routes.
@@ -69,11 +77,19 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_APP_VERSION: appVersion,
     NEXT_PUBLIC_APP_COMMIT: appCommit,
+    NEXT_PUBLIC_SITE_URL: siteUrl,
   },
   // Static exports can't set headers (and the native app isn't served over HTTP).
   ...(!isMobileBuild && {
     async headers() {
       return [{ source: "/(.*)", headers: securityHeaders }];
+    },
+    // Search engines look for these at the root; the API routes build them.
+    async rewrites() {
+      return [
+        { source: "/robots.txt", destination: "/api/seo/robots" },
+        { source: "/sitemap.xml", destination: "/api/seo/sitemap" },
+      ];
     },
   }),
   ...(isMobileBuild && {

@@ -1,4 +1,3 @@
-import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { AnimatePresence, motion } from "motion/react";
@@ -64,6 +63,7 @@ import {
   VehicleCard,
   type ResultTab,
 } from "@/components/Result";
+import { Seo } from "@/components/Seo";
 import { useToast } from "@/components/Toast";
 import { useHistory, useHistoryEntry } from "@/hooks/useHistory";
 import { useLists } from "@/hooks/useLists";
@@ -383,9 +383,7 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
 
   return (
     <>
-      <Head>
-        <title>{`${analysis.title} · ${t("meta.title")}`}</title>
-      </Head>
+      <Seo title={`${analysis.title} · ${t("meta.title")}`} noindex />
 
       <div ref={barRef} className={[styles.topBar, barSolid && styles.topBarSolid, barTitled && styles.topBarTitled].filter(Boolean).join(" ")}>
         <Button variant="secondary" size="icon" className={styles.glassButton} onClick={onBack} aria-label={t("nav.back")}>

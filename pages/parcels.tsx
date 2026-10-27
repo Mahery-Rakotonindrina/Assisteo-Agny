@@ -1,4 +1,3 @@
-import Head from "next/head";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { useDeferredValue, useEffect, useRef, useState } from "react";
@@ -28,6 +27,7 @@ import { ParcelClients } from "@/components/ParcelClients";
 import { ParcelCosts } from "@/components/ParcelCosts";
 import { ParcelEditSheet } from "@/components/ParcelEditSheet";
 import { SegmentedControl } from "@/components/SegmentedControl";
+import { Seo } from "@/components/Seo";
 import { useToast } from "@/components/Toast";
 import { useHistory } from "@/hooks/useHistory";
 import { useNow } from "@/hooks/useNow";
@@ -220,9 +220,7 @@ export default function ParcelsPage() {
 
   return (
     <>
-      <Head>
-        <title>{`${t("parcels.title")} · ${t("meta.title")}`}</title>
-      </Head>
+      <Seo title={`${t("parcels.title")} · ${t("meta.title")}`} noindex />
       <motion.div className={styles.page} variants={stagger} initial="hidden" animate="show">
         <motion.header variants={rise} className={styles.header}>
           <h1>{t("parcels.title")}</h1>
