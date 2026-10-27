@@ -195,3 +195,23 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Alerte si le site tombe (contrôle toutes les 10 min, base et Redis compris, ticket GitHub qui te mentionne, fermé au retour)
 - [x] Test automatique de restauration des sauvegardes (chaque semaine sur la vraie sauvegarde, et à chaque envoi de code sur des données d'exemple)
 - [x] Double authentification pour l'admin (appli d'authentification + codes de secours)
+
+## 16. Mes dépenses (offre Admin, en test)
+
+Budget du mois du foyer. Réservé à l'offre Admin pendant le test, ouvert aux autres offres ensuite.
+
+- [ ] Écran « Mes dépenses », visible seulement avec l'offre Admin (masqué pour les autres pendant le test)
+- [ ] Ajout rapide d'une dépense : montant en ariary, catégorie, date, note, moyen de paiement (espèces, Mobile Money, carte)
+- [ ] Catégories adaptées à Madagascar : marché et alimentation, JIRAMA, loyer, transport (taxi-be, carburant), crédit et internet, école, santé, famille, achats en ligne et colis, voiture, loisirs, épargne, autres ; catégories personnelles en plus
+- [ ] Vue du mois : total dépensé, répartition par catégorie (graphique), comparaison avec le mois dernier, liste des dépenses
+- [ ] Budget du mois : plafond global et par catégorie, barre de progression, alerte à 80 % puis au dépassement
+- [ ] Reprise automatique des dépenses déjà connues dans l'app, sans double saisie : factures payées (Mes papiers), courses (prix des listes), frais de colis, pleins et entretien du garage
+- [ ] Dépenses qui reviennent chaque mois (loyer, écolage, abonnements), ajoutées automatiquement
+- [ ] Scanner un ticket de caisse ou une capture de reçu MVola / Orange Money / Airtel Money : la dépense se remplit toute seule
+- [ ] Revenus du mois (salaire, ventes) et ce qu'il reste
+- [ ] Historique sur 6 et 12 mois, moyenne par catégorie
+- [ ] Rappels des échéances (loyer le 5, écolage…)
+- [ ] Bilan du mois rédigé par l'IA (« Tu as dépensé 30 % de plus en transport… »)
+- [ ] Export Excel ou PDF du mois
+- [ ] Achats en yuan, dollar ou euro convertis en ariary au taux du jour, comme pour les colis
+- [ ] Budget partagé en famille
