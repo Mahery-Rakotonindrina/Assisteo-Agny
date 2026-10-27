@@ -271,7 +271,8 @@ export default function ScanPage() {
               </motion.div>
             )}
 
-            {recent.length > 0 && (
+            {/* "Mes dépenses" has no other way in on a phone: its shortcut shows even before the first scan. */}
+            {(recent.length > 0 || has("expenses")) && (
               <motion.div variants={rise}>
                 <Shortcuts entries={entries} />
               </motion.div>

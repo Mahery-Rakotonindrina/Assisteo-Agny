@@ -140,8 +140,11 @@ function screenProblems(info, persona, step, ms) {
   if (info.brokenImages.length) problems.push({ level: "warn", text: `Image qui ne s'affiche pas : ${info.brokenImages.join(", ")}` });
   const slow = persona.network === "3g" ? 15_000 : 5_000;
   if (step.go && ms > slow) problems.push({ level: "warn", text: `Lent : ${(ms / 1000).toFixed(1)} s pour s'afficher` });
-  for (const text of step.expect ?? []) if (!info.text.includes(text)) problems.push({ level: "fail", text: `On ne voit pas « ${text} »` });
-  for (const text of step.expectNot ?? []) if (info.text.includes(text)) problems.push({ level: "fail", text: `On voit encore « ${text} »` });
+  // innerText follows text-transform (titles in capitals): compare without case.
+  const seen = info.text.toLocaleLowerCase("fr");
+  const shows = (text) => seen.includes(text.toLocaleLowerCase("fr"));
+  for (const text of step.expect ?? []) if (!shows(text)) problems.push({ level: "fail", text: `On ne voit pas « ${text} »` });
+  for (const text of step.expectNot ?? []) if (shows(text)) problems.push({ level: "fail", text: `On voit encore « ${text} »` });
   return problems;
 }
 

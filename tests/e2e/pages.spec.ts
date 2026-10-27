@@ -135,6 +135,35 @@ test("a Premium account adds a vehicle and two fills, and sees the consumption",
   await expect(page.getByTestId("fuel-last")).toHaveText("7 L");
 });
 
+test("an Admin account adds an expense and sees the month's total", async ({ page }) => {
+  await prepare(page);
+  // The demo server answers "free": pretend the account is Admin.
+  await page.route("**/api/plan", async (route) => {
+    const response = await route.fetch();
+    await route.fulfill({ response, json: { ...(await response.json()), plan: "unlimited" } });
+  });
+  await page.goto("/");
+  await expect(page.getByRole("link", { name: /Mes dépenses|^Dépenses$/ }).first()).toBeVisible();
+  await page.goto("/expenses");
+  await expect(page.getByRole("heading", { level: 1, name: "Mes dépenses" })).toBeVisible();
+  await page.getByRole("button", { name: "Ajouter une dépense" }).click();
+  await page.getByLabel("Montant", { exact: true }).fill("12500");
+  await page.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(page.getByTestId("expenses-total")).toHaveText(/^12\s500 Ar$/);
+});
+
+test("without the Admin plan, My expenses is neither in the menu nor on its page", async ({ page }) => {
+  await prepare(page);
+  // Once the plan is known (free), the menu is final.
+  const plan = page.waitForResponse("**/api/plan");
+  await page.goto("/");
+  await plan;
+  await expect(page.getByRole("link", { name: /Mes dépenses|^Dépenses$/ })).toHaveCount(0);
+  await page.goto("/expenses");
+  await expect(page.getByRole("heading", { name: "Pas disponible" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Ajouter une dépense" })).toHaveCount(0);
+});
+
 test("back on the free plan, the vehicles stay visible but read only", async ({ page }) => {
   await prepare(page);
   const premium = async (route: import("@playwright/test").Route) => {

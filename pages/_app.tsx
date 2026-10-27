@@ -4,6 +4,7 @@ import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import { MotionConfig } from "motion/react";
 import { AppShell } from "@/components/AppShell";
 import { Onboarding } from "@/components/Onboarding";
+import { ExpenseReminderKeeper } from "@/components/ExpenseReminderKeeper";
 import { ParcelReminderKeeper } from "@/components/ParcelReminderKeeper";
 import { ReminderKeeper } from "@/components/ReminderKeeper";
 import { ScanQueueRunner } from "@/components/ScanQueueRunner";
@@ -64,6 +65,7 @@ export default function App({ Component, pageProps }: AppProps) {
               <ReminderKeeper />
               <ParcelReminderKeeper />
               <VehicleReminderKeeper />
+              <ExpenseReminderKeeper />
               <ScanQueueRunner />
               <ShareReceiver />
               <UpdateGate />

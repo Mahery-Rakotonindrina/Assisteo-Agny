@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { motion } from "motion/react";
-import { BookOpen, Car, Download, FolderLock, History, ListChecks, Package, ScanLine, Settings2, ShieldCheck, Smartphone, UserRound } from "lucide-react";
+import { BookOpen, Car, Download, FolderLock, History, ListChecks, Package, ScanLine, Settings2, ShieldCheck, Smartphone, UserRound, Wallet } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { useAiStatus } from "@/hooks/useAiStatus";
 import { useAndroidDownload } from "@/hooks/useAndroidDownload";
@@ -23,13 +23,18 @@ const links = [
   { href: "/settings", key: "settings", Icon: Settings2 },
 ] as const;
 
+/** "Mes dépenses", shown only with a plan that includes it (Admin while tested). */
+const expensesLink = { href: "/expenses", key: "expenses", Icon: Wallet } as const;
+
 /** Shown to administrators (full access) only; the page still asks for the token. */
 const adminLink = { href: "/admin", key: "admin", Icon: ShieldCheck } as const;
 
 /** Desktop navigation, replacing the mobile tab bar on wide screens. */
 export function Sidebar() {
   const { pathname } = useRouter();
-  const { isAdmin } = usePlan();
+  const { isAdmin, has } = usePlan();
+  // The plan is null on the server and at hydration: the extra links only appear once it is read.
+  const shown = [...links.slice(0, 6), ...(has("expenses") ? [expensesLink] : []), ...links.slice(6), ...(isAdmin ? [adminLink] : [])];
   const android = useAndroidDownload();
   const { t } = useTranslation();
   const aiStatus = useAiStatus();
@@ -52,7 +57,7 @@ export function Sidebar() {
       </Link>
 
       <nav className={styles.nav} aria-label="Main">
-        {(isAdmin ? [...links, adminLink] : links).map(({ href, key, Icon }) => {
+        {shown.map(({ href, key, Icon }) => {
           const active = pathname === href || (href === "/history" && pathname === "/result");
           return (
             <Link key={key} href={href} className={`${styles.link} ${active ? styles.active : ""}`} aria-current={active ? "page" : undefined}>

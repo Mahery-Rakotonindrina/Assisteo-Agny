@@ -12,6 +12,8 @@ import { listStore } from "@/services/listStore";
 import { startListSync, syncLists } from "@/services/listSync";
 import { vehicleStore } from "@/services/vehicleStore";
 import { startVehicleSync, syncVehicles } from "@/services/vehicleSync";
+import { expenseStore } from "@/services/expenseStore";
+import { startExpenseSync, syncExpenses } from "@/services/expenseSync";
 import { parcelStore } from "@/services/parcelStore";
 import { startParcelSync, syncParcels } from "@/services/parcelSync";
 import { registerPush, unregisterPush } from "@/services/push";
@@ -85,6 +87,12 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!userId) return;
     return startVehicleSync(userId);
+  }, [userId]);
+
+  // "Mes dépenses".
+  useEffect(() => {
+    if (!userId) return;
+    return startExpenseSync(userId);
   }, [userId]);
 
   // History.
@@ -163,10 +171,16 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await sync.now()?.catch(() => undefined);
     await sync.stop({ wipe: true });
     if (userId)
-      await Promise.all([syncParcels(userId).catch(() => undefined), syncLists(userId).catch(() => undefined), syncVehicles(userId).catch(() => undefined)]);
+      await Promise.all([
+        syncParcels(userId).catch(() => undefined),
+        syncLists(userId).catch(() => undefined),
+        syncVehicles(userId).catch(() => undefined),
+        syncExpenses(userId).catch(() => undefined),
+      ]);
     await parcelStore.wipe();
     await listStore.wipe();
     await vehicleStore.wipe();
+    await expenseStore.wipe();
     await aiKeyStore.clear({ fromSync: true });
     await signOutAccount();
   }, [userId]);
@@ -185,6 +199,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await parcelStore.wipe();
     await listStore.wipe();
     await vehicleStore.wipe();
+    await expenseStore.wipe();
     await aiKeyStore.clear({ fromSync: true });
     await cancelAllNotifications();
     // The user no longer exists on the server: only forget the session here.
