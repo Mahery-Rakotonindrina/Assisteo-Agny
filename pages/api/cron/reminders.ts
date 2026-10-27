@@ -2,19 +2,23 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { isCron } from "@/lib/server/cronAuth";
 import { pushEnabled, sendPush } from "@/lib/server/fcm";
 import { sendError } from "@/lib/server/http";
-import { isPending, planPushes, type DueRow, type PushDevice, type PushLocale } from "@/lib/server/reminderPush";
+import { isPending, nextReminderAt, planPushes, type DueRow, type PushDevice, type PushLocale } from "@/lib/server/reminderPush";
 import { reportError } from "@/lib/server/reportError";
 import { accountsEnabled, supabaseAdmin } from "@/lib/server/supabaseAdmin";
 
 // Every few minutes (GitHub Actions, .github/workflows/reminders.yml): pushes
 // reminders that are due to the user's Android devices that don't already
-// hold them as local notifications (see services/push.ts).
+// hold them as local notifications (see services/push.ts). A recurring
+// reminder then moves on to its next occurrence (reminder_at), which the
+// devices pick up at their next sync.
 
 export const config = { maxDuration: 60 };
 
 /** Reminders older than this are dropped rather than pushed late. */
 const MAX_LATENESS_MS = 6 * 3600_000;
 const BATCH = 200;
+/** How far back a missed recurring reminder is still moved on to its next occurrence. */
+const MAX_CATCH_UP_MS = 400 * 86_400_000;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "GET" && req.method !== "POST") return sendError(res, 405, "method_not_allowed", "Use GET or POST.");
@@ -26,7 +30,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const now = new Date();
   const { data, error } = await db
     .from("analyses")
-    .select("user_id, id, analysis, reminder_at, reminder_pushed_at")
+    .select("user_id, id, analysis, meta, reminder_at, reminder_pushed_at")
     .is("deleted_at", null)
     .lte("reminder_at", now.toISOString())
     .gt("reminder_at", new Date(now.getTime() - MAX_LATENESS_MS).toISOString())
@@ -37,8 +41,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return sendError(res, 502, "upstream_error", "Couldn't read reminders.");
   }
 
+  // Recurring reminders missed by the cron (too late to push): moved on silently.
+  const missed = await db
+    .from("analyses")
+    .select("user_id, id, meta, reminder_at")
+    .is("deleted_at", null)
+    .not("meta->reminderRepeat", "is", null)
+    .lte("reminder_at", new Date(now.getTime() - MAX_LATENESS_MS).toISOString())
+    .gt("reminder_at", new Date(now.getTime() - MAX_CATCH_UP_MS).toISOString())
+    .limit(BATCH);
+  let advanced = 0;
+  for (const row of (missed.data ?? []) as DueRow[]) {
+    const next = nextReminderAt(row, now.getTime());
+    if (!next) continue;
+    await db.from("analyses").update({ reminder_at: next, updated_at: now.toISOString() }).eq("user_id", row.user_id).eq("id", row.id);
+    advanced += 1;
+  }
+
   const due = (data as DueRow[]).filter(isPending);
-  if (due.length === 0) return res.status(200).json({ due: 0, sent: 0 });
+  if (due.length === 0) return res.status(200).json({ due: 0, sent: 0, advanced });
 
   const userIds = [...new Set(due.map((row) => row.user_id))];
   const [devices, settings] = await Promise.all([
@@ -81,11 +102,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       retried += 1;
       continue;
     }
-    await db.from("analyses").update({ reminder_pushed_at: now.toISOString() }).eq("user_id", row.user_id).eq("id", row.id);
+    // A recurring reminder moves on; updated_at so the devices take the new time over theirs.
+    const next = nextReminderAt(row, now.getTime());
+    await db
+      .from("analyses")
+      .update({ reminder_pushed_at: now.toISOString(), ...(next && { reminder_at: next, updated_at: now.toISOString() }) })
+      .eq("user_id", row.user_id)
+      .eq("id", row.id);
+    if (next) advanced += 1;
   }
   if (retried > 0) await reportError(new Error(`${retried} reminder push(es) failed, will retry`), { route: "cron-reminders", step: "send" });
   for (const device of stale.values()) {
     await db.from("push_devices").delete().eq("user_id", device.user_id).eq("device_id", device.device_id);
   }
-  return res.status(200).json({ due: due.length, sent, retried, removedDevices: stale.size });
+  return res.status(200).json({ due: due.length, sent, retried, advanced, removedDevices: stale.size });
 }

@@ -1,6 +1,7 @@
 import type { Analysis, ChatMessage, PaperKind, ScanMode, TranslateLanguage } from "@/lib/ai/schema";
 import type { ScannedCode } from "@/lib/codes";
 import type { MealLog } from "@/lib/food";
+import type { ReminderRepeat } from "@/lib/reminderRepeat";
 
 export type ChatEntry = ChatMessage & { at: number };
 
@@ -32,6 +33,10 @@ export type HistoryEntry = {
   /** When this device's local notification fires (device-local, like reminderId). */
   reminderScheduledAt?: number;
   reminderAt?: number;
+  /** Every month or every year (synced); reminderAt is then the next occurrence. */
+  reminderRepeat?: ReminderRepeat;
+  /** The occurrence of a recurring reminder that just came, once moved on (device-local, for "remind me later"). */
+  reminderFiredAt?: number;
   /** Follow-up conversation about this scan. */
   chat?: ChatEntry[];
   /** Starred by the user, and the folder they put it in (synced). */

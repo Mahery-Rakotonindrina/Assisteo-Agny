@@ -36,7 +36,7 @@ type Row = {
  * What the user adds to a scan (meals eaten, paper kind…) travels in the meta column with
  * the analysis's own meta: no schema change needed for each new field.
  */
-const userFields = ["meals", "paper", "expiresOn", "expense", "favorite", "folder"] as const satisfies ReadonlyArray<keyof HistoryEntry>;
+const userFields = ["meals", "paper", "expiresOn", "expense", "favorite", "folder", "reminderRepeat"] as const satisfies ReadonlyArray<keyof HistoryEntry>;
 type UserFields = Pick<HistoryEntry, (typeof userFields)[number]>;
 type RowMeta = HistoryEntry["meta"] & Partial<UserFields>;
 
@@ -143,6 +143,7 @@ async function applyRemote(row: Row) {
       // Notifications are scheduled per device: keep this device's own one.
       reminderId: local?.reminderId,
       reminderScheduledAt: local?.reminderScheduledAt,
+      reminderFiredAt: local?.reminderFiredAt,
       // The answer vote, the pages, the read text and the queue state stay on this device.
       feedback: local?.feedback,
       pages: local?.pages,

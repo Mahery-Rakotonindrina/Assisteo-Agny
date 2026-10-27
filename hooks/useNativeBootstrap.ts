@@ -4,20 +4,33 @@ import { SplashScreen } from "@capacitor/splash-screen";
 import { StatusBar, Style } from "@capacitor/status-bar";
 import { useRouter } from "next/router";
 import { useEffect, useRef } from "react";
+import { useToast } from "@/components/Toast";
+import { formatDateTime } from "@/lib/format";
 import { useSettings } from "@/lib/settings/SettingsProvider";
+import { handleNotificationTap } from "@/services/notificationTap";
 import { onNotificationTap } from "@/services/notifications";
-import { PARCEL_NOTIFICATION_PREFIX } from "@/services/parcelReminders";
+import { snoozeFromNotification } from "@/services/reminders";
 import { compactOldPhotos } from "@/services/photoStorage";
+import { useReminderTexts } from "./useReminderTexts";
+import { useTranslation } from "./useTranslation";
 
 /** One-time platform wiring: splash, status bar, Android back button, notification taps. */
 export function useNativeBootstrap() {
   const router = useRouter();
   const routerRef = useRef(router);
   const { settings, ready } = useSettings();
+  const { t, locale } = useTranslation();
+  const toast = useToast();
+  const texts = useReminderTexts();
+  const tapRef = useRef({ t, locale, toast, texts });
 
   useEffect(() => {
     routerRef.current = router;
   }, [router]);
+
+  useEffect(() => {
+    tapRef.current = { t, locale, toast, texts };
+  }, [t, locale, toast, texts]);
 
   useEffect(() => {
     const cleanups: Array<() => void> = [];
@@ -37,9 +50,16 @@ export function useNativeBootstrap() {
     // Shrink the photos of old scans once per launch (see photoStorage).
     void compactOldPhotos().catch(() => undefined);
 
-    void onNotificationTap((entryId) => {
-      if (entryId.startsWith(PARCEL_NOTIFICATION_PREFIX)) void routerRef.current.push("/parcels");
-      else void routerRef.current.push({ pathname: "/result", query: { id: entryId } });
+    // The only tap listener: on a cold start Capacitor hands the tap to the first one alone.
+    void onNotificationTap((entryId, actionId, notificationId) => {
+      void handleNotificationTap(entryId, actionId, notificationId, {
+        snooze: (id, action, notification) => snoozeFromNotification(id, action, notification, tapRef.current.texts.other),
+        open: (target) => void routerRef.current.push(target),
+        snoozed: (at) => {
+          const { t, locale, toast } = tapRef.current;
+          toast(t("result.reminderSet", { date: formatDateTime(at, locale) }));
+        },
+      });
     }).then((cleanup) => cleanups.push(cleanup));
 
     return () => cleanups.forEach((cleanup) => cleanup());

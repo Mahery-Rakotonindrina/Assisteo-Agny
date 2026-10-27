@@ -34,6 +34,7 @@ import { exampleIds, exampleImage } from "@/lib/examples";
 import { easeOut, rise, stagger } from "@/lib/motion";
 import { appStructuredData } from "@/lib/seo";
 import { incomingShare } from "@/services/incomingShare";
+import { canSnooze } from "@/services/reminders";
 import styles from "@/styles/Scan.module.scss";
 
 const modeIcons = { auto: Sparkles, food: Apple, document: FileText, vehicle: Car, object: Box } as const;
@@ -77,7 +78,8 @@ export default function ScanPage() {
   const busy = state.phase === "preparing" || state.phase === "analyzing";
   const ModeIcon = modeIcons[mode];
   const now = useNow(60_000);
-  const hasReminder = entries.some((entry) => entry.reminderAt && entry.reminderAt > now);
+  // Upcoming, or just come (NextReminder then offers "remind me later").
+  const hasReminder = entries.some((entry) => (entry.reminderAt && entry.reminderAt > now) || canSnooze(entry, now));
 
   // One parcel per photo: what became of them, in one message.
   const reportParcels = (outcomes: ParcelBatchOutcome[]) => {

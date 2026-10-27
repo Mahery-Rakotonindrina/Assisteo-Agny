@@ -172,3 +172,56 @@
   flex-direction: column;
   gap: 0.4rem;
 }
+
+.repeat {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+
+  > svg {
+    color: var(--text-muted);
+  }
+}
+
+.repeatOption {
+  flex: 1 1 auto;
+  padding: 0.55rem 0.7rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 0.88rem;
+  font-weight: 600;
+  transition: border-color 0.2s var(--ease-out), background-color 0.2s var(--ease-out);
+
+  &:hover {
+    border-color: var(--border-strong);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+  }
+}
+
+.calendar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+
+  > span {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+}
+
+.calendarChoices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}

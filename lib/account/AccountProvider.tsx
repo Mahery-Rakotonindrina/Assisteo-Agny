@@ -63,7 +63,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!userId) return;
     void registerPush((target) =>
-      void Router.push("entryId" in target ? { pathname: "/result", query: { id: target.entryId } } : target.route),
+      void Router.push("entryId" in target ? { pathname: "/result", query: { id: target.entryId, reminded: "1" } } : target.route),
     ).catch(() => undefined);
   }, [userId]);
 

@@ -1,20 +1,26 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useMemo, useState } from "react";
-import { Bell, BellOff, Sparkles, X } from "lucide-react";
+import { Bell, BellOff, CalendarPlus, Repeat, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/Button";
 import { useNow } from "@/hooks/useNow";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDateTime } from "@/lib/format";
 import { spring } from "@/lib/motion";
+import type { RepeatEvery } from "@/lib/reminderRepeat";
+import type { CalendarKind } from "@/services/calendarExport";
 import styles from "./ReminderSheet.module.scss";
 
 type ReminderSheetProps = {
   open: boolean;
   /** The reminder already scheduled, if any. */
   current?: number;
+  /** How the current reminder repeats, if it does. */
+  repeat?: RepeatEvery;
   /** The AI's suggested delay, in hours from now. */
   suggestedHours?: number;
-  onSchedule: (at: number) => Promise<void> | void;
+  onSchedule: (at: number, repeat: RepeatEvery | null) => Promise<void> | void;
+  /** "Add to my calendar", at the chosen time. */
+  onCalendar?: (kind: CalendarKind, at: number, repeat: RepeatEvery | null) => Promise<void> | void;
   onCancelReminder: () => Promise<void> | void;
   onClose: () => void;
 };
@@ -24,12 +30,19 @@ const toDateInput = (date: Date) => `${date.getFullYear()}-${pad(date.getMonth()
 const toTimeInput = (date: Date) => `${pad(date.getHours())}:${pad(date.getMinutes())}`;
 
 /** Lets the user pick exactly when a reminder fires: a shortcut, or any date and time. */
-export function ReminderSheet({ open, current, suggestedHours, onSchedule, onCancelReminder, onClose }: ReminderSheetProps) {
+const repeats = [
+  { id: null, label: "reminders.repeatOnce" },
+  { id: "monthly", label: "reminders.repeatMonthly" },
+  { id: "yearly", label: "reminders.repeatYearly" },
+] as const;
+
+export function ReminderSheet({ open, current, repeat: currentRepeat, suggestedHours, onSchedule, onCalendar, onCancelReminder, onClose }: ReminderSheetProps) {
   const { t, locale } = useTranslation();
   const [now] = useState(() => Date.now());
   const initial = useMemo(() => new Date(current ?? now + (suggestedHours ?? 1) * 3_600_000), [current, now, suggestedHours]);
   const [day, setDay] = useState(toDateInput(initial));
   const [time, setTime] = useState(toTimeInput(initial));
+  const [repeat, setRepeat] = useState<RepeatEvery | null>(currentRepeat ?? null);
   const [busy, setBusy] = useState(false);
   const clock = useNow(15_000);
 
@@ -127,16 +140,34 @@ export function ReminderSheet({ open, current, suggestedHours, onSchedule, onCan
               </label>
             </div>
 
+            <div className={styles.repeat} role="radiogroup" aria-label={t("reminders.repeat")}>
+              <Repeat size={16} aria-hidden />
+              {repeats.map((option) => (
+                <button
+                  key={option.label}
+                  type="button"
+                  role="radio"
+                  aria-checked={repeat === option.id}
+                  className={`${styles.repeatOption} ${repeat === option.id ? styles.active : ""}`}
+                  onClick={() => setRepeat(option.id)}
+                >
+                  {t(option.label)}
+                </button>
+              ))}
+            </div>
+
             <p className={inPast ? styles.error : styles.summary} role="status">
               {chosen === null
                 ? t("reminders.invalid")
                 : inPast
                   ? t("reminders.past")
-                  : t("reminders.willFire", { date: formatDateTime(chosen, locale) })}
+                  : [t("reminders.willFire", { date: formatDateTime(chosen, locale) }), repeat && t(repeat === "monthly" ? "reminders.thenMonthly" : "reminders.thenYearly")]
+                      .filter(Boolean)
+                      .join(" ")}
             </p>
 
             <div className={styles.actions}>
-              <Button size="lg" block icon={<Bell />} disabled={busy || chosen === null || inPast} onClick={() => chosen && void run(() => onSchedule(chosen))}>
+              <Button size="lg" block icon={<Bell />} disabled={busy || chosen === null || inPast} onClick={() => chosen && void run(() => onSchedule(chosen, repeat))}>
                 {current ? t("reminders.update") : t("reminders.schedule")}
               </Button>
               {current && (
@@ -145,6 +176,27 @@ export function ReminderSheet({ open, current, suggestedHours, onSchedule, onCan
                 </Button>
               )}
             </div>
+
+            {onCalendar && (
+              <div className={styles.calendar}>
+                <span>
+                  <CalendarPlus size={16} aria-hidden /> {t("reminders.calendar")}
+                </span>
+                <div className={styles.calendarChoices}>
+                  {(["google", "ics"] as const).map((kind) => (
+                    <button
+                      key={kind}
+                      type="button"
+                      className={styles.repeatOption}
+                      disabled={busy || chosen === null || inPast}
+                      onClick={() => chosen && void run(() => onCalendar(kind, chosen, repeat))}
+                    >
+                      {t(kind === "google" ? "reminders.calendarGoogle" : "reminders.calendarOther")}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </motion.div>
         </motion.div>
       )}
