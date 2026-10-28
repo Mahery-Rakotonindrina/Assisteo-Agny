@@ -230,3 +230,16 @@ Budget du mois du foyer. Réservé à l'offre Admin pendant le test, ouvert aux 
 - [x] Export Excel ou PDF du mois
 - [x] Achats en yuan, dollar ou euro convertis en ariary au taux du jour, comme pour les colis — montant d’origine, devise et taux gardés
 - [x] Budget partagé en famille — un Admin crée le foyer et invite par un code de 48 h (partage WhatsApp) ; tout compte connecté le rejoint ; chaque dépense est « Perso » ou « Foyer » ; le créateur gère membres, nom et budget commun ; vue du mois par membre et par catégorie
+- [x] Écran plus clair (5 onglets expliqués) — carte « Il te reste » au-dessus des onglets, une phrase et un gros bouton par onglet, formulaires dans une feuille du bas (pastilles de catégorie, exemples), états vides, carte d’accueil qu’on ferme, barres dans Budget, « Ne pas compter »
+- [x] Ventes comptées comme revenus — prix de vente entier le mois de la vente (`soldAt`, sinon le mois où le colis a été ajouté), bénéfice ou perte et reste à payer affichés ; l’achat reste une dépense ; jamais dans le foyer
+- [x] Toutes les entrées et sorties d’argent comptées et reliées — tickets et reçus Mobile Money comptés tout seuls (sans double compte, « déjà compté ? »), Mobile Money reçu en revenu, revenu « chaque mois », abonnement Assisteo payé ; « Compté dans Mes dépenses → » sur la facture, le ticket, la liste, le colis et le garage
+- [x] Mouvements entre ses propres poches (retrait MVola en espèces, dépôt en banque, envoi vers son propre compte) reconnus par l’IA : ni dépense ni revenu, sinon un retrait scanné compte la même somme deux fois — `direction: "own"` ; seuls les frais (`fees`) comptent ; « C’est une dépense » sous le résultat si l’IA se trompe
+- [ ] Soldes réels par poche : espèces, MVola, Orange Money, Airtel Money, banque (« Espèces 45 000 · MVola 230 000 »)
+- [ ] Prêts et dettes : argent prêté ou emprunté, crédit chez l’épicier ; qui me doit, à qui je dois, remboursements comptés tout seuls
+- [ ] Import d’un relevé MVola ou bancaire (captures ou PDF de plusieurs pages) : toutes les opérations d’un coup, sans doublon
+- [ ] Rappel du soir « Tu as dépensé quelque chose aujourd’hui ? », avec ajout rapide depuis la notification ou l’accueil
+- [ ] Prévision de fin de mois : « À ce rythme, il te restera 45 000 Ar le 30 », dépenses fixes à venir comprises
+- [ ] Objectifs d’épargne (« Rentrée scolaire : 120 000 / 300 000 Ar ») et suivi d’une tontine ou de cotisations
+- [ ] Recherche dans toutes les dépenses et tous les revenus (ex. tout ce qui a été payé à la JIRAMA cette année)
+- [ ] Revendeurs : l’activité séparée de la maison (achats de colis à revendre et ventes à part, bénéfice du mois), pour ne pas gonfler le budget de la maison
+- [ ] Ouvrir « Mes dépenses » à d’autres offres que l’Admin — une case à cocher dans Admin → Offres ; reste à choisir les offres

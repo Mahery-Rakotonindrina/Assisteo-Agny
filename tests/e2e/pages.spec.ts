@@ -152,6 +152,60 @@ test("an Admin account adds an expense and sees the month's total", async ({ pag
   await expect(page.getByTestId("expenses-total")).toHaveText(/^12\s500 Ar$/);
 });
 
+test("My expenses explains each tab, adds an expense in 3 steps and an income, and sets the budget", async ({ page }) => {
+  await prepare(page);
+  await page.route("**/api/plan", async (route) => {
+    const response = await route.fetch();
+    await route.fulfill({ response, json: { ...(await response.json()), plan: "unlimited", features: undefined } });
+  });
+  await page.goto("/expenses");
+  // The welcome card, until closed.
+  const welcome = page.getByRole("region", { name: "Bienvenue dans Mes dépenses" });
+  await expect(welcome).toBeVisible();
+  await welcome.getByRole("button", { name: "Fermer" }).click();
+  await expect(welcome).toHaveCount(0);
+
+  // Each tab says what it is for; an empty one explains itself.
+  const hint = page.getByTestId("expenses-tab-hint");
+  await expect(hint).toHaveText("Tout ce que tu as dépensé ce mois-ci.");
+  await page.getByRole("radio", { name: "Fixes", exact: true }).click();
+  await expect(hint).toContainText("Ce que tu paies chaque mois");
+  await expect(page.getByText("Rien de fixe pour l’instant")).toBeVisible();
+  await page.getByRole("radio", { name: "Historique", exact: true }).click();
+  await expect(hint).toHaveText("Tes mois d’avant, pour comparer.");
+
+  // An expense in 3 steps: the button, the amount, save.
+  await page.getByRole("radio", { name: "Mois", exact: true }).click();
+  await page.getByRole("button", { name: "Ajouter une dépense" }).click();
+  await page.getByLabel("Montant", { exact: true }).fill("12000");
+  await page.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(page.getByText(/^Dépense ajoutée : 12\s000 Ar/)).toBeVisible();
+  await expect(page.getByTestId("expenses-total")).toHaveText(/^12\s000 Ar$/);
+  await expect(page.getByTestId("expenses-left")).toHaveText(/12\s000 Ar$/);
+
+  // An income: what is left changes.
+  await page.getByRole("radio", { name: "Revenus", exact: true }).click();
+  await page.getByRole("button", { name: "Ajouter un revenu" }).click();
+  await page.getByLabel("Montant", { exact: true }).fill("50000");
+  await page.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(page.getByTestId("expenses-left")).toHaveText(/^38\s000 Ar$/);
+
+  // The budget, in its sheet.
+  await page.getByRole("radio", { name: "Budget", exact: true }).click();
+  await page.getByRole("button", { name: "Fixer mon budget" }).click();
+  const sheet = page.getByRole("dialog", { name: "Fixer mon budget" });
+  await sheet.getByLabel("Budget total").fill("15000");
+  await sheet.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(sheet).toHaveCount(0);
+  await expect(page.getByTestId("budget-bars")).toContainText(/12\s000 Ar \/ 15\s000 Ar/);
+  await expect(page.getByText(/^80 % de ton budget/)).toBeVisible();
+
+  // The welcome card does not come back.
+  await page.reload();
+  await expect(page.getByTestId("expenses-tab-hint")).toBeVisible();
+  await expect(welcome).toHaveCount(0);
+});
+
 test("an Admin account gets the month's review (demo)", async ({ page }) => {
   await prepare(page);
   await page.route("**/api/plan", async (route) => {

@@ -2002,9 +2002,9 @@
     "remove": "Delete",
     "edit": "Edit",
     "correct": "Correct",
-    "exclude": "Leave out of budget",
-    "include": "Back in the budget",
-    "excluded": "not in budget",
+    "exclude": "Don’t count",
+    "include": "Count again",
+    "excluded": "not counted",
     "openSource": "Open",
     "categories": {
       "market": "Market and food",
@@ -2028,8 +2028,9 @@
     },
     "incomes": {
       "salary": "Salary",
-      "sales": "Sales",
-      "other": "Other income"
+      "sales": "Sale",
+      "other": "Other",
+      "family": "Help from family"
     },
     "origins": {
       "manual": "Typed in",
@@ -2039,7 +2040,12 @@
       "parcel": "Parcel",
       "fuel": "Fuel",
       "maintenance": "Service",
-      "vehicle": "Garage"
+      "vehicle": "Garage",
+      "receipt": "Receipt",
+      "mobile_money": "Mobile Money",
+      "plan": "Subscription",
+      "sale": "Sale",
+      "fees": "Mobile Money fees"
     },
     "form": {
       "title": "Expense",
@@ -2058,31 +2064,54 @@
       "personal": "Personal",
       "shared": "Household",
       "personalHint": "Just for you: nobody else sees it.",
-      "sharedHint": "Counted in the budget of “{name}”: its members will see it."
+      "sharedHint": "Counted in the budget of “{name}”: its members will see it.",
+      "amountExample": "e.g. 12,000",
+      "noteExample": "e.g. Analakely market",
+      "today": "today"
     },
     "month": {
       "spent": "Spent",
-      "lastMonth": "Last month",
       "noPrevious": "Nothing last month",
       "more": "+{percent}% ({amount} more than last month)",
       "less": "−{percent}% ({amount} less than last month)",
       "byCategory": "By category",
       "list": "This month’s expenses",
-      "empty": "No expenses this month. Add the first one, or pay a bill in My papers.",
-      "sourcesHint": "Paid bills, ticked shopping, parcels and the garage are added on their own. Tap a line to correct it or leave it out of the budget."
+      "where": "Where your money goes",
+      "whereHint": "Tap a category to see it alone.",
+      "all": "See all",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "exportTitle": "Keep a copy of the month",
+      "exportHint": "Every line of the month, in an Excel or PDF file.",
+      "empty": {
+        "title": "No expenses this month",
+        "body": "Add what you pay at the market, in the taxi-be or at the shop. Paid bills and ticked shopping come on their own.",
+        "example": "For example: 12,000 Ar at the market today."
+      },
+      "noneInCategory": "Nothing in this category this month."
     },
     "income": {
       "total": "Income",
       "left": "What is left",
       "add": "Add income",
-      "empty": "No income this month.",
-      "kind": "Kind",
-      "recurringHint": "A salary that comes every month? Add it in the Fixed tab."
+      "kind": "From where?",
+      "repeat": "Comes every month",
+      "repeatHint": "Counted on its own every month, on that day. You find it in the Fixed tab.",
+      "list": "Money in this month",
+      "from": "Received from {name}",
+      "sale": "Sale: {title}",
+      "profit": "profit {amount}",
+      "loss": "loss {amount}",
+      "unpaid": "{amount} of it not paid yet",
+      "empty": {
+        "title": "No income this month",
+        "body": "Add your salary, a sale or money from family: you will see what you have left.",
+        "example": "For example: a 450,000 Ar salary on the 30th."
+      }
     },
     "recurring": {
-      "add": "Add a fixed expense",
-      "addIncome": "Add a fixed income",
-      "empty": "No fixed expenses. Rent, school fees, subscriptions: add them once, they come back every month.",
+      "add": "Add a monthly expense",
+      "addIncome": "Add a monthly income",
       "income": "Income",
       "everyMonth": "on the {day} of every month",
       "reminds": {
@@ -2099,7 +2128,15 @@
       "day": "Day of the month",
       "remind": "Reminder",
       "lastDayHint": "In shorter months, it will be the last day of the month.",
-      "stop": "Stop"
+      "stop": "Stop",
+      "list": "What comes back every month",
+      "autoHint": "Each line is added to the month on its own, on its day. “Not this month” skips it just once.",
+      "empty": {
+        "title": "Nothing fixed yet",
+        "body": "Add your rent or your JIRAMA bill: they are counted every month without typing them again.",
+        "example": "For example: 300,000 Ar rent on the 5th of each month."
+      },
+      "dayExample": "e.g. 5"
     },
     "history": {
       "period": "Period",
@@ -2108,15 +2145,27 @@
       "total": "Total",
       "chart": "Spending month by month",
       "byCategory": "Average by category",
-      "perMonth": "{amount} a month"
+      "perMonth": "{amount} a month",
+      "title": "Your last {count} months",
+      "averageHint": "What you spend on average each month in each category, over this period.",
+      "perMonthLine": "In {in} · Out {out} · Left {left}"
     },
     "budget": {
       "title": "Monthly budget",
       "overall": "Total budget",
-      "hint": "Set a cap for the month, overall or by category. You are warned at 80%, then when it is exceeded.",
+      "hint": "You are warned at 80%, then when it is exceeded.",
       "saved": "Budget saved",
       "warningBanner": "{scope}: you have already used {percent}% of the budget. {amount} left.",
-      "overBanner": "{scope}: budget exceeded ({percent}%), by {amount}."
+      "overBanner": "{scope}: budget exceeded ({percent}%), by {amount}.",
+      "set": "Set my budget",
+      "where": "Where you stand",
+      "remaining": "{amount} left",
+      "overBy": "over by {amount}",
+      "empty": {
+        "title": "No budget yet",
+        "body": "Set a limit for the month, overall or by category: you then see where you stand.",
+        "example": "For example: 250,000 Ar for the market."
+      }
     },
     "custom": {
       "title": "Your categories",
@@ -2124,7 +2173,8 @@
       "name": "New category",
       "placeholder": "Church, dues…",
       "color": "Colour",
-      "icon": "Icon"
+      "icon": "Icon",
+      "example": "For example: church, dues, savings club."
     },
     "reminders": {
       "eveTitle": "{label}: to pay tomorrow",
@@ -2159,6 +2209,15 @@
         "category": "Category",
         "spent": "Spent",
         "cap": "Budget"
+      },
+      "sheetIncomes": "Income",
+      "incomeColumns": {
+        "date": "Date",
+        "kind": "From",
+        "label": "Label",
+        "origin": "Origin",
+        "amountMga": "Amount",
+        "counted": "Counted"
       }
     },
     "receipt": {
@@ -2167,10 +2226,21 @@
       "saved": "Expense added",
       "already": "Already in your expenses ({amount}).",
       "open": "Open",
-      "loading": "Loading your expenses…"
+      "loading": "Loading your expenses…",
+      "counted": "Counted in My expenses",
+      "countedIncome": "Counted in your income",
+      "notCounted": "Not counted in My expenses",
+      "doubt": "Maybe counted already (same amount within 3 days).",
+      "view": "See",
+      "correct": "Correct",
+      "own": "Withdrawal / move between your accounts: not counted in your expenses.",
+      "isExpense": "It’s an expense",
+      "isOwn": "It’s a move between my accounts",
+      "feesCounted": "Fees counted in your expenses: {amount}",
+      "alreadyCounted": "Counted already (scanned once before)"
     },
     "review": {
-      "title": "Month’s review",
+      "title": "What the AI thinks of your month",
       "ask": "Month’s review",
       "again": "Review again",
       "loading": "Reviewing…",
@@ -2185,25 +2255,26 @@
     "views": {
       "label": "Personal or household",
       "personal": "Personal",
-      "household": "Household"
+      "household": "Household",
+      "hint": "Personal: just you · Household: your family’s shared budget."
     },
     "household": {
       "title": "Household budget",
       "subtitle": "Your family's shared budget: everyone adds their expenses, and you see the total together.",
       "loading": "Loading the household…",
       "signInTitle": "Sign in to share a budget",
-      "signInBody": "A household budget is shared between accounts. Sign in, then type the code your family sent you.",
+      "signInBody": "To share a budget with your family, you need an account. Sign in, then type the code you were sent.",
       "stale": "Offline: this is the household as of your last connection.",
       "unreachable": "The server can't be reached right now.",
       "retry": "Try again",
       "joinTitle": "Join a household",
-      "joinBody": "Type the code you received: 6 characters, valid for 48 hours.",
+      "joinBody": "Someone in your family already has a household? Ask them for its code (6 characters) and type it here. A code works for 48 hours.",
       "code": "Invitation code",
       "codeInvalid": "The code has 6 characters, for example 4K7-P2Q.",
       "join": "Join",
       "joined": "Welcome to the household!",
       "createTitle": "Create a household",
-      "createBody": "Share a budget with your family. Everyone picks, expense by expense, what goes to the household; your personal expenses stay yours.",
+      "createBody": "Want to follow the household’s money together? Create the household, then send the code to your family. You choose what you share: the rest stays hidden.",
       "name": "Household name",
       "namePlaceholder": "The Rakoto family",
       "create": "Create the household",
@@ -2259,6 +2330,50 @@
         "failed": "That didn't work. Try again."
       }
     },
-    "keptReadOnly": "Your plan no longer includes My expenses: your expenses are kept and can still be seen here, and their reminders are paused. It all comes back if the feature is back in your plan."
+    "keptReadOnly": "Your plan no longer includes My expenses: your expenses are kept and can still be seen here, and their reminders are paused. It all comes back if the feature is back in your plan.",
+    "receiptPhoto": "Photo of a receipt",
+    "auto": "Added on its own · {origin}",
+    "doubt": "counted already?",
+    "keepAnyway": "Count it anyway",
+    "doubtHint": "An expense of the same amount is within 3 days: this receipt is not counted, so it isn’t counted twice.",
+    "excludeHelp": {
+      "text": "A line added on its own isn’t yours (a parcel for a client, a bill someone else paid)? Tap it, then “Don’t count”: it stays visible, outside your month.",
+      "ok": "Got it"
+    },
+    "saved": {
+      "expense": "Expense added: {amount}, {category}",
+      "income": "Income added: {amount}, {kind}",
+      "recurring": "Added every month: {amount}, on the {day}",
+      "changed": "Change saved"
+    },
+    "close": "Close",
+    "card": {
+      "label": "Your month at a glance",
+      "left": "You have left",
+      "in": "In",
+      "out": "Out",
+      "ofBudget": "{percent}% of your budget ({cap})"
+    },
+    "tabHints": {
+      "month": "Everything you spent this month.",
+      "income": "All the money that came in this month.",
+      "recurring": "What you pay every month (rent, JIRAMA, school fees): added on its own, with a reminder.",
+      "history": "Your past months, to compare.",
+      "budget": "Set a limit and see where you stand."
+    },
+    "welcome": {
+      "title": "Welcome to My expenses",
+      "auto": "Paid bills, ticked shopping, parcels and the garage are added on their own.",
+      "step1": "Add what you earn (Income tab).",
+      "step2": "Add your expenses, or take a photo of a receipt.",
+      "step3": "Set your budget."
+    },
+    "counted": {
+      "expense": "Counted in My expenses",
+      "income": "Counted in your income",
+      "off": "Not counted in My expenses",
+      "garage": "Fuel, service and costs counted in My expenses"
+    },
+    "feesLabel": "Withdrawal or transfer fees"
   }
 }

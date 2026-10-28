@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowDown, ExternalLink, Plus, X } from "lucide-react";
+import { CountedLink } from "@/components/Expenses/CountedLink";
 import { PlanLock } from "@/components/PlanLock";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
+import { saleKey, soldOn } from "@/lib/expenses";
 import type { PlanId } from "@/lib/plans";
 import { formatAriary, formatDecimal } from "@/lib/format";
 import { currencySymbols, parseForeignAmount, type ForeignAmount } from "@/lib/money";
@@ -153,6 +155,7 @@ function Costs({ parcel, reseller, resellerFrom }: { parcel: Parcel; reseller: b
         </span>
         <strong>{formatAriary(total, locale)}</strong>
       </div>
+      {parcelTotalMga(parcel) > 0 && <CountedLink sourceKey={`parcel:${parcel.id}`} at={parcel.createdAt} />}
 
       {reseller ? <Sale parcel={parcel} total={total} /> : <PlanLock plan={resellerFrom} text={t("parcels.sale.locked", { plan: t(`plans.names.${resellerFrom ?? "pro"}`) })} />}
     </div>
@@ -277,6 +280,8 @@ function Sale({ parcel, total }: { parcel: Parcel; total: number }) {
           )}
         </div>
       )}
+      {/* The whole sale price counts in the incomes, the month it was sold. */}
+      {parcel.salePriceMga ? <CountedLink sourceKey={saleKey(parcel.id)} at={soldOn(parcel)} flow="income" /> : null}
     </div>
   );
 }

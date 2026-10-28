@@ -676,6 +676,8 @@ const mobileMoneyScan: Record<Locale, Analysis> = {
         operator: "mvola",
         category: "transport",
         reference: "MP261020.1432.A51234",
+        direction: "out",
+        fees: null,
       },
     },
     vehicle: null,
@@ -721,6 +723,8 @@ const mobileMoneyScan: Record<Locale, Analysis> = {
         operator: "mvola",
         category: "transport",
         reference: "MP261020.1432.A51234",
+        direction: "out",
+        fees: null,
       },
     },
     vehicle: null,
@@ -770,6 +774,8 @@ const tillReceiptScan: Record<Locale, Analysis> = {
         operator: null,
         category: "market",
         reference: "004512",
+        direction: "out",
+        fees: null,
       },
     },
     vehicle: null,
@@ -815,6 +821,8 @@ const tillReceiptScan: Record<Locale, Analysis> = {
         operator: null,
         category: "market",
         reference: "004512",
+        direction: "out",
+        fees: null,
       },
     },
     vehicle: null,
@@ -824,9 +832,111 @@ const tillReceiptScan: Record<Locale, Analysis> = {
   },
 };
 
-/** The demo Mobile Money receipt (the end-to-end tests serve it in place of a scan). */
-export function mockReceipt(locale: Locale): Analysis {
-  return mobileMoneyScan[locale];
+// Fictional Mobile Money transfer received, for demo mode: money in, never an expense.
+const received = (locale: Locale): Analysis => {
+  const fr = locale === "fr";
+  return {
+    category: "document",
+    title: fr ? "MVola reçu · Rasoa Hery" : "MVola received · Rasoa Hery",
+    summary: fr
+      ? "Tu as reçu 80 000 Ar par MVola de Rasoa Hery le 22 octobre 2026. Garde la référence : elle prouve le transfert."
+      : "You received 80,000 Ar by MVola from Rasoa Hery on 22 October 2026. Keep the reference: it proves the transfer.",
+    confidence: 0.9,
+    tags: fr ? ["mvola", "reçu", "transfert"] : ["mvola", "received", "transfer"],
+    facts: [
+      { label: fr ? "Montant" : "Amount", value: fr ? "80 000 Ar" : "80,000 Ar" },
+      { label: fr ? "De" : "From", value: "Rasoa Hery" },
+      { label: fr ? "Référence" : "Reference", value: "MP261022.0915.B77310" },
+    ],
+    suggestions: [{ kind: "tip", title: fr ? "Compté dans tes revenus" : "Counted in your income", detail: fr ? "Il s'ajoute tout seul au mois." : "It is added to the month on its own." }],
+    questions: fr ? ["Qui m'a envoyé cet argent ?", "Y a-t-il des frais ?"] : ["Who sent me this money?", "Are there any fees?"],
+    nutrition: null,
+    recipe: null,
+    diet: null,
+    document: {
+      type: fr ? "Reçu Mobile Money" : "Mobile Money receipt",
+      keyPoints: fr ? ["80 000 Ar reçus par MVola", "De : Rasoa Hery"] : ["80,000 Ar received by MVola", "From: Rasoa Hery"],
+      dates: [{ label: fr ? "Reçu" : "Received", date: fr ? "22 octobre 2026" : "22 October 2026" }],
+      actionItems: [],
+      expiresOn: null,
+      isInsurance: false,
+      paper: null,
+      bill: null,
+      registration: null,
+      receipt: {
+        total: 80000,
+        currency: "MGA",
+        date: "2026-10-22",
+        merchant: "Rasoa Hery",
+        payment: "mobile_money",
+        operator: "mvola",
+        category: null,
+        reference: "MP261022.0915.B77310",
+        direction: "in",
+        fees: null,
+      },
+    },
+    vehicle: null,
+    parcel: null,
+    list: null,
+    reminder: null,
+  };
+};
+
+// Fictional MVola cash withdrawal at an agent, for demo mode: money moved between one's own pockets, only the fees are spent.
+const withdrawal = (locale: Locale): Analysis => {
+  const fr = locale === "fr";
+  return {
+    category: "document",
+    title: fr ? "Retrait MVola · Agent Analakely" : "MVola withdrawal · Analakely agent",
+    summary: fr
+      ? "Un retrait de 200 000 Ar en espèces chez un agent MVola le 21 octobre 2026, avec 2 600 Ar de frais. L'argent reste à toi : seuls les frais sont une dépense."
+      : "A 200,000 Ar cash withdrawal at an MVola agent on 21 October 2026, with 2,600 Ar of fees. The money is still yours: only the fees are an expense.",
+    confidence: 0.9,
+    tags: fr ? ["mvola", "retrait", "espèces"] : ["mvola", "withdrawal", "cash"],
+    facts: [
+      { label: fr ? "Retiré" : "Withdrawn", value: fr ? "200 000 Ar" : "200,000 Ar" },
+      { label: fr ? "Frais" : "Fees", value: fr ? "2 600 Ar" : "2,600 Ar" },
+      { label: fr ? "Référence" : "Reference", value: "MP261021.1710.C40027" },
+    ],
+    suggestions: [{ kind: "tip", title: fr ? "Pas une dépense" : "Not an expense", detail: fr ? "Tu comptes ce que tu achètes avec ces espèces, pas le retrait." : "Count what you buy with this cash, not the withdrawal." }],
+    questions: fr ? ["Combien coûtent les frais de retrait ?", "Où trouver un agent MVola ?"] : ["How much are withdrawal fees?", "Where is an MVola agent?"],
+    nutrition: null,
+    recipe: null,
+    diet: null,
+    document: {
+      type: fr ? "Reçu Mobile Money" : "Mobile Money receipt",
+      keyPoints: fr ? ["Retrait de 200 000 Ar", "Frais : 2 600 Ar"] : ["200,000 Ar withdrawal", "Fees: 2,600 Ar"],
+      dates: [{ label: fr ? "Retrait" : "Withdrawal", date: fr ? "21 octobre 2026" : "21 October 2026" }],
+      actionItems: [],
+      expiresOn: null,
+      isInsurance: false,
+      paper: null,
+      bill: null,
+      registration: null,
+      receipt: {
+        total: 202600,
+        currency: "MGA",
+        date: "2026-10-21",
+        merchant: fr ? "Agent MVola Analakely" : "MVola agent Analakely",
+        payment: "mobile_money",
+        operator: "mvola",
+        category: null,
+        reference: "MP261021.1710.C40027",
+        direction: "own",
+        fees: 2600,
+      },
+    },
+    vehicle: null,
+    parcel: null,
+    list: null,
+    reminder: null,
+  };
+};
+
+/** The demo Mobile Money receipt (the end-to-end tests serve it in place of a scan): money paid, received, or withdrawn. */
+export function mockReceipt(locale: Locale, direction: "out" | "in" | "own" = "out"): Analysis {
+  return direction === "in" ? received(locale) : direction === "own" ? withdrawal(locale) : mobileMoneyScan[locale];
 }
 
 export function mockAnalysis(mode: ScanMode, locale: Locale): Analysis {

@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { activeProvider } from "@/lib/ai/provider";
 import { InstallIdSchema, installIdHeader } from "@/lib/ai/schema";
 import { referralCodeFor, trialEligible } from "@/lib/offers";
-import { featureFromConfig, planFeatureList, planFeatures, soldPlans, type PlanResponse } from "@/lib/plans";
+import { featureFromConfig, planFeatureList, planFeatures, soldPlans, subscriptionPayments, type PlanResponse } from "@/lib/plans";
 import { applyCors, sendError } from "@/lib/server/http";
 import { limitsFor, resolvePlan } from "@/lib/server/plan";
 import { registerReferralCode, trialClaimed } from "@/lib/server/offerStore";
@@ -29,7 +29,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     usage = { scans: trial.used, questionsToday, deep: 0 };
   } else usage = { scans: 0, questionsToday: 0, deep: 0 };
 
-  const offers = account?.email ? await accountOffers(account.id, account.email) : { trialEligible: false, discount: null, referralCode: null };
+  const offers = account?.email ? await accountOffers(account.id, account.email) : { trialEligible: false, discount: null, referralCode: null, payments: [] };
 
   res.setHeader("Cache-Control", "no-store");
   return res.status(200).json({
@@ -47,8 +47,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   } satisfies PlanResponse);
 }
 
-/** The account's Premium trial, waiting discount and referral code; nothing if unreadable. */
-async function accountOffers(id: string, email: string): Promise<Pick<PlanResponse, "trialEligible" | "discount" | "referralCode">> {
+/** The account's Premium trial, waiting discount, referral code and payments; nothing if unreadable. */
+async function accountOffers(id: string, email: string): Promise<Pick<PlanResponse, "trialEligible" | "discount" | "referralCode" | "payments">> {
   try {
     const referralCode = referralCodeFor(id);
     const [rows, claimed, discount, registered] = await Promise.all([
@@ -58,9 +58,9 @@ async function accountOffers(id: string, email: string): Promise<Pick<PlanRespon
       registerReferralCode(referralCode, email),
     ]);
     // A code already taken by another account (very unlikely) is not shown.
-    return { trialEligible: !claimed && trialEligible(rows), discount, referralCode: registered ? referralCode : null };
+    return { trialEligible: !claimed && trialEligible(rows), discount, referralCode: registered ? referralCode : null, payments: subscriptionPayments(rows) };
   } catch (error) {
     await reportError(error, { route: "plan", kind: "offers" });
-    return { trialEligible: false, discount: null, referralCode: null };
+    return { trialEligible: false, discount: null, referralCode: null, payments: [] };
   }
 }

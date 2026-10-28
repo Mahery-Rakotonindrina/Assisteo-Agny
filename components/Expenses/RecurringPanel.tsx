@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { CalendarPlus, Check, Pencil, Plus, RotateCcw, Square, Trash2 } from "lucide-react";
+import { CalendarPlus, CalendarSync, Check, Pencil, Plus, RotateCcw, Square, Trash2 } from "lucide-react";
 import { Button } from "@/components/Button";
 import { useToast } from "@/components/Toast";
 import { useExpenseLabels } from "@/hooks/useExpenseLabels";
@@ -8,7 +8,9 @@ import { useTranslation } from "@/hooks/useTranslation";
 import {
   byKind,
   dueReminderChoices,
+  incomeKindOf,
   incomeKinds,
+  storedIncome,
   occurrenceIn,
   paymentMethods,
   shiftMonth,
@@ -21,7 +23,10 @@ import { formatAriary, formatDate } from "@/lib/format";
 import { addToCalendar, type CalendarKind } from "@/services/calendarExport";
 import { haptics } from "@/services/device";
 import { expenseStore } from "@/services/expenseStore";
+import { Chips, iconOf, incomeIcons } from "./CategoryChips";
+import { EmptyNote } from "./EmptyNote";
 import { parseAmount } from "./ExpenseForm";
+import { ExpenseSheet } from "./ExpenseSheet";
 import styles from "./Expenses.module.scss";
 
 type Props = { month: string; records: ExpenseRecord[]; canRemind: boolean };
@@ -45,21 +50,28 @@ export function RecurringPanel({ month, records, canRemind }: Props) {
     if (outcome === "downloaded") toast(t("reminders.calendarDownloaded"));
   };
 
-  if (editing) return <RecurringForm key={editing.id ?? "new"} month={month} records={records} initial={editing} canRemind={canRemind} onDone={() => setEditing(null)} />;
+  const income = editing?.flow === "income";
 
   return (
     <div className={styles.panel}>
-      <div className={styles.row}>
-        <Button icon={<Plus />} onClick={() => setEditing({ flow: "expense" })}>
+      <div className={styles.actionRow}>
+        <Button size="lg" icon={<Plus />} onClick={() => setEditing({ flow: "expense" })}>
           {t("expenses.recurring.add")}
         </Button>
-        <Button variant="secondary" icon={<Plus />} onClick={() => setEditing({ flow: "income", category: "salary" })}>
+        <Button size="lg" variant="secondary" icon={<Plus />} onClick={() => setEditing({ flow: "income", category: "salary" })}>
           {t("expenses.recurring.addIncome")}
         </Button>
       </div>
       {running.length === 0 ? (
-        <p className={styles.hint}>{t("expenses.recurring.empty")}</p>
+        <EmptyNote icon={<CalendarSync />} texts="expenses.recurring.empty" />
       ) : (
+        <section aria-labelledby="recurring-list" className={styles.panel}>
+          <div>
+            <h2 id="recurring-list" className={styles.subTitle}>
+              {t("expenses.recurring.list")}
+            </h2>
+            <p className={styles.hint}>{t("expenses.recurring.autoHint")}</p>
+          </div>
         <ul className={styles.entries}>
           {running.map((item) => {
             const skipped = item.skipped.includes(month);
@@ -68,12 +80,12 @@ export function RecurringPanel({ month, records, canRemind }: Props) {
               <li key={item.id} className={styles.entry} data-excluded={skipped || undefined}>
                 <button type="button" className={styles.entryMain} onClick={() => setEditing(item)}>
                   <span className={styles.entryText}>
-                    <strong>{item.label || categoryName(item.category)}</strong>
+                    <strong>{item.label || (item.flow === "income" ? t(`expenses.incomes.${incomeKindOf(item.category, item.from)}`) : categoryName(item.category))}</strong>
                     <small>
                       {item.flow === "income" && <span className={styles.badge}>{t("expenses.recurring.income")}</span>}
                       {[
                         t("expenses.recurring.everyMonth", { day: item.day }),
-                        item.flow === "income" ? t(`expenses.incomes.${item.category}`) : categoryName(item.category),
+                        item.flow === "income" ? t(`expenses.incomes.${incomeKindOf(item.category, item.from)}`) : categoryName(item.category),
                         at !== null && formatDate(at, locale),
                         canRemind && item.flow === "expense" && item.remind !== "none" && t(`expenses.recurring.reminds.${item.remind}`),
                         skipped && t("expenses.recurring.skipped"),
@@ -104,7 +116,15 @@ export function RecurringPanel({ month, records, canRemind }: Props) {
             );
           })}
         </ul>
+        </section>
       )}
+      <ExpenseSheet
+        open={editing !== null}
+        title={editing?.id ? t("expenses.edit") : t(income ? "expenses.recurring.addIncome" : "expenses.recurring.add")}
+        onClose={() => setEditing(null)}
+      >
+        {editing && <RecurringForm key={editing.id ?? "new"} month={month} records={records} initial={editing} canRemind={canRemind} onDone={() => setEditing(null)} />}
+      </ExpenseSheet>
     </div>
   );
 }
@@ -117,7 +137,7 @@ function RecurringForm({ month, records, initial, canRemind, onDone }: FormProps
   const flow = initial.flow ?? "expense";
   const [label, setLabel] = useState(initial.label ?? "");
   const [amount, setAmount] = useState(initial.amountMga ? String(initial.amountMga) : "");
-  const [category, setCategory] = useState(initial.category ?? (flow === "income" ? "salary" : "rent"));
+  const [category, setCategory] = useState<string>(flow === "income" ? incomeKindOf(initial.category ?? "salary", initial.from) : (initial.category ?? "rent"));
   const [day, setDay] = useState(String(initial.day ?? 5));
   const [payment, setPayment] = useState<PaymentMethod | "">(initial.payment ?? "");
   const [remind, setRemind] = useState<DueReminder>(initial.remind ?? "none");
@@ -129,12 +149,15 @@ function RecurringForm({ month, records, initial, canRemind, onDone }: FormProps
     event.preventDefault();
     if (value === undefined || !validDay) return;
     haptics.success();
+    // Help from the family is written as "other" and named in the label (an older app knows no "family").
+    const stored = flow === "income" ? storedIncome(incomeKindOf(category, category === "family" ? "family" : undefined)) : null;
     await expenseStore.saveRecurring({
       id: initial.id,
       flow,
-      label,
+      label: stored?.from && !label.trim() ? t("expenses.incomes.family") : label,
       amountMga: value,
-      category,
+      category: stored ? stored.kind : category,
+      from: stored?.from,
       day: dayValue,
       startMonth: initial.startMonth ?? month,
       endMonth: initial.endMonth,
@@ -158,33 +181,37 @@ function RecurringForm({ month, records, initial, canRemind, onDone }: FormProps
     <form className={styles.form} onSubmit={(event) => void submit(event)} aria-label={t(flow === "income" ? "expenses.recurring.addIncome" : "expenses.recurring.add")}>
       <div className={styles.fields}>
         <label className={styles.wide}>
+          <span>{t("expenses.form.amount")}</span>
+          <input
+            value={amount}
+            onChange={(event) => setAmount(event.target.value)}
+            inputMode="numeric"
+            placeholder={t("expenses.form.amountExample")}
+            className={styles.amountInput}
+            required
+            autoFocus={!initial.id}
+          />
+        </label>
+        <label className={styles.wide}>
           <span>{t("expenses.recurring.label")}</span>
           <input value={label} onChange={(event) => setLabel(event.target.value)} maxLength={80} placeholder={t(flow === "income" ? "expenses.recurring.incomePlaceholder" : "expenses.recurring.placeholder")} />
         </label>
         <label>
-          <span>{t("expenses.form.amount")}</span>
-          <input value={amount} onChange={(event) => setAmount(event.target.value)} inputMode="numeric" placeholder="Ar" required />
-        </label>
-        <label>
           <span>{t("expenses.recurring.day")}</span>
-          <input value={day} onChange={(event) => setDay(event.target.value)} inputMode="numeric" required />
+          <input value={day} onChange={(event) => setDay(event.target.value)} inputMode="numeric" placeholder={t("expenses.recurring.dayExample")} required />
         </label>
-        <label>
-          <span>{t(flow === "income" ? "expenses.income.kind" : "expenses.form.category")}</span>
-          <select value={category} onChange={(event) => setCategory(event.target.value)}>
-            {flow === "income"
-              ? incomeKinds.map((kind) => (
-                  <option key={kind} value={kind}>
-                    {t(`expenses.incomes.${kind}`)}
-                  </option>
-                ))
-              : categories.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.name}
-                  </option>
-                ))}
-          </select>
-        </label>
+        <div className={styles.wide}>
+          <Chips
+            label={t(flow === "income" ? "expenses.income.kind" : "expenses.form.category")}
+            value={category}
+            onChange={setCategory}
+            options={
+              flow === "income"
+                ? incomeKinds.map((kind) => ({ id: kind, name: t(`expenses.incomes.${kind}`), Icon: incomeIcons[kind] }))
+                : categories.map((item) => ({ id: item.id, name: item.name, color: item.color, Icon: iconOf(item) }))
+            }
+          />
+        </div>
         {flow === "expense" && (
           <label>
             <span>{t("expenses.form.payment")}</span>

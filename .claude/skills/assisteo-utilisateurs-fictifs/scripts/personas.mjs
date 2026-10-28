@@ -128,7 +128,7 @@ export const PERSONAS = [
       { label: "Voit « Dépenses » dans le menu", go: "/", expect: ["Dépenses"] },
       { label: "Ouvre « Mes dépenses »", go: "/expenses", expect: ["Mes dépenses", "Dépensé", "Ajouter une dépense"] },
       { label: "Ouvre le formulaire d'ajout", click: "Ajouter une dépense", expect: ["Montant", "Catégorie", "Payé en"] },
-      { label: "Regarde l'onglet Budget", go: "/expenses", click: "Budget", expect: ["Budget total"] },
+      { label: "Regarde l'onglet Budget", go: "/expenses", click: "Budget", expect: ["Fixer mon budget"] },
       { label: "Demande le bilan du mois à l'IA", go: "/expenses", click: "Bilan du mois", expect: ["Refaire le bilan"] },
       { label: "Ouvre le côté « Foyer » : elle peut en créer un", go: "/expenses", click: "Foyer", expect: ["Créer le foyer", "Rejoindre"] },
     ],

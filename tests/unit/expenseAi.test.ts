@@ -78,6 +78,8 @@ describe("expense from a receipt", () => {
       note: "Taxi Be Express",
       reference: "MP261020.1432.A51234",
       scanId: "scan-1",
+      // It stands for the receipt's line counted on its own.
+      sourceKey: "receipt:scan-1",
     });
   });
 

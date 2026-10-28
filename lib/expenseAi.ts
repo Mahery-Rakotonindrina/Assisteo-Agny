@@ -3,6 +3,7 @@ import {
   billCategory,
   byKind,
   BUDGET_ID,
+  dayStart,
   lastMonths,
   monthExpenses,
   monthIncomes,
@@ -13,6 +14,8 @@ import {
   type ExpenseRecord,
   type ManualExpense,
   type PaymentMethod,
+  receiptKey,
+  sameReference,
 } from "@/lib/expenses";
 import { currencySymbols, type ForeignCurrency } from "@/lib/money";
 import { parseDay } from "@/lib/papers";
@@ -24,18 +27,7 @@ type Scan = { id: string; createdAt: number; analysis: Pick<Analysis, "document"
 
 const payments: Record<ReceiptPayment, PaymentMethod> = { cash: "cash", mobile_money: "mobile", card: "card" };
 
-/** A transaction reference compared loosely: case and spaces left out. */
-export const sameReference = (a: string | undefined, b: string | undefined) => {
-  const clean = (value: string | undefined) => value?.replace(/\s+/g, "").toUpperCase() || undefined;
-  const left = clean(a);
-  return left !== undefined && left === clean(b);
-};
-
-/** Start of the day a timestamp falls on (local time). */
-const dayStart = (at: number) => {
-  const date = new Date(at);
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
-};
+export { sameReference };
 
 /**
  * The expense form's starting values for a scanned receipt: amount, day,
@@ -61,7 +53,8 @@ export function receiptDraft(scan: Scan): Partial<ManualExpense> | null {
     note: receipt.merchant?.trim().slice(0, 200) || undefined,
     reference: receipt.reference?.trim() || undefined,
     scanId: scan.id,
-    ...(bill && { sourceKey: `bill:${scan.id}` }),
+    // It stands for the line counted on its own (the bill it pays, else the receipt itself).
+    sourceKey: bill ? `bill:${scan.id}` : receiptKey(scan.id),
   };
 }
 
@@ -95,7 +88,8 @@ export function summaryRequest(
   const amountIn = (totals: ReturnType<typeof totalsOf>, category: string) => totals.byCategory.find((line) => line.category === category)?.amount ?? 0;
 
   const budget = byKind(records, "budget").find((record): record is Budget => record.id === BUDGET_ID);
-  const income = monthIncomes(records, month).reduce((sum, item) => sum + item.amountMga, 0);
+  // Money in: typed in, recurring, parcels sold, Mobile Money received (the lines kept out left out).
+  const income = monthIncomes(records, month, sources).reduce((sum, item) => sum + (item.excluded ? 0 : item.amountMga), 0);
 
   // This month's categories first (largest first), then the ones only seen before.
   const ids = [...new Set([...current.byCategory, ...previous.byCategory, ...before.flatMap((totals) => totals.byCategory)].map((line) => line.category))];
