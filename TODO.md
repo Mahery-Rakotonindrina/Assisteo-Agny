@@ -166,6 +166,15 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [ ] L'app de chaque utilisateur suit ces réglages (menus, boutons, étiquettes « à partir de… », refus côté serveur), tout de suite et sans nouvel APK
 - [ ] Chaque changement de fonctionnalités noté dans le journal des actions admin
 - [ ] Créer une nouvelle offre depuis l'Admin (nom, couleur, prix, quotas, fonctionnalités)
+- [ ] Avant d'enregistrer un changement d'offre : nombre d'abonnés concernés, et choix « tous » ou « seulement les nouveaux abonnements et renouvellements »
+- [ ] Règle commune quand une fonctionnalité est retirée : données gardées, écran en lecture seule, rappels coupés, tout revient si elle est réactivée
+- [ ] Dépendances entre fonctionnalités (rappels du garage → rappels ; budget en famille → « Mes dépenses ») : avertissement, et les fonctions qui en dépendent sont décochées avec
+- [ ] Page « Les offres », liste des avantages et page Découvrir mises à jour automatiquement selon les réglages
+- [ ] Fonctionnalité « en test » pour une liste de comptes testeurs choisis, sans nouvelle version
+- [ ] Interrupteur d'urgence : couper une fonctionnalité pour tout le monde en un clic (IA trop chère, bug)
+- [ ] Accès temporaire à une fonctionnalité pour un abonné (ex. le garage offert 7 jours), arrêté tout seul à la date prévue
+- [ ] Quotas réglables par abonné (scans, questions, colis suivis…), pas seulement par offre
+- [ ] Fiche d'un abonné : ses fonctionnalités et leur origine (son offre, ajout à la main, accès temporaire jusqu'au…)
 
 ## 13. Réglages
 
