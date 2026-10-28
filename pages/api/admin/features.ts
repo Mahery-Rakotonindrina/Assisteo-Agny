@@ -25,7 +25,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const parsed = FeatureSettingsSchema.safeParse(req.body);
     if (!parsed.success) return sendError(res, 400, "invalid_request", parsed.error.issues[0]?.message ?? "Invalid settings.");
     const before = await getPlansConfig();
-    const unlimited = deepWithoutLimit({ ...before, ...parsed.data });
+    // Only a newly ticked deep analysis is refused: an emergency cut still goes through.
+    const already = new Set(deepWithoutLimit(before));
+    const unlimited = deepWithoutLimit({ ...before, ...parsed.data }).filter((plan) => !already.has(plan));
     if (unlimited.length > 0) return sendError(res, 400, "invalid_request", `Deep analyses need a monthly count first: ${unlimited.join(", ")}.`);
     const saved = await setFeatureSettings(parsed.data);
     // One line per change: who changed what, for the log.

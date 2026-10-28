@@ -14,7 +14,7 @@ import styles from "./AdminPlans.module.scss";
 const offerFields: Array<keyof PlanOffer> = ["priceMga", "yearPriceMga", "scans", "questionsPerDay", "parcels", "deepPerMonth"];
 
 /** Prices and limits of each plan, and how to pay: shown on the app's offers page. */
-export function AdminPlans({ token }: { token: string }) {
+export function AdminPlans({ token, onSaved }: { token: string; onSaved?: () => void }) {
   const { t } = useTranslation();
   const toast = useToast();
   const [saved, setSaved] = useState<PlansConfig | null>(null);
@@ -48,6 +48,7 @@ export function AdminPlans({ token }: { token: string }) {
       const result = await httpClient.put<PlansConfig>("/api/admin/plans", draft, { headers });
       setSaved(result);
       setDraft(result);
+      onSaved?.();
       toast(t("admin.saved"));
     } catch {
       toast(t("admin.error"), "error");
