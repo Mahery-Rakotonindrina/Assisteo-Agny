@@ -19,14 +19,17 @@ type Props = {
   incomes: IncomeItem[];
   budget: BudgetLine[];
   previousTotal: number;
+  /** An expense to open in the form right away (from a scanned receipt). */
+  initialEditing?: ManualExpense | null;
+  onEdited?: () => void;
 };
 
 /** The month: total, comparison, budget, split by category, and every line. */
-export function MonthPanel({ month, records, items, incomes, budget, previousTotal }: Props) {
+export function MonthPanel({ month, records, items, incomes, budget, previousTotal, initialEditing, onEdited }: Props) {
   const { t, locale } = useTranslation();
   const toast = useToast();
   const { categoryName, categoryColor } = useExpenseLabels(records);
-  const [editing, setEditing] = useState<Partial<ManualExpense> | null>(null);
+  const [editing, setEditing] = useState<Partial<ManualExpense> | null>(initialEditing ?? null);
   const [opened, setOpened] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
   const totals = monthTotals(items);
@@ -73,6 +76,7 @@ export function MonthPanel({ month, records, items, incomes, budget, previousTot
         onDone={() => {
           setEditing(null);
           setOpened(null);
+          onEdited?.();
         }}
       />
     );

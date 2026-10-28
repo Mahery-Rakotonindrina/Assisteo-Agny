@@ -1,6 +1,6 @@
 import type { IncomingHttpHeaders } from "node:http";
-import { analyzeWithClaude, askWithClaude, CLAUDE_MODEL, listClaudeModels, verifyClaudeKey, type AiUsage, type EngineOptions } from "./claude";
-import { analyzeWithGemini, askWithGemini, GEMINI_DEEP_MODEL, GEMINI_MODEL, listGeminiModels, verifyGeminiKey } from "./gemini";
+import { analyzeWithClaude, askWithClaude, CLAUDE_MODEL, listClaudeModels, summarizeWithClaude, verifyClaudeKey, type AiUsage, type EngineOptions } from "./claude";
+import { analyzeWithGemini, askWithGemini, GEMINI_DEEP_MODEL, GEMINI_MODEL, listGeminiModels, summarizeWithGemini, verifyGeminiKey } from "./gemini";
 import { analyzeWithOpenAICompatible, askWithOpenAICompatible, listOpenAICompatibleModels, verifyOpenAICompatibleKey } from "./openaiCompatible";
 import {
   AiOverrideSchema,
@@ -10,6 +10,7 @@ import {
   type Analysis,
   type AnalyzeRequest,
   type AskRequest,
+  type ExpenseSummaryRequest,
   type ListModelsRequest,
 } from "./schema";
 
@@ -100,6 +101,13 @@ export function askQuestion(input: AskRequest, signal?: AbortSignal, override?: 
   if (activeProvider === "claude") return askWithClaude(input, signal);
   if (activeProvider === "gemini") return askWithGemini(input, signal);
   throw new Error("askQuestion called in demo mode.");
+}
+
+/** "Mes dépenses": the month's review, always on the server's engine (never an own key). */
+export function summarizeExpenses(input: ExpenseSummaryRequest, signal?: AbortSignal) {
+  if (activeProvider === "claude") return summarizeWithClaude(input, signal);
+  if (activeProvider === "gemini") return summarizeWithGemini(input, signal);
+  throw new Error("summarizeExpenses called in demo mode.");
 }
 
 export function verifyKey(override: AiOverride) {

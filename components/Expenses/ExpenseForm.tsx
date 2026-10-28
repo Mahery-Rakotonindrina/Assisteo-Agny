@@ -31,10 +31,12 @@ type Props = {
   /** The computed lines of the month this expense can stand for. */
   links: LinkChoice[];
   onDone: () => void;
+  /** Called with the expense once saved (before onDone). */
+  onSaved?: (expense: ManualExpense) => void;
 };
 
 /** Adds or edits an expense: amount (in ariary or another currency), category, day, payment, note. */
-export function ExpenseForm({ records, initial, links, onDone }: Props) {
+export function ExpenseForm({ records, initial, links, onDone, onSaved }: Props) {
   const { t, locale } = useTranslation();
   const { categories } = useExpenseLabels(records);
   const [currency, setCurrency] = useState<ExpenseCurrency>(initial?.currency ?? "MGA");
@@ -67,7 +69,7 @@ export function ExpenseForm({ records, initial, links, onDone }: Props) {
     event.preventDefault();
     if (amountMga === undefined) return;
     haptics.success();
-    await expenseStore.saveExpense({
+    const saved = await expenseStore.saveExpense({
       id: initial?.id,
       at: dayOf(day),
       amountMga,
@@ -75,8 +77,12 @@ export function ExpenseForm({ records, initial, links, onDone }: Props) {
       note,
       payment: payment || undefined,
       sourceKey: sourceKey || undefined,
+      // Kept from a scanned receipt (no duplicates).
+      reference: initial?.reference,
+      scanId: initial?.scanId,
       ...(foreign && { currency: currency as ForeignCurrency, originalAmount: typed, rate: rateValue }),
     });
+    if (saved) onSaved?.(saved);
     onDone();
   };
 

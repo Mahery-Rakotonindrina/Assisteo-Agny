@@ -604,7 +604,8 @@
       "kinds": {
         "scan": "Scan",
         "deep": "Deep analysis",
-        "question": "Question"
+        "question": "Question",
+        "summary": "Expenses review"
       },
       "perCall": "per call · {calls} call(s), {total} in all",
       "noCalls": "no call",
@@ -2092,6 +2093,26 @@
         "spent": "Spent",
         "cap": "Budget"
       }
+    },
+    "receipt": {
+      "title": "My expenses",
+      "add": "Add to my expenses",
+      "saved": "Expense added",
+      "already": "Already in your expenses ({amount}).",
+      "open": "Open"
+    },
+    "review": {
+      "title": "Month’s review",
+      "ask": "Month’s review",
+      "again": "Review again",
+      "loading": "Reviewing…",
+      "hint": "The AI only reads your month’s totals (no note, no shop) and gives you a few findings and tips.",
+      "tips": "Tips",
+      "at": "Review of {date}",
+      "demoAt": "Sample review (demo mode), {date}",
+      "offline": "No connection: try again once you’re online.",
+      "limit": "That’s enough reviews for today: come back tomorrow.",
+      "failed": "The review didn’t work. Try again in a moment."
     }
   }
 }

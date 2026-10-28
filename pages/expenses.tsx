@@ -1,7 +1,8 @@
 import { motion } from "motion/react";
+import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 import { CalendarSync, ChevronLeft, ChevronRight, History, PiggyBank, Receipt, Wallet } from "lucide-react";
-import { BudgetPanel, HistoryPanel, IncomePanel, MonthPanel, RecurringPanel } from "@/components/Expenses";
+import { BudgetPanel, HistoryPanel, IncomePanel, MonthPanel, MonthReview, RecurringPanel } from "@/components/Expenses";
 import styles from "@/components/Expenses/Expenses.module.scss";
 import { EmptyState } from "@/components/EmptyState";
 import { SegmentedControl } from "@/components/SegmentedControl";
@@ -11,7 +12,7 @@ import { useExpenseSources } from "@/hooks/useExpenseSources";
 import { useNow } from "@/hooks/useNow";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
-import { BUDGET_ID, budgetLines, monthExpenses, monthIncomes, monthKey, monthStart, monthTotals, shiftMonth, type Budget } from "@/lib/expenses";
+import { BUDGET_ID, budgetLines, monthExpenses, monthIncomes, monthKey, monthStart, monthTotals, shiftMonth, type Budget, type ManualExpense } from "@/lib/expenses";
 import { formatMonthYear } from "@/lib/format";
 import { rise, stagger } from "@/lib/motion";
 
@@ -49,9 +50,29 @@ function Expenses({ canRemind }: { canRemind: boolean }) {
   const { records } = useExpenses();
   const sources = useExpenseSources();
   const current = monthKey(now);
+  const router = useRouter();
+  // "?open=<id>" (from a scanned receipt): that expense, open in the form, in its month.
+  const openId = typeof router.query.open === "string" ? router.query.open : null;
+  const opened = openId ? records.find((record): record is ManualExpense => record.kind === "expense" && record.id === openId) : undefined;
   const [picked, setPicked] = useState<string | null>(null);
-  const month = picked ?? current;
-  const [tab, setTab] = useState<Tab>("month");
+  const month = opened ? monthKey(opened.at) : (picked ?? current);
+  const [chosenTab, setTab] = useState<Tab>("month");
+  const tab = opened ? "month" : chosenTab;
+  // Leaving the opened expense keeps its month on screen.
+  const closeOpened = () => {
+    if (!opened) return;
+    setPicked(month);
+    setTab("month");
+    void router.replace({ pathname: router.pathname }, undefined, { shallow: true });
+  };
+  const pickMonth = (key: string) => {
+    closeOpened();
+    setPicked(key);
+  };
+  const pickTab = (value: Tab) => {
+    closeOpened();
+    setTab(value);
+  };
 
   const view = useMemo(() => {
     const items = monthExpenses(records, sources, month);
@@ -77,11 +98,11 @@ function Expenses({ canRemind }: { canRemind: boolean }) {
       </motion.header>
 
       <motion.div variants={rise} className={styles.monthPicker}>
-        <button type="button" className={styles.iconButton} onClick={() => setPicked(shiftMonth(month, -1))} aria-label={t("expenses.previousMonth")}>
+        <button type="button" className={styles.iconButton} onClick={() => pickMonth(shiftMonth(month, -1))} aria-label={t("expenses.previousMonth")}>
           <ChevronLeft size={20} />
         </button>
         <strong aria-live="polite">{formatMonthYear(monthStart(month), locale)}</strong>
-        <button type="button" className={styles.iconButton} onClick={() => setPicked(shiftMonth(month, 1))} aria-label={t("expenses.nextMonth")}>
+        <button type="button" className={styles.iconButton} onClick={() => pickMonth(shiftMonth(month, 1))} aria-label={t("expenses.nextMonth")}>
           <ChevronRight size={20} />
         </button>
       </motion.div>
@@ -91,7 +112,7 @@ function Expenses({ canRemind }: { canRemind: boolean }) {
           ariaLabel={t("expenses.title")}
           size="lg"
           value={tab}
-          onChange={setTab}
+          onChange={pickTab}
           options={[
             { value: "month", label: t("expenses.tabs.month"), icon: <Receipt /> },
             { value: "income", label: t("expenses.tabs.income"), icon: <Wallet /> },
@@ -104,7 +125,10 @@ function Expenses({ canRemind }: { canRemind: boolean }) {
 
       <motion.div variants={rise}>
         {tab === "month" ? (
-          <MonthPanel key={month} month={month} records={records} items={view.items} incomes={view.incomes} budget={view.budget} previousTotal={view.previousTotal} />
+          <div className={styles.panel}>
+            <MonthPanel key={`${month}:${opened?.id ?? ""}`} month={month} initialEditing={opened} onEdited={closeOpened} records={records} items={view.items} incomes={view.incomes} budget={view.budget} previousTotal={view.previousTotal} />
+            <MonthReview month={month} records={records} sources={sources} />
+          </div>
         ) : tab === "income" ? (
           <IncomePanel key={month} month={month} incomes={view.incomes} spent={view.totals.total} defaultAt={defaultAt} />
         ) : tab === "recurring" ? (

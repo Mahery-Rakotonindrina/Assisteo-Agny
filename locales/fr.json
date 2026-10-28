@@ -604,7 +604,8 @@
       "kinds": {
         "scan": "Scan",
         "deep": "Analyse approfondie",
-        "question": "Question"
+        "question": "Question",
+        "summary": "Bilan des dépenses"
       },
       "perCall": "par appel · {calls} appel(s), {total} en tout",
       "noCalls": "aucun appel",
@@ -2092,6 +2093,26 @@
         "spent": "Dépensé",
         "cap": "Budget"
       }
+    },
+    "receipt": {
+      "title": "Mes dépenses",
+      "add": "Ajouter à mes dépenses",
+      "saved": "Dépense ajoutée",
+      "already": "Déjà dans tes dépenses ({amount}).",
+      "open": "Ouvrir"
+    },
+    "review": {
+      "title": "Bilan du mois",
+      "ask": "Bilan du mois",
+      "again": "Refaire le bilan",
+      "loading": "Bilan en cours…",
+      "hint": "L’IA lit seulement tes totaux du mois (aucune note, aucun magasin) et te donne quelques constats et conseils.",
+      "tips": "Conseils",
+      "at": "Bilan du {date}",
+      "demoAt": "Bilan d’exemple (mode démo), {date}",
+      "offline": "Pas de connexion : réessaie quand tu es en ligne.",
+      "limit": "Tu as fait assez de bilans pour aujourd’hui : reviens demain.",
+      "failed": "Le bilan n’a pas pu se faire. Réessaie dans un moment."
     }
   }
 }

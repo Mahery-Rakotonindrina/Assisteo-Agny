@@ -12,6 +12,7 @@ import { listStore } from "@/services/listStore";
 import { startListSync, syncLists } from "@/services/listSync";
 import { vehicleStore } from "@/services/vehicleStore";
 import { startVehicleSync, syncVehicles } from "@/services/vehicleSync";
+import { wipeReviews } from "@/services/expenseReview";
 import { expenseStore } from "@/services/expenseStore";
 import { startExpenseSync, syncExpenses } from "@/services/expenseSync";
 import { parcelStore } from "@/services/parcelStore";
@@ -181,6 +182,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await listStore.wipe();
     await vehicleStore.wipe();
     await expenseStore.wipe();
+    await wipeReviews().catch(() => undefined);
     await aiKeyStore.clear({ fromSync: true });
     await signOutAccount();
   }, [userId]);
@@ -200,6 +202,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await listStore.wipe();
     await vehicleStore.wipe();
     await expenseStore.wipe();
+    await wipeReviews().catch(() => undefined);
     await aiKeyStore.clear({ fromSync: true });
     await cancelAllNotifications();
     // The user no longer exists on the server: only forget the session here.
