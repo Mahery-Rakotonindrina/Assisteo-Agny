@@ -520,6 +520,17 @@ export type ApiErrorCode =
   | "second_factor"
   /** An admin other than the owner tried what only the owner may do (the second factor, admin rights). */
   | "owner_only"
+  /** The request needs a signed-in account. */
+  | "sign_in_required"
+  /** "Mes dépenses" shared: the account already has a household, or isn't in this one. */
+  | "already_member"
+  | "not_member"
+  /** Only the household's creator may do this. */
+  | "not_owner"
+  /** An invitation code that doesn't exist (or was revoked), or is past its 48 hours. */
+  | "invalid_code"
+  | "expired"
+  | "household_full"
   | "method_not_allowed";
 
 export type ApiErrorBody = {

@@ -9,7 +9,7 @@ import { compareMonths, monthStart, monthTotals, type BudgetLine, type ExpenseRe
 import { formatAriary, formatDate, formatMonthYear } from "@/lib/format";
 import { expenseStore } from "@/services/expenseStore";
 import { shareFile } from "@/services/fileShare";
-import { ExpenseForm, type LinkChoice } from "./ExpenseForm";
+import { ExpenseForm, type LinkChoice, type ShareChoice } from "./ExpenseForm";
 import styles from "./Expenses.module.scss";
 
 type Props = {
@@ -22,10 +22,12 @@ type Props = {
   /** An expense to open in the form right away (from a scanned receipt). */
   initialEditing?: ManualExpense | null;
   onEdited?: () => void;
+  /** The household an expense can be moved to, when the user is a member. */
+  share?: ShareChoice | null;
 };
 
 /** The month: total, comparison, budget, split by category, and every line. */
-export function MonthPanel({ month, records, items, incomes, budget, previousTotal, initialEditing, onEdited }: Props) {
+export function MonthPanel({ month, records, items, incomes, budget, previousTotal, initialEditing, onEdited, share }: Props) {
   const { t, locale } = useTranslation();
   const toast = useToast();
   const { categoryName, categoryColor } = useExpenseLabels(records);
@@ -73,6 +75,7 @@ export function MonthPanel({ month, records, items, incomes, budget, previousTot
         records={records}
         initial={editing}
         links={links.filter((link) => link.key !== editing.sourceKey)}
+        share={share}
         onDone={() => {
           setEditing(null);
           setOpened(null);

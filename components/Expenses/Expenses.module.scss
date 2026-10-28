@@ -448,3 +448,54 @@
   justify-content: space-between;
   gap: 0.5rem;
 }
+
+// ---- Shared with the household ----------------------------------------------------------
+
+// "Perso / Foyer" on the expense form, with what it means underneath.
+.scope {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.householdCard {
+  @include card;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.householdName {
+  font-size: 1.15rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+// The invitation code, big enough to read out on the phone.
+.invite {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.code {
+  font-family: var(--font-mono);
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.codeInput {
+  font-family: var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.linkButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--accent-text);
+  font-weight: 600;
+  text-decoration: underline;
+}

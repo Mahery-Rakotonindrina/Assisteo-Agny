@@ -26,6 +26,19 @@ function prune(now: number) {
   }
 }
 
+/** Gives back one use of the current window (a request that failed through no fault of the user). */
+export async function refundRateLimit(key: string, windowMs: number) {
+  const now = Date.now();
+  const current = windows.get(key);
+  if (current && current.resetAt > now && current.count > 0) current.count -= 1;
+  if (!redis) return;
+  try {
+    await redis.decr(`rl:${key}:${Math.floor(now / windowMs)}`);
+  } catch {
+    // The memory window was already given back.
+  }
+}
+
 export async function rateLimit(key: string, limit: number, windowMs: number): Promise<RateLimitResult> {
   const now = Date.now();
   if (!redis) return memoryLimit(key, limit, windowMs, now);
