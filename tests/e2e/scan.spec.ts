@@ -10,11 +10,11 @@ async function pretendPlan(page: import("@playwright/test").Page, plan: string) 
   });
 }
 
-/** Any photo comes back as the demo MVola receipt. */
-async function serveReceipt(page: import("@playwright/test").Page) {
+/** Any photo comes back as the demo MVola receipt (money paid, or received). */
+async function serveReceipt(page: import("@playwright/test").Page, direction: "out" | "in" | "own" = "out") {
   await page.route("**/api/analyze", async (route) => {
     const response = await route.fetch();
-    await route.fulfill({ response, json: { ...(await response.json()), analysis: mockReceipt("fr") } });
+    await route.fulfill({ response, json: { ...(await response.json()), analysis: mockReceipt("fr", direction) } });
   });
 }
 
@@ -66,7 +66,7 @@ test.describe("scan", () => {
     await expect(page.getByText(/Merci ! Ton avis/)).toBeVisible();
   });
 
-  test("an Admin adds a scanned MVola receipt to their expenses, once", async ({ page }) => {
+  test("a scanned MVola receipt counts on its own in an Admin's expenses, once", async ({ page }) => {
     await prepare(page);
     await pretendPlan(page, "unlimited");
     await serveReceipt(page);
@@ -74,7 +74,10 @@ test.describe("scan", () => {
     await page.locator('input[type="file"]').setInputFiles("tests/e2e/fixtures/apple.jpg");
     await expect(page).toHaveURL(/\/result\?id=/, { timeout: 20_000 });
 
-    await page.getByRole("button", { name: "Ajouter à mes dépenses" }).click();
+    await expect(page.getByTestId("receipt-status")).toContainText("Compté dans Mes dépenses");
+    await expect(page.getByRole("button", { name: "Ajouter à mes dépenses" })).toHaveCount(0);
+    // Corrected by hand: the typed-in expense stands for it.
+    await page.getByRole("button", { name: "Corriger" }).click();
     await expect(page.getByLabel("Montant", { exact: true })).toHaveValue("15000");
     await expect(page.getByLabel("Note", { exact: true })).toHaveValue("Taxi Be Express");
     await page.getByRole("button", { name: "Enregistrer" }).click();
@@ -86,6 +89,104 @@ test.describe("scan", () => {
     await expect(page.getByLabel("Montant", { exact: true })).toHaveValue("15000");
     await page.getByRole("button", { name: "Annuler" }).click();
     await expect(page.getByTestId("expenses-total")).toHaveText(/^15\s000 Ar$/);
+  });
+
+  test("a withdrawal is not an expense: only its fees count, until it is called an expense", async ({ page }) => {
+    await prepare(page);
+    await pretendPlan(page, "unlimited");
+    await serveReceipt(page, "own");
+    await page.goto("/");
+    await page.locator('input[type="file"]').setInputFiles("tests/e2e/fixtures/apple.jpg");
+    await expect(page).toHaveURL(/\/result\?id=/,{ timeout: 20_000 });
+    await expect(page.getByTestId("receipt-status")).toContainText("pas compté dans tes dépenses");
+    await expect(page.getByText(/Frais comptés dans tes dépenses : 2\s600 Ar/)).toBeVisible();
+    const result = page.url();
+    await page.getByRole("button", { name: "C’est une dépense" }).click();
+    await expect(page.getByTestId("receipt-status")).toContainText("Compté dans Mes dépenses");
+    await page.goto("/expenses");
+    await expect(page.getByTestId("expenses-total")).toHaveText(/^202\s600 Ar$/);
+    await expect(page.getByText("Frais de retrait ou de transfert")).toHaveCount(0);
+    await page.goto(result);
+    await page.getByRole("button", { name: "C’est un mouvement entre mes comptes" }).click();
+    await page.goto("/expenses");
+    await expect(page.getByTestId("expenses-total")).toHaveText(/^2\s600 Ar$/);
+    await expect(page.getByText("Frais de retrait ou de transfert")).toBeVisible();
+  });
+
+  async function scanTwice(page: import("@playwright/test").Page, direction: "out" | "in", dates: [string, string] | null) {
+    let n = 0;
+    await page.route("**/api/analyze", async (route) => {
+      const response = await route.fetch();
+      const analysis = mockReceipt("fr", direction);
+      if (dates) {
+        const receipt = analysis.document!.receipt!;
+        receipt.reference = null;
+        receipt.date = dates[n++ % 2];
+      }
+      await route.fulfill({ response, json: { ...(await response.json()), analysis } });
+    });
+    for (let i = 0; i < 2; i++) {
+      await page.goto("/");
+      await page.locator('input[type="file"]').setInputFiles("tests/e2e/fixtures/apple.jpg");
+      await expect(page).toHaveURL(/\/result\?id=/, { timeout: 20_000 });
+      await expect(page.getByTestId("receipt-status")).toBeVisible();
+    }
+  }
+
+  test("the same receipt scanned twice (same reference) counts once", async ({ page }) => {
+    await prepare(page);
+    await pretendPlan(page, "unlimited");
+    await scanTwice(page, "out", null);
+    await expect(page.getByTestId("receipt-status")).toContainText("Déjà compté (scanné une première fois)");
+    await page.goto("/expenses");
+    await expect(page.getByTestId("expenses-total")).toHaveText(/^15\s000 Ar$/);
+  });
+
+  test("two receipts without a reference, 3 days apart: only the newer one is in doubt", async ({ page }) => {
+    await prepare(page);
+    await pretendPlan(page, "unlimited");
+    await scanTwice(page, "out", ["2026-10-20", "2026-10-22"]);
+    await expect(page.getByTestId("receipt-status")).toContainText("déjà compté");
+    await page.goto("/expenses");
+    await expect(page.getByTestId("expenses-total")).toHaveText(/^15\s000 Ar$/);
+    await page.goBack();
+    await page.getByRole("button", { name: "Compter quand même" }).click();
+    await page.goto("/expenses");
+    await expect(page.getByTestId("expenses-total")).toHaveText(/^30\s000 Ar$/);
+  });
+
+  test("a received money without a reference, 3 days apart: in doubt in Revenus, counted anyway on demand", async ({ page }) => {
+    await prepare(page);
+    await pretendPlan(page, "unlimited");
+    await scanTwice(page, "in", ["2026-10-20", "2026-10-22"]);
+    await page.goto("/expenses?tab=income");
+    await expect(page.getByTestId("expenses-in")).toHaveText(/^80\s000 Ar$/);
+    await page.getByRole("button", { name: /déjà compté/ }).click();
+    await page.getByRole("button", { name: "Compter quand même" }).click();
+    await expect(page.getByTestId("expenses-in")).toHaveText(/^160\s000 Ar$/);
+  });
+
+  test("a received money scanned twice counts once", async ({ page }) => {
+    await prepare(page);
+    await pretendPlan(page, "unlimited");
+    await scanTwice(page, "in", null);
+    await expect(page.getByTestId("receipt-status")).toContainText("Déjà compté");
+    await page.goto("/expenses");
+    await expect(page.getByTestId("expenses-in")).toHaveText(/^80\s000 Ar$/);
+  });
+
+  test("Mobile Money received counts as income", async ({ page }) => {
+    await prepare(page);
+    await pretendPlan(page, "unlimited");
+    await serveReceipt(page, "in");
+    await page.goto("/");
+    await page.locator('input[type="file"]').setInputFiles("tests/e2e/fixtures/apple.jpg");
+    await expect(page).toHaveURL(/\/result\?id=/, { timeout: 20_000 });
+    await expect(page.getByTestId("receipt-status")).toContainText("Compté dans tes revenus");
+    await page.getByTestId("receipt-status").getByRole("link", { name: "Voir" }).click();
+    await expect(page).toHaveURL(/\/expenses/);
+    await expect(page.getByTestId("expenses-in")).toHaveText(/^80\s000 Ar$/);
+    await expect(page.getByText("Reçu de Rasoa Hery")).toBeVisible();
   });
 
   test("without the Admin plan, a scanned receipt has no expenses button", async ({ page }) => {

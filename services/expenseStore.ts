@@ -90,7 +90,7 @@ export const expenseStore = {
   async saveIncome(draft: Draft<Income>) {
     const amountMga = cleanAmount(draft.amountMga);
     if (amountMga === undefined) return null;
-    return save<Income>("income", draft.id, { at: draft.at, amountMga, income: draft.income, note: cleanText(draft.note, 200), sourceKey: draft.sourceKey || undefined });
+    return save<Income>("income", draft.id, { at: draft.at, amountMga, income: draft.income, from: draft.from, note: cleanText(draft.note, 200), sourceKey: draft.sourceKey || undefined });
   },
 
   async saveRecurring(draft: Draft<Recurring>) {
@@ -107,6 +107,7 @@ export const expenseStore = {
       payment: draft.payment,
       remind: draft.remind,
       skipped: draft.skipped ?? [],
+      from: draft.from,
     });
   },
 

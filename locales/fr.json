@@ -2002,9 +2002,9 @@
     "remove": "Supprimer",
     "edit": "Modifier",
     "correct": "Corriger",
-    "exclude": "Hors budget",
-    "include": "Remettre dans le budget",
-    "excluded": "hors budget",
+    "exclude": "Ne pas compter",
+    "include": "Compter à nouveau",
+    "excluded": "pas compté",
     "openSource": "Voir",
     "categories": {
       "market": "Marché et alimentation",
@@ -2028,8 +2028,9 @@
     },
     "incomes": {
       "salary": "Salaire",
-      "sales": "Ventes",
-      "other": "Autre revenu"
+      "sales": "Vente",
+      "other": "Autre",
+      "family": "Aide de la famille"
     },
     "origins": {
       "manual": "Saisie",
@@ -2039,7 +2040,12 @@
       "parcel": "Colis",
       "fuel": "Plein",
       "maintenance": "Entretien",
-      "vehicle": "Garage"
+      "vehicle": "Garage",
+      "receipt": "Ticket",
+      "mobile_money": "Mobile Money",
+      "plan": "Abonnement",
+      "sale": "Vente",
+      "fees": "Frais Mobile Money"
     },
     "form": {
       "title": "Dépense",
@@ -2058,31 +2064,54 @@
       "personal": "Perso",
       "shared": "Foyer",
       "personalHint": "Rien que pour toi : personne d’autre ne la voit.",
-      "sharedHint": "Comptée dans le budget de « {name} » : les membres la verront."
+      "sharedHint": "Comptée dans le budget de « {name} » : les membres la verront.",
+      "amountExample": "ex. 12 000",
+      "noteExample": "ex. marché d’Analakely",
+      "today": "aujourd’hui"
     },
     "month": {
       "spent": "Dépensé",
-      "lastMonth": "Mois dernier",
       "noPrevious": "Rien le mois dernier",
       "more": "+{percent} % ({amount} de plus que le mois dernier)",
       "less": "−{percent} % ({amount} de moins que le mois dernier)",
       "byCategory": "Par catégorie",
       "list": "Les dépenses du mois",
-      "empty": "Aucune dépense ce mois-ci. Ajoute la première, ou paie une facture dans Mes papiers.",
-      "sourcesHint": "Les factures payées, les courses cochées, les colis et le garage s’ajoutent tout seuls. Touche une ligne pour la corriger ou la sortir du budget."
+      "where": "Où va ton argent",
+      "whereHint": "Touche une catégorie pour ne voir qu’elle.",
+      "all": "Tout voir",
+      "today": "Aujourd’hui",
+      "yesterday": "Hier",
+      "exportTitle": "Garder une copie du mois",
+      "exportHint": "Toutes les lignes du mois, dans un fichier Excel ou PDF.",
+      "empty": {
+        "title": "Aucune dépense ce mois-ci",
+        "body": "Ajoute ce que tu paies au marché, en taxi-be ou au magasin. Les factures payées et les courses cochées viendront toutes seules.",
+        "example": "Exemple : 12 000 Ar de marché aujourd’hui."
+      },
+      "noneInCategory": "Rien dans cette catégorie ce mois-ci."
     },
     "income": {
       "total": "Revenus",
       "left": "Ce qu’il reste",
       "add": "Ajouter un revenu",
-      "empty": "Aucun revenu ce mois-ci.",
-      "kind": "Type",
-      "recurringHint": "Un salaire qui tombe chaque mois ? Ajoute-le dans l’onglet Fixes."
+      "kind": "D’où ?",
+      "repeat": "Revient chaque mois",
+      "repeatHint": "Compté tout seul chaque mois, ce jour-là. Tu le retrouves dans l’onglet Fixes.",
+      "list": "L’argent rentré ce mois-ci",
+      "from": "Reçu de {name}",
+      "sale": "Vente : {title}",
+      "profit": "bénéfice {amount}",
+      "loss": "perte {amount}",
+      "unpaid": "dont {amount} pas encore payés",
+      "empty": {
+        "title": "Aucun revenu ce mois-ci",
+        "body": "Ajoute ton salaire, une vente ou l’argent reçu de la famille : tu verras ce qu’il te reste.",
+        "example": "Exemple : salaire de 450 000 Ar le 30."
+      }
     },
     "recurring": {
-      "add": "Ajouter une dépense fixe",
-      "addIncome": "Ajouter un revenu fixe",
-      "empty": "Aucune dépense fixe. Loyer, écolage, abonnements : ajoute-les une fois, ils reviennent chaque mois.",
+      "add": "Ajouter une dépense de chaque mois",
+      "addIncome": "Ajouter un revenu de chaque mois",
       "income": "Revenu",
       "everyMonth": "le {day} de chaque mois",
       "reminds": {
@@ -2099,7 +2128,15 @@
       "day": "Jour du mois",
       "remind": "Rappel",
       "lastDayHint": "Les mois plus courts, ce sera le dernier jour du mois.",
-      "stop": "Arrêter"
+      "stop": "Arrêter",
+      "list": "Ce qui revient chaque mois",
+      "autoHint": "Chaque ligne s’ajoute toute seule au mois, le jour dit. « Pas ce mois-ci » la saute une seule fois.",
+      "empty": {
+        "title": "Rien de fixe pour l’instant",
+        "body": "Ajoute ton loyer ou ta facture JIRAMA : ils seront comptés tous les mois sans que tu les retapes.",
+        "example": "Exemple : loyer de 300 000 Ar le 5 de chaque mois."
+      },
+      "dayExample": "ex. 5"
     },
     "history": {
       "period": "Période",
@@ -2108,15 +2145,27 @@
       "total": "Total",
       "chart": "Dépenses mois par mois",
       "byCategory": "Moyenne par catégorie",
-      "perMonth": "{amount} par mois"
+      "perMonth": "{amount} par mois",
+      "title": "Tes {count} derniers mois",
+      "averageHint": "Ce que tu dépenses en moyenne chaque mois dans chaque catégorie, sur cette période.",
+      "perMonthLine": "Entré {in} · Sorti {out} · Resté {left}"
     },
     "budget": {
       "title": "Budget du mois",
       "overall": "Budget total",
-      "hint": "Fixe un plafond pour le mois, en tout ou par catégorie. Tu es prévenu à 80 %, puis au dépassement.",
+      "hint": "Tu es prévenu à 80 %, puis au dépassement.",
       "saved": "Budget enregistré",
       "warningBanner": "{scope} : tu as déjà utilisé {percent} % du budget. Il reste {amount}.",
-      "overBanner": "{scope} : budget dépassé ({percent} %), de {amount}."
+      "overBanner": "{scope} : budget dépassé ({percent} %), de {amount}.",
+      "set": "Fixer mon budget",
+      "where": "Où tu en es",
+      "remaining": "il reste {amount}",
+      "overBy": "dépassé de {amount}",
+      "empty": {
+        "title": "Pas encore de budget",
+        "body": "Fixe une limite pour le mois, en tout ou par catégorie : tu vois ensuite où tu en es.",
+        "example": "Exemple : 250 000 Ar pour le marché."
+      }
     },
     "custom": {
       "title": "Tes catégories",
@@ -2124,7 +2173,8 @@
       "name": "Nouvelle catégorie",
       "placeholder": "Église, cotisations…",
       "color": "Couleur",
-      "icon": "Icône"
+      "icon": "Icône",
+      "example": "Exemple : Église, cotisations, tontine."
     },
     "reminders": {
       "eveTitle": "{label} : à payer demain",
@@ -2159,6 +2209,15 @@
         "category": "Catégorie",
         "spent": "Dépensé",
         "cap": "Budget"
+      },
+      "sheetIncomes": "Revenus",
+      "incomeColumns": {
+        "date": "Date",
+        "kind": "D’où",
+        "label": "Libellé",
+        "origin": "Origine",
+        "amountMga": "Montant",
+        "counted": "Compté"
       }
     },
     "receipt": {
@@ -2167,10 +2226,21 @@
       "saved": "Dépense ajoutée",
       "already": "Déjà dans tes dépenses ({amount}).",
       "open": "Ouvrir",
-      "loading": "Chargement de tes dépenses…"
+      "loading": "Chargement de tes dépenses…",
+      "counted": "Compté dans Mes dépenses",
+      "countedIncome": "Compté dans tes revenus",
+      "notCounted": "Pas compté dans Mes dépenses",
+      "doubt": "Peut-être déjà compté (même montant à 3 jours près).",
+      "view": "Voir",
+      "correct": "Corriger",
+      "own": "Retrait / mouvement entre tes comptes : pas compté dans tes dépenses.",
+      "isExpense": "C’est une dépense",
+      "isOwn": "C’est un mouvement entre mes comptes",
+      "feesCounted": "Frais comptés dans tes dépenses : {amount}",
+      "alreadyCounted": "Déjà compté (scanné une première fois)"
     },
     "review": {
-      "title": "Bilan du mois",
+      "title": "Ce que l’IA pense de ton mois",
       "ask": "Bilan du mois",
       "again": "Refaire le bilan",
       "loading": "Bilan en cours…",
@@ -2185,25 +2255,26 @@
     "views": {
       "label": "Perso ou foyer",
       "personal": "Perso",
-      "household": "Foyer"
+      "household": "Foyer",
+      "hint": "Perso : seulement toi · Foyer : le budget partagé de ta famille."
     },
     "household": {
       "title": "Budget du foyer",
       "subtitle": "Le budget partagé de ta famille : chacun ajoute ses dépenses, vous voyez le total ensemble.",
       "loading": "Chargement du foyer…",
       "signInTitle": "Connecte-toi pour partager un budget",
-      "signInBody": "Le budget du foyer se partage entre comptes. Connecte-toi, puis tape le code que ta famille t’a envoyé.",
+      "signInBody": "Pour partager un budget avec ta famille, il faut un compte. Connecte-toi, puis tape le code qu’on t’a envoyé.",
       "stale": "Hors ligne : le foyer affiché date de ta dernière connexion.",
       "unreachable": "Impossible de joindre le serveur pour l’instant.",
       "retry": "Réessayer",
       "joinTitle": "Rejoindre un foyer",
-      "joinBody": "Tape le code reçu : 6 signes, valable 48 h.",
+      "joinBody": "Quelqu’un de ta famille a déjà un foyer ? Demande-lui son code (6 signes) et tape-le ici. Un code marche 48 h.",
       "code": "Code d’invitation",
       "codeInvalid": "Le code fait 6 signes, par exemple 4K7-P2Q.",
       "join": "Rejoindre",
       "joined": "Bienvenue dans le foyer !",
       "createTitle": "Créer un foyer",
-      "createBody": "Partage un budget avec ta famille. Chacun choisit, dépense par dépense, ce qui va au foyer ; tes dépenses perso restent à toi.",
+      "createBody": "Tu veux suivre l’argent de la maison à plusieurs ? Crée le foyer, puis envoie le code à ta famille. Tu choisis ce que tu partages : le reste ne se voit pas.",
       "name": "Nom du foyer",
       "namePlaceholder": "Famille Rakoto",
       "create": "Créer le foyer",
@@ -2259,6 +2330,50 @@
         "failed": "Ça n’a pas marché. Réessaie."
       }
     },
-    "keptReadOnly": "Ton offre ne comprend plus Mes dépenses : tes dépenses sont gardées et restent consultables ici, et leurs rappels sont en pause. Tout revient si la fonction revient dans ton offre."
+    "keptReadOnly": "Ton offre ne comprend plus Mes dépenses : tes dépenses sont gardées et restent consultables ici, et leurs rappels sont en pause. Tout revient si la fonction revient dans ton offre.",
+    "receiptPhoto": "Photo d’un ticket",
+    "auto": "Ajouté tout seul · {origin}",
+    "doubt": "déjà compté ?",
+    "keepAnyway": "Compter quand même",
+    "doubtHint": "Une dépense du même montant existe à 3 jours près : ce ticket n’est pas compté, pour ne pas le compter deux fois.",
+    "excludeHelp": {
+      "text": "Une ligne ajoutée toute seule ne compte pas pour toi (un colis pour un client, une facture payée par quelqu’un d’autre) ? Touche-la puis « Ne pas compter » : elle reste visible, sans entrer dans ton mois.",
+      "ok": "Compris"
+    },
+    "saved": {
+      "expense": "Dépense ajoutée : {amount}, {category}",
+      "income": "Revenu ajouté : {amount}, {kind}",
+      "recurring": "Ajouté chaque mois : {amount}, le {day}",
+      "changed": "Modification enregistrée"
+    },
+    "close": "Fermer",
+    "card": {
+      "label": "Ton mois en bref",
+      "left": "Il te reste",
+      "in": "Entré",
+      "out": "Sorti",
+      "ofBudget": "{percent} % de ton budget ({cap})"
+    },
+    "tabHints": {
+      "month": "Tout ce que tu as dépensé ce mois-ci.",
+      "income": "Tout l’argent qui est rentré ce mois-ci.",
+      "recurring": "Ce que tu paies chaque mois (loyer, JIRAMA, écolage) : ajouté tout seul, avec un rappel.",
+      "history": "Tes mois d’avant, pour comparer.",
+      "budget": "Fixe une limite et vois où tu en es."
+    },
+    "welcome": {
+      "title": "Bienvenue dans Mes dépenses",
+      "auto": "Les factures payées, les courses cochées, les colis et le garage s’ajoutent tout seuls.",
+      "step1": "Ajoute ce que tu gagnes (onglet Revenus).",
+      "step2": "Ajoute tes dépenses, ou prends un ticket en photo.",
+      "step3": "Fixe ton budget."
+    },
+    "counted": {
+      "expense": "Compté dans Mes dépenses",
+      "income": "Compté dans tes revenus",
+      "off": "Pas compté dans Mes dépenses",
+      "garage": "Pleins, entretien et frais comptés dans Mes dépenses"
+    },
+    "feesLabel": "Frais de retrait ou de transfert"
   }
 }

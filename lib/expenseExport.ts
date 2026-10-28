@@ -56,6 +56,31 @@ const columns: Array<{ key: keyof ExpenseRow; width: number; kind?: "money" | "d
   { key: "counted", width: 12 },
 ];
 
+export type IncomeRow = { date: Date | null; kind: string; label: string; origin: string; amountMga: number; counted: string };
+
+/** One row per income of the month (typed in, every month, sales, Mobile Money received), the oldest first. */
+export function incomeRows({ incomes }: Pick<ExpenseExport, "incomes">, t: Translate): IncomeRow[] {
+  return [...incomes]
+    .sort((a, b) => a.at - b.at)
+    .map((item) => ({
+      date: excelDay(item.at),
+      kind: t(`expenses.incomes.${item.income}`),
+      label: item.label ?? "",
+      origin: t(`expenses.origins.${item.origin === "receipt" ? "mobile_money" : item.origin}`),
+      amountMga: item.amountMga,
+      counted: item.excluded ? t("expenses.export.no") : t("expenses.export.yes"),
+    }));
+}
+
+const incomeColumns: Array<{ key: keyof IncomeRow; width: number; kind?: "money" | "day" }> = [
+  { key: "date", width: 13, kind: "day" },
+  { key: "kind", width: 20 },
+  { key: "label", width: 30 },
+  { key: "origin", width: 16 },
+  { key: "amountMga", width: 17, kind: "money" },
+  { key: "counted", width: 12 },
+];
+
 /** The recap per category: what was spent (excluded lines left out) and its cap. */
 export function categoryRecap({ items, budget, categoryName }: Pick<ExpenseExport, "items" | "budget" | "categoryName">) {
   const totals = new Map<string, number>();
@@ -138,13 +163,42 @@ export async function expensesWorkbook(data: ExpenseExport, t: Translate, headin
       if (line === TOP + recap.length + 1) cell.font = { bold: true };
     }
 
+  // The incomes, on their own sheet (after the two kept from before).
+  const incomes = incomeRows(data, t);
+  if (incomes.length > 0) {
+    const third = workbook.addWorksheet(t("expenses.export.sheetIncomes"), { views: [{ state: "frozen", ySplit: TOP }] });
+    sheetHeading(third, heading);
+    third.addTable({
+      name: "Revenus",
+      ref: `A${TOP}`,
+      headerRow: true,
+      totalsRow: true,
+      style: { theme: "TableStyleMedium2", showRowStripes: true },
+      columns: incomeColumns.map(({ key, kind }, index): TableColumn => ({
+        name: t(`expenses.export.incomeColumns.${key}`),
+        filterButton: true,
+        ...(index === 0 && { totalsRowLabel: t("expenses.export.total") }),
+        ...(kind === "money" && { totalsRowFunction: "sum" as const, totalsRowResult: sum(incomes.map((row) => row.amountMga)) }),
+      })),
+      rows: incomes.map((row) => incomeColumns.map(({ key }) => row[key] ?? "")),
+    });
+    incomeColumns.forEach(({ width, kind }, index) => {
+      third.getColumn(index + 1).width = width;
+      for (let line = TOP + 1; line <= TOP + incomes.length + 1; line += 1) {
+        const cell = third.getCell(line, index + 1);
+        if (kind === "money") cell.numFmt = ARIARY;
+        if (kind === "day") cell.numFmt = DAY;
+      }
+    });
+  }
+
   return (await workbook.xlsx.writeBuffer()) as ArrayBuffer;
 }
 
 /** The month's figures, for the PDF and the sheet heading. */
 export function monthFigures({ items, incomes }: Pick<ExpenseExport, "items" | "incomes">) {
   const spent = sum(items.filter((item) => !item.excluded).map((item) => item.amountMga));
-  const earned = sum(incomes.map((item) => item.amountMga));
+  const earned = sum(incomes.filter((item) => !item.excluded).map((item) => item.amountMga));
   return { spent, earned, left: earned - spent };
 }
 
@@ -157,6 +211,14 @@ export function pdfLines(data: Pick<ExpenseExport, "items" | "categoryName">, t:
         .filter(Boolean)
         .join(" · "),
     );
+}
+
+/** One line per income for the PDF: "30 oct. 2026 · Salaire · 450 000 Ar". */
+export function pdfIncomeLines(data: Pick<ExpenseExport, "incomes">, t: Translate, locale: Locale, money: (value: number) => string) {
+  return incomeRows(data, t).map((row, index) => {
+    const item = [...data.incomes].sort((a, b) => a.at - b.at)[index];
+    return [formatDate(item.at, locale), row.kind, row.label, item.origin !== "manual" && row.origin, money(row.amountMga), item.excluded && t("expenses.excluded")].filter(Boolean).join(" · ");
+  });
 }
 
 /** The file name: "depenses-2026-10.xlsx" or ".pdf". */

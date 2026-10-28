@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { AlarmClock, ArrowLeft, BellRing, CalendarPlus, Car, Check, Fuel, Gauge, Pencil, Plus, Receipt, Trash2, Wrench } from "lucide-react";
 import { Button } from "@/components/Button";
+import { CountedLink } from "@/components/Expenses/CountedLink";
 import { SegmentedControl } from "@/components/SegmentedControl";
 import { useToast } from "@/components/Toast";
 import { useNow } from "@/hooks/useNow";
@@ -85,8 +86,19 @@ export function VehicleDetail({ vehicle, onBack, readOnly = false }: { vehicle: 
       {tab === "log" && <LogPanel vehicle={vehicle} readOnly={readOnly} />}
       {tab === "fuel" && <FuelPanel vehicle={vehicle} readOnly={readOnly} />}
       {tab === "costs" && <CostsPanel vehicle={vehicle} readOnly={readOnly} />}
+      {tab !== "sheet" && latestCost(vehicle) !== null && <CountedLink sourceKey={`garage:${vehicle.id}`} at={latestCost(vehicle)!} label={t("expenses.counted.garage")} />}
     </div>
   );
+}
+
+/** When the vehicle last cost something (a fill, a service, a cost), or null: its month is opened in "Mes dépenses". */
+function latestCost(vehicle: Vehicle) {
+  const dates = [
+    ...(vehicle.fuel ?? []).filter((fill) => fill.amountMga).map((fill) => fill.at),
+    ...(vehicle.maintenance ?? []).filter((entry) => entry.costMga).map((entry) => entry.at),
+    ...(vehicle.expenses ?? []).filter((expense) => expense.amountMga).map((expense) => expense.at),
+  ];
+  return dates.length > 0 ? Math.max(...dates) : null;
 }
 
 // ---- Reminders ----------------------------------------------------------------

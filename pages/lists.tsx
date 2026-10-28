@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { Check, ChevronDown, ClipboardList, ListChecks, Pencil, Plus, RotateCcw, ScanLine, Share2, ShoppingBasket, Trash2, X } from "lucide-react";
 import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
+import { CountedLink } from "@/components/Expenses/CountedLink";
 import { Seo } from "@/components/Seo";
 import { useToast } from "@/components/Toast";
 import { useHistory } from "@/hooks/useHistory";
@@ -288,6 +289,7 @@ function ListCard({ list, initiallyOpen, hasScan }: { list: SavedList; initially
                   {totals.unpriced > 0 && <small>{t("lists.unpriced", { count: totals.unpriced })}</small>}
                 </div>
               )}
+              {shopping && totals.spent > 0 && <CountedLink sourceKey={`list:${list.id}`} at={list.updatedAt} />}
 
               <form className={shopping ? `${styles.addItem} ${styles.addItemPriced}` : styles.addItem} onSubmit={(event) => void add(event)}>
                 <input value={text} onChange={(event) => setText(event.target.value)} placeholder={t("lists.addItem")} aria-label={t("lists.addItem")} maxLength={200} />

@@ -7,6 +7,11 @@
   flex-direction: column;
   gap: 1.1rem;
   max-width: 720px;
+
+  // Room for two columns in the Month tab.
+  @include desktop {
+    max-width: 1040px;
+  }
 }
 
 .header {
@@ -240,6 +245,7 @@
 }
 
 .column {
+  position: relative;
   display: flex;
   align-items: flex-end;
   width: 100%;
@@ -249,10 +255,18 @@
   overflow: hidden;
 
   span {
+    position: absolute;
+    left: 0;
+    bottom: 0;
     display: block;
     width: 100%;
     border-radius: 8px 8px 0 0;
     background: var(--accent);
+  }
+
+  // Money in, behind money out.
+  .earned {
+    background: color-mix(in srgb, var(--accent) 30%, transparent);
   }
 }
 
@@ -273,6 +287,12 @@
   flex-direction: column;
   border-radius: var(--radius-md);
 
+  // Just added, or asked for from elsewhere in the app.
+  &[data-fresh] {
+    border-color: var(--accent-mark);
+    box-shadow: 0 0 0 2px var(--accent-soft);
+  }
+
   &[data-excluded] .entryMain {
     opacity: 0.6;
 
@@ -287,6 +307,7 @@
   align-items: center;
   gap: 0.6rem;
   width: 100%;
+  min-height: 2.75rem;
   padding: 0.65rem 0.85rem;
   text-align: left;
   color: inherit;
@@ -318,6 +339,11 @@
   background: var(--surface-strong);
   font-size: 0.72rem;
   color: var(--text-muted);
+
+  &[data-tone="warning"] {
+    background: color-mix(in srgb, #e0a020 18%, transparent);
+    color: var(--text);
+  }
 }
 
 .amount {
@@ -397,8 +423,8 @@
   button {
     display: grid;
     place-items: center;
-    width: 2.2rem;
-    height: 2.2rem;
+    width: 2.75rem;
+    height: 2.75rem;
     border-radius: 50%;
     border: 2px solid transparent;
     color: var(--text-muted);
@@ -498,4 +524,412 @@
   color: var(--accent-text);
   font-weight: 600;
   text-decoration: underline;
+}
+
+// ---- The month at a glance, the welcome and the tabs' hints --------------------------
+
+.monthCard {
+  @include card;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1rem 1.1rem;
+
+  > small {
+    @include eyebrow;
+  }
+}
+
+.left {
+  @include display(2.4rem);
+  overflow-wrap: anywhere;
+
+  &[data-tone="bad"] {
+    color: var(--danger);
+  }
+}
+
+.flows {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.5rem;
+  font-size: 0.92rem;
+  color: var(--text-muted);
+
+  strong {
+    color: var(--text);
+  }
+}
+
+.cardBudget {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-top: 0.3rem;
+
+  small {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+}
+
+.welcome {
+  @include card;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 1rem 1.1rem;
+  border-color: var(--accent-mark);
+
+  ol {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding-left: 1.3rem;
+    list-style: decimal;
+  }
+}
+
+.welcomeHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+
+  h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+}
+
+.close {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin: -0.4rem -0.4rem 0 0;
+  border-radius: 50%;
+  background: var(--surface-strong);
+  color: var(--text-muted);
+}
+
+.viewSwitch,
+.tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+// Larger text: the five tabs keep about their normal size, so whole words still fit a
+// 360 px phone ("Historique" sized to its option; older web views keep the size above).
+:global(html[data-text-size="large"]) .tabs,
+:global(html[data-text-size="xlarge"]) .tabs {
+  [role="radiogroup"] {
+    gap: 4px;
+    padding: 4px;
+  }
+
+  [role="radio"] {
+    container-type: inline-size;
+    padding: 0 4px;
+    font-size: clamp(11.2px, 2.3vw, 12.48px);
+  }
+
+  [role="radio"] > span:last-child {
+    font-size: min(clamp(11.2px, 2.3vw, 12.48px), 20cqi);
+  }
+}
+
+.tabHint {
+  font-size: 0.92rem;
+  color: var(--text-muted);
+}
+
+// The big action at the top of each tab, always in the same place.
+.actionRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  > * {
+    flex: 1 1 12rem;
+  }
+
+  @include desktop {
+    > * {
+      flex: none;
+    }
+  }
+}
+
+.emptyNote {
+  @include card;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 1.4rem 1.1rem;
+  text-align: center;
+
+  strong {
+    font-size: 1.05rem;
+  }
+
+  p {
+    max-width: 30rem;
+  }
+}
+
+.emptyIcon {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+// "Where your money goes" beside the list on a computer.
+.split {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+
+  @include desktop {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    align-items: start;
+  }
+}
+
+.where {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.barButton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: var(--radius-sm);
+  text-align: left;
+  color: inherit;
+
+  &[aria-pressed="true"] {
+    background: var(--surface-strong);
+  }
+}
+
+.barNote {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+
+  &[data-level="over"] {
+    color: var(--danger);
+  }
+}
+
+.listHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+}
+
+.dayGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0.7rem;
+}
+
+.day {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.tip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+  font-size: 0.88rem;
+
+  p {
+    flex: 1 1 14rem;
+  }
+}
+
+.monthLines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.2rem 0.75rem;
+    font-size: 0.88rem;
+  }
+
+  strong {
+    text-transform: capitalize;
+  }
+
+  small {
+    color: var(--text-muted);
+
+    &[data-tone="bad"] {
+      color: var(--danger);
+    }
+  }
+}
+
+// "Counted in My expenses →", in the other parts of the app.
+.counted {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-height: 2.75rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--accent-text);
+}
+
+// ---- The forms' sheet --------------------------------------------------------------------
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+
+  @include desktop {
+    align-items: center;
+  }
+}
+
+.sheet {
+  width: 100%;
+  max-width: 560px;
+  max-height: 92vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1rem 1.25rem calc(1.5rem + var(--safe-bottom));
+  border-radius: 28px 28px 0 0;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  overscroll-behavior: contain;
+
+  @include desktop {
+    border-radius: 28px;
+  }
+
+  // The form is the sheet itself: no card inside it.
+  .form {
+    padding: 0;
+    background: none;
+    border: 0;
+    box-shadow: none;
+  }
+}
+
+.sheetTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+
+  h2 {
+    @include display(1.6rem);
+  }
+
+  .close {
+    margin: 0;
+  }
+}
+
+.fields input.amountInput {
+  height: 3.2rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.chipField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+
+  > span {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.75rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.88rem;
+  text-align: left;
+
+  svg {
+    flex: none;
+    color: var(--tone, var(--text-muted));
+  }
+
+  &[aria-checked="true"] {
+    border-color: var(--tone, var(--accent-mark));
+    background: color-mix(in srgb, var(--tone, var(--accent)) 16%, transparent);
+    font-weight: 600;
+  }
+}
+
+.switchRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+
+  > span {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    color: var(--text);
+  }
 }

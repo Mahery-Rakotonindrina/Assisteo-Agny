@@ -343,4 +343,19 @@ export type PlanResponse = {
   features?: PlanFeature[];
   /** The lowest plan with each feature, for the "from…" labels; null: no plan has it now. */
   featureFrom?: Partial<Record<PlanFeature, PlanId | null>>;
+  /** What the account paid for its subscriptions (amount known only), for "Mes dépenses". */
+  payments?: SubscriptionPayment[];
 };
+
+export type SubscriptionPayment = { id: string; plan: PaidPlanId; amountMga: number; paidAt: number };
+
+/** The subscriptions paid, with their amount, the latest first (24 at most); the day paid is taken as the day it starts. */
+export function subscriptionPayments(rows: Array<Pick<Subscription, "id" | "plan" | "startsAt" | "amountMga">>): SubscriptionPayment[] {
+  return rows
+    .flatMap((row) => {
+      const paidAt = Date.parse(row.startsAt);
+      return row.amountMga && row.amountMga > 0 && Number.isFinite(paidAt) ? [{ id: row.id, plan: row.plan, amountMga: Math.round(row.amountMga), paidAt }] : [];
+    })
+    .sort((a, b) => b.paidAt - a.paidAt)
+    .slice(0, 24);
+}

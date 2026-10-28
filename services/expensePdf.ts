@@ -1,5 +1,5 @@
 import type { Locale } from "@/i18n.config";
-import { categoryRecap, monthFigures, overallCap, pdfLines, type ExpenseExport } from "@/lib/expenseExport";
+import { categoryRecap, monthFigures, overallCap, pdfIncomeLines, pdfLines, type ExpenseExport } from "@/lib/expenseExport";
 import { formatAriary } from "@/lib/format";
 import { PdfWriter } from "@/lib/pdf";
 
@@ -27,6 +27,11 @@ export async function expensesPdf(data: ExpenseExport, t: Translate, locale: Loc
   pdf.heading(t("expenses.month.list"));
   const lines = pdfLines(data, t, locale, money);
   if (lines.length > 0) pdf.bullets(lines);
-  else pdf.paragraph(t("expenses.month.empty"));
+  else pdf.paragraph(t("expenses.month.empty.title"));
+  const incomes = pdfIncomeLines(data, t, locale, money);
+  if (incomes.length > 0) {
+    pdf.heading(t("expenses.income.list"));
+    pdf.bullets(incomes);
+  }
   return pdf.finish("Assisteo Agny");
 }

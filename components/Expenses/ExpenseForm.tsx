@@ -12,6 +12,7 @@ import { haptics } from "@/services/device";
 import { expenseStore } from "@/services/expenseStore";
 import { marketRate } from "@/services/fx";
 import { householdExpenseStore, saveExpenseIn, type ExpenseScope } from "@/services/householdExpenseStore";
+import { Chips, iconOf } from "./CategoryChips";
 import styles from "./Expenses.module.scss";
 
 /** A number typed in a field ("12 500", "12,5"), or none. */
@@ -46,7 +47,7 @@ type Props = {
   share?: ShareChoice | null;
 };
 
-/** Adds or edits an expense: amount (in ariary or another currency), category, day, payment, note. */
+/** Adds or edits an expense: amount first (in ariary or another currency), category, day, payment, note. */
 export function ExpenseForm({ records, initial, links, onDone, onSaved, from = "personal", scope: startScope, share }: Props) {
   const { t, locale } = useTranslation();
   const { categories: allCategories } = useExpenseLabels(records);
@@ -60,12 +61,13 @@ export function ExpenseForm({ records, initial, links, onDone, onSaved, from = "
   const [rate, setRate] = useState(() => (initial?.rate ? String(initial.rate) : ""));
   const [category, setCategory] = useState(initial?.category ?? "market");
   const [day, setDay] = useState(() => (initial?.at ? dayString(initial.at) : today()));
+  const [todayValue] = useState(today);
   const [payment, setPayment] = useState<PaymentMethod | "">(initial?.payment ?? "");
   const [note, setNote] = useState(initial?.note ?? "");
   const [sourceKey, setSourceKey] = useState(initial?.sourceKey ?? "");
   const foreign = currency !== "MGA";
-  // A line standing for a bill or a recurring item stays personal.
-  const canChoose = Boolean(share?.choose) && !sourceKey;
+  // A line standing for a bill or a recurring item stays personal; a scanned receipt may move to the household.
+  const canChoose = Boolean(share?.choose) && (!sourceKey || sourceKey.startsWith("receipt:"));
   const pickScope = (value: ExpenseScope) => {
     setScope(value);
     if (value === "household" && allCategories.find((item) => item.id === category)?.custom) setCategory("other");
@@ -139,7 +141,15 @@ export function ExpenseForm({ records, initial, links, onDone, onSaved, from = "
       <div className={styles.fields}>
         <label>
           <span>{t("expenses.form.amount")}</span>
-          <input value={amount} onChange={(event) => setAmount(event.target.value)} inputMode="decimal" required autoFocus={!initial?.id} />
+          <input
+            value={amount}
+            onChange={(event) => setAmount(event.target.value)}
+            inputMode="decimal"
+            placeholder={t("expenses.form.amountExample")}
+            className={styles.amountInput}
+            required
+            autoFocus={!initial?.id}
+          />
         </label>
         <label>
           <span>{t("expenses.form.currency")}</span>
@@ -163,18 +173,19 @@ export function ExpenseForm({ records, initial, links, onDone, onSaved, from = "
             <input value={rate} onChange={(event) => setRate(event.target.value)} inputMode="decimal" required />
           </label>
         )}
+        <div className={styles.wide}>
+          <Chips
+            label={t("expenses.form.category")}
+            value={category}
+            onChange={setCategory}
+            options={categories.map((item) => ({ id: item.id, name: item.name, color: item.color, Icon: iconOf(item) }))}
+          />
+        </div>
         <label>
-          <span>{t("expenses.form.category")}</span>
-          <select value={category} onChange={(event) => setCategory(event.target.value)}>
-            {categories.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          <span>{t("expenses.form.date")}</span>
+          <span>
+            {t("expenses.form.date")}
+            {day === todayValue && ` (${t("expenses.form.today")})`}
+          </span>
           <input type="date" value={day} onChange={(event) => setDay(event.target.value)} required />
         </label>
         <label>
@@ -190,7 +201,7 @@ export function ExpenseForm({ records, initial, links, onDone, onSaved, from = "
         </label>
         <label className={styles.wide}>
           <span>{t("expenses.form.note")}</span>
-          <input value={note} onChange={(event) => setNote(event.target.value)} maxLength={200} />
+          <input value={note} onChange={(event) => setNote(event.target.value)} maxLength={200} placeholder={t("expenses.form.noteExample")} />
         </label>
         {!shared && (links.length > 0 || sourceKey) && (
           <label className={styles.wide}>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CircleCheck, Receipt, Undo2 } from "lucide-react";
 import { Button } from "@/components/Button";
+import { CountedLink } from "@/components/Expenses/CountedLink";
 import { useNow } from "@/hooks/useNow";
 import { useTranslation } from "@/hooks/useTranslation";
 import { billOf } from "@/lib/bills";
@@ -92,6 +93,7 @@ export function BillControls({ entry }: { entry: HistoryEntry }) {
           {t("bills.unfollow")}
         </button>
       </p>
+      {bill.paidAt && bill.amountMga !== null && <CountedLink sourceKey={`bill:${entry.id}`} at={bill.paidAt} />}
     </div>
   );
 }

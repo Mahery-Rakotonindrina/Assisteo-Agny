@@ -1,22 +1,44 @@
 import { motion } from "motion/react";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
-import { CalendarSync, ChevronLeft, ChevronRight, History, PiggyBank, Receipt, User, Users, Wallet } from "lucide-react";
+import { AlertTriangle, CalendarSync, ChevronLeft, ChevronRight, History, PiggyBank, Receipt, User, Users, Wallet, X } from "lucide-react";
 import { BudgetPanel, HistoryPanel, HouseholdPanel, IncomePanel, MonthPanel, MonthReview, RecurringPanel } from "@/components/Expenses";
 import styles from "@/components/Expenses/Expenses.module.scss";
 import { SegmentedControl } from "@/components/SegmentedControl";
 import { Seo } from "@/components/Seo";
+import { useDismissed } from "@/hooks/useDismissed";
+import { useExpenseLabels } from "@/hooks/useExpenseLabels";
 import { useExpenses } from "@/hooks/useExpenses";
 import { useExpenseSources } from "@/hooks/useExpenseSources";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useNow } from "@/hooks/useNow";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
-import { BUDGET_ID, budgetLines, hasOwnExpenses, monthExpenses, monthIncomes, monthKey, monthStart, monthTotals, shiftMonth, type Budget, type ManualExpense } from "@/lib/expenses";
-import { formatMonthYear } from "@/lib/format";
+import { overallCap } from "@/lib/expenseExport";
+import {
+  barPercent,
+  BUDGET_ID,
+  budgetLines,
+  hasOwnExpenses,
+  monthBalance,
+  monthExpenses,
+  monthIncomes,
+  monthKey,
+  monthStart,
+  monthTotals,
+  shiftMonth,
+  type Budget,
+  type BudgetLine,
+  type ExpenseRecord,
+  type ManualExpense,
+} from "@/lib/expenses";
+import { formatAriary, formatMonthYear } from "@/lib/format";
 import { rise, stagger } from "@/lib/motion";
 
-type Tab = "month" | "income" | "recurring" | "history" | "budget";
+const tabs = ["month", "income", "recurring", "history", "budget"] as const;
+type Tab = (typeof tabs)[number];
+const isTab = (value: unknown): value is Tab => typeof value === "string" && (tabs as readonly string[]).includes(value);
+const isMonth = (value: unknown): value is string => typeof value === "string" && /^\d{4}-(0[1-9]|1[0-2])$/.test(value);
 type View = "personal" | "household";
 
 /**
@@ -99,10 +121,14 @@ function Expenses({ canRemind, joinCode }: { canRemind: boolean; joinCode?: stri
   // "?open=<id>" (from a scanned receipt): that expense, open in the form, in its month.
   const openId = typeof router.query.open === "string" ? router.query.open : null;
   const opened = openId ? records.find((record): record is ManualExpense => record.kind === "expense" && record.id === openId) : undefined;
+  // "?month=2026-10&tab=income&focus=<key>": a line shown from where it comes from.
+  const askedMonth = isMonth(router.query.month) ? router.query.month : null;
+  const askedTab = isTab(router.query.tab) ? router.query.tab : null;
+  const focus = typeof router.query.focus === "string" ? router.query.focus : null;
   const [picked, setPicked] = useState<string | null>(null);
-  const month = opened ? monthKey(opened.at) : (picked ?? current);
-  const [chosenTab, setTab] = useState<Tab>("month");
-  const tab = opened ? "month" : chosenTab;
+  const month = opened ? monthKey(opened.at) : (picked ?? askedMonth ?? current);
+  const [chosenTab, setTab] = useState<Tab | null>(null);
+  const tab: Tab = opened ? "month" : (chosenTab ?? askedTab ?? "month");
   // "?join=" (an invitation) or "?view=household" opens the household's side.
   const [chosenView, setView] = useState<View | null>(null);
   const view: View = opened ? "personal" : (chosenView ?? (joinCode || router.query.view === "household" ? "household" : "personal"));
@@ -129,13 +155,14 @@ function Expenses({ canRemind, joinCode }: { canRemind: boolean; joinCode?: stri
     const items = monthExpenses(records, sources, month);
     const totals = monthTotals(items);
     const budget = records.find((record): record is Budget => record.kind === "budget" && record.id === BUDGET_ID);
+    const incomes = monthIncomes(records, month, sources);
     return {
       items,
-      totals,
-      incomes: monthIncomes(records, month),
+      incomes,
+      balance: monthBalance(items, incomes),
       previousTotal: monthTotals(monthExpenses(records, sources, shiftMonth(month, -1))).total,
+      budgetRecord: budget,
       budget: budgetLines(budget, totals),
-      budgetVersion: budget?.updatedAt ?? 0,
     };
   }, [records, sources, month]);
   const pickView = (value: View) => {
@@ -152,7 +179,9 @@ function Expenses({ canRemind, joinCode }: { canRemind: boolean; joinCode?: stri
         <p>{t("expenses.subtitle")}</p>
       </motion.header>
 
-      <motion.div variants={rise}>
+      <Welcome />
+
+      <motion.div variants={rise} className={styles.viewSwitch}>
         <SegmentedControl
           ariaLabel={t("expenses.views.label")}
           value={view}
@@ -162,6 +191,7 @@ function Expenses({ canRemind, joinCode }: { canRemind: boolean; joinCode?: stri
             { value: "household", label: t("expenses.views.household"), icon: <Users /> },
           ]}
         />
+        <p className={styles.hint}>{t("expenses.views.hint")}</p>
       </motion.div>
 
       <MonthPicker month={month} onPick={pickMonth} />
@@ -173,6 +203,10 @@ function Expenses({ canRemind, joinCode }: { canRemind: boolean; joinCode?: stri
       ) : (
         <>
           <motion.div variants={rise}>
+            <MonthCard balance={figures.balance} budget={figures.budget} records={records} />
+          </motion.div>
+
+          <motion.div variants={rise} className={styles.tabs}>
             <SegmentedControl
               ariaLabel={t("expenses.title")}
               size="lg"
@@ -186,27 +220,116 @@ function Expenses({ canRemind, joinCode }: { canRemind: boolean; joinCode?: stri
                 { value: "budget", label: t("expenses.tabs.budget"), icon: <PiggyBank /> },
               ]}
             />
+            <p className={styles.tabHint} data-testid="expenses-tab-hint">
+              {t(`expenses.tabHints.${tab}`)}
+            </p>
           </motion.div>
 
           <motion.div variants={rise}>
             {tab === "month" ? (
               <div className={styles.panel}>
-                <MonthPanel key={`${month}:${opened?.id ?? ""}`} share={share} month={month} initialEditing={opened} onEdited={closeOpened} records={records} items={figures.items} incomes={figures.incomes} budget={figures.budget} previousTotal={figures.previousTotal} />
+                <MonthPanel
+                  key={`${month}:${opened?.id ?? ""}:${focus ?? ""}`}
+                  share={share}
+                  month={month}
+                  initialEditing={opened}
+                  onEdited={closeOpened}
+                  records={records}
+                  items={figures.items}
+                  incomes={figures.incomes}
+                  budget={figures.budgetRecord}
+                  budgetLines={figures.budget}
+                  previousTotal={figures.previousTotal}
+                  focus={focus}
+                />
                 {/* Keyed by month: a review asked for another month never shows under this one. */}
                 <MonthReview key={month} month={month} records={records} sources={sources} />
               </div>
             ) : tab === "income" ? (
-              <IncomePanel key={month} month={month} incomes={figures.incomes} spent={figures.totals.total} defaultAt={defaultAt} />
+              <IncomePanel key={`${month}:${focus ?? ""}`} month={month} incomes={figures.incomes} defaultAt={defaultAt} focus={focus} />
             ) : tab === "recurring" ? (
               <RecurringPanel month={month} records={records} canRemind={canRemind} />
             ) : tab === "history" ? (
               <HistoryPanel month={month} records={records} sources={sources} />
             ) : (
-              <BudgetPanel key={figures.budgetVersion} records={records} />
+              <BudgetPanel records={records} lines={figures.budget} />
             )}
           </motion.div>
         </>
       )}
     </motion.div>
+  );
+}
+
+/** "Il te reste…": the month at a glance, above every tab, with the budget and its warnings. */
+function MonthCard({ balance, budget, records }: { balance: ReturnType<typeof monthBalance>; budget: BudgetLine[]; records: ExpenseRecord[] }) {
+  const { t, locale } = useTranslation();
+  const { categoryName } = useExpenseLabels(records);
+  const money = (value: number) => formatAriary(value, locale);
+  const cap = overallCap(budget);
+  const ratio = cap ? balance.spent / cap : 0;
+  const level = cap ? (balance.spent > cap ? "over" : ratio >= 0.8 ? "warning" : "ok") : undefined;
+  const worst = budget.find((line) => line.level === "over") ?? budget.find((line) => line.level === "warning");
+  const scopeName = (scope: string) => (scope === "total" ? t("expenses.budget.overall") : categoryName(scope));
+
+  return (
+    <section className={styles.monthCard} aria-label={t("expenses.card.label")}>
+      <small>{t("expenses.card.left")}</small>
+      <strong className={styles.left} data-tone={balance.left < 0 ? "bad" : undefined} data-testid="expenses-left">
+        {money(balance.left)}
+      </strong>
+      <p className={styles.flows}>
+        <span>
+          {t("expenses.card.in")} <strong data-testid="expenses-in">{money(balance.earned)}</strong>
+        </span>
+        <span aria-hidden>·</span>
+        <span>
+          {t("expenses.card.out")} <strong data-testid="expenses-total">{money(balance.spent)}</strong>
+        </span>
+      </p>
+      {cap !== null && (
+        <div className={styles.cardBudget}>
+          <span className={styles.track} data-level={level}>
+            <span style={{ width: `${barPercent(ratio)}%` }} />
+          </span>
+          <small>{t("expenses.card.ofBudget", { percent: Math.round(ratio * 100), cap: money(cap) })}</small>
+        </div>
+      )}
+      {worst && (
+        <p className={styles.banner} data-level={worst.level} role="status">
+          <AlertTriangle size={18} />
+          <span>
+            {t(worst.level === "over" ? "expenses.budget.overBanner" : "expenses.budget.warningBanner", {
+              scope: scopeName(worst.scope),
+              percent: Math.round(worst.ratio * 100),
+              amount: money(Math.abs(worst.cap - worst.spent)),
+            })}
+          </span>
+        </p>
+      )}
+    </section>
+  );
+}
+
+/** The first visit: what to do, in 3 steps, until closed (remembered on the device, read once mounted). */
+function Welcome() {
+  const { t } = useTranslation();
+  const [closed, close] = useDismissed("expenses.welcome");
+  if (closed) return null;
+  return (
+    <section className={styles.welcome} aria-labelledby="expenses-welcome">
+      <div className={styles.welcomeHead}>
+        <h2 id="expenses-welcome">{t("expenses.welcome.title")}</h2>
+        <button type="button" className={styles.close} onClick={close} aria-label={t("expenses.close")}>
+          <X size={18} />
+        </button>
+      </div>
+      <p>{t("expenses.welcome.auto")}</p>
+      <ol>
+        <li>{t("expenses.welcome.step1")}</li>
+        <li>{t("expenses.welcome.step2")}</li>
+        <li>{t("expenses.welcome.step3")}</li>
+      </ol>
+    </section>
   );
 }
