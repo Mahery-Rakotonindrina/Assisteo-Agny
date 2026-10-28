@@ -13,7 +13,6 @@ import { applyCors, clientIp, sendError } from "@/lib/server/http";
 import { rateLimit } from "@/lib/server/rateLimit";
 import { reportError } from "@/lib/server/reportError";
 import { track } from "@/lib/server/stats";
-import { hasFeature } from "@/lib/plans";
 import { limitsFor, resolvePlan } from "@/lib/server/plan";
 import { countServerCall, releaseAsk, releasePlanAsk, releaseServerCall, reserveAsk, reservePlanAsk, reserveServerCall } from "@/lib/server/trialStore";
 
@@ -51,8 +50,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   const override = readOverride(req.headers);
   if (override === "invalid") return sendError(res, 400, "invalid_request", "Invalid AI provider, model or key.");
 
-  const { account, current } = await resolvePlan(req);
-  if (override && !hasFeature(current.plan, "ownKey")) {
+  const { account, current, features } = await resolvePlan(req);
+  if (override && !features.has("ownKey")) {
     return sendError(res, 403, "plan_required", "Your own AI key needs a subscription.");
   }
 
@@ -63,7 +62,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
   const statsDevice = InstallIdSchema.safeParse(req.headers[installIdHeader]).data ?? null;
   // The other pages of a multi-page scan go along while the plan allows several pages.
-  const pages = hasFeature(current.plan, "multiPage") ? parsed.data.pages : undefined;
+  const pages = features.has("multiPage") ? parsed.data.pages : undefined;
 
   // On the server's key, a subscriber's questions draw on the plan's daily allowance...
   let planUser: string | null = null;

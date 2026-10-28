@@ -4,6 +4,7 @@ import { Check, ChevronDown, Cpu, ExternalLink, Eye, EyeOff, Globe, KeyRound, Li
 import { Button } from "@/components/Button";
 import { PlanBadge } from "@/components/PlanBadge";
 import { useToast } from "@/components/Toast";
+import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTrial } from "@/hooks/useTrial";
 import { findPreset, providerPresets, type ProviderPreset } from "@/lib/ai/presets";
@@ -37,6 +38,7 @@ export function AiKeySettings({ requestOpen = false }: { requestOpen?: boolean }
   const { t } = useTranslation();
   const toast = useToast();
   const trial = useTrial();
+  const ownKeyFrom = usePlan().planFor("ownKey") ?? "lite";
   const [saved, setSaved] = useState<SavedKey | null>(null);
   const [chosen, setChosen] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
@@ -207,10 +209,10 @@ export function AiKeySettings({ requestOpen = false }: { requestOpen?: boolean }
           >
             {!trial.canUseOwnKey ? (
               <div className={styles.advancedInner}>
-                <div className={styles.locked} data-plan="lite">
-                  <PlanBadge plan="lite" />
+                <div className={styles.locked} data-plan={ownKeyFrom}>
+                  <PlanBadge plan={ownKeyFrom} />
                   <p>
-                    <Lock size={14} /> {saved ? t("settings.aiLockedSaved") : t("settings.aiLocked")}
+                    <Lock size={14} /> {saved ? t("settings.aiLockedSaved") : t("settings.aiLocked", { plan: t(`plans.names.${ownKeyFrom}`) })}
                   </p>
                 </div>
                 <Button href="/plans" block icon={<Sparkles />}>

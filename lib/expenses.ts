@@ -286,6 +286,9 @@ const live = <T extends { deletedAt?: number }>(records: T[]) => records.filter(
 export const byKind = <K extends ExpenseRecord["kind"]>(records: ExpenseRecord[], kind: K) =>
   live(records).filter((record): record is Extract<ExpenseRecord, { kind: K }> => record.kind === kind);
 
+/** One's own expenses or incomes are kept (not deleted): the read-only history is worth a link. */
+export const hasOwnExpenses = (records: ExpenseRecord[]) => byKind(records, "expense").length > 0 || byKind(records, "income").length > 0;
+
 /** The keys a manual expense or income stands for: those computed lines are not counted twice. */
 export function linkedKeys(records: ExpenseRecord[]) {
   const keys = new Set<string>();

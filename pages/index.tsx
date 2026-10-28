@@ -22,6 +22,7 @@ import { useToast } from "@/components/Toast";
 import { PLANS_HREF, TrialOver, TrialPill } from "@/components/Trial";
 import { useAiStatus } from "@/hooks/useAiStatus";
 import { useHistory } from "@/hooks/useHistory";
+import { useKeptExpenses } from "@/hooks/useExpenses";
 import { useInHousehold } from "@/hooks/useHousehold";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import { useNow } from "@/hooks/useNow";
@@ -68,8 +69,9 @@ export default function ScanPage() {
   const [picked, setPicked] = useState(false);
   const picking = router.isReady && router.query.pick === "1" && !picked;
   const { state, start, startWithFile, startWithSrc, retry, reset, analyzeAnyway, canRetry, pages } = useScan(mode);
-  const { has } = usePlan();
+  const { has, planFor } = usePlan();
   const inHousehold = useInHousehold();
+  const keptExpenses = useKeptExpenses(!has("expenses"));
   const multiPage = has("multiPage");
   const toast = useToast();
   const { entries, isLoading: historyLoading } = useHistory();
@@ -97,6 +99,7 @@ export default function ScanPage() {
   // Photos shared from another app (Android): one is analysed right away;
   // several become the pages of one document (Premium), else the first one.
   const beginPages = pages.begin;
+  const multiPageFrom = planFor("multiPage") ?? "premium";
   useEffect(() => {
     const take = () => {
       if (state.phase !== "idle") return;
@@ -106,12 +109,12 @@ export default function ScanPage() {
         beginPages(images);
         return;
       }
-      if (images.length > 1) toast(t("share.onlyFirst"));
+      if (images.length > 1) toast(t("share.onlyFirst", { plan: t(`plans.names.${multiPageFrom}`) }));
       void startWithSrc(images[0]);
     };
     take();
     return incomingShare.subscribe(take);
-  }, [beginPages, multiPage, startWithSrc, state.phase, t, toast]);
+  }, [beginPages, multiPage, multiPageFrom, startWithSrc, state.phase, t, toast]);
 
   // Pasting an image anywhere on the screen starts an analysis.
   useEffect(() => {
@@ -274,7 +277,7 @@ export default function ScanPage() {
             )}
 
             {/* "Mes dépenses" has no other way in on a phone: its shortcut shows even before the first scan. */}
-            {(recent.length > 0 || has("expenses") || inHousehold) && (
+            {(recent.length > 0 || has("expenses") || inHousehold || keptExpenses) && (
               <motion.div variants={rise}>
                 <Shortcuts entries={entries} />
               </motion.div>

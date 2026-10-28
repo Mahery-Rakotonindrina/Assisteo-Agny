@@ -22,7 +22,7 @@ export function DeepAnalysis({ entry }: { entry: HistoryEntry }) {
   const { t, locale } = useTranslation();
   const router = useRouter();
   const toast = useToast();
-  const { plan, has } = usePlan();
+  const { plan, has, planFor } = usePlan();
   const [running, setRunning] = useState(false);
 
   if (entry.meta.deep) {
@@ -74,7 +74,7 @@ export function DeepAnalysis({ entry }: { entry: HistoryEntry }) {
           : code === "plan_limit"
             ? t("errors.plan_limit")
             : code === "plan_required"
-              ? t("deep.premium")
+              ? t("deep.premium", { plan: t(`plans.names.${planFor("deepAnalysis") ?? "premium"}`) })
               : code === "unavailable"
                 ? t("deep.unavailable")
                 : t("deep.failed"),
@@ -88,7 +88,7 @@ export function DeepAnalysis({ entry }: { entry: HistoryEntry }) {
   const hint = running
     ? t("deep.wait")
     : !allowed
-      ? t("deep.hintLocked")
+      ? t("deep.hintLocked", { plan: t(`plans.names.${planFor("deepAnalysis") ?? "premium"}`) })
       : !photo
         ? t("deep.noPhoto")
         : left === 0

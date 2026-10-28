@@ -6,7 +6,7 @@ import { prepare } from "./helpers";
 async function pretendPlan(page: import("@playwright/test").Page, plan: string) {
   await page.route("**/api/plan", async (route) => {
     const response = await route.fetch();
-    await route.fulfill({ response, json: { ...(await response.json()), plan } });
+    await route.fulfill({ response, json: { ...(await response.json()), plan, features: undefined } });
   });
 }
 

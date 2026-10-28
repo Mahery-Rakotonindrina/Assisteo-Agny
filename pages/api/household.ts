@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { HouseholdActionSchema, householdErrorOf, householdFromState, type HouseholdResponse } from "@/lib/household";
-import { hasFeature } from "@/lib/plans";
 import { applyCors, clientIp, sendError } from "@/lib/server/http";
 import { resolvePlan } from "@/lib/server/plan";
 import { rateLimit } from "@/lib/server/rateLimit";
@@ -36,7 +35,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   if (!burst.ok) return sendError(res, 429, "rate_limited", "Too many requests, try again in a moment.");
   if (!accountsEnabled) return sendError(res, 503, "unavailable", "Accounts are not configured.");
 
-  const { account, current } = await resolvePlan(req);
+  const { account, features } = await resolvePlan(req);
   if (!account) return sendError(res, 401, "sign_in_required", "Sign in to share a budget.");
   const user = account.id;
   const state = async (): Promise<HouseholdResponse> => ({ userId: user, household: householdFromState(await call<unknown>("household_state", { p_user: user })) });
@@ -49,7 +48,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const action = parsed.data;
 
     if (action.action === "create") {
-      if (!hasFeature(current.plan, "expenses")) return sendError(res, 403, "plan_required", "Creating a household is not part of your plan.");
+      if (!features.has("expenses")) return sendError(res, 403, "plan_required", "Creating a household is not part of your plan.");
       await call("create_household", { p_user: user, p_name: action.name });
       return res.status(200).json(await state());
     }

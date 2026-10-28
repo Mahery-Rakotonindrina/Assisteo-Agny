@@ -364,7 +364,7 @@
     "aiUseOwnKeyHint": "Avancé · Gemini propose des clés gratuites",
     "aiDefaultLeftMonth": "{remaining} scans restants ce mois sur {limit}",
     "aiDefaultOverMonth": "Scans du mois épuisés : passe à l’offre supérieure, ou utilise ta clé.",
-    "aiLocked": "Utiliser ta propre clé IA, sans limite, est réservé aux abonnés (dès l’offre Lite).",
+    "aiLocked": "Utiliser ta propre clé IA, sans limite, est réservé aux abonnés (dès l’offre {plan}).",
     "aiLockedSaved": "Ta clé est enregistrée, mais elle ne sert qu’avec un abonnement : en attendant, c’est l’IA de l’app qui analyse.",
     "aiLockedHint": "Réservé aux abonnés",
     "androidApp": "Application Android",
@@ -594,7 +594,8 @@
       "instructionsPlaceholder": "Ex. Envoie le montant par MVola au 034 00 000 00 (Nom Prénom), avec ton e-mail en motif.",
       "contact": "Contact pour envoyer la référence",
       "contactHint": "Un numéro de téléphone, ou un lien (WhatsApp : https://wa.me/261…, Messenger…).",
-      "monthsFree": "{count} mois offerts sur l’année"
+      "monthsFree": "{count} mois offerts sur l’année",
+      "deepNeedsLimit": "Cette offre a l’analyse approfondie : mets un nombre par mois (0 voudrait dire sans limite, avec l’IA la plus chère)."
     },
     "adminAccount": "Ton compte est administrateur : ouvre l’espace admin avec ton compte, ou avec le jeton.",
     "ai": {
@@ -713,7 +714,9 @@
         "promo_disable": "Code promo désactivé",
         "promo_delete": "Code promo supprimé",
         "promo_discount_used": "Réduction utilisée",
-        "referral_reward": "Mois de parrainage offert"
+        "referral_reward": "Mois de parrainage offert",
+        "feature_plans": "Fonctionnalités d’une offre modifiées",
+        "feature_status": "État d’une fonctionnalité modifié"
       }
     },
     "export": {
@@ -784,6 +787,62 @@
       "delete": "Supprimer",
       "confirmDelete": "Confirmer la suppression",
       "deleted": "Code supprimé"
+    },
+    "features": {
+      "title": "Fonctionnalités par offre",
+      "subtitle": "Coche ce que chaque offre comprend. Les apps suivent sans nouvelle version, sauf l’APK déjà installé (voir plus bas). Les réglages de départ sont ceux d’aujourd’hui.",
+      "apkHint": "L’APK Android déjà installé garde l’ancienne échelle pour ses menus et ses étiquettes jusqu’à sa prochaine version. Le serveur, lui, applique tout de suite tes réglages.",
+      "feature": "Fonctionnalité",
+      "status": "État",
+      "modes": {
+        "on": "Actif",
+        "test": "En test",
+        "off": "Coupé"
+      },
+      "needs": "A besoin de : {list}",
+      "testers": "E-mails des testeurs (un par ligne)",
+      "testersHint": "En test, seuls ces comptes et les comptes Admin l’ont, quelle que soit leur offre.",
+      "cut": "Couper pour tout le monde",
+      "cutConfirm": "Confirmer : couper maintenant",
+      "restore": "Rallumer",
+      "cutDone": "« {name} » est coupée pour tout le monde.",
+      "restored": "« {name} » est rallumée.",
+      "untickAsk": "Dans {plan}, {list} a besoin de « {name} ». Décocher aussi ?",
+      "tickAsk": "Dans {plan}, « {name} » a besoin de {list}. Cocher aussi ?",
+      "yes": "Oui, ensemble",
+      "cancel": "Annuler",
+      "review": "Voir les changements",
+      "summary": "Avant d’enregistrer",
+      "subscribers": "{count} abonné(s) actif(s) concerné(s)",
+      "subscribersUnknown": "abonnés concernés : inconnu (abonnements illisibles)",
+      "freeAccounts": "tous les comptes sans offre",
+      "everyone": "tout le monde",
+      "testersCount": "{count} testeur(s)",
+      "confirm": "Confirmer et enregistrer",
+      "invalidTesters": "Cette adresse de testeur n’est pas valide : {email}",
+      "names": {
+        "reminders": "Rappels",
+        "parcelCosts": "Coûts des colis",
+        "pdfExport": "Export PDF",
+        "ownKey": "Clé IA personnelle",
+        "deepAnalysis": "Analyse approfondie",
+        "multiPage": "Plusieurs pages",
+        "garage": "Mon garage",
+        "reseller": "Outils revendeur",
+        "expenses": "Mes dépenses"
+      },
+      "descriptions": {
+        "reminders": "Rappels sur les scans (répétition, report), l’assurance et l’arrivée des colis.",
+        "parcelCosts": "Prix et frais en ariary sur chaque colis.",
+        "pdfExport": "PDF propre d’un document, ou de plusieurs scans de l’historique.",
+        "ownKey": "Scanner avec sa propre clé IA, sans limite.",
+        "deepAnalysis": "Refaire une analyse avec l’IA la plus précise (plus chère), comptée au quota du mois.",
+        "multiPage": "Un document en plusieurs pages, analysé d’un coup.",
+        "garage": "Véhicules, entretien, rappels de vidange et d’assurance, pleins et dépenses.",
+        "reseller": "Un client par colis, ce qu’il doit, totaux par client, export et relevés.",
+        "expenses": "Le budget du mois, seul ou en foyer, et le bilan du mois par l’IA."
+      },
+      "deepNeedsLimit": "Impossible d’enregistrer : {list} n’a pas de quota d’analyses approfondies (0 = sans limite). Mets d’abord un nombre par mois plus haut, dans les prix et quotas des offres. Gratuit n’a pas de quota : pas d’analyse approfondie."
     }
   },
   "account": {
@@ -872,8 +931,8 @@
     "calendarGoogle": "Google Agenda",
     "calendarOther": "Autre agenda (.ics)",
     "calendarDownloaded": "Fichier d’agenda téléchargé : ouvre-le pour l’ajouter.",
-    "lockedInsurance": "Le rappel automatique avant l’échéance de l’assurance est inclus à partir de Lite.",
-    "lockedParcels": "Les notifications d’arrivée des colis sont incluses à partir de Lite."
+    "lockedInsurance": "Le rappel automatique avant l’échéance de l’assurance est inclus à partir de {plan}.",
+    "lockedParcels": "Les notifications d’arrivée des colis sont incluses à partir de {plan}."
   },
   "chat": {
     "title": "Une question sur ce scan ?",
@@ -1110,10 +1169,10 @@
       "addItem": "Ajouter un article",
       "receivedAt": "Date de récupération",
       "receivedHint": "Mise à la date du jour quand tu le marques comme reçu. Corrige-la si tu l’as marqué en retard ; vide-la pour le remettre en cours.",
-      "clientLocked": "Avec l’offre Pro : note pour qui est chaque colis."
+      "clientLocked": "Avec l’offre {plan} : note pour qui est chaque colis."
     },
     "receivedOn": "Reçu le {date}",
-    "costsLocked": "Les coûts en ariary (prix et frais) sont inclus dès l’offre Lite.",
+    "costsLocked": "Les coûts en ariary (prix et frais) sont inclus dès l’offre {plan}.",
     "clients": {
       "view": "Affichage",
       "parcelsTab": "Colis",
@@ -1210,12 +1269,13 @@
       "allPaid": "Tout est payé",
       "profit": "Bénéfice : {amount}",
       "loss": "Perte : {amount}",
-      "locked": "Prix de vente, paiement du client et bénéfice : avec l’offre Pro.",
+      "locked": "Prix de vente, paiement du client et bénéfice : avec l’offre {plan}.",
       "dueShort": "Reste {amount}"
     },
     "expected": "Livraison prévue : {date}",
     "expectedToday": "Arrive aujourd'hui",
-    "expectedLate": "Prévue le {date} : dépassée"
+    "expectedLate": "Prévue le {date} : dépassée",
+    "costsReadOnly": "Coût total gardé : {amount}. Ton offre ne comprend plus les coûts des colis : tu ne peux plus les modifier."
   },
   "plans": {
     "names": {
@@ -1267,7 +1327,8 @@
       "multiPage": "Scan de plusieurs pages (contrat, longue facture)",
       "pdfExport": "Export PDF des documents et de l’historique",
       "garage": "Mon garage : entretien, rappels d’assurance et de vidange, pleins et dépenses",
-      "reminders": "Rappels : sur tes scans (avec répétition et report), assurance, arrivée des colis"
+      "reminders": "Rappels : sur tes scans (avec répétition et report), assurance, arrivée des colis",
+      "expenses": "Mes dépenses : le budget du mois, seul ou en foyer"
     },
     "how": "Comment s’abonner",
     "step1": "Connecte-toi",
@@ -1349,7 +1410,8 @@
       "whatsapp": "WhatsApp",
       "share": "Partager",
       "copy": "Copier le code"
-    }
+    },
+    "unavailable": "Cette fonction n’est pas disponible pour le moment."
   },
   "deep": {
     "button": "Analyse approfondie",
@@ -1357,10 +1419,10 @@
     "wait": "Avec l’IA la plus précise : jusqu’à une minute.",
     "hint": "Avec l’IA la plus précise · {left} restante(s) ce mois",
     "hintUnlimited": "Avec l’IA la plus précise, pour les cas difficiles",
-    "hintLocked": "Avec l’offre Premium : une IA plus précise pour les cas difficiles.",
+    "hintLocked": "Avec l’offre {plan} : une IA plus précise pour les cas difficiles.",
     "noPhoto": "La photo de ce scan n’est plus gardée en grand : refais une photo pour l’analyser en profondeur.",
     "limit": "Analyses approfondies du mois épuisées.",
-    "premium": "L’analyse approfondie est réservée à l’offre Premium.",
+    "premium": "L’analyse approfondie est réservée à l’offre {plan}.",
     "failed": "L’analyse approfondie n’a pas abouti. Réessaie dans un moment.",
     "finished": "Analyse approfondie terminée",
     "done": "Analyse approfondie",
@@ -1481,7 +1543,7 @@
     "ok": "D’accord"
   },
   "share": {
-    "onlyFirst": "Plusieurs photos reçues : seule la première est analysée. Le scan de plusieurs pages est inclus à partir de Premium."
+    "onlyFirst": "Plusieurs photos reçues : seule la première est analysée. Le scan de plusieurs pages est inclus à partir de {plan}."
   },
   "text": {
     "title": "Texte du document",
@@ -1787,9 +1849,9 @@
   "garage": {
     "title": "Mon garage",
     "subtitle": "Tes véhicules, leur entretien, leurs pleins et leurs dépenses.",
-    "locked": "Mon garage est inclus à partir de Premium.",
-    "lockedScan": "Ajouter ce véhicule à ton garage est inclus à partir de Premium.",
-    "readOnly": "Ton offre ne comprend plus Mon garage : tes véhicules restent consultables, mais tu ne peux plus rien modifier et leurs rappels sont en pause. Repasse à Premium pour tout retrouver.",
+    "locked": "Mon garage est inclus à partir de {plan}.",
+    "lockedScan": "Ajouter ce véhicule à ton garage est inclus à partir de {plan}.",
+    "readOnly": "Ton offre ne comprend plus Mon garage : tes véhicules restent consultables, mais tu ne peux plus rien modifier et leurs rappels sont en pause. Repasse à {plan} pour tout retrouver.",
     "pitch": {
       "sheet": "Une fiche par véhicule et un carnet d’entretien (vidange, pneus, freins…)",
       "reminders": "Des rappels avant la fin de l’assurance et de la visite technique, et la vidange estimée au kilométrage",
@@ -2194,6 +2256,7 @@
         "network": "Pas de connexion. Réessaie quand tu seras en ligne.",
         "failed": "Ça n’a pas marché. Réessaie."
       }
-    }
+    },
+    "keptReadOnly": "Ton offre ne comprend plus Mes dépenses : tes dépenses sont gardées et restent consultables ici, et leurs rappels sont en pause. Tout revient si la fonction revient dans ton offre."
   }
 }

@@ -5,6 +5,7 @@ import { BookOpen, Car, Download, FolderLock, History, ListChecks, Package, Scan
 import { Logo } from "@/components/Logo";
 import { useAiStatus } from "@/hooks/useAiStatus";
 import { useAndroidDownload } from "@/hooks/useAndroidDownload";
+import { useKeptExpenses } from "@/hooks/useExpenses";
 import { useInHousehold } from "@/hooks/useHousehold";
 import { useInstallPrompt } from "@/hooks/useInstallPrompt";
 import { usePlan } from "@/hooks/usePlan";
@@ -35,8 +36,10 @@ export function Sidebar() {
   const { pathname } = useRouter();
   const { isAdmin, has } = usePlan();
   const inHousehold = useInHousehold();
+  // Without the feature, one's kept expenses stay reachable (read only).
+  const keptExpenses = useKeptExpenses(!has("expenses"));
   // The plan is null on the server and at hydration: the extra links only appear once it is read.
-  const shown = [...links.slice(0, 6), ...(has("expenses") || inHousehold ? [expensesLink] : []), ...links.slice(6), ...(isAdmin ? [adminLink] : [])];
+  const shown = [...links.slice(0, 6), ...(has("expenses") || inHousehold || keptExpenses ? [expensesLink] : []), ...links.slice(6), ...(isAdmin ? [adminLink] : [])];
   const android = useAndroidDownload();
   const { t } = useTranslation();
   const aiStatus = useAiStatus();

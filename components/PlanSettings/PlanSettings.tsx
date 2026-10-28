@@ -37,7 +37,7 @@ export function PlanSettings() {
       )}
 
       <ul className={styles.perks} aria-label={t("plans.includes")}>
-        {planPerks(id, plan.limits, t, locale).map((perk) => (
+        {planPerks(id, plan.limits, t, locale, has).map((perk) => (
           <li key={perk}>
             <Check size={14} /> {perk}
           </li>

@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { activeProvider } from "@/lib/ai/provider";
 import { InstallIdSchema, installIdHeader } from "@/lib/ai/schema";
 import { referralCodeFor, trialEligible } from "@/lib/offers";
-import { soldPlans, type PlanResponse } from "@/lib/plans";
+import { featureFromConfig, planFeatureList, planFeatures, soldPlans, type PlanResponse } from "@/lib/plans";
 import { applyCors, sendError } from "@/lib/server/http";
 import { limitsFor, resolvePlan } from "@/lib/server/plan";
 import { registerReferralCode, trialClaimed } from "@/lib/server/offerStore";
@@ -18,7 +18,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   if (req.method !== "GET") return sendError(res, 405, "method_not_allowed", "Use GET.");
 
   const installId = InstallIdSchema.safeParse(req.headers[installIdHeader]).data ?? null;
-  const [{ account, current }, config] = await Promise.all([resolvePlan(req), getPlansConfig()]);
+  const config = await getPlansConfig();
+  const { account, current, features } = await resolvePlan(req, config);
   const limits = await limitsFor(current.plan, config);
 
   let usage: PlanResponse["usage"];
@@ -38,8 +39,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     endsAt: current.endsAt,
     limits,
     usage,
-    offers: soldPlans.map((id) => ({ id, ...config.offers[id] })),
+    offers: soldPlans.map((id) => ({ id, ...config.offers[id], features: planFeatureList(id, config) })),
     payment: config.payment,
+    features: planFeatures.filter((feature) => features.has(feature)),
+    featureFrom: featureFromConfig(config),
     ...offers,
   } satisfies PlanResponse);
 }

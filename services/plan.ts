@@ -1,4 +1,4 @@
-import { hasFeature, type PlanResponse } from "@/lib/plans";
+import { planAllows, type PlanFeature, type PlanResponse } from "@/lib/plans";
 import { aiKeyStore } from "./aiKeyStore";
 import { httpClient } from "./httpClient";
 import { installIdHeaders } from "./trial";
@@ -36,6 +36,8 @@ function set(next: PlanResponse) {
 export const planStore = {
   get: () => state,
   isFresh: () => fresh,
+  /** Outside React: whether the known plan allows a feature (the server's settings, else the built-in ladder). */
+  has: (feature: PlanFeature) => planAllows(state, feature),
 
   subscribe(listener: () => void) {
     listeners.add(listener);
@@ -68,5 +70,5 @@ export const planStore = {
 /** The user's own AI key, when their plan allows one (a subscription); else the app's AI is used. */
 export async function usableAiKey() {
   const key = await aiKeyStore.get();
-  return key && hasFeature(state?.plan ?? "free", "ownKey") ? key : null;
+  return key && planAllows(state, "ownKey") ? key : null;
 }

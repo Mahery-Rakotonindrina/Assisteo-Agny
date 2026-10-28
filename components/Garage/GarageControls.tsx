@@ -9,7 +9,6 @@ import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useVehicles } from "@/hooks/useVehicles";
 import { matchVehicle } from "@/lib/garage";
-import { planFor } from "@/lib/plans";
 import { haptics } from "@/services/device";
 import { vehicleStore } from "@/services/vehicleStore";
 import type { HistoryEntry } from "@/types/history";
@@ -24,14 +23,14 @@ export function GarageControls({ entry, bare = false }: { entry: HistoryEntry; b
   const { t } = useTranslation();
   const toast = useToast();
   const router = useRouter();
-  const { has } = usePlan();
+  const { has, planFor } = usePlan();
   const { vehicles } = useVehicles();
   const [busy, setBusy] = useState(false);
 
   if (!has("garage")) {
     return (
       <div className={styles.controls} data-bare={bare || undefined}>
-        <PlanLock plan={planFor("garage")} text={t("garage.lockedScan")} />
+        <PlanLock plan={planFor("garage")} text={t("garage.lockedScan", { plan: t(`plans.names.${planFor("garage") ?? "premium"}`) })} />
       </div>
     );
   }

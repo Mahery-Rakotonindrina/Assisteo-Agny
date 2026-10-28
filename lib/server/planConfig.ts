@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { defaultYearPrice } from "@/lib/offers";
-import { defaultPlansConfig, soldPlans, type PlanOffer, type PlansConfig } from "@/lib/plans";
+import { defaultPlansConfig, featureModes, planFeatures, planIds, soldPlans, withFeatureDefaults, type FeatureSettings, type PlanOffer, type PlansConfig } from "@/lib/plans";
 import { redis } from "./redis";
 
 // Prices, limits and payment instructions of the plans, editable from /admin.
@@ -14,6 +14,22 @@ const Offer = z.object({
   deepPerMonth: z.number().int().min(0).max(10_000),
 });
 
+const Feature = z.enum(planFeatures);
+/** At most this many testers per feature. */
+export const MAX_TESTERS = 200;
+
+const Status = z.object({
+  mode: z.enum(featureModes),
+  testers: z.array(z.string().trim().toLowerCase().max(254).pipe(z.email())).max(MAX_TESTERS),
+});
+
+/** The features of each plan and the state of each feature (Admin → Offers). */
+export const FeatureSettingsSchema = z.object({
+  features: z.object(Object.fromEntries(planIds.map((plan) => [plan, z.array(Feature).max(planFeatures.length)])) as Record<(typeof planIds)[number], z.ZodArray<typeof Feature>>),
+  featureStatus: z.object(Object.fromEntries(planFeatures.map((feature) => [feature, Status])) as Record<(typeof planFeatures)[number], typeof Status>),
+});
+
+/** Prices, limits and payment; the features are saved apart (FeatureSettingsSchema). */
 export const PlansConfigSchema = z.object({
   offers: z.object(Object.fromEntries(soldPlans.map((plan) => [plan, Offer])) as Record<(typeof soldPlans)[number], typeof Offer>),
   freeParcels: z.number().int().min(0).max(10_000),
@@ -41,10 +57,20 @@ export async function getPlansConfig(): Promise<PlansConfig> {
   return {
     ...defaultPlansConfig,
     ...stored,
+    // Saved before the features could be set, or before a feature existed: the built-in ladder.
+    ...withFeatureDefaults(stored),
     // Per plan, so a setting added later gets its default.
     offers: Object.fromEntries(soldPlans.map((plan) => [plan, mergeOffer(plan, stored?.offers?.[plan])])) as PlansConfig["offers"],
     payment: { ...defaultPlansConfig.payment, ...stored?.payment },
   };
+}
+
+/** Replaces the features of each plan and their state, the rest kept. */
+export async function setFeatureSettings(settings: FeatureSettings) {
+  // Through the defaults: known features only, each once.
+  const config: PlansConfig = { ...(await getPlansConfig()), ...withFeatureDefaults(settings) };
+  await setPlansConfig(config);
+  return config;
 }
 
 export async function setPlansConfig(config: PlansConfig) {

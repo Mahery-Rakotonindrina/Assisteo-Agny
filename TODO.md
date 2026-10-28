@@ -160,18 +160,18 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Liste de tous les comptes, pas seulement les abonnés — carte « Comptes » : inscrits, nouveaux du mois, offre de chacun, date d’inscription et de dernière connexion, recherche, filtres Abonnés / Sans offre / Admins
 - [x] Export comptable des paiements (Excel) — dans « Abonnés » : ce mois, mois dernier, cette année ou tout ; 3 feuilles : paiements, totaux par mois et par offre, totaux par moyen de paiement
 - [x] Plusieurs administrateurs avec leur propre accès, journal des actions — l’offre Admin donne l’accès avec son propre compte, retiré dès que l’offre s’arrête ; réservé au propriétaire (jeton) : nommer ou retirer un admin, double authentification, journal (500 dernières actions : qui, quoi, quand)
-- [ ] Tableau des fonctionnalités : toutes les fonctions de l'app, avec à côté les offres qui les activent (Gratuit, Lite, Premium, Pro, Admin)
-- [ ] Fonctionnalités réglables par offre : dans « Offres », cocher ou décocher chaque fonctionnalité pour chaque offre ; les réglages actuels sont proposés par défaut
+- [x] Tableau des fonctionnalités : toutes les fonctions de l'app, avec à côté les offres qui les activent (Gratuit, Lite, Premium, Pro, Admin) — Admin → « Fonctionnalités par offre »
+- [x] Fonctionnalités réglables par offre : dans « Offres », cocher ou décocher chaque fonctionnalité pour chaque offre ; les réglages actuels sont proposés par défaut
 - [ ] Fonctionnalités réglables par abonné : à l'ajout ou au renouvellement d'un abonné, les fonctionnalités de son offre sont cochées par défaut, et on peut en ajouter ou en retirer pour lui seul
-- [ ] L'app de chaque utilisateur suit ces réglages (menus, boutons, étiquettes « à partir de… », refus côté serveur), tout de suite et sans nouvel APK
-- [ ] Chaque changement de fonctionnalités noté dans le journal des actions admin
+- [x] L'app de chaque utilisateur suit ces réglages (menus, boutons, étiquettes « à partir de… », refus côté serveur), tout de suite et sans nouvel APK — le serveur et le site tout de suite ; sur Android, à partir du prochain APK, puis sans nouvelle version
+- [x] Chaque changement de fonctionnalités noté dans le journal des actions admin
 - [ ] Créer une nouvelle offre depuis l'Admin (nom, couleur, prix, quotas, fonctionnalités)
-- [ ] Avant d'enregistrer un changement d'offre : nombre d'abonnés concernés, et choix « tous » ou « seulement les nouveaux abonnements et renouvellements »
-- [ ] Règle commune quand une fonctionnalité est retirée : données gardées, écran en lecture seule, rappels coupés, tout revient si elle est réactivée
-- [ ] Dépendances entre fonctionnalités (rappels du garage → rappels ; budget en famille → « Mes dépenses ») : avertissement, et les fonctions qui en dépendent sont décochées avec
-- [ ] Page « Les offres », liste des avantages et page Découvrir mises à jour automatiquement selon les réglages
-- [ ] Fonctionnalité « en test » pour une liste de comptes testeurs choisis, sans nouvelle version
-- [ ] Interrupteur d'urgence : couper une fonctionnalité pour tout le monde en un clic (IA trop chère, bug)
+- [ ] Avant d'enregistrer un changement d'offre : nombre d'abonnés concernés, et choix « tous » ou « seulement les nouveaux abonnements et renouvellements » — le résumé et le nombre d'abonnés actifs sont faits ; le choix vient avec les réglages par abonné
+- [x] Règle commune quand une fonctionnalité est retirée : données gardées, écran en lecture seule, rappels coupés, tout revient si elle est réactivée — complétée pour les coûts des colis et « Mes dépenses »
+- [x] Dépendances entre fonctionnalités (rappels du garage → rappels ; budget en famille → « Mes dépenses ») : avertissement, et les fonctions qui en dépendent sont décochées avec — outils revendeur → coûts des colis
+- [ ] Page « Les offres », liste des avantages et page Découvrir mises à jour automatiquement selon les réglages — « Les offres » et les avantages suivent ; reste la page Découvrir (texte fixe)
+- [x] Fonctionnalité « en test » pour une liste de comptes testeurs choisis, sans nouvelle version — refus serveur tout de suite ; menus sur Android dès le prochain APK
+- [x] Interrupteur d'urgence : couper une fonctionnalité pour tout le monde en un clic (IA trop chère, bug)
 - [ ] Accès temporaire à une fonctionnalité pour un abonné (ex. le garage offert 7 jours), arrêté tout seul à la date prévue
 - [ ] Quotas réglables par abonné (scans, questions, colis suivis…), pas seulement par offre
 - [ ] Fiche d'un abonné : ses fonctionnalités et leur origine (son offre, ajout à la main, accès temporaire jusqu'au…)

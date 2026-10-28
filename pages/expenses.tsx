@@ -12,7 +12,7 @@ import { useHousehold } from "@/hooks/useHousehold";
 import { useNow } from "@/hooks/useNow";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
-import { BUDGET_ID, budgetLines, monthExpenses, monthIncomes, monthKey, monthStart, monthTotals, shiftMonth, type Budget, type ManualExpense } from "@/lib/expenses";
+import { BUDGET_ID, budgetLines, hasOwnExpenses, monthExpenses, monthIncomes, monthKey, monthStart, monthTotals, shiftMonth, type Budget, type ManualExpense } from "@/lib/expenses";
 import { formatMonthYear } from "@/lib/format";
 import { rise, stagger } from "@/lib/motion";
 
@@ -49,6 +49,10 @@ function HouseholdOnly({ joinCode }: { joinCode?: string }) {
   const [picked, setPicked] = useState<string | null>(null);
   const month = picked ?? monthKey(now);
   const member = Boolean(useHousehold()?.household);
+  // Lost with the plan: one's own expenses stay on the device, shown read-only (reminders paused by their keeper).
+  const { records } = useExpenses();
+  const sources = useExpenseSources();
+  const kept = hasOwnExpenses(records);
 
   return (
     <motion.div className={styles.page} variants={stagger} initial="hidden" animate="show">
@@ -57,6 +61,12 @@ function HouseholdOnly({ joinCode }: { joinCode?: string }) {
         <p>{t("expenses.household.subtitle")}</p>
       </motion.header>
       {member && <MonthPicker month={month} onPick={setPicked} />}
+      {kept && (
+        <motion.div variants={rise}>
+          <p className={styles.hint}>{t("expenses.keptReadOnly")}</p>
+          <HistoryPanel month={month} records={records} sources={sources} />
+        </motion.div>
+      )}
       <motion.div variants={rise}>
         <HouseholdPanel month={month} records={[]} canCreate={false} canMove={false} joinCode={joinCode} />
       </motion.div>
