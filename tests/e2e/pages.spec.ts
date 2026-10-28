@@ -152,6 +152,25 @@ test("an Admin account adds an expense and sees the month's total", async ({ pag
   await expect(page.getByTestId("expenses-total")).toHaveText(/^12\s500 Ar$/);
 });
 
+test("an Admin account gets the month's review (demo)", async ({ page }) => {
+  await prepare(page);
+  await page.route("**/api/plan", async (route) => {
+    const response = await route.fetch();
+    await route.fulfill({ response, json: { ...(await response.json()), plan: "unlimited" } });
+  });
+  await page.goto("/expenses");
+  await page.getByRole("button", { name: "Ajouter une dépense" }).click();
+  await page.getByLabel("Montant", { exact: true }).fill("20000");
+  await page.getByRole("button", { name: "Enregistrer" }).click();
+  await page.getByRole("button", { name: "Bilan du mois" }).click();
+  const review = page.getByTestId("month-review");
+  await expect(review.getByText(/^Tu as dépensé 20\s000 Ar ce mois-ci\.$/)).toBeVisible({ timeout: 15_000 });
+  await expect(review.getByText(/Bilan d’exemple \(mode démo\)/)).toBeVisible();
+  // Kept on the device.
+  await page.reload();
+  await expect(page.getByTestId("month-review").getByText(/^Tu as dépensé/)).toBeVisible();
+});
+
 test("without the Admin plan, My expenses is neither in the menu nor on its page", async ({ page }) => {
   await prepare(page);
   // Once the plan is known (free), the menu is final.

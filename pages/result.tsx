@@ -26,6 +26,7 @@ import {
   PackagePlus,
   Plus,
   QrCode,
+  Receipt,
   RefreshCw,
   ScanText,
   Share2,
@@ -41,6 +42,7 @@ import { CategoryBadge } from "@/components/CategoryBadge";
 import { CodeList } from "@/components/CodeList";
 import { DocumentText } from "@/components/DocumentText";
 import { FolderPicker } from "@/components/FolderPicker";
+import { ReceiptControls } from "@/components/Expenses";
 import { GarageControls } from "@/components/Garage";
 import { PlanBadge } from "@/components/PlanBadge";
 import { PlanLock } from "@/components/PlanLock";
@@ -149,6 +151,8 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
   const forcedAt = insuranceReminderAt(analysis, now);
   // Reminders come with a paid plan (Lite and up); otherwise the button leads to the plans.
   const canRemind = usePlan().has("reminders");
+  // "Mes dépenses" stays hidden from the other plans (Admin only while tested).
+  const canAddExpense = usePlan().has("expenses");
   // The reminder has come (or the scan was opened from its notification): offer to put it off.
   const showSnooze = canRemind && forcedAt === null && Boolean(entry.reminderAt) && (router.query.reminded === "1" || canSnooze(entry, now));
   const repeatLabel = reminderActive && entry.reminderRepeat ? t(entry.reminderRepeat.every === "monthly" ? "reminders.repeatMonthly" : "reminders.repeatYearly") : null;
@@ -730,6 +734,13 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
             {!example && analysis.document?.registration && (
               <Section title={t("garage.title")} icon={<Car />}>
                 <GarageControls entry={entry} bare />
+              </Section>
+            )}
+
+            {/* A till receipt or a Mobile Money confirmation: add it to "Mes dépenses" (Admin only). */}
+            {!example && canAddExpense && analysis.document?.receipt && (
+              <Section title={t("expenses.receipt.title")} icon={<Receipt />}>
+                <ReceiptControls entry={entry} />
               </Section>
             )}
 

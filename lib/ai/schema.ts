@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { expenseCategories } from "@/lib/expenses";
 
 // No eval-based fast paths: the web CSP forbids eval, and Zod's probe for it
 // would otherwise log a violation on every page.
@@ -50,6 +51,12 @@ export type BillKind = (typeof billKinds)[number];
 /** A vehicle's fuel, read on a registration certificate or chosen in "Mon garage". */
 export const vehicleEnergies = ["petrol", "diesel", "hybrid", "electric", "other"] as const;
 export type VehicleEnergy = (typeof vehicleEnergies)[number];
+
+/** How a receipt was paid, and with which Mobile Money operator. */
+export const receiptPayments = ["cash", "mobile_money", "card"] as const;
+export type ReceiptPayment = (typeof receiptPayments)[number];
+export const mobileMoneyOperators = ["mvola", "orange_money", "airtel_money"] as const;
+export type MobileMoneyOperator = (typeof mobileMoneyOperators)[number];
 
 /** Diets a food is checked against. */
 export const diets = ["vegetarian", "vegan", "gluten_free", "lactose_free", "halal", "low_sugar", "low_salt"] as const;
@@ -155,6 +162,24 @@ export const AnalysisSchema = z.object({
         })
         .nullable()
         .describe("Only for a vehicle registration certificate (carte grise); null otherwise."),
+      receipt: z
+        .object({
+          total: z.number().nullable().describe("The total paid, fees included, as a plain number in the receipt's currency; null if not legible."),
+          currency: z.string().nullable().describe("ISO code of that total: MGA for ariary (Ar, MGA, Fmg converted), EUR, USD, CNY…; null if not shown."),
+          date: z.string().nullable().describe("The day it was paid, as YYYY-MM-DD, or null."),
+          merchant: z.string().nullable().describe("The shop, or for a Mobile Money transfer the recipient's or merchant's name (never a phone number); null if not shown."),
+          payment: z.enum(receiptPayments).nullable().describe("cash, mobile_money (MVola, Orange Money, Airtel Money) or card; null if not shown."),
+          operator: z.enum(mobileMoneyOperators).nullable().describe("The Mobile Money operator: mvola, orange_money or airtel_money; null otherwise."),
+          category: z
+            .enum(expenseCategories)
+            .nullable()
+            .describe(
+              "Best budget category: market (food, groceries, supermarket), jirama (water, electricity), rent, transport (taxi, fuel, bus), phone (credit, internet), school, health (pharmacy, doctor), family, online (online shopping), car, leisure, savings, other.",
+            ),
+          reference: z.string().nullable().describe("The transaction or receipt reference exactly as printed (Mobile Money transaction ID, ticket number); null if none."),
+        })
+        .nullable()
+        .describe("Only for proof of a payment already made: a till receipt, a shop invoice or a Mobile Money (MVola, Orange Money, Airtel Money) confirmation, SMS or screen; null otherwise."),
     })
     .nullable()
     .describe("Only for documents, null otherwise."),
@@ -263,7 +288,7 @@ export function normalizeStoredAnalysis(raw: unknown): unknown {
     vehicle: null,
     list: null,
     ...analysis,
-    document: document ? { expiresOn: null, isInsurance: false, paper: null, bill: null, registration: null, ...document } : null,
+    document: document ? { expiresOn: null, isInsurance: false, paper: null, bill: null, registration: null, receipt: null, ...document } : null,
     parcel: analysis.parcel ? { shippingMode: null, ...(analysis.parcel as Record<string, unknown>) } : null,
   };
 }
@@ -341,6 +366,45 @@ export type AskResponse = {
   /** Questions asked today against the plan's daily allowance (server's key only). */
   usage?: TrialState;
 };
+
+// ---- "Mes dépenses": the month's review --------------------------------------
+// Only totals leave the device: no note, no shop, no single expense.
+
+const amount = z.number().int().min(0).max(1_000_000_000_000);
+
+export const ExpenseSummaryRequestSchema = z.strictObject({
+  locale: z.enum(["fr", "en"]),
+  month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/),
+  /** The day of the month reached when the month is still going, else null. */
+  dayOfMonth: z.number().int().min(1).max(31).nullable(),
+  daysInMonth: z.number().int().min(28).max(31),
+  total: amount,
+  previousTotal: amount,
+  /** The average month over the 6 before this one. */
+  averageTotal: amount,
+  income: amount.nullable(),
+  budget: amount.nullable(),
+  categories: z
+    .array(
+      z.strictObject({
+        name: z.string().trim().min(1).max(40),
+        amount,
+        previous: amount,
+        average: amount,
+        cap: amount.nullable(),
+      }),
+    )
+    .max(30),
+});
+export type ExpenseSummaryRequest = z.infer<typeof ExpenseSummaryRequestSchema>;
+
+export const ExpenseSummarySchema = z.object({
+  findings: z.array(z.string()).describe("3 to 5 short findings, each with a figure (an amount or a percentage)."),
+  tips: z.array(z.string()).describe("2 or 3 concrete, realistic tips for a household in Madagascar."),
+});
+export type ExpenseSummary = z.infer<typeof ExpenseSummarySchema>;
+
+export type ExpenseSummaryResponse = { summary: ExpenseSummary; model: string; demo: boolean };
 
 export type AiProvider = "claude" | "gemini" | "demo";
 

@@ -207,11 +207,11 @@ Budget du mois du foyer. Réservé à l'offre Admin pendant le test, ouvert aux 
 - [x] Budget du mois : plafond global et par catégorie, barre de progression, alerte à 80 % puis au dépassement — bandeau, et notification avec les rappels
 - [x] Reprise automatique des dépenses déjà connues dans l'app, sans double saisie : factures payées (Mes papiers), courses (prix des listes), frais de colis, pleins et entretien du garage — calculées, jamais copiées ; lien vers la source, « hors budget », une saisie peut remplacer une ligne
 - [x] Dépenses qui reviennent chaque mois (loyer, écolage, abonnements), ajoutées automatiquement — le 31 tombe le dernier jour ; « pas ce mois-ci » ou corriger
-- [ ] Scanner un ticket de caisse ou une capture de reçu MVola / Orange Money / Airtel Money : la dépense se remplit toute seule
+- [x] Scanner un ticket de caisse ou une capture de reçu MVola / Orange Money / Airtel Money : la dépense se remplit toute seule — offre Admin, bouton « Ajouter à mes dépenses » sur le résultat, pas de doublon par référence
 - [x] Revenus du mois (salaire, ventes) et ce qu'il reste — revenus fixes possibles
 - [x] Historique sur 6 et 12 mois, moyenne par catégorie
 - [x] Rappels des échéances (loyer le 5, écolage…) — la veille ou le jour même, à 9 h ; ajout à l’agenda
-- [ ] Bilan du mois rédigé par l'IA (« Tu as dépensé 30 % de plus en transport… »)
+- [x] Bilan du mois rédigé par l'IA (« Tu as dépensé 30 % de plus en transport… ») — offre Admin, seuls les totaux partent, 10 bilans par jour
 - [x] Export Excel ou PDF du mois
 - [x] Achats en yuan, dollar ou euro convertis en ariary au taux du jour, comme pour les colis — montant d’origine, devise et taux gardés
 - [ ] Budget partagé en famille

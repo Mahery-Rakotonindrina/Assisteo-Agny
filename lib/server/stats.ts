@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { redis } from "./redis";
+import type { AiKind } from "@/lib/aiCost";
 
 // Anonymous, aggregated usage counters for the admin dashboard: one Redis
 // hash per day (analyses by mode and category, questions, errors, feedback)
@@ -17,10 +18,10 @@ const devicesKey = (day: string) => `stats:${day}:devices`;
 export type StatsEvent =
   | { type: "scan"; mode: string; category: string; ownKey: boolean; durationMs: number }
   | { type: "question"; ownKey: boolean }
-  | { type: "error"; route: "analyze" | "ask"; code: string }
+  | { type: "error"; route: "analyze" | "ask" | "summary"; code: string }
   | { type: "feedback"; vote: "up" | "down"; category: string }
   /** Tokens spent on the server's AI key, per kind of call and model. */
-  | { type: "ai"; kind: "scan" | "deep" | "question"; model: string; inputTokens: number; outputTokens: number };
+  | { type: "ai"; kind: AiKind; model: string; inputTokens: number; outputTokens: number };
 
 export type FeedbackRecord = {
   at: number;

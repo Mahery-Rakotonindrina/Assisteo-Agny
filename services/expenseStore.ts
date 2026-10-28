@@ -81,6 +81,8 @@ export const expenseStore = {
       note: cleanText(draft.note, 200),
       payment: draft.payment,
       sourceKey: draft.sourceKey || undefined,
+      reference: cleanText(draft.reference, 80),
+      scanId: draft.scanId || undefined,
       ...cleanConverted(draft),
     });
   },

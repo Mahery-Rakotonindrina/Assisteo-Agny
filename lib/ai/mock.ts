@@ -1,4 +1,5 @@
-import type { Analysis, ScanMode } from "./schema";
+import { formatAriary } from "@/lib/format";
+import type { Analysis, ExpenseSummary, ExpenseSummaryRequest, ScanMode } from "./schema";
 
 // Demo-mode analyses, used when no Claude API key is configured so the whole
 // flow (camera → analysis → history → reminders) can be tried end to end.
@@ -169,6 +170,7 @@ const documentScan: Record<Locale, Analysis> = {
       paper: null,
       bill: { issuer: null, kind: "electricity_water", amount: 84.2, currency: "EUR", period: "Août – Sept.", dueDate: null },
       registration: null,
+      receipt: null,
     },
     vehicle: null,
     parcel: null,
@@ -205,6 +207,7 @@ const documentScan: Record<Locale, Analysis> = {
       paper: null,
       bill: { issuer: null, kind: "electricity_water", amount: 84.2, currency: "EUR", period: "Aug – Sept", dueDate: null },
       registration: null,
+      receipt: null,
     },
     vehicle: null,
     parcel: null,
@@ -580,6 +583,7 @@ const registrationScan: Record<Locale, Analysis> = {
         energy: "petrol",
         fiscalPower: 7,
       },
+      receipt: null,
     },
     vehicle: null,
     parcel: null,
@@ -623,6 +627,7 @@ const registrationScan: Record<Locale, Analysis> = {
         energy: "petrol",
         fiscalPower: 7,
       },
+      receipt: null,
     },
     vehicle: null,
     parcel: null,
@@ -631,11 +636,228 @@ const registrationScan: Record<Locale, Analysis> = {
   },
 };
 
+// Fictional MVola confirmation (reference and names made up) for demo mode.
+const mobileMoneyScan: Record<Locale, Analysis> = {
+  fr: {
+    category: "document",
+    title: "Reçu MVola · Taxi Be Express",
+    summary: "Une confirmation de paiement MVola de 15 000 Ar à Taxi Be Express le 20 octobre 2026, frais compris. Garde la référence : elle prouve le paiement en cas de litige.",
+    confidence: 0.92,
+    tags: ["mvola", "paiement", "transport"],
+    facts: [
+      { label: "Montant", value: "15 000 Ar" },
+      { label: "Destinataire", value: "Taxi Be Express" },
+      { label: "Référence", value: "MP261020.1432.A51234" },
+    ],
+    suggestions: [
+      { kind: "action", title: "Ajoute-le à tes dépenses", detail: "Le montant, la date et la catégorie sont déjà remplis." },
+      { kind: "tip", title: "Garde la référence", detail: "L'opérateur la demande pour toute réclamation." },
+    ],
+    questions: ["Combien de frais j'ai payés ?", "Comment annuler un transfert MVola ?", "Ce reçu suffit-il comme preuve ?"],
+    nutrition: null,
+    recipe: null,
+    diet: null,
+    document: {
+      type: "Reçu Mobile Money",
+      keyPoints: ["Paiement MVola de 15 000 Ar", "Destinataire : Taxi Be Express", "Le 20 octobre 2026"],
+      dates: [{ label: "Paiement", date: "20 octobre 2026" }],
+      actionItems: [],
+      expiresOn: null,
+      isInsurance: false,
+      paper: null,
+      bill: null,
+      registration: null,
+      receipt: {
+        total: 15000,
+        currency: "MGA",
+        date: "2026-10-20",
+        merchant: "Taxi Be Express",
+        payment: "mobile_money",
+        operator: "mvola",
+        category: "transport",
+        reference: "MP261020.1432.A51234",
+      },
+    },
+    vehicle: null,
+    parcel: null,
+    list: null,
+    reminder: null,
+  },
+  en: {
+    category: "document",
+    title: "MVola receipt · Taxi Be Express",
+    summary: "An MVola payment confirmation of 15,000 Ar to Taxi Be Express on 20 October 2026, fees included. Keep the reference: it proves the payment if anything goes wrong.",
+    confidence: 0.92,
+    tags: ["mvola", "payment", "transport"],
+    facts: [
+      { label: "Amount", value: "15,000 Ar" },
+      { label: "Recipient", value: "Taxi Be Express" },
+      { label: "Reference", value: "MP261020.1432.A51234" },
+    ],
+    suggestions: [
+      { kind: "action", title: "Add it to your expenses", detail: "The amount, the date and the category are already filled in." },
+      { kind: "tip", title: "Keep the reference", detail: "The operator asks for it for any claim." },
+    ],
+    questions: ["How much did I pay in fees?", "How do I cancel an MVola transfer?", "Is this receipt enough as proof?"],
+    nutrition: null,
+    recipe: null,
+    diet: null,
+    document: {
+      type: "Mobile Money receipt",
+      keyPoints: ["MVola payment of 15,000 Ar", "Recipient: Taxi Be Express", "On 20 October 2026"],
+      dates: [{ label: "Payment", date: "20 October 2026" }],
+      actionItems: [],
+      expiresOn: null,
+      isInsurance: false,
+      paper: null,
+      bill: null,
+      registration: null,
+      receipt: {
+        total: 15000,
+        currency: "MGA",
+        date: "2026-10-20",
+        merchant: "Taxi Be Express",
+        payment: "mobile_money",
+        operator: "mvola",
+        category: "transport",
+        reference: "MP261020.1432.A51234",
+      },
+    },
+    vehicle: null,
+    parcel: null,
+    list: null,
+    reminder: null,
+  },
+};
+
+// Fictional supermarket till receipt for demo mode.
+const tillReceiptScan: Record<Locale, Analysis> = {
+  fr: {
+    category: "document",
+    title: "Ticket de caisse · Supermarché Analakely",
+    summary: "Un ticket de supermarché de 48 600 Ar payé en espèces le 18 octobre 2026 : riz, huile, sucre et savon.",
+    confidence: 0.89,
+    tags: ["ticket", "courses", "supermarché"],
+    facts: [
+      { label: "Total", value: "48 600 Ar" },
+      { label: "Articles", value: "4" },
+      { label: "Ticket", value: "N° 004512" },
+    ],
+    suggestions: [
+      { kind: "action", title: "Ajoute-le à tes dépenses", detail: "Il ira dans la catégorie Marché, à changer si besoin." },
+      { kind: "idea", title: "Compare avec le marché", detail: "Le riz en vrac au marché coûte souvent moins cher au kilo." },
+    ],
+    questions: ["Quel article coûte le plus cher ?", "Le riz est-il au bon prix ?", "Combien je dépense en courses par mois ?"],
+    nutrition: null,
+    recipe: null,
+    diet: null,
+    document: {
+      type: "Ticket de caisse",
+      keyPoints: ["Riz 5 kg : 22 500 Ar", "Huile 1 L : 12 000 Ar", "Sucre 1 kg : 8 100 Ar", "Savon : 6 000 Ar"],
+      dates: [{ label: "Achat", date: "18 octobre 2026" }],
+      actionItems: [],
+      expiresOn: null,
+      isInsurance: false,
+      paper: null,
+      bill: null,
+      registration: null,
+      receipt: {
+        total: 48600,
+        currency: "MGA",
+        date: "2026-10-18",
+        merchant: "Supermarché Analakely",
+        payment: "cash",
+        operator: null,
+        category: "market",
+        reference: "004512",
+      },
+    },
+    vehicle: null,
+    parcel: null,
+    list: null,
+    reminder: null,
+  },
+  en: {
+    category: "document",
+    title: "Till receipt · Analakely supermarket",
+    summary: "A supermarket receipt of 48,600 Ar paid in cash on 18 October 2026: rice, oil, sugar and soap.",
+    confidence: 0.89,
+    tags: ["receipt", "groceries", "supermarket"],
+    facts: [
+      { label: "Total", value: "48,600 Ar" },
+      { label: "Items", value: "4" },
+      { label: "Receipt", value: "No. 004512" },
+    ],
+    suggestions: [
+      { kind: "action", title: "Add it to your expenses", detail: "It goes under Market, change it if needed." },
+      { kind: "idea", title: "Compare with the market", detail: "Loose rice at the market often costs less per kilo." },
+    ],
+    questions: ["Which item cost the most?", "Is the rice fairly priced?", "How much do I spend on groceries a month?"],
+    nutrition: null,
+    recipe: null,
+    diet: null,
+    document: {
+      type: "Till receipt",
+      keyPoints: ["Rice 5 kg: 22,500 Ar", "Oil 1 L: 12,000 Ar", "Sugar 1 kg: 8,100 Ar", "Soap: 6,000 Ar"],
+      dates: [{ label: "Purchase", date: "18 October 2026" }],
+      actionItems: [],
+      expiresOn: null,
+      isInsurance: false,
+      paper: null,
+      bill: null,
+      registration: null,
+      receipt: {
+        total: 48600,
+        currency: "MGA",
+        date: "2026-10-18",
+        merchant: "Supermarché Analakely",
+        payment: "cash",
+        operator: null,
+        category: "market",
+        reference: "004512",
+      },
+    },
+    vehicle: null,
+    parcel: null,
+    list: null,
+    reminder: null,
+  },
+};
+
+/** The demo Mobile Money receipt (the end-to-end tests serve it in place of a scan). */
+export function mockReceipt(locale: Locale): Analysis {
+  return mobileMoneyScan[locale];
+}
+
 export function mockAnalysis(mode: ScanMode, locale: Locale): Analysis {
   if (mode !== "auto") return byMode[mode][locale];
   // New examples go last: tests rely on the order of the first ones.
-  const pool = [food, documentScan, vehicleScan, objectScan, parcelScan, listScan, registrationScan];
+  const pool = [food, documentScan, vehicleScan, objectScan, parcelScan, listScan, registrationScan, mobileMoneyScan, tillReceiptScan];
   const pick = pool[autoCursor % pool.length];
   autoCursor += 1;
   return pick[locale];
+}
+
+/** A sample review of the month, built from the totals sent (demo mode). */
+export function mockExpenseSummary(input: ExpenseSummaryRequest): ExpenseSummary {
+  const fr = input.locale === "fr";
+  const money = (value: number) => formatAriary(value, input.locale);
+  const top = input.categories[0];
+  const change = input.previousTotal > 0 ? Math.round(((input.total - input.previousTotal) / input.previousTotal) * 100) : null;
+  const sign = change !== null && change > 0 ? "+" : "";
+  const findings = [
+    fr ? `Tu as dépensé ${money(input.total)} ce mois-ci.` : `You spent ${money(input.total)} this month.`,
+    change === null
+      ? fr
+        ? "Pas de mois précédent pour comparer."
+        : "No previous month to compare with."
+      : fr
+        ? `${sign}${change} % par rapport au mois dernier.`
+        : `${sign}${change}% compared with last month.`,
+    ...(top ? [fr ? `Ton plus gros poste : ${top.name}, ${money(top.amount)}.` : `Your biggest item: ${top.name}, ${money(top.amount)}.`] : []),
+  ];
+  const tips = fr
+    ? ["Achète le riz et l'huile en gros au marché, une fois par mois.", "Mets de côté un petit montant dès que le salaire arrive, sur MVola ou un compte."]
+    : ["Buy rice and oil in bulk at the market, once a month.", "Put a small amount aside as soon as the salary comes in, on MVola or an account."];
+  return { findings, tips };
 }

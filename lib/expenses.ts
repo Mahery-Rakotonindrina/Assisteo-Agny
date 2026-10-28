@@ -82,6 +82,9 @@ export type ManualExpense = Base &
     payment?: PaymentMethod;
     /** The computed expense it stands for (a bill, a recurring occurrence…): that one is then not counted. */
     sourceKey?: string;
+    /** Added from a scanned receipt: its transaction reference (no duplicates), and the scan. */
+    reference?: string;
+    scanId?: string;
   };
 
 export type Income = Base & {
@@ -225,7 +228,7 @@ export type SourceInputs = {
   vehicles?: Array<Pick<Vehicle, "id" | "name" | "fuel" | "maintenance" | "expenses">>;
 };
 
-const billCategory: Record<BillKind, BuiltInCategory> = {
+export const billCategory: Record<BillKind, BuiltInCategory> = {
   electricity_water: "jirama",
   phone_internet: "phone",
   tv: "leisure",
