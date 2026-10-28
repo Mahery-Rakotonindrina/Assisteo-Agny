@@ -1,6 +1,6 @@
 import { clear, createStore, del, get, set, values } from "idb-keyval";
 import type { ManualExpense } from "@/lib/expenses";
-import { isMine, sharedCategory, type HouseholdExpense } from "@/lib/household";
+import { acceptSharedExpense, isMine, sharedCategory, type HouseholdExpense } from "@/lib/household";
 import { cleanAmount, expenseStore } from "./expenseStore";
 import { createId } from "./historyStore";
 import { createRowSync } from "./rowSync";
@@ -99,6 +99,7 @@ const sharedSync = (uid: string, householdId: string) =>
     match: { household_id: householdId },
     withAuthor: (record, userId) => ({ ...record, userId }),
     canPush: (record) => isMine(record, uid),
+    accept: acceptSharedExpense,
   });
 
 /** Keeps the household's shared expenses synced while a member. Returns the stop function. */
