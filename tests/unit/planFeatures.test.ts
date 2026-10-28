@@ -306,6 +306,18 @@ describe("Admin → features route", () => {
     expect((await call("PUT", premiumZero, undefined, "plans")).statusCode).toBe(400);
     expect((await getPlansConfig()).offers.premium.deepPerMonth).toBe(30);
   });
+
+  it("lets an emergency cut and a price save through when a plan was already without a limit", async () => {
+    const { getPlansConfig, setPlansConfig } = await import("@/lib/server/planConfig");
+    const current = await getPlansConfig();
+    // Saved before the rule: Lite has deep analyses and 0 a month.
+    await setPlansConfig({ ...current, features: { ...current.features, lite: [...current.features.lite, "deepAnalysis"] }, offers: { ...current.offers, lite: { ...current.offers.lite, deepPerMonth: 0 } } });
+    const before = await getPlansConfig();
+    const cut = { features: before.features, featureStatus: { ...before.featureStatus, garage: { mode: "off" as const, testers: [] } } };
+    expect((await call("PUT", cut)).statusCode).toBe(200);
+    const { features: _f, featureStatus: _s, ...prices } = before;
+    expect((await call("PUT", { ...prices, offers: { ...prices.offers, pro: { ...prices.offers.pro, priceMga: prices.offers.pro.priceMga + 1000 } } }, undefined, "plans")).statusCode).toBe(200);
+  });
 });
 
 describe("deep analyses need a monthly count", () => {

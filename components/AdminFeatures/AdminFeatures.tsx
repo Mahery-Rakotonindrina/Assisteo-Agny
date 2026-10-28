@@ -24,7 +24,7 @@ const looksLikeEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(valu
  * feature on, in test (its testers and the admins) or switched off for
  * everyone. A save shows its changes and the subscribers concerned first.
  */
-export function AdminFeatures({ token }: { token: string }) {
+export function AdminFeatures({ token, plansVersion = 0 }: { token: string; plansVersion?: number }) {
   const { t } = useTranslation();
   const toast = useToast();
   const [saved, setSaved] = useState<FeatureSettings | null>(null);
@@ -55,6 +55,15 @@ export function AdminFeatures({ token }: { token: string }) {
       .then(received)
       .catch(() => undefined);
   }, [token]);
+
+  // Limits saved above: only the deep analysis counts are reread, the draft stays.
+  useEffect(() => {
+    if (plansVersion === 0) return;
+    httpClient
+      .get<AdminFeaturesResponse>("/api/admin/features", { headers: { Authorization: `Bearer ${token}` } })
+      .then((result) => setDeepPerMonth(result.deepPerMonth))
+      .catch(() => undefined);
+  }, [token, plansVersion]);
 
   if (!draft || !saved) return <div className={styles.card} aria-busy />;
 
@@ -100,7 +109,7 @@ export function AdminFeatures({ token }: { token: string }) {
     const pending = draft;
     const next = { ...saved, featureStatus: { ...saved.featureStatus, [feature]: { ...saved.featureStatus[feature], mode } } };
     if (await put(next)) {
-      toast(t(mode === "off" ? "admin.features.cutDone" : "admin.features.restored", { name: name(feature) }));
+      toast(t(mode === "off" ? "admin.features.cutDone" : mode === "test" ? "admin.features.restoredTest" : "admin.features.restored", { name: name(feature) }));
       setDraft({ ...pending, featureStatus: { ...pending.featureStatus, [feature]: next.featureStatus[feature] } });
     }
   };
@@ -174,6 +183,12 @@ export function AdminFeatures({ token }: { token: string }) {
                           <Button size="md" variant="secondary" icon={<Power />} disabled={busy} onClick={() => void emergency(feature, "on")}>
                             {t("admin.features.restore")}
                           </Button>
+                          {/* Back to its testers only, when it has some: it may have been in test before the cut. */}
+                          {saved.featureStatus[feature].testers.length > 0 && (
+                            <Button size="md" variant="secondary" disabled={busy} onClick={() => void emergency(feature, "test")}>
+                              {t("admin.features.restoreTest")}
+                            </Button>
+                          )}
                         </>
                       ) : (
                         <>

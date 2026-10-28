@@ -52,6 +52,8 @@ export default function AdminPage() {
   const toast = useToast();
   const { isAdmin } = usePlan();
   const [token, setToken] = useState("");
+  // Bumped when the prices and limits are saved: the features table rereads the deep analysis counts.
+  const [plansVersion, setPlansVersion] = useState(0);
   const [draftToken, setDraftToken] = useState("");
   const [draftCode, setDraftCode] = useState("");
   const [needCode, setNeedCode] = useState(false);
@@ -191,8 +193,8 @@ export default function AdminPage() {
 
         {config && <AdminSubscriptions token={token} owner={owner} />}
         {config && <AdminAccounts token={token} />}
-        {config && <AdminPlans token={token} />}
-        {config && <AdminFeatures token={token} />}
+        {config && <AdminPlans token={token} onSaved={() => setPlansVersion((version) => version + 1)} />}
+        {config && <AdminFeatures token={token} plansVersion={plansVersion} />}
         {config && <AdminPromoCodes token={token} />}
         {config && <AdminAiCost token={token} />}
         {config && <AdminStats token={token} />}

@@ -14,9 +14,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const parsed = PlansConfigSchema.safeParse(req.body);
     if (!parsed.success) return sendError(res, 400, "invalid_request", parsed.error.issues[0]?.message ?? "Invalid settings.");
     // The features are saved apart (/api/admin/features): kept as they are.
-    const config = { ...(await getPlansConfig()), ...parsed.data };
-    // A plan with deep analyses can't go back to 0 a month (no limit).
-    const unlimited = deepWithoutLimit(config);
+    const before = await getPlansConfig();
+    const config = { ...before, ...parsed.data };
+    // A plan with deep analyses can't go back to 0 a month (no limit); one already so doesn't block a save.
+    const already = new Set(deepWithoutLimit(before));
+    const unlimited = deepWithoutLimit(config).filter((plan) => !already.has(plan));
     if (unlimited.length > 0) return sendError(res, 400, "invalid_request", `Deep analyses need a monthly count: ${unlimited.join(", ")}.`);
     await setPlansConfig(config);
     await logAdminAction(actor.id, "plans_save");
