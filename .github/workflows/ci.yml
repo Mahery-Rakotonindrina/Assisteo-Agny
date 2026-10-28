@@ -69,3 +69,9 @@ jobs:
         env:
           CHECK_DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
         run: node scripts/db-restore-check.mjs --sample
+
+      # The shared budget's Row Level Security, as Supabase runs it (its own database).
+      - name: Row Level Security test (households)
+        env:
+          CHECK_DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
+        run: node scripts/db-rls-check.mjs

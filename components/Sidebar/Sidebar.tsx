@@ -5,6 +5,7 @@ import { BookOpen, Car, Download, FolderLock, History, ListChecks, Package, Scan
 import { Logo } from "@/components/Logo";
 import { useAiStatus } from "@/hooks/useAiStatus";
 import { useAndroidDownload } from "@/hooks/useAndroidDownload";
+import { useInHousehold } from "@/hooks/useHousehold";
 import { useInstallPrompt } from "@/hooks/useInstallPrompt";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -33,8 +34,9 @@ const adminLink = { href: "/admin", key: "admin", Icon: ShieldCheck } as const;
 export function Sidebar() {
   const { pathname } = useRouter();
   const { isAdmin, has } = usePlan();
+  const inHousehold = useInHousehold();
   // The plan is null on the server and at hydration: the extra links only appear once it is read.
-  const shown = [...links.slice(0, 6), ...(has("expenses") ? [expensesLink] : []), ...links.slice(6), ...(isAdmin ? [adminLink] : [])];
+  const shown = [...links.slice(0, 6), ...(has("expenses") || inHousehold ? [expensesLink] : []), ...links.slice(6), ...(isAdmin ? [adminLink] : [])];
   const android = useAndroidDownload();
   const { t } = useTranslation();
   const aiStatus = useAiStatus();

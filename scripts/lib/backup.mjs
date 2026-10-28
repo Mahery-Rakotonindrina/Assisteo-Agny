@@ -22,6 +22,11 @@ export const RESTORE_KEYS = {
   lists: ["user_id", "id"],
   vehicles: ["user_id", "id"],
   expenses: ["user_id", "id"],
+  // A household before what refers to it.
+  households: ["id"],
+  household_members: ["household_id", "user_id"],
+  household_invites: ["code"],
+  household_expenses: ["household_id", "id"],
   subscriptions: ["id"],
 };
 

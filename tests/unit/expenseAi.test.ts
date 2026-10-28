@@ -8,7 +8,7 @@ import { receiptDraft, receiptDuplicate, sameReference, summaryRequest } from "@
 import { BUDGET_ID, monthKey, type Budget, type ExpenseRecord, type Income, type ManualExpense } from "@/lib/expenses";
 
 // The route's dependencies: an AI engine that answers, and the plan of the account.
-const state = vi.hoisted(() => ({ provider: "gemini", plan: "unlimited" as string, account: true as boolean, calls: 0 }));
+const state = vi.hoisted(() => ({ provider: "gemini", plan: "unlimited" as string, account: true as boolean, accountId: "user-1", fail: false, calls: 0 }));
 vi.mock("@/lib/server/redis", () => ({ redis: null }));
 vi.mock("@/lib/ai/provider", () => ({
   get activeProvider() {
@@ -16,11 +16,12 @@ vi.mock("@/lib/ai/provider", () => ({
   },
   summarizeExpenses: async () => {
     state.calls += 1;
+    if (state.fail) throw new Error("The AI is down.");
     return { summary: { findings: ["+30 % en transport"], tips: ["Prends le taxi-be."] }, model: "gemini-flash-lite-latest", usage: { inputTokens: 600, outputTokens: 300 } };
   },
 }));
 vi.mock("@/lib/server/plan", () => ({
-  resolvePlan: async () => ({ account: state.account ? { id: "user-1", email: "a@example.com" } : null, current: { plan: state.plan, endsAt: null } }),
+  resolvePlan: async () => ({ account: state.account ? { id: state.accountId, email: "a@example.com" } : null, current: { plan: state.plan, endsAt: null } }),
 }));
 
 const { default: summaryRoute } = await import("@/pages/api/expenses/summary");
@@ -210,6 +211,16 @@ describe("month's review route", () => {
     for (let index = 0; index < 9; index += 1) expect((await call(body)).statusCode).toBe(200);
     expect((await call(body)).body.error?.code).toBe("rate_limited");
     expect(state.calls).toBe(10);
+  });
+
+  it("doesn't count a review that failed in the day's 10", async () => {
+    state.accountId = "user-2";
+    state.fail = true;
+    for (let index = 0; index < 12; index += 1) expect((await call(body)).statusCode).toBe(500);
+    state.fail = false;
+    for (let index = 0; index < 10; index += 1) expect((await call(body)).statusCode).toBe(200);
+    expect((await call(body)).body.error?.code).toBe("rate_limited");
+    state.accountId = "user-1";
   });
 
   it("serves the demo review without an AI key", async () => {

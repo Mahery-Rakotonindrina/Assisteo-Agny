@@ -18,7 +18,16 @@ export type SyncedStore<T extends SyncedRecord> = {
   setKeepTombstones(value: boolean): void;
 };
 
-type Row<T> = { id: string; data: T; updated_at: string; deleted_at: string | null };
+type Row<T> = { id: string; data: T; updated_at: string; deleted_at: string | null; user_id?: string };
+
+export type RowSyncOptions<T> = {
+  /** Columns that pick the rows (the household's id): read with them, written with them. */
+  match?: Record<string, string>;
+  /** Reads who wrote each row (shared rows: the author's id). */
+  withAuthor?: (record: T, userId: string) => T;
+  /** Only these local records are pushed (shared rows: one's own). */
+  canPush?: (record: T, uid: string) => boolean;
+};
 
 const time = (value: string | null) => (value ? new Date(value).getTime() : 0);
 
@@ -30,18 +39,21 @@ function toData<T extends SyncedRecord>(record: T) {
   return data;
 }
 
-export function createRowSync<T extends SyncedRecord>(table: string, store: SyncedStore<T>) {
+export function createRowSync<T extends SyncedRecord>(table: string, store: SyncedStore<T>, options: RowSyncOptions<T> = {}) {
+  const { match, withAuthor, canPush } = options;
   let running: Promise<void> | null = null;
 
   function sync(uid: string) {
     running ??= (async () => {
       const db = supabase();
-      const { data, error } = await db.from(table).select("id, data, updated_at, deleted_at");
+      const columns: string = withAuthor ? "id, data, updated_at, deleted_at, user_id" : "id, data, updated_at, deleted_at";
+      const query = db.from(table).select(columns);
+      const { data, error } = await (match ? query.match(match) : query);
       if (error) throw error;
       let changed = false;
 
       // Pull: take the server's version unless this device has a newer edit.
-      for (const row of (data ?? []) as Row<T>[]) {
+      for (const row of (data ?? []) as unknown as Row<T>[]) {
         const local = await store.rawGet(row.id);
         const remoteAt = time(row.updated_at);
         if (local?.dirty && local.updatedAt >= remoteAt) continue;
@@ -51,15 +63,17 @@ export function createRowSync<T extends SyncedRecord>(table: string, store: Sync
             changed = true;
           }
         } else if (!local || local.updatedAt !== remoteAt) {
-          await store.rawPut({ ...row.data, id: row.id, updatedAt: remoteAt, dirty: false });
+          const record = { ...row.data, id: row.id, updatedAt: remoteAt, dirty: false };
+          await store.rawPut(withAuthor && row.user_id ? withAuthor(record, row.user_id) : record);
           changed = true;
         }
       }
 
       // Push.
       for (const local of await store.raw()) {
-        if (!local.dirty) continue;
+        if (!local.dirty || (canPush && !canPush(local, uid))) continue;
         const { error: pushError } = await db.from(table).upsert({
+          ...match,
           user_id: uid,
           id: local.id,
           data: toData(local),

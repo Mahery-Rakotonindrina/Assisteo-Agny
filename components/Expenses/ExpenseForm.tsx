@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Check, Trash2 } from "lucide-react";
+import { Check, Trash2, User, Users } from "lucide-react";
 import { Button } from "@/components/Button";
+import { SegmentedControl } from "@/components/SegmentedControl";
 import { useExpenseLabels } from "@/hooks/useExpenseLabels";
 import { useTranslation } from "@/hooks/useTranslation";
 import { expenseCurrencies, paymentMethods, toAriary, type ExpenseCurrency, type ExpenseRecord, type ManualExpense, type PaymentMethod } from "@/lib/expenses";
@@ -10,6 +11,7 @@ import { dayString, parseDay } from "@/lib/papers";
 import { haptics } from "@/services/device";
 import { expenseStore } from "@/services/expenseStore";
 import { marketRate } from "@/services/fx";
+import { householdExpenseStore, saveExpenseIn, type ExpenseScope } from "@/services/householdExpenseStore";
 import styles from "./Expenses.module.scss";
 
 /** A number typed in a field ("12 500", "12,5"), or none. */
@@ -24,6 +26,9 @@ export const dayOf = (value: string) => parseDay(value) ?? Date.now();
 
 export type LinkChoice = { key: string; label: string };
 
+/** The household an expense can be shared with: its name, the user, and whether they may choose. */
+export type ShareChoice = { name: string; me: string | null; choose: boolean };
+
 type Props = {
   records: ExpenseRecord[];
   /** An expense to edit (with its id), or values to start from (a line being corrected). */
@@ -32,13 +37,24 @@ type Props = {
   links: LinkChoice[];
   onDone: () => void;
   /** Called with the expense once saved (before onDone). */
-  onSaved?: (expense: ManualExpense) => void;
+  onSaved?: (expense: Partial<ManualExpense>) => void;
+  /** Where the expense being edited lives (personal by default). */
+  from?: ExpenseScope;
+  /** Where a new expense goes, unless the user picks the other. */
+  scope?: ExpenseScope;
+  /** The household, when the user is a member. */
+  share?: ShareChoice | null;
 };
 
 /** Adds or edits an expense: amount (in ariary or another currency), category, day, payment, note. */
-export function ExpenseForm({ records, initial, links, onDone, onSaved }: Props) {
+export function ExpenseForm({ records, initial, links, onDone, onSaved, from = "personal", scope: startScope, share }: Props) {
   const { t, locale } = useTranslation();
-  const { categories } = useExpenseLabels(records);
+  const { categories: allCategories } = useExpenseLabels(records);
+  const origin: ExpenseScope | null = initial?.id ? from : null;
+  const [scope, setScope] = useState<ExpenseScope>(origin ?? startScope ?? "personal");
+  const shared = scope === "household";
+  // Shared expenses use the built-in categories: the members don't see each other's own ones.
+  const categories = shared ? allCategories.filter((item) => !item.custom) : allCategories;
   const [currency, setCurrency] = useState<ExpenseCurrency>(initial?.currency ?? "MGA");
   const [amount, setAmount] = useState(() => String(initial?.originalAmount ?? initial?.amountMga ?? ""));
   const [rate, setRate] = useState(() => (initial?.rate ? String(initial.rate) : ""));
@@ -48,6 +64,12 @@ export function ExpenseForm({ records, initial, links, onDone, onSaved }: Props)
   const [note, setNote] = useState(initial?.note ?? "");
   const [sourceKey, setSourceKey] = useState(initial?.sourceKey ?? "");
   const foreign = currency !== "MGA";
+  // A line standing for a bill or a recurring item stays personal.
+  const canChoose = Boolean(share?.choose) && !sourceKey;
+  const pickScope = (value: ExpenseScope) => {
+    setScope(value);
+    if (value === "household" && allCategories.find((item) => item.id === category)?.custom) setCategory("other");
+  };
 
   // Today's rate, once a foreign currency is picked (the user can change it).
   useEffect(() => {
@@ -69,31 +91,51 @@ export function ExpenseForm({ records, initial, links, onDone, onSaved }: Props)
     event.preventDefault();
     if (amountMga === undefined) return;
     haptics.success();
-    const saved = await expenseStore.saveExpense({
-      id: initial?.id,
-      at: dayOf(day),
-      amountMga,
-      category,
-      note,
-      payment: payment || undefined,
-      sourceKey: sourceKey || undefined,
-      // Kept from a scanned receipt (no duplicates).
-      reference: initial?.reference,
-      scanId: initial?.scanId,
-      ...(foreign && { currency: currency as ForeignCurrency, originalAmount: typed, rate: rateValue }),
-    });
+    const saved = await saveExpenseIn(
+      scope,
+      origin,
+      {
+        id: initial?.id,
+        createdAt: initial?.createdAt,
+        at: dayOf(day),
+        amountMga,
+        category,
+        note,
+        payment: payment || undefined,
+        sourceKey: shared ? undefined : sourceKey || undefined,
+        // Kept from a scanned receipt (no duplicates).
+        reference: initial?.reference,
+        scanId: initial?.scanId,
+        ...(foreign && { currency: currency as ForeignCurrency, originalAmount: typed, rate: rateValue }),
+      },
+      share?.me ?? null,
+    );
     if (saved) onSaved?.(saved);
     onDone();
   };
 
   const remove = async () => {
     if (!initial?.id) return;
-    await expenseStore.remove(initial.id);
+    await (from === "household" ? householdExpenseStore.remove(initial.id) : expenseStore.remove(initial.id));
     onDone();
   };
 
   return (
     <form className={styles.form} onSubmit={(event) => void submit(event)} aria-label={t("expenses.form.title")}>
+      {canChoose && share && (
+        <div className={styles.scope}>
+          <SegmentedControl
+            ariaLabel={t("expenses.form.scope")}
+            value={scope}
+            onChange={pickScope}
+            options={[
+              { value: "personal", label: t("expenses.form.personal"), icon: <User /> },
+              { value: "household", label: t("expenses.form.shared"), icon: <Users /> },
+            ]}
+          />
+          <small className={styles.hint}>{t(shared ? "expenses.form.sharedHint" : "expenses.form.personalHint", { name: share.name })}</small>
+        </div>
+      )}
       <div className={styles.fields}>
         <label>
           <span>{t("expenses.form.amount")}</span>
@@ -150,7 +192,7 @@ export function ExpenseForm({ records, initial, links, onDone, onSaved }: Props)
           <span>{t("expenses.form.note")}</span>
           <input value={note} onChange={(event) => setNote(event.target.value)} maxLength={200} />
         </label>
-        {(links.length > 0 || sourceKey) && (
+        {!shared && (links.length > 0 || sourceKey) && (
           <label className={styles.wide}>
             <span>{t("expenses.form.link")}</span>
             <select value={sourceKey} onChange={(event) => setSourceKey(event.target.value)}>

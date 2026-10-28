@@ -109,7 +109,7 @@ export const PERSONAS = [
       { label: "Ouvre ses papiers", go: "/papers", expect: ["Mes papiers"] },
       { label: "Ouvre son garage", go: "/garage", expect: ["Mon garage", "Ton garage est vide"], expectNot: ["Mon garage est inclus à partir de Premium."] },
       { label: "Ne voit pas « Mes dépenses » sur l'accueil (réservé à l'Admin pendant le test)", go: "/", expectNot: ["Mes dépenses"] },
-      { label: "Ouvre /expenses à la main : « Pas disponible »", go: "/expenses", expect: ["Pas disponible"], expectNot: ["Ajouter une dépense"] },
+      { label: "Ouvre /expenses à la main : seulement « Rejoindre un foyer »", go: "/expenses", expect: ["Budget du foyer", "Rejoindre"], expectNot: ["Ajouter une dépense", "Créer le foyer"] },
       { label: "Vérifie son offre", go: "/settings", expect: ["Premium"] },
       { label: "Regarde la page des offres", go: "/plans", expect: ["Ton offre"] },
     ],
@@ -130,6 +130,7 @@ export const PERSONAS = [
       { label: "Ouvre le formulaire d'ajout", click: "Ajouter une dépense", expect: ["Montant", "Catégorie", "Payé en"] },
       { label: "Regarde l'onglet Budget", go: "/expenses", click: "Budget", expect: ["Budget total"] },
       { label: "Demande le bilan du mois à l'IA", go: "/expenses", click: "Bilan du mois", expect: ["Refaire le bilan"] },
+      { label: "Ouvre le côté « Foyer » : elle peut en créer un", go: "/expenses", click: "Foyer", expect: ["Créer le foyer", "Rejoindre"] },
     ],
   },
   {

@@ -22,6 +22,7 @@ import { useToast } from "@/components/Toast";
 import { PLANS_HREF, TrialOver, TrialPill } from "@/components/Trial";
 import { useAiStatus } from "@/hooks/useAiStatus";
 import { useHistory } from "@/hooks/useHistory";
+import { useInHousehold } from "@/hooks/useHousehold";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import { useNow } from "@/hooks/useNow";
 import { usePlan } from "@/hooks/usePlan";
@@ -68,6 +69,7 @@ export default function ScanPage() {
   const picking = router.isReady && router.query.pick === "1" && !picked;
   const { state, start, startWithFile, startWithSrc, retry, reset, analyzeAnyway, canRetry, pages } = useScan(mode);
   const { has } = usePlan();
+  const inHousehold = useInHousehold();
   const multiPage = has("multiPage");
   const toast = useToast();
   const { entries, isLoading: historyLoading } = useHistory();
@@ -272,7 +274,7 @@ export default function ScanPage() {
             )}
 
             {/* "Mes dépenses" has no other way in on a phone: its shortcut shows even before the first scan. */}
-            {(recent.length > 0 || has("expenses")) && (
+            {(recent.length > 0 || has("expenses") || inHousehold) && (
               <motion.div variants={rise}>
                 <Shortcuts entries={entries} />
               </motion.div>

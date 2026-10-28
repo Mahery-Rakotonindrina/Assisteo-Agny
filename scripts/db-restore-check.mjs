@@ -10,6 +10,7 @@
 import { randomBytes, randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { applyMigrations, compareData, connect, decryptBackup, encryptBackup, exportData, RESTORE_KEYS, restoreData } from "./lib/backup.mjs";
+import { SUPABASE_STUBS } from "./lib/supabaseStubs.mjs";
 
 const [file] = process.argv.slice(2);
 const url = process.env.CHECK_DATABASE_URL;
@@ -22,26 +23,11 @@ if (/supabase/i.test(url)) {
   process.exit(1);
 }
 
-// What Supabase provides and the migrations rely on, reduced to the minimum.
-const SUPABASE_STUBS = `
-create schema if not exists auth;
-create table if not exists auth.users (id uuid primary key, email text, created_at timestamptz, last_sign_in_at timestamptz);
-create or replace function auth.uid() returns uuid language sql stable as $$ select null::uuid $$;
-do $$ begin
-  if not exists (select from pg_roles where rolname = 'authenticated') then create role authenticated nologin; end if;
-end $$;
-create schema if not exists storage;
-create table if not exists storage.buckets (id text primary key, name text not null, public boolean, file_size_limit bigint, allowed_mime_types text[]);
-create table if not exists storage.objects (id uuid primary key default gen_random_uuid(), bucket_id text, name text);
-alter table storage.objects enable row level security;
-create or replace function storage.foldername(name text) returns text[] language sql immutable as $$
-  select (string_to_array(name, '/'))[1:array_length(string_to_array(name, '/'), 1) - 1]
-$$;
-`;
 
 /** Made-up rows in every backed-up table: nested JSON, nulls, accents, a tombstone. */
 function sampleBackup() {
   const [anna, ben] = [randomUUID(), randomUUID()];
+  const household = randomUUID();
   const at = (day) => new Date(Date.UTC(2026, 9, day, 8, 30, 15, 250)).toISOString();
   return {
     version: 1,
@@ -103,6 +89,19 @@ function sampleBackup() {
           deleted_at: null,
         },
         { user_id: ben, id: "expense-2", data: { kind: "expense", at: 1759900000000, amountMga: 5000, category: "transport" }, updated_at: at(6), deleted_at: at(7) },
+      ],
+      households: [{ id: household, owner_id: anna, data: { name: "Famille Rabe", budget: { total: 900000, categories: { market: 300000 } } }, updated_at: at(5) }],
+      household_members: [
+        { household_id: household, user_id: anna, role: "owner", joined_at: at(5) },
+        { household_id: household, user_id: ben, role: "member", joined_at: at(6) },
+      ],
+      household_invites: [
+        { code: "4K7P2Q", household_id: household, created_by: anna, created_at: at(5), expires_at: at(7), revoked_at: at(6) },
+        { code: "HX3M9R", household_id: household, created_by: anna, created_at: at(6), expires_at: at(8), revoked_at: null },
+      ],
+      household_expenses: [
+        { household_id: household, id: "shared-1", user_id: ben, data: { kind: "expense", at: 1759900000000, amountMga: 45000, category: "jirama", note: "Facture d'octobre" }, updated_at: at(6), deleted_at: null },
+        { household_id: household, id: "shared-2", user_id: anna, data: { kind: "expense", at: 1759900000000, amountMga: 8000, category: "market" }, updated_at: at(6), deleted_at: at(7) },
       ],
       subscriptions: [
         { id: randomUUID(), email: "anna@example.com", plan: "premium", starts_at: at(1), ends_at: at(31), amount_mga: 15000, payment_method: "mvola", payment_ref: "REF-1", note: "Payé en avance", created_at: at(1), updated_at: at(1) },

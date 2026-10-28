@@ -62,7 +62,10 @@ export type PageCapture = PreparedCapture & { key: string };
 export function toErrorKind(error: unknown): ScanErrorKind {
   if (error instanceof ApiError) {
     const code = error.code;
-    return code === "method_not_allowed" || code === "owner_only" || code === "ask_limit" || code === "deep_limit" || code === "second_factor" ? "unknown" : code;
+    // The shared budget's codes are never sent while scanning.
+    const household =
+      code === "sign_in_required" || code === "already_member" || code === "not_member" || code === "not_owner" || code === "invalid_code" || code === "expired" || code === "household_full";
+    return household || code === "method_not_allowed" || code === "owner_only" || code === "ask_limit" || code === "deep_limit" || code === "second_factor" ? "unknown" : code;
   }
   return "unknown";
 }

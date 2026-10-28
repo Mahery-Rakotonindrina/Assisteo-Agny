@@ -130,6 +130,11 @@ export const expenseStore = {
     return save<CustomCategory>("category", draft.id, { name, color: draft.color, icon: draft.icon });
   },
 
+  /** Takes back an expense as it was (one shared with a household the user left). */
+  async adopt(expense: ManualExpense) {
+    await write({ ...expense, kind: "expense", deletedAt: undefined });
+  },
+
   /** Keeps a computed expense (a bill, a fill…) out of the budget, or back in. */
   async setExcluded(sourceKey: string, excluded: boolean) {
     const id = exclusionId(sourceKey);

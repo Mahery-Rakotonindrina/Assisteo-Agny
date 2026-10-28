@@ -220,4 +220,4 @@ Budget du mois du foyer. Réservé à l'offre Admin pendant le test, ouvert aux 
 - [x] Bilan du mois rédigé par l'IA (« Tu as dépensé 30 % de plus en transport… ») — offre Admin, seuls les totaux partent, 10 bilans par jour
 - [x] Export Excel ou PDF du mois
 - [x] Achats en yuan, dollar ou euro convertis en ariary au taux du jour, comme pour les colis — montant d’origine, devise et taux gardés
-- [ ] Budget partagé en famille
+- [x] Budget partagé en famille — un Admin crée le foyer et invite par un code de 48 h (partage WhatsApp) ; tout compte connecté le rejoint ; chaque dépense est « Perso » ou « Foyer » ; le créateur gère membres, nom et budget commun ; vue du mois par membre et par catégorie

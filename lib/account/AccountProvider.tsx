@@ -1,6 +1,6 @@
 import type { Session } from "@supabase/supabase-js";
 import Router from "next/router";
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { pick } from "@/lib/account/pick";
 import { syncedSettingKeys, useSettings, type SyncedSettings } from "@/lib/settings/SettingsProvider";
 import { accountsAvailable, supabase } from "@/lib/supabase";
@@ -15,6 +15,8 @@ import { startVehicleSync, syncVehicles } from "@/services/vehicleSync";
 import { wipeReviews } from "@/services/expenseReview";
 import { expenseStore } from "@/services/expenseStore";
 import { startExpenseSync, syncExpenses } from "@/services/expenseSync";
+import { householdStore } from "@/services/household";
+import { householdExpenseStore, startHouseholdExpenseSync, syncHouseholdExpenses } from "@/services/householdExpenseStore";
 import { parcelStore } from "@/services/parcelStore";
 import { startParcelSync, syncParcels } from "@/services/parcelSync";
 import { registerPush, unregisterPush } from "@/services/push";
@@ -62,6 +64,12 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (sessionKnown) void planStore.refresh();
   }, [userId, sessionKnown]);
+  // So is the household of "Mes dépenses" (signed out, none: no request; its screen asks itself).
+  useEffect(() => {
+    if (!sessionKnown) return;
+    void (userId ? householdStore.refresh() : householdStore.signedOut());
+  }, [userId, sessionKnown]);
+  const householdId = useSyncExternalStore(householdStore.subscribe, () => householdStore.get()?.household?.id ?? null, () => null);
   useEffect(() => sync.subscribe(() => setSyncStatus(sync.status())), []);
 
   // Reminder pushes on this device (Android builds with Firebase only).
@@ -95,6 +103,12 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     if (!userId) return;
     return startExpenseSync(userId);
   }, [userId]);
+
+  // The expenses shared with the household, while a member.
+  useEffect(() => {
+    if (!userId || !householdId) return;
+    return startHouseholdExpenseSync(userId, householdId);
+  }, [userId, householdId]);
 
   // History.
   useEffect(() => {
@@ -177,15 +191,18 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         syncLists(userId).catch(() => undefined),
         syncVehicles(userId).catch(() => undefined),
         syncExpenses(userId).catch(() => undefined),
+        householdId ? syncHouseholdExpenses(userId, householdId).catch(() => undefined) : undefined,
       ]);
     await parcelStore.wipe();
     await listStore.wipe();
     await vehicleStore.wipe();
     await expenseStore.wipe();
+    await householdExpenseStore.wipe();
+    await householdStore.wipe();
     await wipeReviews().catch(() => undefined);
     await aiKeyStore.clear({ fromSync: true });
     await signOutAccount();
-  }, [userId]);
+  }, [userId, householdId]);
 
   const deleteAccount = useCallback(async () => {
     // Stop pushing first so nothing is re-uploaded while the server deletes.
@@ -202,6 +219,8 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await listStore.wipe();
     await vehicleStore.wipe();
     await expenseStore.wipe();
+    await householdExpenseStore.wipe();
+    await householdStore.wipe();
     await wipeReviews().catch(() => undefined);
     await aiKeyStore.clear({ fromSync: true });
     await cancelAllNotifications();

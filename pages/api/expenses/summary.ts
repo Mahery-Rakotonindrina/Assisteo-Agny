@@ -6,7 +6,7 @@ import { ExpenseSummaryRequestSchema, type ExpenseSummaryResponse } from "@/lib/
 import { hasFeature } from "@/lib/plans";
 import { applyCors, clientIp, sendError } from "@/lib/server/http";
 import { resolvePlan } from "@/lib/server/plan";
-import { rateLimit } from "@/lib/server/rateLimit";
+import { rateLimit, refundRateLimit } from "@/lib/server/rateLimit";
 import { reportError } from "@/lib/server/reportError";
 import { track } from "@/lib/server/stats";
 
@@ -43,7 +43,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     return sendError(res, 403, "plan_required", "The month's review is not part of your plan.");
   }
 
-  const daily = await rateLimit(`summary:day:${account.id}`, SUMMARIES_PER_DAY, DAY_MS);
+  const dailyKey = `summary:day:${account.id}`;
+  const daily = await rateLimit(dailyKey, SUMMARIES_PER_DAY, DAY_MS);
   if (!daily.ok) {
     res.setHeader("Retry-After", String(daily.retryAfterS));
     return sendError(res, 429, "rate_limited", "Today's reviews are used up, come back tomorrow.");
@@ -59,6 +60,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     if (usage) await track({ type: "ai", kind: "summary", model, ...usage });
     return res.status(200).json({ summary, model, demo: false } satisfies ExpenseSummaryResponse);
   } catch (error) {
+    // A review that failed doesn't count in the day's.
+    await refundRateLimit(dailyKey, DAY_MS);
     if (abort.signal.aborted) return;
     await track({ type: "error", route: "summary", code: error instanceof AnalysisError ? error.code : "upstream_error" });
     if (error instanceof AnalysisError) {
