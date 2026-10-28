@@ -1,0 +1,223 @@
+@use "../../styles/mixins" as *;
+
+.card {
+  @include card;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 10rem;
+  padding: 1.25rem;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+
+  svg {
+    color: var(--accent-text);
+  }
+}
+
+.subtitle {
+  margin-top: 0.2rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+// Five plan columns don't fit a narrow phone next to the names: the table scrolls.
+.scroll {
+  overflow-x: auto;
+  margin: 0 -0.5rem;
+  padding: 0 0.5rem;
+}
+
+.table {
+  width: 100%;
+  min-width: 34rem;
+  border-collapse: collapse;
+
+  th,
+  td {
+    padding: 0.6rem 0.35rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    text-align: left;
+  }
+
+  thead th {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    vertical-align: bottom;
+  }
+
+  tbody tr[data-mode="off"] .feature > strong {
+    text-decoration: line-through;
+    color: var(--text-muted);
+  }
+}
+
+.planHead {
+  width: 4rem;
+  text-align: center !important;
+
+  svg {
+    display: block;
+    margin: 0 auto 0.2rem;
+    color: var(--plan);
+  }
+}
+
+.feature {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-weight: 400;
+
+  > strong {
+    font-size: 0.92rem;
+  }
+
+  > small {
+    font-size: 0.78rem;
+    color: var(--text-subtle);
+    line-height: 1.35;
+  }
+}
+
+.needs {
+  color: var(--accent-text) !important;
+}
+
+.status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+}
+
+.off {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.testers {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-top: 0.4rem;
+
+  > span {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+
+  > small {
+    font-size: 0.75rem;
+    color: var(--text-subtle);
+  }
+
+  textarea {
+    width: 100%;
+    padding: 0.5rem 0.65rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--bg-elevated);
+    color: var(--text);
+    font: inherit;
+    font-size: 0.88rem;
+    resize: vertical;
+    outline: none;
+
+    &:focus {
+      border-color: var(--accent-mark);
+    }
+  }
+}
+
+.ask {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+  padding: 0.6rem 0.7rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--accent-mark);
+  background: var(--surface);
+  font-size: 0.85rem;
+
+  > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}
+
+.tick {
+  text-align: center !important;
+
+  input {
+    width: 1.25rem;
+    height: 1.25rem;
+    accent-color: var(--plan);
+    cursor: pointer;
+  }
+}
+
+.hint {
+  margin-top: -0.4rem;
+  font-size: 0.8rem;
+  color: var(--text-subtle);
+}
+
+.error {
+  font-size: 0.85rem;
+  color: var(--danger);
+}
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.85rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--accent-mark);
+
+  h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+  }
+
+  ul {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    padding: 0;
+    list-style: none;
+    font-size: 0.88rem;
+  }
+
+  li small {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}

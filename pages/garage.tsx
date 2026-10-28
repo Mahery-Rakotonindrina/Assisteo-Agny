@@ -15,7 +15,6 @@ import { useVehicles } from "@/hooks/useVehicles";
 import { formatNumber } from "@/lib/format";
 import { dueReminders, latestReading } from "@/lib/garage";
 import { rise, stagger } from "@/lib/motion";
-import { planFor } from "@/lib/plans";
 
 /**
  * "Mon garage": the user's vehicles, service log, reminders, fuel and
@@ -25,7 +24,7 @@ import { planFor } from "@/lib/plans";
 export default function GaragePage() {
   const { t, locale } = useTranslation();
   const router = useRouter();
-  const { plan, has } = usePlan();
+  const { plan, has, planFor } = usePlan();
   // Until the plan is read (cache or server), neither the lock nor the read-only banner: a Premium user would see them flash.
   const known = plan !== null;
   const now = useNow(60_000);
@@ -53,13 +52,13 @@ export default function GaragePage() {
 
         {known && readOnly && vehicles.length > 0 && (
           <motion.div variants={rise}>
-            <PlanLock plan={planFor("garage")} text={t("garage.readOnly")} />
+            <PlanLock plan={planFor("garage")} text={t("garage.readOnly", { plan: t(`plans.names.${planFor("garage") ?? "premium"}`) })} />
           </motion.div>
         )}
 
         {!known || (readOnly && isLoading) ? null : readOnly && vehicles.length === 0 ? (
           <motion.div variants={rise} className={styles.locked}>
-            <PlanLock plan={planFor("garage")} text={t("garage.locked")} />
+            <PlanLock plan={planFor("garage")} text={t("garage.locked", { plan: t(`plans.names.${planFor("garage") ?? "premium"}`) })} />
             <ul>
               {(["sheet", "reminders", "fuel", "registration"] as const).map((key) => (
                 <li key={key}>{t(`garage.pitch.${key}`)}</li>

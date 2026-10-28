@@ -11,8 +11,8 @@ export function useExpenseLabels(records: ExpenseRecord[]) {
 
   const categories = useMemo(
     () => [
-      ...expenseCategories.map((id) => ({ id, name: t(`expenses.categories.${id}`), color: categoryColors[id], custom: false })),
-      ...custom.map((category) => ({ id: category.id, name: category.name, color: category.color, custom: true })),
+      ...expenseCategories.map((id) => ({ id, name: t(`expenses.categories.${id}`), color: categoryColors[id], custom: false, icon: undefined })),
+      ...custom.map((category) => ({ id: category.id, name: category.name, color: category.color, custom: true, icon: category.icon })),
     ],
     [custom, t],
   );

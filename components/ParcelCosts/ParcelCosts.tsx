@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowDown, ExternalLink, Plus, X } from "lucide-react";
+import { CountedLink } from "@/components/Expenses/CountedLink";
 import { PlanLock } from "@/components/PlanLock";
 import { usePlan } from "@/hooks/usePlan";
-import { planFor } from "@/lib/plans";
 import { useTranslation } from "@/hooks/useTranslation";
+import { saleKey, soldOn } from "@/lib/expenses";
+import type { PlanId } from "@/lib/plans";
 import { formatAriary, formatDecimal } from "@/lib/format";
 import { currencySymbols, parseForeignAmount, type ForeignAmount } from "@/lib/money";
 import { createId } from "@/services/historyStore";
@@ -26,16 +28,24 @@ const grouped = (value: string) => value.replace(/\B(?=(\d{3})+(?!\d))/g, "\u202
  * (freight, customs, delivery…). Saved as you type.
  */
 export function ParcelCosts({ parcel }: { parcel: Parcel }) {
-  const { t } = useTranslation();
-  const { has } = usePlan();
-  return has("parcelCosts") ? (
-    <Costs parcel={parcel} reseller={has("reseller")} />
-  ) : (
-    <PlanLock plan={planFor("parcelCosts")} text={t("parcels.costsLocked")} />
+  const { t, locale } = useTranslation();
+  const { has, planFor } = usePlan();
+  if (has("parcelCosts")) return <Costs parcel={parcel} reseller={has("reseller")} resellerFrom={planFor("reseller")} />;
+  // Lost with the plan: the costs already typed stay, shown read-only.
+  const kept = parcelTotalMga(parcel);
+  return (
+    <PlanLock
+      plan={planFor("parcelCosts")}
+      text={
+        kept > 0
+          ? t("parcels.costsReadOnly", { amount: formatAriary(kept, locale) })
+          : t("parcels.costsLocked", { plan: t(`plans.names.${planFor("parcelCosts") ?? "lite"}`) })
+      }
+    />
   );
 }
 
-function Costs({ parcel, reseller }: { parcel: Parcel; reseller: boolean }) {
+function Costs({ parcel, reseller, resellerFrom }: { parcel: Parcel; reseller: boolean; resellerFrom: PlanId | null }) {
   const { t, locale } = useTranslation();
   const [price, setPrice] = useState(parcel.priceMga ? String(parcel.priceMga) : "");
   const [fees, setFees] = useState<DraftFee[]>(() => (parcel.fees ?? []).map((fee) => ({ id: fee.id, label: fee.label, amount: fee.amountMga ? String(fee.amountMga) : "" })));
@@ -145,8 +155,9 @@ function Costs({ parcel, reseller }: { parcel: Parcel; reseller: boolean }) {
         </span>
         <strong>{formatAriary(total, locale)}</strong>
       </div>
+      {parcelTotalMga(parcel) > 0 && <CountedLink sourceKey={`parcel:${parcel.id}`} at={parcel.createdAt} />}
 
-      {reseller ? <Sale parcel={parcel} total={total} /> : <PlanLock plan="pro" text={t("parcels.sale.locked")} />}
+      {reseller ? <Sale parcel={parcel} total={total} /> : <PlanLock plan={resellerFrom} text={t("parcels.sale.locked", { plan: t(`plans.names.${resellerFrom ?? "pro"}`) })} />}
     </div>
   );
 }
@@ -269,6 +280,8 @@ function Sale({ parcel, total }: { parcel: Parcel; total: number }) {
           )}
         </div>
       )}
+      {/* The whole sale price counts in the incomes, the month it was sold. */}
+      {parcel.salePriceMga ? <CountedLink sourceKey={saleKey(parcel.id)} at={soldOn(parcel)} flow="income" /> : null}
     </div>
   );
 }

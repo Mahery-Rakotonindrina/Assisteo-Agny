@@ -1,58 +1,76 @@
 import { useState, type FormEvent } from "react";
-import { Baby, Check, Church, Gift, Heart, Home, Plane, Plus, Star, Tag, Trash2, type LucideIcon } from "lucide-react";
+import { Check, PiggyBank, Plus, SlidersHorizontal, Tag, Trash2 } from "lucide-react";
 import { Button } from "@/components/Button";
 import { useToast } from "@/components/Toast";
 import { useExpenseLabels } from "@/hooks/useExpenseLabels";
 import { useTranslation } from "@/hooks/useTranslation";
-import { BUDGET_ID, customColors, customIcons, type Budget, type CustomIcon, type ExpenseRecord } from "@/lib/expenses";
+import { barPercent, BUDGET_ID, customColors, customIcons, type Budget, type BudgetLine, type CustomIcon, type ExpenseRecord } from "@/lib/expenses";
+import { formatAriary } from "@/lib/format";
 import { haptics } from "@/services/device";
 import { expenseStore } from "@/services/expenseStore";
+import { categoryIcons } from "./CategoryChips";
+import { EmptyNote } from "./EmptyNote";
 import { parseAmount } from "./ExpenseForm";
+import { ExpenseSheet } from "./ExpenseSheet";
 import styles from "./Expenses.module.scss";
 
-export const categoryIcons: Record<CustomIcon, LucideIcon> = { tag: Tag, heart: Heart, home: Home, gift: Gift, star: Star, baby: Baby, church: Church, plane: Plane };
+export { categoryIcons };
 
-/** The monthly caps (overall and per category), and the user's own categories. */
-export function BudgetPanel({ records }: { records: ExpenseRecord[] }) {
-  const { t } = useTranslation();
-  const toast = useToast();
-  const { categories, custom } = useExpenseLabels(records);
+/** Where the month stands against its caps, the caps (in a sheet), and the user's own categories. */
+export function BudgetPanel({ records, lines }: { records: ExpenseRecord[]; lines: BudgetLine[] }) {
+  const { t, locale } = useTranslation();
+  const { categoryName, categoryColor, custom } = useExpenseLabels(records);
   const budget = records.find((record): record is Budget => record.kind === "budget" && record.id === BUDGET_ID);
-  const [total, setTotal] = useState(budget?.total ? String(budget.total) : "");
-  const [caps, setCaps] = useState<Record<string, string>>(() => Object.fromEntries(Object.entries(budget?.categories ?? {}).map(([key, value]) => [key, String(value)])));
-
-  const submit = async (event: FormEvent) => {
-    event.preventDefault();
-    haptics.success();
-    await expenseStore.setBudget(parseAmount(total), Object.fromEntries(Object.entries(caps).map(([key, value]) => [key, parseAmount(value)])));
-    toast(t("expenses.budget.saved"));
-  };
+  const [setting, setSetting] = useState(false);
+  const money = (value: number) => formatAriary(value, locale);
+  const scopeName = (scope: string) => (scope === "total" ? t("expenses.budget.overall") : categoryName(scope));
 
   return (
     <div className={styles.panel}>
-      <form className={styles.form} onSubmit={(event) => void submit(event)} aria-label={t("expenses.budget.title")}>
-        <p className={styles.hint}>{t("expenses.budget.hint")}</p>
-        <div className={styles.fields}>
-          <label className={styles.wide}>
-            <span>{t("expenses.budget.overall")}</span>
-            <input value={total} onChange={(event) => setTotal(event.target.value)} inputMode="numeric" placeholder="Ar" />
-          </label>
-          {categories.map((category) => (
-            <label key={category.id}>
-              <span>{category.name}</span>
-              <input value={caps[category.id] ?? ""} onChange={(event) => setCaps({ ...caps, [category.id]: event.target.value })} inputMode="numeric" placeholder="Ar" />
-            </label>
-          ))}
-        </div>
-        <div className={styles.row}>
-          <Button type="submit" icon={<Check />}>
-            {t("expenses.save")}
-          </Button>
-        </div>
-      </form>
+      <div className={styles.actionRow}>
+        <Button size="lg" icon={<SlidersHorizontal />} onClick={() => setSetting(true)}>
+          {t("expenses.budget.set")}
+        </Button>
+      </div>
+
+      {lines.length === 0 ? (
+        <EmptyNote icon={<PiggyBank />} texts="expenses.budget.empty" />
+      ) : (
+        <section aria-labelledby="budget-where">
+          <h2 id="budget-where" className={styles.subTitle}>
+            {t("expenses.budget.where")}
+          </h2>
+          <ul className={styles.bars} data-testid="budget-bars">
+            {lines.map((line) => (
+              <li key={line.scope}>
+                <span className={styles.barLabel}>
+                  <span>
+                    {line.scope !== "total" && <i className={styles.dot} style={{ background: categoryColor(line.scope) }} />}
+                    {scopeName(line.scope)}
+                  </span>
+                  <small>
+                    {money(line.spent)} / {money(line.cap)}
+                  </small>
+                </span>
+                <span className={styles.track} data-level={line.level}>
+                  <span style={{ width: `${barPercent(line.ratio)}%` }} />
+                </span>
+                <small className={styles.barNote} data-level={line.level}>
+                  {line.level === "over" ? t("expenses.budget.overBy", { amount: money(line.spent - line.cap) }) : t("expenses.budget.remaining", { amount: money(line.cap - line.spent) })}
+                  {` · ${barPercent(line.ratio)} %`}
+                </small>
+              </li>
+            ))}
+          </ul>
+          <p className={styles.hint}>{t("expenses.budget.hint")}</p>
+        </section>
+      )}
 
       <section className={styles.panel}>
-        <h2 className={styles.subTitle}>{t("expenses.custom.title")}</h2>
+        <div>
+          <h2 className={styles.subTitle}>{t("expenses.custom.title")}</h2>
+          <p className={styles.hint}>{t("expenses.custom.example")}</p>
+        </div>
         {custom.length > 0 && (
           <ul className={styles.entries}>
             {custom.map((category) => {
@@ -75,7 +93,53 @@ export function BudgetPanel({ records }: { records: ExpenseRecord[] }) {
         )}
         <CategoryForm />
       </section>
+
+      <ExpenseSheet open={setting} title={t("expenses.budget.set")} onClose={() => setSetting(false)}>
+        <BudgetForm key={budget?.updatedAt ?? 0} records={records} budget={budget} onDone={() => setSetting(false)} />
+      </ExpenseSheet>
     </div>
+  );
+}
+
+function BudgetForm({ records, budget, onDone }: { records: ExpenseRecord[]; budget?: Budget; onDone: () => void }) {
+  const { t } = useTranslation();
+  const toast = useToast();
+  const { categories } = useExpenseLabels(records);
+  const [total, setTotal] = useState(budget?.total ? String(budget.total) : "");
+  const [caps, setCaps] = useState<Record<string, string>>(() => Object.fromEntries(Object.entries(budget?.categories ?? {}).map(([key, value]) => [key, String(value)])));
+
+  const submit = async (event: FormEvent) => {
+    event.preventDefault();
+    haptics.success();
+    await expenseStore.setBudget(parseAmount(total), Object.fromEntries(Object.entries(caps).map(([key, value]) => [key, parseAmount(value)])));
+    toast(t("expenses.budget.saved"));
+    onDone();
+  };
+
+  return (
+    <form className={styles.form} onSubmit={(event) => void submit(event)} aria-label={t("expenses.budget.title")}>
+      <p className={styles.hint}>{t("expenses.budget.hint")}</p>
+      <div className={styles.fields}>
+        <label className={styles.wide}>
+          <span>{t("expenses.budget.overall")}</span>
+          <input value={total} onChange={(event) => setTotal(event.target.value)} inputMode="numeric" placeholder={t("expenses.form.amountExample")} className={styles.amountInput} />
+        </label>
+        {categories.map((category) => (
+          <label key={category.id}>
+            <span>{category.name}</span>
+            <input value={caps[category.id] ?? ""} onChange={(event) => setCaps({ ...caps, [category.id]: event.target.value })} inputMode="numeric" placeholder="Ar" />
+          </label>
+        ))}
+      </div>
+      <div className={styles.row}>
+        <Button type="submit" icon={<Check />}>
+          {t("expenses.save")}
+        </Button>
+        <Button variant="ghost" onClick={onDone}>
+          {t("expenses.cancel")}
+        </Button>
+      </div>
+    </form>
   );
 }
 

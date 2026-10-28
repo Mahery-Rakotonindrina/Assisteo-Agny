@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { activeProvider } from "@/lib/ai/provider";
 import { InstallIdSchema, installIdHeader } from "@/lib/ai/schema";
 import { referralCodeFor, trialEligible } from "@/lib/offers";
-import { soldPlans, type PlanResponse } from "@/lib/plans";
+import { featureFromConfig, planFeatureList, planFeatures, soldPlans, subscriptionPayments, type PlanResponse } from "@/lib/plans";
 import { applyCors, sendError } from "@/lib/server/http";
 import { limitsFor, resolvePlan } from "@/lib/server/plan";
 import { registerReferralCode, trialClaimed } from "@/lib/server/offerStore";
@@ -18,7 +18,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   if (req.method !== "GET") return sendError(res, 405, "method_not_allowed", "Use GET.");
 
   const installId = InstallIdSchema.safeParse(req.headers[installIdHeader]).data ?? null;
-  const [{ account, current }, config] = await Promise.all([resolvePlan(req), getPlansConfig()]);
+  const config = await getPlansConfig();
+  const { account, current, features } = await resolvePlan(req, config);
   const limits = await limitsFor(current.plan, config);
 
   let usage: PlanResponse["usage"];
@@ -28,7 +29,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     usage = { scans: trial.used, questionsToday, deep: 0 };
   } else usage = { scans: 0, questionsToday: 0, deep: 0 };
 
-  const offers = account?.email ? await accountOffers(account.id, account.email) : { trialEligible: false, discount: null, referralCode: null };
+  const offers = account?.email ? await accountOffers(account.id, account.email) : { trialEligible: false, discount: null, referralCode: null, payments: [] };
 
   res.setHeader("Cache-Control", "no-store");
   return res.status(200).json({
@@ -38,14 +39,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     endsAt: current.endsAt,
     limits,
     usage,
-    offers: soldPlans.map((id) => ({ id, ...config.offers[id] })),
+    offers: soldPlans.map((id) => ({ id, ...config.offers[id], features: planFeatureList(id, config) })),
     payment: config.payment,
+    features: planFeatures.filter((feature) => features.has(feature)),
+    featureFrom: featureFromConfig(config),
     ...offers,
   } satisfies PlanResponse);
 }
 
-/** The account's Premium trial, waiting discount and referral code; nothing if unreadable. */
-async function accountOffers(id: string, email: string): Promise<Pick<PlanResponse, "trialEligible" | "discount" | "referralCode">> {
+/** The account's Premium trial, waiting discount, referral code and payments; nothing if unreadable. */
+async function accountOffers(id: string, email: string): Promise<Pick<PlanResponse, "trialEligible" | "discount" | "referralCode" | "payments">> {
   try {
     const referralCode = referralCodeFor(id);
     const [rows, claimed, discount, registered] = await Promise.all([
@@ -55,9 +58,9 @@ async function accountOffers(id: string, email: string): Promise<Pick<PlanRespon
       registerReferralCode(referralCode, email),
     ]);
     // A code already taken by another account (very unlikely) is not shown.
-    return { trialEligible: !claimed && trialEligible(rows), discount, referralCode: registered ? referralCode : null };
+    return { trialEligible: !claimed && trialEligible(rows), discount, referralCode: registered ? referralCode : null, payments: subscriptionPayments(rows) };
   } catch (error) {
     await reportError(error, { route: "plan", kind: "offers" });
-    return { trialEligible: false, discount: null, referralCode: null };
+    return { trialEligible: false, discount: null, referralCode: null, payments: [] };
   }
 }

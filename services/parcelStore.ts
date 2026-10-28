@@ -53,6 +53,12 @@ export type Parcel = {
   /** Resellers (Pro): what the client is charged, and what they have paid so far, in ariary. */
   salePriceMga?: number;
   paidMga?: number;
+  /**
+   * When the sale price was first set: the month the sale counts in the
+   * incomes. Missing on parcels sold before (and from an older app): the day
+   * the parcel was added stands for it, so the sale never changes month.
+   */
+  soldAt?: number;
   /** Sync bookkeeping, like the history. */
   deletedAt?: number;
   dirty?: boolean;
@@ -196,11 +202,11 @@ export const parcelStore = {
     await write({ ...current, thumbnail });
   },
 
-  /** Saves what the client is charged and has paid (resellers). */
+  /** Saves what the client is charged and has paid (resellers), and when it was sold. */
   async setSale(id: string, sale: { salePriceMga?: number; paidMga?: number }) {
     const current = await get<Parcel>(id, db());
     if (!current) return;
-    await write({ ...current, salePriceMga: sale.salePriceMga, paidMga: sale.paidMga });
+    await write({ ...current, salePriceMga: sale.salePriceMga, paidMga: sale.paidMga, soldAt: saleDate(current, sale.salePriceMga) });
   },
 
   /** Saves the price and fees in ariary. */
@@ -248,6 +254,15 @@ export const parcelStore = {
 export function scanHasNews(parcel: Parcel, info: ParcelInfo | null | undefined, scanId?: string) {
   if (!info || (scanId && parcel.scanIds.includes(scanId))) return false;
   return parcelScanHasNews(parcel.info, info);
+}
+
+/**
+ * The day a parcel counts as sold: set when a sale price appears, kept while
+ * it stays, removed with it.
+ */
+export function saleDate(parcel: Pick<Parcel, "salePriceMga" | "soldAt">, salePriceMga: number | undefined, now = Date.now()) {
+  if (!salePriceMga || salePriceMga <= 0) return undefined;
+  return parcel.salePriceMga && parcel.salePriceMga > 0 ? parcel.soldAt : now;
 }
 
 /** Everything spent on a parcel, in ariary: price plus fees. */

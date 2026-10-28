@@ -7,3 +7,4 @@ export { MonthPanel } from "./MonthPanel";
 export { RecurringPanel } from "./RecurringPanel";
 export { ReceiptControls } from "./ReceiptControls";
 export { MonthReview } from "./MonthReview";
+export { CountedLink } from "./CountedLink";

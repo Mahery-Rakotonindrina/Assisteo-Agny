@@ -5,7 +5,6 @@ import { PlanBadge } from "@/components/PlanBadge";
 import { useToast } from "@/components/Toast";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
-import { planFor } from "@/lib/plans";
 import { haptics } from "@/services/device";
 import { exportDocumentPdf } from "@/services/documentPdf";
 import type { HistoryEntry } from "@/types/history";
@@ -14,7 +13,7 @@ import type { HistoryEntry } from "@/types/history";
 export function PdfExportButton({ entry }: { entry: HistoryEntry }) {
   const { t, locale } = useTranslation();
   const toast = useToast();
-  const { has } = usePlan();
+  const { has, planFor } = usePlan();
   const [busy, setBusy] = useState(false);
 
   if (!has("pdfExport")) {

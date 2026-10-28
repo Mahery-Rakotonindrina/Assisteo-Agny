@@ -1,7 +1,8 @@
 import type { Bill } from "@/lib/bills";
-import type { BillKind } from "@/lib/ai/schema";
+import type { Analysis, BillKind } from "@/lib/ai/schema";
 import type { Vehicle } from "@/lib/garage";
 import type { ForeignCurrency } from "@/lib/money";
+import { parseDay } from "@/lib/papers";
 import { makeRepeat, occurrence } from "@/lib/reminderRepeat";
 import type { SavedList } from "@/services/listStore";
 import type { Parcel } from "@/services/parcelStore";
@@ -55,8 +56,26 @@ export type CustomIcon = (typeof customIcons)[number];
 export const paymentMethods = ["cash", "mobile", "card"] as const;
 export type PaymentMethod = (typeof paymentMethods)[number];
 
-export const incomeKinds = ["salary", "sales", "other"] as const;
+/** Where an income comes from, as the user picks it. */
+export const incomeKinds = ["salary", "sales", "family", "other"] as const;
 export type IncomeKind = (typeof incomeKinds)[number];
+
+/**
+ * "family" (help from the family) came after the first app: it is stored as
+ * "other" with `from: "family"` (and its name in the note or label), so an
+ * older app shows "Other income" with that text, never a raw key.
+ */
+export type StoredIncomeKind = Exclude<IncomeKind, "family">;
+export type IncomeFrom = "family";
+
+/** What is written for an income kind: the kind an older app knows, and where it comes from. */
+export const storedIncome = (kind: IncomeKind): { kind: StoredIncomeKind; from?: IncomeFrom } => (kind === "family" ? { kind: "other", from: "family" } : { kind });
+
+/** The kind the user picked, read back from what is stored. */
+export function incomeKindOf(kind: string | undefined, from?: string): IncomeKind {
+  if (from === "family") return "family";
+  return kind === "salary" || kind === "sales" || kind === "other" ? kind : "other";
+}
 
 /** When a recurring expense rings: never, the day before or the day itself (at 9:00). */
 export const dueReminderChoices = ["none", "eve", "day"] as const;
@@ -91,7 +110,9 @@ export type Income = Base & {
   kind: "income";
   at: number;
   amountMga: number;
-  income: IncomeKind;
+  income: StoredIncomeKind;
+  /** Help from the family (see storedIncome). */
+  from?: IncomeFrom;
   note?: string;
   /** The recurring income's occurrence it replaces. */
   sourceKey?: string;
@@ -114,6 +135,8 @@ export type Recurring = Base & {
   remind: DueReminder;
   /** Months marked "not this month". */
   skipped: string[];
+  /** An income from the family (category "other", see storedIncome). */
+  from?: IncomeFrom;
 };
 
 export type Budget = Base & {
@@ -133,6 +156,11 @@ export type ExpenseRecord = ManualExpense | Income | Recurring | Budget | Custom
 
 export const BUDGET_ID = "budget";
 export const exclusionId = (sourceKey: string) => `exclusion:${sourceKey}`;
+/**
+ * "Count it anyway" for a receipt that looks already counted: an exclusion
+ * record on this key. An older app never computes that key, so it ignores it.
+ */
+export const keepKey = (sourceKey: string) => `keep:${sourceKey}`;
 
 /** Expenses at 80 % of their cap warn, beyond it they are over. */
 export const BUDGET_WARNING = 0.8;
@@ -201,7 +229,20 @@ export const occurrenceKey = (recurringId: string, key: string) => `recurring:${
 
 // ---- What the app already knows -----------------------------------------------------
 
-export type ExpenseOrigin = "manual" | "recurring" | "bill" | "shopping" | "parcel" | "fuel" | "maintenance" | "vehicle";
+export type ExpenseOrigin =
+  | "manual"
+  | "recurring"
+  | "bill"
+  | "shopping"
+  | "parcel"
+  | "fuel"
+  | "maintenance"
+  | "vehicle"
+  | "receipt"
+  | "mobile_money"
+  | "plan"
+  | "sale"
+  | "fees";
 
 /** One line of a month: typed in, recurring, or read from another part of the app. */
 export type MonthItem = {
@@ -217,15 +258,57 @@ export type MonthItem = {
   href?: string;
   /** Kept out of the budget by the user. */
   excluded: boolean;
+  /** Read from a scanned receipt: the scan and its transaction reference (to find it typed in already). */
+  scanId?: string;
+  reference?: string;
+  /** A receipt that looks counted already (same amount within 3 days): left out until "count it anyway". */
+  doubt?: boolean;
   record?: ManualExpense;
   recurring?: Recurring;
 };
 
+/**
+ * A line computed from elsewhere in the app. Money coming in (a parcel sold,
+ * Mobile Money received) has `flow: "income"` and an income kind as its
+ * category; the rest are expenses.
+ */
+export type SourceItem = Omit<MonthItem, "excluded" | "doubt" | "record" | "recurring"> & {
+  flow?: "income";
+  /**
+   * Money moved between one's own pockets (a withdrawal, a deposit, a
+   * transfer to one's own account): counted only once the user says
+   * "it's an expense" (an exclusion on keepKey).
+   */
+  own?: true;
+  /** A withdrawal's or transfer's fees: the key of its receipt (left out once that receipt counts whole). */
+  feesOf?: string;
+  /** A receipt scanned again (same reference): the key of the first scan's line, the only one counted. */
+  sameAs?: string;
+  /** When the receipt was scanned: of two that look alike, only the later one is in doubt. */
+  scannedAt?: number;
+  /** A parcel sold: the sale price minus what it cost (negative: a loss), and what the client still owes. */
+  profitMga?: number;
+  unpaidMga?: number;
+};
+
+type Receipt = NonNullable<NonNullable<Analysis["document"]>["receipt"]>;
+
+/** A scan, as far as the expenses need it: a till receipt or a Mobile Money confirmation. */
+export type ReceiptScan = { id: string; createdAt: number; analysis: { document?: { receipt?: Receipt | null; bill?: { kind: BillKind } | null } | null } };
+
+/** A subscription paid for (from /api/plan), when the server knows its amount. */
+export type PlanPayment = { id: string; plan: string; amountMga: number; paidAt: number };
+
 export type SourceInputs = {
   bills?: Array<Pick<Bill, "kind" | "issuer" | "amountMga" | "paidAt"> & { entry: { id: string } }>;
   lists?: Array<Pick<SavedList, "id" | "title" | "kind" | "items" | "updatedAt">>;
-  parcels?: Array<Pick<Parcel, "id" | "title" | "priceMga" | "fees" | "createdAt">>;
+  parcels?: Array<Pick<Parcel, "id" | "title" | "priceMga" | "fees" | "createdAt"> & Partial<Pick<Parcel, "salePriceMga" | "paidMga" | "soldAt">>>;
   vehicles?: Array<Pick<Vehicle, "id" | "name" | "fuel" | "maintenance" | "expenses">>;
+  /** Scans: the receipts among them count on their own. */
+  receipts?: ReceiptScan[];
+  payments?: PlanPayment[];
+  /** Expenses saved elsewhere (moved to the household) that stand for a receipt: that receipt is not counted. */
+  taken?: Array<Pick<ManualExpense, "scanId" | "reference">>;
 };
 
 export const billCategory: Record<BillKind, BuiltInCategory> = {
@@ -238,13 +321,47 @@ export const billCategory: Record<BillKind, BuiltInCategory> = {
   other: "other",
 };
 
-type Computed = Omit<MonthItem, "excluded">;
+type Computed = SourceItem;
 
-/** Every expense the app knows from elsewhere: paid bills, ticked shopping, parcel costs, the garage. */
-export function sourceItems({ bills = [], lists = [], parcels = [], vehicles = [] }: SourceInputs): Computed[] {
+const cleanReference = (value: string | undefined) => value?.replace(/\s+/g, "").toUpperCase() || undefined;
+
+/** A transaction reference compared loosely: case and spaces left out. */
+export const sameReference = (a: string | undefined, b: string | undefined) => {
+  const left = cleanReference(a);
+  return left !== undefined && left === cleanReference(b);
+};
+
+/** Start of the day a timestamp falls on (local time). */
+export const dayStart = (at: number) => {
+  const date = new Date(at);
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+};
+
+const isAriary = (currency: string | null | undefined) => {
+  const code = currency?.trim().toUpperCase();
+  return !code || code === "MGA" || code === "AR";
+};
+
+/** The key of a scanned receipt's line, in the expenses or the incomes. */
+export const receiptKey = (scanId: string) => `receipt:${scanId}`;
+export const saleKey = (parcelId: string) => `sale:${parcelId}`;
+
+/** When a parcel was sold: the day its sale price was set, else (sold before that was kept) the day it was added, which never moves. */
+export const soldOn = (parcel: Pick<Parcel, "createdAt"> & Partial<Pick<Parcel, "soldAt">>) => parcel.soldAt ?? parcel.createdAt;
+
+const planName = (plan: string) => plan.charAt(0).toUpperCase() + plan.slice(1);
+
+/**
+ * Every expense and income the app knows from elsewhere: paid bills, ticked
+ * shopping, parcel costs and sales, the garage, scanned receipts (money sent
+ * or received) and the subscriptions paid.
+ */
+export function sourceItems({ bills = [], lists = [], parcels = [], vehicles = [], receipts = [], payments = [], taken = [] }: SourceInputs): Computed[] {
   const items: Computed[] = [];
+  const paidBills = new Set<string>();
   for (const bill of bills) {
     if (!bill.paidAt || !bill.amountMga) continue;
+    paidBills.add(bill.entry.id);
     items.push({
       key: `bill:${bill.entry.id}`,
       origin: "bill",
@@ -265,6 +382,21 @@ export function sourceItems({ bills = [], lists = [], parcels = [], vehicles = [
   for (const parcel of parcels) {
     const total = (parcel.priceMga ?? 0) + (parcel.fees ?? []).reduce((sum, fee) => sum + (fee.amountMga || 0), 0);
     if (total > 0) items.push({ key: `parcel:${parcel.id}`, origin: "parcel", at: parcel.createdAt, amountMga: total, category: "online", label: parcel.title, href: "/parcels" });
+    // Sold (resellers): the whole sale price comes in, the month it was sold; the purchase stays an expense.
+    const sale = parcel.salePriceMga;
+    if (sale && sale > 0)
+      items.push({
+        key: saleKey(parcel.id),
+        flow: "income",
+        origin: "sale",
+        at: soldOn(parcel),
+        amountMga: sale,
+        category: "sales",
+        label: parcel.title,
+        href: "/parcels",
+        profitMga: sale - total,
+        unpaidMga: Math.max(0, sale - (parcel.paidMga ?? 0)),
+      });
   }
   for (const vehicle of vehicles) {
     const href = `/garage?open=${encodeURIComponent(vehicle.id)}`;
@@ -276,7 +408,88 @@ export function sourceItems({ bills = [], lists = [], parcels = [], vehicles = [
       if (expense.amountMga)
         items.push({ key: `vehicle:${vehicle.id}:${expense.id}`, origin: "vehicle", at: expense.at, amountMga: expense.amountMga, category: "car", label: expense.label ?? vehicle.name, href });
   }
+  // The oldest scan first: of two with the same reference, it is the one counted.
+  const firstByReference = new Map<string, string>();
+  const byScanDate = [...receipts].sort((a, b) => a.createdAt - b.createdAt || a.id.localeCompare(b.id));
+  for (const scan of byScanDate) {
+    const receipt = scan.analysis.document?.receipt;
+    // A receipt that pays a bill marked paid: the bill counts it already.
+    if (!receipt || paidBills.has(scan.id)) continue;
+    // Yuan, dollars, euros: no rate on hand, so only the "add" button under the scan.
+    if (receipt.total === null || !(receipt.total > 0) || !isAriary(receipt.currency)) continue;
+    const reference = receipt.reference?.trim() || undefined;
+    if (taken.some((expense) => expense.scanId === scan.id || sameReference(expense.reference, reference))) continue;
+    const incoming = receipt.direction === "in";
+    const own = receipt.direction === "own";
+    const bill = scan.analysis.document?.bill;
+    const key = receiptKey(scan.id);
+    const at = parseDay(receipt.date) ?? dayStart(scan.createdAt);
+    // The same transaction scanned again (an SMS, then a photo): it points to the first scan's line.
+    const cleaned = cleanReference(reference);
+    const first = cleaned ? firstByReference.get(cleaned) : undefined;
+    if (cleaned && !first) firstByReference.set(cleaned, key);
+    const again = first ? { sameAs: first } : {};
+    // Between one's own pockets: only the fees are spent.
+    if (own && receipt.fees && receipt.fees > 0)
+      items.push({
+        key: `${key}:fees`,
+        origin: "fees",
+        at,
+        amountMga: Math.round(receipt.fees),
+        category: "phone",
+        href: `/result?id=${encodeURIComponent(scan.id)}`,
+        scanId: scan.id,
+        feesOf: key,
+        scannedAt: scan.createdAt,
+        ...(first && { sameAs: `${first}:fees` }),
+      });
+    items.push({
+      ...again,
+      scannedAt: scan.createdAt,
+      key,
+      ...(incoming && { flow: "income" as const }),
+      ...(own && { own: true as const }),
+      origin: receipt.payment === "mobile_money" || receipt.operator ? "mobile_money" : "receipt",
+      at,
+      amountMga: Math.round(receipt.total),
+      category: incoming ? "other" : (receipt.category ?? (bill ? billCategory[bill.kind] : undefined) ?? "other"),
+      label: receipt.merchant?.trim() || undefined,
+      href: `/result?id=${encodeURIComponent(scan.id)}`,
+      scanId: scan.id,
+      reference,
+    });
+  }
+  for (const payment of payments)
+    if (payment.amountMga > 0)
+      items.push({ key: `plan:${payment.id}`, origin: "plan", at: payment.paidAt, amountMga: payment.amountMga, category: "other", label: `Assisteo ${planName(payment.plan)}`, href: "/plans" });
   return items;
+}
+
+/** Same amount, within 3 days: a receipt that probably stands for this line. */
+const DOUBT_DAYS = 3;
+const looksSame = (a: { at: number; amountMga: number }, b: { at: number; amountMga: number }) =>
+  a.amountMga === b.amountMga && Math.abs(dayStart(a.at) - dayStart(b.at)) <= DOUBT_DAYS * 86_400_000 + 3_600_000;
+
+/** Of two receipts of the same flow and amount, the later scan looks like the earlier one, unless both have their own reference. */
+const laterCopy = (source: Computed, other: Computed) =>
+  other.key !== source.key &&
+  other.flow === source.flow &&
+  !other.sameAs &&
+  !(source.reference && other.reference) &&
+  ((other.scannedAt ?? 0) < (source.scannedAt ?? 0) || ((other.scannedAt ?? 0) === (source.scannedAt ?? 0) && other.key < source.key)) &&
+  looksSame(other, source);
+
+/**
+ * A receipt that probably stands for a line counted already: a paid bill, a
+ * typed-in expense, another line of the app (garage, shopping, parcel), or an
+ * earlier scan. Only the receipt is in doubt, never the other line.
+ */
+function inDoubt(source: Computed, sources: Computed[], manual: ManualExpense[]) {
+  const receipts = sources.filter((other) => isReceipt(other) && (!other.own || other.key === source.key));
+  if (receipts.some((other) => laterCopy(source, other))) return true;
+  if (source.flow === "income") return false;
+  const lines = sources.filter((other) => !other.flow && !isReceipt(other) && other.origin !== "fees" && other.origin !== "plan");
+  return [...lines, ...manual].some((other) => looksSame(other, source));
 }
 
 // ---- A month ------------------------------------------------------------------------
@@ -286,6 +499,9 @@ const live = <T extends { deletedAt?: number }>(records: T[]) => records.filter(
 export const byKind = <K extends ExpenseRecord["kind"]>(records: ExpenseRecord[], kind: K) =>
   live(records).filter((record): record is Extract<ExpenseRecord, { kind: K }> => record.kind === kind);
 
+/** One's own expenses or incomes are kept (not deleted): the read-only history is worth a link. */
+export const hasOwnExpenses = (records: ExpenseRecord[]) => byKind(records, "expense").length > 0 || byKind(records, "income").length > 0;
+
 /** The keys a manual expense or income stands for: those computed lines are not counted twice. */
 export function linkedKeys(records: ExpenseRecord[]) {
   const keys = new Set<string>();
@@ -293,15 +509,21 @@ export function linkedKeys(records: ExpenseRecord[]) {
   return keys;
 }
 
+const isReceipt = (item: Pick<MonthItem, "origin">) => item.origin === "receipt" || item.origin === "mobile_money";
+
 /**
  * The month's expenses, the latest first: typed in, the recurring ones due
  * that month (unless skipped), and what the app knows from elsewhere. A
- * computed line a manual expense stands for is left out.
+ * computed line a manual expense stands for is left out. A scanned receipt
+ * typed in already (same scan or reference) is left out too; one with the
+ * same amount as a paid bill or a typed-in expense within 3 days is shown
+ * as a doubt, not counted, until "count it anyway".
  */
 export function monthExpenses(records: ExpenseRecord[], sources: Computed[], key: string): MonthItem[] {
   const linked = linkedKeys(records);
-  const excluded = new Set(byKind(records, "exclusion").map((record) => record.sourceKey));
-  const items: MonthItem[] = byKind(records, "expense")
+  const marks = new Set(byKind(records, "exclusion").map((record) => record.sourceKey));
+  const manual = byKind(records, "expense");
+  const items: MonthItem[] = manual
     .filter((record) => inMonth(record.at, key))
     .map((record) => ({ key: `manual:${record.id}`, origin: "manual", at: record.at, amountMga: record.amountMga, category: record.category, label: record.note, excluded: false, record }));
 
@@ -310,33 +532,104 @@ export function monthExpenses(records: ExpenseRecord[], sources: Computed[], key
     const at = occurrenceIn(recurring, key);
     const itemKey = occurrenceKey(recurring.id, key);
     if (at === null || linked.has(itemKey)) continue;
-    items.push({ key: itemKey, origin: "recurring", at, amountMga: recurring.amountMga, category: recurring.category, label: recurring.label, excluded: excluded.has(itemKey), recurring });
+    items.push({ key: itemKey, origin: "recurring", at, amountMga: recurring.amountMga, category: recurring.category, label: recurring.label, excluded: marks.has(itemKey), recurring });
   }
 
   for (const source of sources) {
-    if (!inMonth(source.at, key) || linked.has(source.key)) continue;
-    items.push({ ...source, excluded: excluded.has(source.key) });
+    if (source.flow === "income" || source.sameAs || !inMonth(source.at, key) || linked.has(source.key)) continue;
+    // A withdrawal or a transfer to oneself: neither spent nor earned, unless the user says it is an expense (then its fees are in its total).
+    if (source.own && !marks.has(keepKey(source.key))) continue;
+    if (source.feesOf && (marks.has(keepKey(source.feesOf)) || manual.some((record) => record.scanId === source.scanId))) continue;
+    if (isReceipt(source)) {
+      if (manual.some((record) => record.scanId === source.scanId || sameReference(record.reference, source.reference))) continue;
+      const doubt = !marks.has(keepKey(source.key)) && inDoubt(source, sources, manual);
+      if (doubt) {
+        items.push({ ...source, excluded: true, doubt: true });
+        continue;
+      }
+    }
+    items.push({ ...source, excluded: marks.has(source.key) });
   }
   return items.sort((a, b) => b.at - a.at || a.key.localeCompare(b.key));
 }
 
-export type IncomeItem = { key: string; at: number; amountMga: number; income: IncomeKind; label?: string; record?: Income; recurring?: Recurring };
+export type IncomeOrigin = "manual" | "recurring" | "sale" | "mobile_money" | "receipt";
 
-/** The month's incomes: typed in, and the recurring ones (salary…) unless skipped or replaced. */
-export function monthIncomes(records: ExpenseRecord[], key: string): IncomeItem[] {
+export type IncomeItem = {
+  key: string;
+  origin: IncomeOrigin;
+  at: number;
+  amountMga: number;
+  income: IncomeKind;
+  label?: string;
+  /** Computed lines only: kept out by the user ("don't count"). */
+  excluded: boolean;
+  /** Money received that looks counted already (an earlier scan of the same amount): left out until "count it anyway". */
+  doubt?: boolean;
+  href?: string;
+  /** A parcel sold: the profit (negative: a loss) and what the client still owes. */
+  profitMga?: number;
+  unpaidMga?: number;
+  record?: Income;
+  recurring?: Recurring;
+};
+
+
+/**
+ * The month's incomes: typed in, the recurring ones (salary…) unless skipped
+ * or replaced, and what the app knows (parcels sold, Mobile Money received).
+ */
+export function monthIncomes(records: ExpenseRecord[], key: string, sources: Computed[] = []): IncomeItem[] {
   const linked = linkedKeys(records);
+  const marks = new Set(byKind(records, "exclusion").map((record) => record.sourceKey));
   const items: IncomeItem[] = byKind(records, "income")
     .filter((record) => inMonth(record.at, key))
-    .map((record) => ({ key: `manual:${record.id}`, at: record.at, amountMga: record.amountMga, income: record.income, label: record.note, record }));
+    .map((record) => ({ key: `manual:${record.id}`, origin: "manual", at: record.at, amountMga: record.amountMga, income: incomeKindOf(record.income, record.from), label: record.note, excluded: false, record }));
   for (const recurring of byKind(records, "recurring")) {
     if (recurring.flow !== "income" || recurring.skipped.includes(key)) continue;
     const at = occurrenceIn(recurring, key);
     const itemKey = occurrenceKey(recurring.id, key);
     if (at === null || linked.has(itemKey)) continue;
-    const income = (incomeKinds as readonly string[]).includes(recurring.category) ? (recurring.category as IncomeKind) : "other";
-    items.push({ key: itemKey, at, amountMga: recurring.amountMga, income, label: recurring.label, recurring });
+    items.push({ key: itemKey, origin: "recurring", at, amountMga: recurring.amountMga, income: incomeKindOf(recurring.category, recurring.from), label: recurring.label, excluded: marks.has(itemKey), recurring });
+  }
+  for (const source of sources) {
+    if (source.flow !== "income" || source.sameAs || !inMonth(source.at, key) || linked.has(source.key)) continue;
+    const origin: IncomeOrigin = source.origin === "sale" || source.origin === "mobile_money" ? source.origin : "receipt";
+    const doubt = isReceipt(source) && !marks.has(keepKey(source.key)) && inDoubt(source, sources, []);
+    items.push({
+      key: source.key,
+      origin,
+      at: source.at,
+      amountMga: source.amountMga,
+      income: incomeKindOf(source.category),
+      label: source.label,
+      excluded: doubt || marks.has(source.key),
+      ...(doubt && { doubt }),
+      href: source.href,
+      profitMga: source.profitMga,
+      unpaidMga: source.unpaidMga,
+    });
   }
   return items.sort((a, b) => b.at - a.at || a.key.localeCompare(b.key));
+}
+
+/** What came in, what went out and what is left, the lines kept out not counted. */
+export function monthBalance(items: Pick<MonthItem, "amountMga" | "excluded">[], incomes: Pick<IncomeItem, "amountMga" | "excluded">[]) {
+  const add = (lines: Array<{ amountMga: number; excluded: boolean }>) => lines.reduce((sum, line) => sum + (line.excluded ? 0 : line.amountMga), 0);
+  const spent = add(items);
+  const earned = add(incomes);
+  return { spent, earned, left: earned - spent };
+}
+
+/** The month's expenses by day, the latest day first (one category only, when picked). */
+export function groupByDay<T extends Pick<MonthItem, "at" | "category">>(items: T[], category?: string | null) {
+  const days = new Map<number, T[]>();
+  for (const item of [...items].sort((a, b) => b.at - a.at)) {
+    if (category && item.category !== category) continue;
+    const day = dayStart(item.at);
+    days.set(day, [...(days.get(day) ?? []), item]);
+  }
+  return [...days.entries()].map(([day, lines]) => ({ day, items: lines }));
 }
 
 /** What the month's lines add up to (excluded ones left out), and by category, the largest first. */
@@ -381,6 +674,23 @@ export function budgetLines(budget: Pick<Budget, "total" | "categories"> | undef
   return lines;
 }
 
+/** A bar's filled width, in percent (0 to 100). */
+export const barPercent = (ratio: number) => Math.min(100, Math.max(0, Math.round(ratio * 100)));
+
+export type CategoryBar = { category: string; amount: number; cap: number | null; ratio: number; level: BudgetLevel | null };
+
+/**
+ * "Where your money goes": each category of the month, the largest first.
+ * With a cap, the bar is what was spent against it; without, its share of
+ * the month's total.
+ */
+export function categoryBars(totals: ReturnType<typeof monthTotals>, budget: Pick<Budget, "categories"> | undefined): CategoryBar[] {
+  return totals.byCategory.map(({ category, amount }) => {
+    const cap = budget?.categories?.[category] || null;
+    return { category, amount, cap, ratio: cap ? amount / cap : totals.total > 0 ? amount / totals.total : 0, level: budgetLevel(amount, cap ?? undefined) };
+  });
+}
+
 const levelRank: Record<BudgetLevel, number> = { ok: 0, warning: 1, over: 2 };
 
 /**
@@ -393,14 +703,18 @@ export function newBudgetAlerts(lines: BudgetLine[], seen: Record<string, Budget
 
 // ---- History --------------------------------------------------------------------------
 
-/** Totals month by month over the last `count` months (up to `key`), the oldest first, and the average per category. */
+/** Totals month by month over the last `count` months (up to `key`), the oldest first (spent, earned, left), and the average per category. */
 export function spendingHistory(records: ExpenseRecord[], sources: Computed[], key: string, count: number) {
   const months = lastMonths(key, count).map((month) => ({ month, ...monthTotals(monthExpenses(records, sources, month)) }));
   const sums = new Map<string, number>();
   for (const month of months) for (const line of month.byCategory) sums.set(line.category, (sums.get(line.category) ?? 0) + line.amount);
   const total = months.reduce((sum, month) => sum + month.total, 0);
   return {
-    months: months.map(({ month, total: monthTotal }) => ({ month, total: monthTotal })),
+    // What came in each month (the lines kept out left out), and what was left.
+    months: months.map(({ month, total: monthTotal }) => {
+      const earned = monthIncomes(records, month, sources).reduce((sum, item) => sum + (item.excluded ? 0 : item.amountMga), 0);
+      return { month, total: monthTotal, earned, left: earned - monthTotal };
+    }),
     average: Math.round(total / count),
     averages: [...sums.entries()].map(([category, sum]) => ({ category, amount: Math.round(sum / count) })).sort((a, b) => b.amount - a.amount),
   };

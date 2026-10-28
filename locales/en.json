@@ -364,7 +364,7 @@
     "aiUseOwnKeyHint": "Advanced · Gemini offers free keys",
     "aiDefaultLeftMonth": "{remaining} scans left this month out of {limit}",
     "aiDefaultOverMonth": "This month’s scans are used up: move to a bigger plan, or use your key.",
-    "aiLocked": "Using your own AI key, with no limit, is for subscribers (from the Lite plan).",
+    "aiLocked": "Using your own AI key, with no limit, is for subscribers (from the {plan} plan).",
     "aiLockedSaved": "Your key is saved, but it only works with a subscription: meanwhile, the app’s AI does the analyses.",
     "aiLockedHint": "For subscribers",
     "androidApp": "Android app",
@@ -594,7 +594,8 @@
       "instructionsPlaceholder": "e.g. Send the amount by MVola to 034 00 000 00 (Full Name), with your e-mail as the reason.",
       "contact": "Contact to send the reference",
       "contactHint": "A phone number, or a link (WhatsApp: https://wa.me/261…, Messenger…).",
-      "monthsFree": "{count} months free over the year"
+      "monthsFree": "{count} months free over the year",
+      "deepNeedsLimit": "This plan has deep analysis: set a number per month (0 would mean no limit, on the costliest AI)."
     },
     "adminAccount": "Your account is an admin: open the admin space with your account, or with the token.",
     "ai": {
@@ -713,7 +714,9 @@
         "promo_disable": "Promo code turned off",
         "promo_delete": "Promo code deleted",
         "promo_discount_used": "Discount used",
-        "referral_reward": "Referral month given"
+        "referral_reward": "Referral month given",
+        "feature_plans": "A plan’s features changed",
+        "feature_status": "A feature’s state changed"
       }
     },
     "export": {
@@ -784,6 +787,64 @@
       "delete": "Delete",
       "confirmDelete": "Confirm deletion",
       "deleted": "Code deleted"
+    },
+    "features": {
+      "title": "Features by plan",
+      "subtitle": "Tick what each plan includes. The apps follow without a new version, except the APK already installed (see below). The starting settings are today’s.",
+      "apkHint": "The Android APK already installed keeps the old ladder for its menus and labels until its next version. The server applies your settings right away.",
+      "feature": "Feature",
+      "status": "State",
+      "modes": {
+        "on": "On",
+        "test": "In test",
+        "off": "Off"
+      },
+      "needs": "Needs: {list}",
+      "testers": "Testers’ e-mails (one per line)",
+      "testersHint": "In test, only these accounts and the Admin accounts have it, whatever their plan.",
+      "cut": "Switch off for everyone",
+      "cutConfirm": "Confirm: switch off now",
+      "restore": "Switch back on",
+      "restoreTest": "Switch back on in test only",
+      "cutDone": "“{name}” is switched off for everyone.",
+      "restored": "“{name}” is back on.",
+      "restoredTest": "“{name}” is back on for its testers only.",
+      "untickAsk": "In {plan}, {list} needs “{name}”. Untick it too?",
+      "tickAsk": "In {plan}, “{name}” needs {list}. Tick it too?",
+      "yes": "Yes, together",
+      "cancel": "Cancel",
+      "review": "Review the changes",
+      "summary": "Before saving",
+      "subscribers": "{count} active subscriber(s) concerned",
+      "subscribersUnknown": "subscribers concerned: unknown (subscriptions unreadable)",
+      "freeAccounts": "every account without a plan",
+      "everyone": "everyone",
+      "testersCount": "{count} tester(s)",
+      "confirm": "Confirm and save",
+      "invalidTesters": "This tester’s address isn’t valid: {email}",
+      "names": {
+        "reminders": "Reminders",
+        "parcelCosts": "Parcel costs",
+        "pdfExport": "PDF export",
+        "ownKey": "Own AI key",
+        "deepAnalysis": "Deep analysis",
+        "multiPage": "Several pages",
+        "garage": "My garage",
+        "reseller": "Reseller tools",
+        "expenses": "My expenses"
+      },
+      "descriptions": {
+        "reminders": "Reminders on scans (repeat, snooze), insurance and parcel arrivals.",
+        "parcelCosts": "Price and fees in ariary on each parcel.",
+        "pdfExport": "A clean PDF of a document, or of several scans from the history.",
+        "ownKey": "Scanning with one’s own AI key, with no limit.",
+        "deepAnalysis": "Analysing again with the most accurate (and costlier) AI, counted in the month’s quota.",
+        "multiPage": "A document in several pages, analysed at once.",
+        "garage": "Vehicles, service, oil change and insurance reminders, fuel and expenses.",
+        "reseller": "A client per parcel, what they owe, totals per client, export and statements.",
+        "expenses": "The month’s budget, alone or as a household, and the AI’s month review."
+      },
+      "deepNeedsLimit": "Can’t save: {list} has no deep analysis quota (0 = no limit). First set a number per month above, in the plans’ prices and quotas. Free has no quota: no deep analysis."
     }
   },
   "account": {
@@ -872,8 +933,8 @@
     "calendarGoogle": "Google Calendar",
     "calendarOther": "Other calendar (.ics)",
     "calendarDownloaded": "Calendar file downloaded: open it to add the event.",
-    "lockedInsurance": "The automatic reminder before the insurance expires comes with Lite and up.",
-    "lockedParcels": "Parcel arrival notifications come with Lite and up."
+    "lockedInsurance": "The automatic reminder before the insurance expires comes with {plan} and up.",
+    "lockedParcels": "Parcel arrival notifications come with {plan} and up."
   },
   "chat": {
     "title": "A question about this scan?",
@@ -1110,10 +1171,10 @@
       "addItem": "Add an item",
       "receivedAt": "Pick-up date",
       "receivedHint": "Set to today when you mark it received. Correct it if you marked it late; clear it to put the parcel back in progress.",
-      "clientLocked": "With the Pro plan: note who each parcel is for."
+      "clientLocked": "With the {plan} plan: note who each parcel is for."
     },
     "receivedOn": "Received on {date}",
-    "costsLocked": "Costs in ariary (price and fees) come with the Lite plan and up.",
+    "costsLocked": "Costs in ariary (price and fees) come with the {plan} plan and up.",
     "clients": {
       "view": "View",
       "parcelsTab": "Parcels",
@@ -1210,12 +1271,13 @@
       "allPaid": "All paid",
       "profit": "Profit: {amount}",
       "loss": "Loss: {amount}",
-      "locked": "Sale price, client payment and profit: with the Pro plan.",
+      "locked": "Sale price, client payment and profit: with the {plan} plan.",
       "dueShort": "{amount} due"
     },
     "expected": "Expected delivery: {date}",
     "expectedToday": "Arrives today",
-    "expectedLate": "Expected on {date}: overdue"
+    "expectedLate": "Expected on {date}: overdue",
+    "costsReadOnly": "Total cost kept: {amount}. Your plan no longer includes parcel costs: you can’t change them anymore."
   },
   "plans": {
     "names": {
@@ -1267,7 +1329,8 @@
       "multiPage": "Multi-page scans (contract, long invoice)",
       "pdfExport": "PDF export of documents and history",
       "garage": "My garage: service log, insurance and oil change reminders, fuel and expenses",
-      "reminders": "Reminders: on your scans (with repeat and snooze), insurance, parcel arrivals"
+      "reminders": "Reminders: on your scans (with repeat and snooze), insurance, parcel arrivals",
+      "expenses": "My expenses: the month’s budget, alone or as a household"
     },
     "how": "How to subscribe",
     "step1": "Sign in",
@@ -1349,7 +1412,8 @@
       "whatsapp": "WhatsApp",
       "share": "Share",
       "copy": "Copy the code"
-    }
+    },
+    "unavailable": "This feature isn’t available right now."
   },
   "deep": {
     "button": "Deep analysis",
@@ -1357,10 +1421,10 @@
     "wait": "With the most accurate AI: up to a minute.",
     "hint": "With the most accurate AI · {left} left this month",
     "hintUnlimited": "With the most accurate AI, for the hard cases",
-    "hintLocked": "With the Premium plan: a more accurate AI for the hard cases.",
+    "hintLocked": "With the {plan} plan: a more accurate AI for the hard cases.",
     "noPhoto": "This scan’s photo is no longer kept full size: take a new photo for a deep analysis.",
     "limit": "This month’s deep analyses are used up.",
-    "premium": "Deep analysis comes with the Premium plan.",
+    "premium": "Deep analysis comes with the {plan} plan.",
     "failed": "The deep analysis didn’t succeed. Try again in a moment.",
     "finished": "Deep analysis done",
     "done": "Deep analysis",
@@ -1481,7 +1545,7 @@
     "ok": "OK"
   },
   "share": {
-    "onlyFirst": "Several photos received: only the first one is analysed. Multi-page scans come with Premium."
+    "onlyFirst": "Several photos received: only the first one is analysed. Multi-page scans come with {plan}."
   },
   "text": {
     "title": "Document text",
@@ -1787,9 +1851,9 @@
   "garage": {
     "title": "My garage",
     "subtitle": "Your vehicles, their service, their fuel and what they cost.",
-    "locked": "My garage comes with Premium and up.",
-    "lockedScan": "Adding this vehicle to your garage comes with Premium and up.",
-    "readOnly": "Your plan no longer includes My garage: your vehicles stay visible, but you can’t change anything and their reminders are paused. Go back to Premium to get it all back.",
+    "locked": "My garage comes with {plan} and up.",
+    "lockedScan": "Adding this vehicle to your garage comes with {plan} and up.",
+    "readOnly": "Your plan no longer includes My garage: your vehicles stay visible, but you can’t change anything and their reminders are paused. Go back to {plan} to get it all back.",
     "pitch": {
       "sheet": "A sheet per vehicle and a service log (oil change, tyres, brakes…)",
       "reminders": "Reminders before the insurance and the technical inspection end, and the oil change estimated from the mileage",
@@ -1938,9 +2002,9 @@
     "remove": "Delete",
     "edit": "Edit",
     "correct": "Correct",
-    "exclude": "Leave out of budget",
-    "include": "Back in the budget",
-    "excluded": "not in budget",
+    "exclude": "Don’t count",
+    "include": "Count again",
+    "excluded": "not counted",
     "openSource": "Open",
     "categories": {
       "market": "Market and food",
@@ -1964,8 +2028,9 @@
     },
     "incomes": {
       "salary": "Salary",
-      "sales": "Sales",
-      "other": "Other income"
+      "sales": "Sale",
+      "other": "Other",
+      "family": "Help from family"
     },
     "origins": {
       "manual": "Typed in",
@@ -1975,7 +2040,12 @@
       "parcel": "Parcel",
       "fuel": "Fuel",
       "maintenance": "Service",
-      "vehicle": "Garage"
+      "vehicle": "Garage",
+      "receipt": "Receipt",
+      "mobile_money": "Mobile Money",
+      "plan": "Subscription",
+      "sale": "Sale",
+      "fees": "Mobile Money fees"
     },
     "form": {
       "title": "Expense",
@@ -1994,31 +2064,54 @@
       "personal": "Personal",
       "shared": "Household",
       "personalHint": "Just for you: nobody else sees it.",
-      "sharedHint": "Counted in the budget of “{name}”: its members will see it."
+      "sharedHint": "Counted in the budget of “{name}”: its members will see it.",
+      "amountExample": "e.g. 12,000",
+      "noteExample": "e.g. Analakely market",
+      "today": "today"
     },
     "month": {
       "spent": "Spent",
-      "lastMonth": "Last month",
       "noPrevious": "Nothing last month",
       "more": "+{percent}% ({amount} more than last month)",
       "less": "−{percent}% ({amount} less than last month)",
       "byCategory": "By category",
       "list": "This month’s expenses",
-      "empty": "No expenses this month. Add the first one, or pay a bill in My papers.",
-      "sourcesHint": "Paid bills, ticked shopping, parcels and the garage are added on their own. Tap a line to correct it or leave it out of the budget."
+      "where": "Where your money goes",
+      "whereHint": "Tap a category to see it alone.",
+      "all": "See all",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "exportTitle": "Keep a copy of the month",
+      "exportHint": "Every line of the month, in an Excel or PDF file.",
+      "empty": {
+        "title": "No expenses this month",
+        "body": "Add what you pay at the market, in the taxi-be or at the shop. Paid bills and ticked shopping come on their own.",
+        "example": "For example: 12,000 Ar at the market today."
+      },
+      "noneInCategory": "Nothing in this category this month."
     },
     "income": {
       "total": "Income",
       "left": "What is left",
       "add": "Add income",
-      "empty": "No income this month.",
-      "kind": "Kind",
-      "recurringHint": "A salary that comes every month? Add it in the Fixed tab."
+      "kind": "From where?",
+      "repeat": "Comes every month",
+      "repeatHint": "Counted on its own every month, on that day. You find it in the Fixed tab.",
+      "list": "Money in this month",
+      "from": "Received from {name}",
+      "sale": "Sale: {title}",
+      "profit": "profit {amount}",
+      "loss": "loss {amount}",
+      "unpaid": "{amount} of it not paid yet",
+      "empty": {
+        "title": "No income this month",
+        "body": "Add your salary, a sale or money from family: you will see what you have left.",
+        "example": "For example: a 450,000 Ar salary on the 30th."
+      }
     },
     "recurring": {
-      "add": "Add a fixed expense",
-      "addIncome": "Add a fixed income",
-      "empty": "No fixed expenses. Rent, school fees, subscriptions: add them once, they come back every month.",
+      "add": "Add a monthly expense",
+      "addIncome": "Add a monthly income",
       "income": "Income",
       "everyMonth": "on the {day} of every month",
       "reminds": {
@@ -2035,7 +2128,15 @@
       "day": "Day of the month",
       "remind": "Reminder",
       "lastDayHint": "In shorter months, it will be the last day of the month.",
-      "stop": "Stop"
+      "stop": "Stop",
+      "list": "What comes back every month",
+      "autoHint": "Each line is added to the month on its own, on its day. “Not this month” skips it just once.",
+      "empty": {
+        "title": "Nothing fixed yet",
+        "body": "Add your rent or your JIRAMA bill: they are counted every month without typing them again.",
+        "example": "For example: 300,000 Ar rent on the 5th of each month."
+      },
+      "dayExample": "e.g. 5"
     },
     "history": {
       "period": "Period",
@@ -2044,15 +2145,27 @@
       "total": "Total",
       "chart": "Spending month by month",
       "byCategory": "Average by category",
-      "perMonth": "{amount} a month"
+      "perMonth": "{amount} a month",
+      "title": "Your last {count} months",
+      "averageHint": "What you spend on average each month in each category, over this period.",
+      "perMonthLine": "In {in} · Out {out} · Left {left}"
     },
     "budget": {
       "title": "Monthly budget",
       "overall": "Total budget",
-      "hint": "Set a cap for the month, overall or by category. You are warned at 80%, then when it is exceeded.",
+      "hint": "You are warned at 80%, then when it is exceeded.",
       "saved": "Budget saved",
       "warningBanner": "{scope}: you have already used {percent}% of the budget. {amount} left.",
-      "overBanner": "{scope}: budget exceeded ({percent}%), by {amount}."
+      "overBanner": "{scope}: budget exceeded ({percent}%), by {amount}.",
+      "set": "Set my budget",
+      "where": "Where you stand",
+      "remaining": "{amount} left",
+      "overBy": "over by {amount}",
+      "empty": {
+        "title": "No budget yet",
+        "body": "Set a limit for the month, overall or by category: you then see where you stand.",
+        "example": "For example: 250,000 Ar for the market."
+      }
     },
     "custom": {
       "title": "Your categories",
@@ -2060,7 +2173,8 @@
       "name": "New category",
       "placeholder": "Church, dues…",
       "color": "Colour",
-      "icon": "Icon"
+      "icon": "Icon",
+      "example": "For example: church, dues, savings club."
     },
     "reminders": {
       "eveTitle": "{label}: to pay tomorrow",
@@ -2095,6 +2209,15 @@
         "category": "Category",
         "spent": "Spent",
         "cap": "Budget"
+      },
+      "sheetIncomes": "Income",
+      "incomeColumns": {
+        "date": "Date",
+        "kind": "From",
+        "label": "Label",
+        "origin": "Origin",
+        "amountMga": "Amount",
+        "counted": "Counted"
       }
     },
     "receipt": {
@@ -2103,10 +2226,21 @@
       "saved": "Expense added",
       "already": "Already in your expenses ({amount}).",
       "open": "Open",
-      "loading": "Loading your expenses…"
+      "loading": "Loading your expenses…",
+      "counted": "Counted in My expenses",
+      "countedIncome": "Counted in your income",
+      "notCounted": "Not counted in My expenses",
+      "doubt": "Maybe counted already (same amount within 3 days).",
+      "view": "See",
+      "correct": "Correct",
+      "own": "Withdrawal / move between your accounts: not counted in your expenses.",
+      "isExpense": "It’s an expense",
+      "isOwn": "It’s a move between my accounts",
+      "feesCounted": "Fees counted in your expenses: {amount}",
+      "alreadyCounted": "Counted already (scanned once before)"
     },
     "review": {
-      "title": "Month’s review",
+      "title": "What the AI thinks of your month",
       "ask": "Month’s review",
       "again": "Review again",
       "loading": "Reviewing…",
@@ -2121,25 +2255,26 @@
     "views": {
       "label": "Personal or household",
       "personal": "Personal",
-      "household": "Household"
+      "household": "Household",
+      "hint": "Personal: just you · Household: your family’s shared budget."
     },
     "household": {
       "title": "Household budget",
       "subtitle": "Your family's shared budget: everyone adds their expenses, and you see the total together.",
       "loading": "Loading the household…",
       "signInTitle": "Sign in to share a budget",
-      "signInBody": "A household budget is shared between accounts. Sign in, then type the code your family sent you.",
+      "signInBody": "To share a budget with your family, you need an account. Sign in, then type the code you were sent.",
       "stale": "Offline: this is the household as of your last connection.",
       "unreachable": "The server can't be reached right now.",
       "retry": "Try again",
       "joinTitle": "Join a household",
-      "joinBody": "Type the code you received: 6 characters, valid for 48 hours.",
+      "joinBody": "Someone in your family already has a household? Ask them for its code (6 characters) and type it here. A code works for 48 hours.",
       "code": "Invitation code",
       "codeInvalid": "The code has 6 characters, for example 4K7-P2Q.",
       "join": "Join",
       "joined": "Welcome to the household!",
       "createTitle": "Create a household",
-      "createBody": "Share a budget with your family. Everyone picks, expense by expense, what goes to the household; your personal expenses stay yours.",
+      "createBody": "Want to follow the household’s money together? Create the household, then send the code to your family. You choose what you share: the rest stays hidden.",
       "name": "Household name",
       "namePlaceholder": "The Rakoto family",
       "create": "Create the household",
@@ -2194,6 +2329,51 @@
         "network": "No connection. Try again once you're online.",
         "failed": "That didn't work. Try again."
       }
-    }
+    },
+    "keptReadOnly": "Your plan no longer includes My expenses: your expenses are kept and can still be seen here, and their reminders are paused. It all comes back if the feature is back in your plan.",
+    "receiptPhoto": "Photo of a receipt",
+    "auto": "Added on its own · {origin}",
+    "doubt": "counted already?",
+    "keepAnyway": "Count it anyway",
+    "doubtHint": "An expense of the same amount is within 3 days: this receipt is not counted, so it isn’t counted twice.",
+    "excludeHelp": {
+      "text": "A line added on its own isn’t yours (a parcel for a client, a bill someone else paid)? Tap it, then “Don’t count”: it stays visible, outside your month.",
+      "ok": "Got it"
+    },
+    "saved": {
+      "expense": "Expense added: {amount}, {category}",
+      "income": "Income added: {amount}, {kind}",
+      "recurring": "Added every month: {amount}, on the {day}",
+      "changed": "Change saved"
+    },
+    "close": "Close",
+    "card": {
+      "label": "Your month at a glance",
+      "left": "You have left",
+      "in": "In",
+      "out": "Out",
+      "ofBudget": "{percent}% of your budget ({cap})"
+    },
+    "tabHints": {
+      "month": "Everything you spent this month.",
+      "income": "All the money that came in this month.",
+      "recurring": "What you pay every month (rent, JIRAMA, school fees): added on its own, with a reminder.",
+      "history": "Your past months, to compare.",
+      "budget": "Set a limit and see where you stand."
+    },
+    "welcome": {
+      "title": "Welcome to My expenses",
+      "auto": "Paid bills, ticked shopping, parcels and the garage are added on their own.",
+      "step1": "Add what you earn (Income tab).",
+      "step2": "Add your expenses, or take a photo of a receipt.",
+      "step3": "Set your budget."
+    },
+    "counted": {
+      "expense": "Counted in My expenses",
+      "income": "Counted in your income",
+      "off": "Not counted in My expenses",
+      "garage": "Fuel, service and costs counted in My expenses"
+    },
+    "feesLabel": "Withdrawal or transfer fees"
   }
 }

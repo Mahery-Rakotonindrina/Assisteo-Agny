@@ -27,6 +27,7 @@ export default defineConfig({
     url: `http://localhost:${PORT}/api/health`,
     timeout: 240_000,
     reuseExistingServer: false,
-    env: { AI_DEMO_MODE: "true" },
+    // The admin token opens /admin (read only in the tests: they run in parallel on one server).
+    env: { AI_DEMO_MODE: "true", ADMIN_TOKEN: "e2e-admin-token-0123456789" },
   },
 });

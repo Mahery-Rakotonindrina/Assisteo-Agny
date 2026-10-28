@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { isCron } from "@/lib/server/cronAuth";
 import { pushEnabled, sendPush } from "@/lib/server/fcm";
 import { sendError } from "@/lib/server/http";
+import { getPlansConfig } from "@/lib/server/planConfig";
 import { collectPending, nextReminderAt, paidReminderUsers, planPushes, type DueRow, type PushDevice, type PushLocale } from "@/lib/server/reminderPush";
 import { reportError } from "@/lib/server/reportError";
 import { subscriptionRowsForEmails } from "@/lib/server/subscriptions";
@@ -43,7 +44,8 @@ async function paidUsers(db: ReturnType<typeof supabaseAdmin>, userIds: string[]
   }
   const users = userIds.map((id) => ({ id, email: emails.get(id) ?? null }));
   const known = users.map((user) => user.email).filter((email): email is string => Boolean(email));
-  return paidReminderUsers(users, await subscriptionRowsForEmails(known), now);
+  const [rows, config] = await Promise.all([subscriptionRowsForEmails(known), getPlansConfig()]);
+  return paidReminderUsers(users, rows, now, config);
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

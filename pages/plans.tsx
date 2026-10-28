@@ -13,14 +13,15 @@ import { formatAriary, formatDate, formatNumber } from "@/lib/format";
 import { config } from "@/lib/config";
 import { rise, stagger } from "@/lib/motion";
 import { defaultYearPrice, discountedPrice, monthsFree, TRIAL_DAYS } from "@/lib/offers";
-import { defaultPlansConfig, planRank, soldPlans, type PlanOffer, type SoldPlanId } from "@/lib/plans";
+import { defaultPlansConfig, planRank, soldPlans, type PlanOffer, type PlanResponse, type SoldPlanId } from "@/lib/plans";
+import { offerLines } from "@/lib/planPerks";
 import { haptics, shareText } from "@/services/device";
 import { redeemCode, startPremiumTrial } from "@/services/offers";
 import { planStore } from "@/services/plan";
 import { ApiError } from "@/types/api";
 import styles from "@/styles/Plans.module.scss";
 
-const fallbackOffers = soldPlans.map((id) => ({ id, ...defaultPlansConfig.offers[id] }));
+const fallbackOffers: PlanResponse["offers"] = soldPlans.map((id) => ({ id, ...defaultPlansConfig.offers[id] }));
 
 /** The offers, and how to subscribe: the payment happens outside the app. */
 export default function PlansPage() {
@@ -95,12 +96,12 @@ export default function PlansPage() {
   const limit = (value: number, key: "scans" | "questions" | "parcels") =>
     value === 0 ? t(`plans.features.${key}Unlimited`) : t(`plans.features.${key}`, { count: formatNumber(value, locale) });
 
+  // Each offer's features as set in /admin (none in test nor switched off); the built-in ladder from an older server.
+  const offerFeatures = (offerId: SoldPlanId) => offers.find((offer) => offer.id === offerId)?.features ?? defaultPlansConfig.features[offerId];
   const features = (offer: PlanOffer, offerId: SoldPlanId) => {
     const limits = [limit(offer.scans, "scans"), limit(offer.questionsPerDay, "questions"), limit(offer.parcels, "parcels")];
-    if (offerId === "lite") return [...limits, t("plans.features.parcelCosts"), t("plans.features.ownKey")];
-    const deep = offer.deepPerMonth === 0 ? t("plans.features.deepUnlimited") : t("plans.features.deep", { count: formatNumber(offer.deepPerMonth, locale) });
-    if (offerId === "premium") return [t("plans.features.allLite"), ...limits, deep, t("plans.features.priority")];
-    return [t("plans.features.allPremium"), ...limits, deep, t("plans.features.clients"), t("plans.features.reseller")];
+    const below = offerId === "pro" ? "premium" : offerId === "premium" ? "lite" : null;
+    return offerLines({ id: offerId, features: offerFeatures(offerId), deepPerMonth: offer.deepPerMonth }, below && { id: below, features: offerFeatures(below) }, limits, t, locale);
   };
 
   /** "or 50 000 Ar a year: 2 months free" (a plan cached by an older version has no yearly price). */
@@ -192,9 +193,9 @@ export default function PlansPage() {
                 {yearly(offer)}
                 <p className={styles.pitch}>{t(`plans.pitch.${offer.id}`)}</p>
                 <ul>
-                  {features(offer, offer.id).map((line, index) => (
-                    <li key={line} className={index === 0 && offer.id !== "lite" ? styles.inherit : undefined}>
-                      <Check size={15} /> {line}
+                  {features(offer, offer.id).map((line) => (
+                    <li key={line.text} className={line.inherit ? styles.inherit : undefined}>
+                      <Check size={15} /> {line.text}
                     </li>
                   ))}
                 </ul>

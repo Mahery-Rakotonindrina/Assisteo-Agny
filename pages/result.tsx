@@ -75,7 +75,6 @@ import { useHistory, useHistoryEntry } from "@/hooks/useHistory";
 import { useLists } from "@/hooks/useLists";
 import { useParcels } from "@/hooks/useParcels";
 import { usePlan } from "@/hooks/usePlan";
-import { planFor } from "@/lib/plans";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import { useNow } from "@/hooks/useNow";
 import { useReminderTexts } from "@/hooks/useReminderTexts";
@@ -153,6 +152,7 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
   const canRemind = usePlan().has("reminders");
   // "Mes dépenses" stays hidden from the other plans (Admin only while tested).
   const canAddExpense = usePlan().has("expenses");
+  const { planFor } = usePlan();
   // The reminder has come (or the scan was opened from its notification): offer to put it off.
   const showSnooze = canRemind && forcedAt === null && Boolean(entry.reminderAt) && (router.query.reminded === "1" || canSnooze(entry, now));
   const repeatLabel = reminderActive && entry.reminderRepeat ? t(entry.reminderRepeat.every === "monthly" ? "reminders.repeatMonthly" : "reminders.repeatYearly") : null;
@@ -832,7 +832,7 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
               ))}
             </div>
           )}
-          {forcedAt !== null && !canRemind && <PlanLock plan={planFor("reminders")} text={t("reminders.lockedInsurance")} />}
+          {forcedAt !== null && !canRemind && <PlanLock plan={planFor("reminders")} text={t("reminders.lockedInsurance", { plan: t(`plans.names.${planFor("reminders") ?? "lite"}`) })} />}
           {forcedAt !== null && canRemind && (
             <p className={styles.insurance}>
               <Lock size={15} />

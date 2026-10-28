@@ -7,14 +7,14 @@ import { useToast } from "@/components/Toast";
 import { useTranslation } from "@/hooks/useTranslation";
 import { rise } from "@/lib/motion";
 import { monthsFree } from "@/lib/offers";
-import { soldPlans, type PlanOffer, type PlansConfig } from "@/lib/plans";
+import { deepWithoutLimit, soldPlans, type PlanOffer, type PlansConfig } from "@/lib/plans";
 import { httpClient } from "@/services/httpClient";
 import styles from "./AdminPlans.module.scss";
 
 const offerFields: Array<keyof PlanOffer> = ["priceMga", "yearPriceMga", "scans", "questionsPerDay", "parcels", "deepPerMonth"];
 
 /** Prices and limits of each plan, and how to pay: shown on the app's offers page. */
-export function AdminPlans({ token }: { token: string }) {
+export function AdminPlans({ token, onSaved }: { token: string; onSaved?: () => void }) {
   const { t } = useTranslation();
   const toast = useToast();
   const [saved, setSaved] = useState<PlansConfig | null>(null);
@@ -38,6 +38,8 @@ export function AdminPlans({ token }: { token: string }) {
   const setOffer = (plan: (typeof soldPlans)[number], field: keyof PlanOffer, value: string) =>
     setDraft({ ...draft, offers: { ...draft.offers, [plan]: { ...draft.offers[plan], [field]: number(value) } } });
   const dirty = JSON.stringify(saved) !== JSON.stringify(draft);
+  // The plans with deep analyses (features table) can't be set to 0 a month: that would mean no limit.
+  const noDeepLimit = deepWithoutLimit(draft);
 
   const save = async (event: FormEvent) => {
     event.preventDefault();
@@ -46,6 +48,7 @@ export function AdminPlans({ token }: { token: string }) {
       const result = await httpClient.put<PlansConfig>("/api/admin/plans", draft, { headers });
       setSaved(result);
       setDraft(result);
+      onSaved?.();
       toast(t("admin.saved"));
     } catch {
       toast(t("admin.error"), "error");
@@ -69,14 +72,12 @@ export function AdminPlans({ token }: { token: string }) {
             <PlanBadge plan={plan} size="md" />
           </legend>
           <div className={styles.grid}>
-            {offerFields
-              // Lite has no deep analyses.
-              .filter((field) => field !== "deepPerMonth" || plan !== "lite")
-              .map((field) => (
+            {offerFields.map((field) => (
               <label key={field} className={styles.field}>
                 <span>{t(`admin.plans.fields.${field}`)}</span>
                 <input inputMode="numeric" value={String(draft.offers[plan][field])} onChange={(event) => setOffer(plan, field, event.target.value)} />
                 {field === "yearPriceMga" && <small>{t("admin.plans.monthsFree", { count: monthsFree(draft.offers[plan]) })}</small>}
+                {field === "deepPerMonth" && noDeepLimit.includes(plan) && <small className={styles.error}>{t("admin.plans.deepNeedsLimit")}</small>}
               </label>
             ))}
           </div>
@@ -109,7 +110,7 @@ export function AdminPlans({ token }: { token: string }) {
         <small>{t("admin.plans.contactHint")}</small>
       </label>
 
-      <Button type="submit" block icon={<Save />} disabled={!dirty || saving}>
+      <Button type="submit" block icon={<Save />} disabled={!dirty || saving || noDeepLimit.length > 0}>
         {t("admin.save")}
       </Button>
     </motion.form>

@@ -52,6 +52,14 @@ export type BillKind = (typeof billKinds)[number];
 export const vehicleEnergies = ["petrol", "diesel", "hybrid", "electric", "other"] as const;
 export type VehicleEnergy = (typeof vehicleEnergies)[number];
 
+/**
+ * Which way the money went: paid or sent (out), received from someone else
+ * (in), or moved between the user's own pockets (own: a withdrawal, a
+ * deposit, a transfer to their own account). Null reads as out.
+ */
+export const receiptDirections = ["out", "in", "own"] as const;
+export type ReceiptDirection = (typeof receiptDirections)[number];
+
 /** How a receipt was paid, and with which Mobile Money operator. */
 export const receiptPayments = ["cash", "mobile_money", "card"] as const;
 export type ReceiptPayment = (typeof receiptPayments)[number];
@@ -177,6 +185,13 @@ export const AnalysisSchema = z.object({
               "Best budget category: market (food, groceries, supermarket), jirama (water, electricity), rent, transport (taxi, fuel, bus), phone (credit, internet), school, health (pharmacy, doctor), family, online (online shopping), car, leisure, savings, other.",
             ),
           reference: z.string().nullable().describe("The transaction or receipt reference exactly as printed (Mobile Money transaction ID, ticket number); null if none."),
+          direction: z
+            .enum(receiptDirections)
+            .nullable()
+            .describe(
+              "out when the user paid a merchant, sent money to another person or bought phone credit (a till receipt, a payment, a transfer sent); in when the user received money from someone else (Mobile Money \"Vous avez reçu…\", \"You have received…\": merchant is then the sender's name); own when the money only moved between the user's own pockets: cash withdrawn at an agent or a counter (\"Retrait\"), cash deposited on their own account (\"Dépôt\"), a transfer between their own accounts (Mobile Money to bank, bank to Mobile Money, one operator to another); null if unclear.",
+            ),
+          fees: z.number().nullable().describe("The fees shown on their own (withdrawal or transfer fees), as a plain number in the receipt's currency; null if none shown."),
         })
         .nullable()
         .describe("Only for proof of a payment already made: a till receipt, a shop invoice or a Mobile Money (MVola, Orange Money, Airtel Money) confirmation, SMS or screen; null otherwise."),
@@ -288,7 +303,19 @@ export function normalizeStoredAnalysis(raw: unknown): unknown {
     vehicle: null,
     list: null,
     ...analysis,
-    document: document ? { expiresOn: null, isInsurance: false, paper: null, bill: null, registration: null, receipt: null, ...document } : null,
+    document: document
+      ? {
+          expiresOn: null,
+          isInsurance: false,
+          paper: null,
+          bill: null,
+          registration: null,
+          receipt: null,
+          ...document,
+          // Read before the direction and the fees existed: money paid, no fees apart.
+          ...(document.receipt ? { receipt: { direction: null, fees: null, ...(document.receipt as Record<string, unknown>) } } : {}),
+        }
+      : null,
     parcel: analysis.parcel ? { shippingMode: null, ...(analysis.parcel as Record<string, unknown>) } : null,
   };
 }
