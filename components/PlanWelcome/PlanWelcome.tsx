@@ -76,6 +76,7 @@ export function PlanWelcome() {
 function Welcome({ id, endsAt, limits, onClose }: { id: SoldPlanId; endsAt: number | null; limits: PlanLimits; onClose: () => void }) {
   const { t, locale } = useTranslation();
   const reduceMotion = useReducedMotion();
+  const { has } = usePlan();
   const [pieces] = useState(makePieces);
   const name = t(`plans.names.${id}`);
 
@@ -112,7 +113,7 @@ function Welcome({ id, endsAt, limits, onClose }: { id: SoldPlanId; endsAt: numb
         <h2 id="plan-welcome-title">{t("plans.welcome.title", { plan: name })}</h2>
         <p className={styles.until}>{endsAt === null ? t("plans.noEnd") : t("plans.welcome.until", { date: formatDate(endsAt - 1, locale) })}</p>
         <ul className={styles.perks}>
-          {planPerks(id, limits, t, locale).map((perk) => (
+          {planPerks(id, limits, t, locale, has).map((perk) => (
             <li key={perk}>
               <Check size={15} /> {perk}
             </li>

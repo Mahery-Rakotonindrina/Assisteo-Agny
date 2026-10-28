@@ -21,7 +21,15 @@ vi.mock("@/lib/ai/provider", () => ({
   },
 }));
 vi.mock("@/lib/server/plan", () => ({
-  resolvePlan: async () => ({ account: state.account ? { id: state.accountId, email: "a@example.com" } : null, current: { plan: state.plan, endsAt: null } }),
+  resolvePlan: async () => {
+    const { defaultPlansConfig, effectiveFeatures } = await import("@/lib/plans");
+    type PlanId = Parameters<typeof effectiveFeatures>[0]["plan"];
+    return {
+      account: state.account ? { id: state.accountId, email: "a@example.com" } : null,
+      current: { plan: state.plan, endsAt: null },
+      features: effectiveFeatures({ plan: state.plan as PlanId, email: "a@example.com", config: defaultPlansConfig }),
+    };
+  },
 }));
 
 const { default: summaryRoute } = await import("@/pages/api/expenses/summary");

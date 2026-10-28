@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BookOpen, Car, FolderLock, Receipt, Wallet } from "lucide-react";
 import { PlanBadge } from "@/components/PlanBadge";
+import { useKeptExpenses } from "@/hooks/useExpenses";
 import { useInHousehold } from "@/hooks/useHousehold";
 import { useNow } from "@/hooks/useNow";
 import { usePlan } from "@/hooks/usePlan";
@@ -11,7 +12,6 @@ import { billTotals, listBills } from "@/lib/bills";
 import { formatAriary, formatNumber } from "@/lib/format";
 import { dueReminders } from "@/lib/garage";
 import { listPapers } from "@/lib/papers";
-import { planFor } from "@/lib/plans";
 import type { HistoryEntry } from "@/types/history";
 import styles from "./Shortcuts.module.scss";
 
@@ -24,8 +24,10 @@ export function Shortcuts({ entries }: { entries: HistoryEntry[] }) {
   const urgent = papers.filter((paper) => paper.status === "expired" || paper.status === "soon").length;
   const bills = listBills(entries, now);
   const { toPay } = billTotals(bills, now);
-  const { has } = usePlan();
+  const { has, planFor } = usePlan();
   const inHousehold = useInHousehold();
+  // Without the feature, one's kept expenses stay reachable (read only); false until mounted.
+  const keptExpenses = useKeptExpenses(!has("expenses"));
   const { vehicles } = useVehicles();
   const garageDue = vehicles.reduce((count, vehicle) => count + dueReminders(vehicle, now).length, 0);
 
@@ -77,7 +79,7 @@ export function Shortcuts({ entries }: { entries: HistoryEntry[] }) {
           </small>
         </span>
       </Link>
-      {(has("expenses") || inHousehold) && (
+      {(has("expenses") || inHousehold || keptExpenses) && (
         <Link href="/expenses" className={styles.shortcut} style={{ "--tone": "var(--cat-food)" } as React.CSSProperties}>
           <Wallet size={18} />
           <span>

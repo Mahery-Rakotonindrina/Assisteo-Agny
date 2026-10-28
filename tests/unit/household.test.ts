@@ -35,7 +35,15 @@ vi.mock("@/services/account", () => ({ authHeaders: async () => ({}) }));
 vi.mock("@/services/httpClient", () => ({ httpClient: { get: async () => state.served, post: async () => state.served } }));
 vi.mock("@/lib/server/redis", () => ({ redis: null }));
 vi.mock("@/lib/server/plan", () => ({
-  resolvePlan: async () => ({ account: state.account ? { id: state.accountId, email: "a@example.com" } : null, current: { plan: state.plan, endsAt: null } }),
+  resolvePlan: async () => {
+    const { defaultPlansConfig, effectiveFeatures } = await import("@/lib/plans");
+    type PlanId = Parameters<typeof effectiveFeatures>[0]["plan"];
+    return {
+      account: state.account ? { id: state.accountId, email: "a@example.com" } : null,
+      current: { plan: state.plan, endsAt: null },
+      features: effectiveFeatures({ plan: state.plan as PlanId, email: "a@example.com", config: defaultPlansConfig }),
+    };
+  },
 }));
 vi.mock("@/lib/server/supabaseAdmin", () => ({
   accountsEnabled: true,

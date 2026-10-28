@@ -1,21 +1,33 @@
 import type { NextApiRequest } from "next";
-import type { ActivePlan, PlanLimits, PlansConfig } from "@/lib/plans";
+import { effectiveFeatures, type ActivePlan, type PlanFeature, type PlanLimits, type PlansConfig } from "@/lib/plans";
 import { getPlansConfig } from "./planConfig";
 import { reportError } from "./reportError";
 import { planForEmail } from "./subscriptions";
 import { verifyAccount } from "./supabaseAdmin";
 import { getTrialConfig } from "./trialStore";
 
-/** The signed-in account (if any) and its plan right now. */
-export async function resolvePlan(req: NextApiRequest): Promise<{ account: { id: string; email: string | null } | null; current: ActivePlan }> {
-  const account = await verifyAccount(req).catch(() => null);
-  if (!account?.email) return { account, current: { plan: "free", endsAt: null } };
+export type ResolvedPlan = {
+  account: { id: string; email: string | null } | null;
+  current: ActivePlan;
+  /** What the account may use (the Admin settings applied): every server check goes by it. */
+  features: ReadonlySet<PlanFeature>;
+};
+
+/** The signed-in account (if any), its plan right now and what it may use. */
+export async function resolvePlan(req: NextApiRequest, config?: PlansConfig): Promise<ResolvedPlan> {
+  const [account, plans] = await Promise.all([verifyAccount(req).catch(() => null), config ?? getPlansConfig()]);
+  const current = await currentPlan(account?.email ?? null);
+  return { account, current, features: effectiveFeatures({ plan: current.plan, email: account?.email ?? null, config: plans }) };
+}
+
+async function currentPlan(email: string | null): Promise<ActivePlan> {
+  if (!email) return { plan: "free", endsAt: null };
   try {
-    return { account, current: await planForEmail(account.email) };
+    return await planForEmail(email);
   } catch (error) {
     // Subscriptions unreadable: fall back to the trial rather than failing the request.
     await reportError(error, { route: "plan", kind: "subscriptions_unreadable" });
-    return { account, current: { plan: "free", endsAt: null } };
+    return { plan: "free", endsAt: null };
   }
 }
 

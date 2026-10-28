@@ -11,9 +11,10 @@ export function PlanIcon({ plan, size = 16 }: { plan: PlanId; size?: number }) {
   return <Icon size={size} aria-hidden />;
 }
 
-/** The plan's name with its icon and colour: "♛ Premium". */
-export function PlanBadge({ plan, size = "sm", className }: { plan: PlanId; size?: "sm" | "md"; className?: string }) {
+/** The plan's name with its icon and colour: "♛ Premium". Nothing for no plan (a feature no plan offers now). */
+export function PlanBadge({ plan, size = "sm", className }: { plan: PlanId | null; size?: "sm" | "md"; className?: string }) {
   const { t } = useTranslation();
+  if (plan === null) return null;
   return (
     <span data-plan={plan} data-size={size} className={[styles.badge, className].filter(Boolean).join(" ")}>
       <PlanIcon plan={plan} size={size === "md" ? 15 : 12} />

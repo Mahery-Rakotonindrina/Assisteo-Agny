@@ -7,7 +7,6 @@ import { applyCors, clientIp, sendError } from "@/lib/server/http";
 import { rateLimit } from "@/lib/server/rateLimit";
 import { reportError } from "@/lib/server/reportError";
 import { track } from "@/lib/server/stats";
-import { hasFeature } from "@/lib/plans";
 import { limitsFor, resolvePlan } from "@/lib/server/plan";
 import {
   countServerCall,
@@ -71,18 +70,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   }
 
   // The plan comes from the signed-in account's subscriptions (free when signed out).
-  const { account, current } = await resolvePlan(req);
-  if (override && !hasFeature(current.plan, "ownKey")) {
+  const { account, current, features } = await resolvePlan(req);
+  if (override && !features.has("ownKey")) {
     return sendError(res, 403, "plan_required", "Your own AI key needs a subscription.");
   }
-  // Several pages in one scan: Premium and up, own key or not.
-  if ((parsed.data.pages?.length ?? 0) > 0 && !hasFeature(current.plan, "multiPage")) {
-    return sendError(res, 403, "plan_required", "Multi-page scans need the Premium plan.");
+  // Several pages in one scan: by the plan's features (Premium and up by default), own key or not.
+  if ((parsed.data.pages?.length ?? 0) > 0 && !features.has("multiPage")) {
+    return sendError(res, 403, "plan_required", "Multi-page scans are not part of your plan.");
   }
   // A deep analysis uses the server's bigger model; with an own key, the user's model applies.
   const deep = Boolean(parsed.data.deep) && !override;
-  if (deep && !hasFeature(current.plan, "deepAnalysis")) {
-    return sendError(res, 403, "plan_required", "Deep analyses need the Premium plan.");
+  if (deep && !features.has("deepAnalysis")) {
+    return sendError(res, 403, "plan_required", "Deep analyses are not part of your plan.");
   }
 
   // Without their own key, a subscriber spends one of the month's scans...

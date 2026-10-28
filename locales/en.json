@@ -364,7 +364,7 @@
     "aiUseOwnKeyHint": "Advanced · Gemini offers free keys",
     "aiDefaultLeftMonth": "{remaining} scans left this month out of {limit}",
     "aiDefaultOverMonth": "This month’s scans are used up: move to a bigger plan, or use your key.",
-    "aiLocked": "Using your own AI key, with no limit, is for subscribers (from the Lite plan).",
+    "aiLocked": "Using your own AI key, with no limit, is for subscribers (from the {plan} plan).",
     "aiLockedSaved": "Your key is saved, but it only works with a subscription: meanwhile, the app’s AI does the analyses.",
     "aiLockedHint": "For subscribers",
     "androidApp": "Android app",
@@ -594,7 +594,8 @@
       "instructionsPlaceholder": "e.g. Send the amount by MVola to 034 00 000 00 (Full Name), with your e-mail as the reason.",
       "contact": "Contact to send the reference",
       "contactHint": "A phone number, or a link (WhatsApp: https://wa.me/261…, Messenger…).",
-      "monthsFree": "{count} months free over the year"
+      "monthsFree": "{count} months free over the year",
+      "deepNeedsLimit": "This plan has deep analysis: set a number per month (0 would mean no limit, on the costliest AI)."
     },
     "adminAccount": "Your account is an admin: open the admin space with your account, or with the token.",
     "ai": {
@@ -713,7 +714,9 @@
         "promo_disable": "Promo code turned off",
         "promo_delete": "Promo code deleted",
         "promo_discount_used": "Discount used",
-        "referral_reward": "Referral month given"
+        "referral_reward": "Referral month given",
+        "feature_plans": "A plan’s features changed",
+        "feature_status": "A feature’s state changed"
       }
     },
     "export": {
@@ -784,6 +787,62 @@
       "delete": "Delete",
       "confirmDelete": "Confirm deletion",
       "deleted": "Code deleted"
+    },
+    "features": {
+      "title": "Features by plan",
+      "subtitle": "Tick what each plan includes. The apps follow without a new version, except the APK already installed (see below). The starting settings are today’s.",
+      "apkHint": "The Android APK already installed keeps the old ladder for its menus and labels until its next version. The server applies your settings right away.",
+      "feature": "Feature",
+      "status": "State",
+      "modes": {
+        "on": "On",
+        "test": "In test",
+        "off": "Off"
+      },
+      "needs": "Needs: {list}",
+      "testers": "Testers’ e-mails (one per line)",
+      "testersHint": "In test, only these accounts and the Admin accounts have it, whatever their plan.",
+      "cut": "Switch off for everyone",
+      "cutConfirm": "Confirm: switch off now",
+      "restore": "Switch back on",
+      "cutDone": "“{name}” is switched off for everyone.",
+      "restored": "“{name}” is back on.",
+      "untickAsk": "In {plan}, {list} needs “{name}”. Untick it too?",
+      "tickAsk": "In {plan}, “{name}” needs {list}. Tick it too?",
+      "yes": "Yes, together",
+      "cancel": "Cancel",
+      "review": "Review the changes",
+      "summary": "Before saving",
+      "subscribers": "{count} active subscriber(s) concerned",
+      "subscribersUnknown": "subscribers concerned: unknown (subscriptions unreadable)",
+      "freeAccounts": "every account without a plan",
+      "everyone": "everyone",
+      "testersCount": "{count} tester(s)",
+      "confirm": "Confirm and save",
+      "invalidTesters": "This tester’s address isn’t valid: {email}",
+      "names": {
+        "reminders": "Reminders",
+        "parcelCosts": "Parcel costs",
+        "pdfExport": "PDF export",
+        "ownKey": "Own AI key",
+        "deepAnalysis": "Deep analysis",
+        "multiPage": "Several pages",
+        "garage": "My garage",
+        "reseller": "Reseller tools",
+        "expenses": "My expenses"
+      },
+      "descriptions": {
+        "reminders": "Reminders on scans (repeat, snooze), insurance and parcel arrivals.",
+        "parcelCosts": "Price and fees in ariary on each parcel.",
+        "pdfExport": "A clean PDF of a document, or of several scans from the history.",
+        "ownKey": "Scanning with one’s own AI key, with no limit.",
+        "deepAnalysis": "Analysing again with the most accurate (and costlier) AI, counted in the month’s quota.",
+        "multiPage": "A document in several pages, analysed at once.",
+        "garage": "Vehicles, service, oil change and insurance reminders, fuel and expenses.",
+        "reseller": "A client per parcel, what they owe, totals per client, export and statements.",
+        "expenses": "The month’s budget, alone or as a household, and the AI’s month review."
+      },
+      "deepNeedsLimit": "Can’t save: {list} has no deep analysis quota (0 = no limit). First set a number per month above, in the plans’ prices and quotas. Free has no quota: no deep analysis."
     }
   },
   "account": {
@@ -872,8 +931,8 @@
     "calendarGoogle": "Google Calendar",
     "calendarOther": "Other calendar (.ics)",
     "calendarDownloaded": "Calendar file downloaded: open it to add the event.",
-    "lockedInsurance": "The automatic reminder before the insurance expires comes with Lite and up.",
-    "lockedParcels": "Parcel arrival notifications come with Lite and up."
+    "lockedInsurance": "The automatic reminder before the insurance expires comes with {plan} and up.",
+    "lockedParcels": "Parcel arrival notifications come with {plan} and up."
   },
   "chat": {
     "title": "A question about this scan?",
@@ -1110,10 +1169,10 @@
       "addItem": "Add an item",
       "receivedAt": "Pick-up date",
       "receivedHint": "Set to today when you mark it received. Correct it if you marked it late; clear it to put the parcel back in progress.",
-      "clientLocked": "With the Pro plan: note who each parcel is for."
+      "clientLocked": "With the {plan} plan: note who each parcel is for."
     },
     "receivedOn": "Received on {date}",
-    "costsLocked": "Costs in ariary (price and fees) come with the Lite plan and up.",
+    "costsLocked": "Costs in ariary (price and fees) come with the {plan} plan and up.",
     "clients": {
       "view": "View",
       "parcelsTab": "Parcels",
@@ -1210,12 +1269,13 @@
       "allPaid": "All paid",
       "profit": "Profit: {amount}",
       "loss": "Loss: {amount}",
-      "locked": "Sale price, client payment and profit: with the Pro plan.",
+      "locked": "Sale price, client payment and profit: with the {plan} plan.",
       "dueShort": "{amount} due"
     },
     "expected": "Expected delivery: {date}",
     "expectedToday": "Arrives today",
-    "expectedLate": "Expected on {date}: overdue"
+    "expectedLate": "Expected on {date}: overdue",
+    "costsReadOnly": "Total cost kept: {amount}. Your plan no longer includes parcel costs: you can’t change them anymore."
   },
   "plans": {
     "names": {
@@ -1267,7 +1327,8 @@
       "multiPage": "Multi-page scans (contract, long invoice)",
       "pdfExport": "PDF export of documents and history",
       "garage": "My garage: service log, insurance and oil change reminders, fuel and expenses",
-      "reminders": "Reminders: on your scans (with repeat and snooze), insurance, parcel arrivals"
+      "reminders": "Reminders: on your scans (with repeat and snooze), insurance, parcel arrivals",
+      "expenses": "My expenses: the month’s budget, alone or as a household"
     },
     "how": "How to subscribe",
     "step1": "Sign in",
@@ -1349,7 +1410,8 @@
       "whatsapp": "WhatsApp",
       "share": "Share",
       "copy": "Copy the code"
-    }
+    },
+    "unavailable": "This feature isn’t available right now."
   },
   "deep": {
     "button": "Deep analysis",
@@ -1357,10 +1419,10 @@
     "wait": "With the most accurate AI: up to a minute.",
     "hint": "With the most accurate AI · {left} left this month",
     "hintUnlimited": "With the most accurate AI, for the hard cases",
-    "hintLocked": "With the Premium plan: a more accurate AI for the hard cases.",
+    "hintLocked": "With the {plan} plan: a more accurate AI for the hard cases.",
     "noPhoto": "This scan’s photo is no longer kept full size: take a new photo for a deep analysis.",
     "limit": "This month’s deep analyses are used up.",
-    "premium": "Deep analysis comes with the Premium plan.",
+    "premium": "Deep analysis comes with the {plan} plan.",
     "failed": "The deep analysis didn’t succeed. Try again in a moment.",
     "finished": "Deep analysis done",
     "done": "Deep analysis",
@@ -1481,7 +1543,7 @@
     "ok": "OK"
   },
   "share": {
-    "onlyFirst": "Several photos received: only the first one is analysed. Multi-page scans come with Premium."
+    "onlyFirst": "Several photos received: only the first one is analysed. Multi-page scans come with {plan}."
   },
   "text": {
     "title": "Document text",
@@ -1787,9 +1849,9 @@
   "garage": {
     "title": "My garage",
     "subtitle": "Your vehicles, their service, their fuel and what they cost.",
-    "locked": "My garage comes with Premium and up.",
-    "lockedScan": "Adding this vehicle to your garage comes with Premium and up.",
-    "readOnly": "Your plan no longer includes My garage: your vehicles stay visible, but you can’t change anything and their reminders are paused. Go back to Premium to get it all back.",
+    "locked": "My garage comes with {plan} and up.",
+    "lockedScan": "Adding this vehicle to your garage comes with {plan} and up.",
+    "readOnly": "Your plan no longer includes My garage: your vehicles stay visible, but you can’t change anything and their reminders are paused. Go back to {plan} to get it all back.",
     "pitch": {
       "sheet": "A sheet per vehicle and a service log (oil change, tyres, brakes…)",
       "reminders": "Reminders before the insurance and the technical inspection end, and the oil change estimated from the mileage",
@@ -2194,6 +2256,7 @@
         "network": "No connection. Try again once you're online.",
         "failed": "That didn't work. Try again."
       }
-    }
+    },
+    "keptReadOnly": "Your plan no longer includes My expenses: your expenses are kept and can still be seen here, and their reminders are paused. It all comes back if the feature is back in your plan."
   }
 }

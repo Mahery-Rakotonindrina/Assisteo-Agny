@@ -116,7 +116,7 @@ test("a Premium account adds a vehicle and two fills, and sees the consumption",
   // The demo server answers "free": pretend the account is Premium.
   await page.route("**/api/plan", async (route) => {
     const response = await route.fetch();
-    await route.fulfill({ response, json: { ...(await response.json()), plan: "premium" } });
+    await route.fulfill({ response, json: { ...(await response.json()), plan: "premium", features: undefined } });
   });
   await page.goto("/garage");
   await page.getByRole("button", { name: "Ajouter un véhicule" }).click();
@@ -140,7 +140,7 @@ test("an Admin account adds an expense and sees the month's total", async ({ pag
   // The demo server answers "free": pretend the account is Admin.
   await page.route("**/api/plan", async (route) => {
     const response = await route.fetch();
-    await route.fulfill({ response, json: { ...(await response.json()), plan: "unlimited" } });
+    await route.fulfill({ response, json: { ...(await response.json()), plan: "unlimited", features: undefined } });
   });
   await page.goto("/");
   await expect(page.getByRole("link", { name: /Mes dépenses|^Dépenses$/ }).first()).toBeVisible();
@@ -156,7 +156,7 @@ test("an Admin account gets the month's review (demo)", async ({ page }) => {
   await prepare(page);
   await page.route("**/api/plan", async (route) => {
     const response = await route.fetch();
-    await route.fulfill({ response, json: { ...(await response.json()), plan: "unlimited" } });
+    await route.fulfill({ response, json: { ...(await response.json()), plan: "unlimited", features: undefined } });
   });
   await page.goto("/expenses");
   await page.getByRole("button", { name: "Ajouter une dépense" }).click();
@@ -191,7 +191,7 @@ test("an Admin account creates a household and sees its invitation code", async 
   await prepare(page);
   await page.route("**/api/plan", async (route) => {
     const response = await route.fetch();
-    await route.fulfill({ response, json: { ...(await response.json()), plan: "unlimited" } });
+    await route.fulfill({ response, json: { ...(await response.json()), plan: "unlimited", features: undefined } });
   });
   // The household's server, as Supabase would answer it.
   const userId = "11111111-1111-4111-8111-111111111111";
@@ -222,7 +222,7 @@ test("back on the free plan, the vehicles stay visible but read only", async ({ 
   await prepare(page);
   const premium = async (route: import("@playwright/test").Route) => {
     const response = await route.fetch();
-    await route.fulfill({ response, json: { ...(await response.json()), plan: "premium" } });
+    await route.fulfill({ response, json: { ...(await response.json()), plan: "premium", features: undefined } });
   };
   await page.route("**/api/plan", premium);
   await page.goto("/garage");
@@ -241,4 +241,78 @@ test("back on the free plan, the vehicles stay visible but read only", async ({ 
   await expect(page.getByRole("button", { name: "Modifier" })).toHaveCount(0);
   await page.getByRole("radio", { name: "Pleins" }).click();
   await expect(page.getByRole("button", { name: "Ajouter un plein" })).toHaveCount(0);
+});
+
+test("the app follows the plans' features set in Admin: a Premium without My garage", async ({ page }) => {
+  await prepare(page);
+  // As the server answers once the owner unticked My garage for Premium (it stays in Pro).
+  await page.route("**/api/plan", async (route) => {
+    const response = await route.fetch();
+    const json = await response.json();
+    await route.fulfill({
+      response,
+      json: { ...json, plan: "premium", features: ["reminders", "parcelCosts", "pdfExport", "ownKey", "deepAnalysis", "multiPage"], featureFrom: { ...json.featureFrom, garage: "pro" } },
+    });
+  });
+  await page.goto("/garage");
+  await expect(page.getByText("Mon garage est inclus à partir de Pro.")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Ajouter un véhicule" })).toHaveCount(0);
+});
+
+test("a feature switched off for everyone shows no plan to buy", async ({ page }) => {
+  await prepare(page);
+  await page.route("**/api/plan", async (route) => {
+    const response = await route.fetch();
+    const json = await response.json();
+    await route.fulfill({ response, json: { ...json, featureFrom: { ...json.featureFrom, garage: null } } });
+  });
+  await page.goto("/garage");
+  await expect(page.getByText("Cette fonction n’est pas disponible pour le moment.")).toBeVisible();
+});
+
+test("the admin shows the features table, and the changes before saving", async ({ page }) => {
+  await prepare(page);
+  await page.goto("/admin");
+  await page.locator("#admin-token").fill("e2e-admin-token-0123456789");
+  await page.getByRole("button", { name: "Déverrouiller" }).click();
+  const table = page.getByRole("region", { name: "Fonctionnalités par offre" });
+  await expect(table.getByRole("heading", { name: "Fonctionnalités par offre" })).toBeVisible();
+  const garagePremium = table.getByRole("checkbox", { name: "Mon garage · Premium" });
+  await expect(garagePremium).toBeChecked();
+  await expect(table.getByRole("checkbox", { name: "Mon garage · Lite" })).not.toBeChecked();
+
+  // Unticking the parcels' costs in Pro asks about the reseller tools.
+  await table.getByRole("checkbox", { name: "Coûts des colis · Pro" }).click();
+  await expect(table.getByText("Dans Pro, Outils revendeur a besoin de « Coûts des colis ». Décocher aussi ?")).toBeVisible();
+  await table.getByRole("button", { name: "Annuler" }).click();
+  await expect(table.getByRole("checkbox", { name: "Coûts des colis · Pro" })).toBeChecked();
+
+  // Nothing is saved here: the tests share one server.
+  await garagePremium.uncheck();
+  await table.getByRole("button", { name: "Voir les changements" }).click();
+  await expect(table.getByRole("region", { name: "Avant d’enregistrer" })).toContainText("− Mon garage");
+  await expect(table.getByRole("button", { name: "Confirmer et enregistrer" })).toBeVisible();
+});
+
+test("a Premium who kept expenses still finds the expenses link, one without has none", async ({ page }) => {
+  await prepare(page);
+  let plan = "premium";
+  await page.route("**/api/plan", async (route) => {
+    const response = await route.fetch();
+    await route.fulfill({ response, json: { ...(await response.json()), plan, features: undefined } });
+  });
+  const link = page.getByRole("link", { name: /Mes dépenses|^Dépenses$/ });
+  await page.goto("/");
+  await expect(page.getByRole("link", { name: "Historique" }).first()).toBeVisible();
+  await expect(link).toHaveCount(0);
+  plan = "unlimited";
+  await page.goto("/expenses");
+  await page.getByRole("button", { name: "Ajouter une dépense" }).click();
+  await page.getByLabel("Montant", { exact: true }).fill("5000");
+  await page.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(page.getByTestId("expenses-total")).toBeVisible();
+  // The feature is taken away: the kept expenses stay reachable.
+  plan = "premium";
+  await page.goto("/");
+  await expect(link.first()).toBeVisible();
 });

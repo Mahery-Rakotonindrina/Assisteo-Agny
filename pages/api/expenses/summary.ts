@@ -3,7 +3,6 @@ import { AnalysisError } from "@/lib/ai/errors";
 import { mockExpenseSummary } from "@/lib/ai/mock";
 import { activeProvider, summarizeExpenses } from "@/lib/ai/provider";
 import { ExpenseSummaryRequestSchema, type ExpenseSummaryResponse } from "@/lib/ai/schema";
-import { hasFeature } from "@/lib/plans";
 import { applyCors, clientIp, sendError } from "@/lib/server/http";
 import { resolvePlan } from "@/lib/server/plan";
 import { rateLimit, refundRateLimit } from "@/lib/server/rateLimit";
@@ -38,8 +37,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     return res.status(200).json({ summary: mockExpenseSummary(parsed.data), model: "demo", demo: true } satisfies ExpenseSummaryResponse);
   }
 
-  const { account, current } = await resolvePlan(req);
-  if (!account || !hasFeature(current.plan, "expenses")) {
+  const { account, features } = await resolvePlan(req);
+  if (!account || !features.has("expenses")) {
     return sendError(res, 403, "plan_required", "The month's review is not part of your plan.");
   }
 

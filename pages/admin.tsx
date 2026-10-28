@@ -3,6 +3,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Download, Gauge, Gift, KeyRound, LockKeyhole, Smartphone, LogOut, MessageCircle, Minus, Plus, Save, ShieldAlert, UserRound, Wifi } from "lucide-react";
 import { AdminAccounts } from "@/components/AdminAccounts";
 import { AdminAiCost } from "@/components/AdminAiCost";
+import { AdminFeatures } from "@/components/AdminFeatures";
 import { AdminLog } from "@/components/AdminLog";
 import { AdminPlans } from "@/components/AdminPlans";
 import { AdminPromoCodes } from "@/components/AdminPromoCodes";
@@ -191,6 +192,7 @@ export default function AdminPage() {
         {config && <AdminSubscriptions token={token} owner={owner} />}
         {config && <AdminAccounts token={token} />}
         {config && <AdminPlans token={token} />}
+        {config && <AdminFeatures token={token} />}
         {config && <AdminPromoCodes token={token} />}
         {config && <AdminAiCost token={token} />}
         {config && <AdminStats token={token} />}

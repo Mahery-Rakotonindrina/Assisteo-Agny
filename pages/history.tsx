@@ -18,7 +18,6 @@ import { exampleImage } from "@/lib/examples";
 import { formatDay, startOfDay } from "@/lib/format";
 import { datePresets, dateRange, folderList, inCollection, inRange, type Collection, type DatePreset } from "@/lib/historyFilters";
 import { easeOut, rise, spring, stagger } from "@/lib/motion";
-import { planFor } from "@/lib/plans";
 import { haptics } from "@/services/device";
 import { historyStore } from "@/services/historyStore";
 import { exportHistoryPdf } from "@/services/historyPdf";
@@ -81,7 +80,7 @@ export default function HistoryPage() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   // Selection mode: tick scans, then export them as one PDF (Lite and up).
-  const { has } = usePlan();
+  const { has, planFor } = usePlan();
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
   const [exporting, setExporting] = useState(false);
