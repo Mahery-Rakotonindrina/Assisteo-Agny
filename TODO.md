@@ -160,6 +160,12 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Liste de tous les comptes, pas seulement les abonnés — carte « Comptes » : inscrits, nouveaux du mois, offre de chacun, date d’inscription et de dernière connexion, recherche, filtres Abonnés / Sans offre / Admins
 - [x] Export comptable des paiements (Excel) — dans « Abonnés » : ce mois, mois dernier, cette année ou tout ; 3 feuilles : paiements, totaux par mois et par offre, totaux par moyen de paiement
 - [x] Plusieurs administrateurs avec leur propre accès, journal des actions — l’offre Admin donne l’accès avec son propre compte, retiré dès que l’offre s’arrête ; réservé au propriétaire (jeton) : nommer ou retirer un admin, double authentification, journal (500 dernières actions : qui, quoi, quand)
+- [ ] Tableau des fonctionnalités : toutes les fonctions de l'app, avec à côté les offres qui les activent (Gratuit, Lite, Premium, Pro, Admin)
+- [ ] Fonctionnalités réglables par offre : dans « Offres », cocher ou décocher chaque fonctionnalité pour chaque offre ; les réglages actuels sont proposés par défaut
+- [ ] Fonctionnalités réglables par abonné : à l'ajout ou au renouvellement d'un abonné, les fonctionnalités de son offre sont cochées par défaut, et on peut en ajouter ou en retirer pour lui seul
+- [ ] L'app de chaque utilisateur suit ces réglages (menus, boutons, étiquettes « à partir de… », refus côté serveur), tout de suite et sans nouvel APK
+- [ ] Chaque changement de fonctionnalités noté dans le journal des actions admin
+- [ ] Créer une nouvelle offre depuis l'Admin (nom, couleur, prix, quotas, fonctionnalités)
 
 ## 13. Réglages
 
