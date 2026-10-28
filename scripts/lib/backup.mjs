@@ -21,6 +21,7 @@ export const RESTORE_KEYS = {
   parcels: ["user_id", "id"],
   lists: ["user_id", "id"],
   vehicles: ["user_id", "id"],
+  expenses: ["user_id", "id"],
   subscriptions: ["id"],
 };
 
