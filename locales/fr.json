@@ -19,7 +19,8 @@
     "lists": "Listes",
     "food": "Journal",
     "papers": "Papiers",
-    "garage": "Garage"
+    "garage": "Garage",
+    "expenses": "Dépenses"
   },
   "scan": {
     "greeting": {
@@ -603,7 +604,8 @@
       "kinds": {
         "scan": "Scan",
         "deep": "Analyse approfondie",
-        "question": "Question"
+        "question": "Question",
+        "summary": "Bilan des dépenses"
       },
       "perCall": "par appel · {calls} appel(s), {total} en tout",
       "noCalls": "aucun appel",
@@ -1506,7 +1508,8 @@
     "label": "Raccourcis",
     "foodHint": "Ce que tu as mangé aujourd’hui",
     "papersHint": "CNI, assurances, garanties",
-    "garageHint": "Entretien, pleins, rappels"
+    "garageHint": "Entretien, pleins, rappels",
+    "expensesHint": "Budget du mois, ce qu’il reste"
   },
   "food": {
     "title": "Journal alimentaire",
@@ -1915,6 +1918,282 @@
       "oilChangeByKm": "Vidange à prévoir vers {km} km (estimée le {date}).",
       "odometerTitle": "Compteur : {name}",
       "odometerBody": "Pas de relevé depuis {days} jours : mets à jour le kilométrage pour garder l’estimation de vidange juste."
+    }
+  },
+  "expenses": {
+    "title": "Mes dépenses",
+    "subtitle": "Ton budget du mois : ce que tu dépenses, ce qui rentre et ce qu’il reste.",
+    "previousMonth": "Mois précédent",
+    "nextMonth": "Mois suivant",
+    "tabs": {
+      "month": "Mois",
+      "income": "Revenus",
+      "recurring": "Fixes",
+      "history": "Historique",
+      "budget": "Budget"
+    },
+    "add": "Ajouter une dépense",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "remove": "Supprimer",
+    "edit": "Modifier",
+    "correct": "Corriger",
+    "exclude": "Hors budget",
+    "include": "Remettre dans le budget",
+    "excluded": "hors budget",
+    "openSource": "Voir",
+    "categories": {
+      "market": "Marché et alimentation",
+      "jirama": "JIRAMA",
+      "rent": "Loyer",
+      "transport": "Transport (taxi-be, carburant)",
+      "phone": "Crédit et internet",
+      "school": "École",
+      "health": "Santé",
+      "family": "Famille",
+      "online": "Achats en ligne et colis",
+      "car": "Voiture",
+      "leisure": "Loisirs",
+      "savings": "Épargne",
+      "other": "Autres"
+    },
+    "payments": {
+      "cash": "Espèces",
+      "mobile": "Mobile Money",
+      "card": "Carte"
+    },
+    "incomes": {
+      "salary": "Salaire",
+      "sales": "Ventes",
+      "other": "Autre revenu"
+    },
+    "origins": {
+      "manual": "Saisie",
+      "recurring": "Fixe",
+      "bill": "Facture",
+      "shopping": "Courses",
+      "parcel": "Colis",
+      "fuel": "Plein",
+      "maintenance": "Entretien",
+      "vehicle": "Garage"
+    },
+    "form": {
+      "title": "Dépense",
+      "amount": "Montant",
+      "currency": "Devise",
+      "rate": "Taux : 1 {currency} en Ar",
+      "category": "Catégorie",
+      "date": "Date",
+      "payment": "Payé en",
+      "note": "Note",
+      "link": "C’est la même dépense que",
+      "noLink": "Aucune autre (nouvelle dépense)",
+      "linked": "La dépense liée",
+      "converted": "Soit",
+      "scope": "Pour qui",
+      "personal": "Perso",
+      "shared": "Foyer",
+      "personalHint": "Rien que pour toi : personne d’autre ne la voit.",
+      "sharedHint": "Comptée dans le budget de « {name} » : les membres la verront."
+    },
+    "month": {
+      "spent": "Dépensé",
+      "lastMonth": "Mois dernier",
+      "noPrevious": "Rien le mois dernier",
+      "more": "+{percent} % ({amount} de plus que le mois dernier)",
+      "less": "−{percent} % ({amount} de moins que le mois dernier)",
+      "byCategory": "Par catégorie",
+      "list": "Les dépenses du mois",
+      "empty": "Aucune dépense ce mois-ci. Ajoute la première, ou paie une facture dans Mes papiers.",
+      "sourcesHint": "Les factures payées, les courses cochées, les colis et le garage s’ajoutent tout seuls. Touche une ligne pour la corriger ou la sortir du budget."
+    },
+    "income": {
+      "total": "Revenus",
+      "left": "Ce qu’il reste",
+      "add": "Ajouter un revenu",
+      "empty": "Aucun revenu ce mois-ci.",
+      "kind": "Type",
+      "recurringHint": "Un salaire qui tombe chaque mois ? Ajoute-le dans l’onglet Fixes."
+    },
+    "recurring": {
+      "add": "Ajouter une dépense fixe",
+      "addIncome": "Ajouter un revenu fixe",
+      "empty": "Aucune dépense fixe. Loyer, écolage, abonnements : ajoute-les une fois, ils reviennent chaque mois.",
+      "income": "Revenu",
+      "everyMonth": "le {day} de chaque mois",
+      "reminds": {
+        "none": "Pas de rappel",
+        "eve": "Rappel la veille",
+        "day": "Rappel le jour même"
+      },
+      "skipped": "pas ce mois-ci",
+      "skip": "Pas ce mois-ci",
+      "unskip": "Remettre ce mois-ci",
+      "label": "Nom",
+      "placeholder": "Loyer, écolage, Canal+…",
+      "incomePlaceholder": "Salaire, loyer perçu…",
+      "day": "Jour du mois",
+      "remind": "Rappel",
+      "lastDayHint": "Les mois plus courts, ce sera le dernier jour du mois.",
+      "stop": "Arrêter"
+    },
+    "history": {
+      "period": "Période",
+      "months": "{count} mois",
+      "average": "Moyenne par mois",
+      "total": "Total",
+      "chart": "Dépenses mois par mois",
+      "byCategory": "Moyenne par catégorie",
+      "perMonth": "{amount} par mois"
+    },
+    "budget": {
+      "title": "Budget du mois",
+      "overall": "Budget total",
+      "hint": "Fixe un plafond pour le mois, en tout ou par catégorie. Tu es prévenu à 80 %, puis au dépassement.",
+      "saved": "Budget enregistré",
+      "warningBanner": "{scope} : tu as déjà utilisé {percent} % du budget. Il reste {amount}.",
+      "overBanner": "{scope} : budget dépassé ({percent} %), de {amount}."
+    },
+    "custom": {
+      "title": "Tes catégories",
+      "add": "Ajouter la catégorie",
+      "name": "Nouvelle catégorie",
+      "placeholder": "Église, cotisations…",
+      "color": "Couleur",
+      "icon": "Icône"
+    },
+    "reminders": {
+      "eveTitle": "{label} : à payer demain",
+      "dayTitle": "{label} : à payer aujourd’hui",
+      "body": "{amount} à payer le {date}.",
+      "warningTitle": "{scope} : 80 % du budget atteint",
+      "overTitle": "{scope} : budget dépassé",
+      "budgetBody": "{spent} dépensés sur {cap} ce mois-ci."
+    },
+    "export": {
+      "excel": "Excel",
+      "pdf": "PDF",
+      "downloaded": "Fichier téléchargé.",
+      "failed": "L’export n’a pas marché. Réessaie.",
+      "exportedOn": "Exporté le {date}",
+      "sheetExpenses": "Dépenses",
+      "sheetCategories": "Par catégorie",
+      "total": "Total",
+      "yes": "Oui",
+      "no": "Non",
+      "columns": {
+        "date": "Date",
+        "category": "Catégorie",
+        "label": "Libellé",
+        "origin": "Origine",
+        "payment": "Paiement",
+        "original": "Montant d’origine (taux)",
+        "amountMga": "Montant",
+        "counted": "Compté"
+      },
+      "categoryColumns": {
+        "category": "Catégorie",
+        "spent": "Dépensé",
+        "cap": "Budget"
+      }
+    },
+    "receipt": {
+      "title": "Mes dépenses",
+      "add": "Ajouter à mes dépenses",
+      "saved": "Dépense ajoutée",
+      "already": "Déjà dans tes dépenses ({amount}).",
+      "open": "Ouvrir",
+      "loading": "Chargement de tes dépenses…"
+    },
+    "review": {
+      "title": "Bilan du mois",
+      "ask": "Bilan du mois",
+      "again": "Refaire le bilan",
+      "loading": "Bilan en cours…",
+      "hint": "L’IA lit seulement tes totaux du mois (aucune note, aucun magasin) et te donne quelques constats et conseils.",
+      "tips": "Conseils",
+      "at": "Bilan du {date}",
+      "demoAt": "Bilan d’exemple (mode démo), {date}",
+      "offline": "Pas de connexion : réessaie quand tu es en ligne.",
+      "limit": "Tu as fait assez de bilans pour aujourd’hui : reviens demain.",
+      "failed": "Le bilan n’a pas pu se faire. Réessaie dans un moment."
+    },
+    "views": {
+      "label": "Perso ou foyer",
+      "personal": "Perso",
+      "household": "Foyer"
+    },
+    "household": {
+      "title": "Budget du foyer",
+      "subtitle": "Le budget partagé de ta famille : chacun ajoute ses dépenses, vous voyez le total ensemble.",
+      "loading": "Chargement du foyer…",
+      "signInTitle": "Connecte-toi pour partager un budget",
+      "signInBody": "Le budget du foyer se partage entre comptes. Connecte-toi, puis tape le code que ta famille t’a envoyé.",
+      "stale": "Hors ligne : le foyer affiché date de ta dernière connexion.",
+      "unreachable": "Impossible de joindre le serveur pour l’instant.",
+      "retry": "Réessayer",
+      "joinTitle": "Rejoindre un foyer",
+      "joinBody": "Tape le code reçu : 6 signes, valable 48 h.",
+      "code": "Code d’invitation",
+      "codeInvalid": "Le code fait 6 signes, par exemple 4K7-P2Q.",
+      "join": "Rejoindre",
+      "joined": "Bienvenue dans le foyer !",
+      "createTitle": "Créer un foyer",
+      "createBody": "Partage un budget avec ta famille. Chacun choisit, dépense par dépense, ce qui va au foyer ; tes dépenses perso restent à toi.",
+      "name": "Nom du foyer",
+      "namePlaceholder": "Famille Rakoto",
+      "create": "Créer le foyer",
+      "created": "Foyer « {name} » créé",
+      "spent": "Dépensé par le foyer",
+      "membersCount": "Membres",
+      "budgetTitle": "Budget commun",
+      "budgetHint": "Le plafond du mois pour tout le foyer, et par catégorie si tu veux. Tous les membres le voient.",
+      "byMember": "Par membre",
+      "you": "Toi",
+      "formerMember": "Ancien membre",
+      "by": "par {name}",
+      "add": "Ajouter une dépense du foyer",
+      "list": "Dépenses du foyer",
+      "empty": "Aucune dépense du foyer ce mois-ci. Ajoute-en une, ou passe une de tes dépenses en « Foyer ».",
+      "manage": "Gérer le foyer",
+      "inviteTitle": "Inviter ta famille",
+      "inviteBody": "Crée un code et envoie-le par WhatsApp. Il marche pendant 48 h.",
+      "makeCode": "Créer un code",
+      "newCode": "Nouveau code",
+      "share": "Partager",
+      "revoke": "Annuler le code",
+      "revoked": "Code annulé",
+      "expires": "Valable jusqu’au {date}",
+      "shareTitle": "Rejoins notre budget",
+      "shareText": "Rejoins notre budget « {name} » dans Assisteo Agny : ouvre Mes dépenses, puis « Rejoindre un foyer », et tape le code {code} (valable 48 h).",
+      "copied": "Message copié : colle-le dans WhatsApp.",
+      "members": "Membres ({count})",
+      "owner": "Créateur du foyer",
+      "member": "Membre",
+      "remove": "Retirer",
+      "removeConfirm": "Oui, retirer",
+      "settings": "Réglages du foyer",
+      "saved": "Foyer enregistré",
+      "leave": "Quitter le foyer",
+      "leaveHint": "Tu quittes « {name} ». Tes dépenses du foyer reviendront dans tes dépenses perso.",
+      "delete": "Supprimer le foyer",
+      "deleteHint": "Tu as créé « {name} » : en partant, tu le supprimes pour tout le monde. Tes dépenses du foyer reviendront dans tes dépenses perso.",
+      "confirm": "Oui, continuer",
+      "left": "Tu as quitté le foyer",
+      "deleted": "Foyer supprimé",
+      "errors": {
+        "sign_in_required": "Connecte-toi d’abord.",
+        "plan_required": "Seul un compte Admin peut créer un foyer pendant le test.",
+        "already_member": "Tu fais déjà partie d’un foyer. Quitte-le d’abord.",
+        "not_member": "Tu ne fais plus partie de ce foyer.",
+        "not_owner": "Seul le créateur du foyer peut faire ça.",
+        "invalid_code": "Ce code n’existe pas. Vérifie-le, ou demandes-en un nouveau.",
+        "expired": "Ce code a expiré (48 h). Demandes-en un nouveau.",
+        "household_full": "Ce foyer est complet (12 membres).",
+        "rate_limited": "Trop d’essais. Réessaie dans une heure.",
+        "network": "Pas de connexion. Réessaie quand tu seras en ligne.",
+        "failed": "Ça n’a pas marché. Réessaie."
+      }
     }
   }
 }

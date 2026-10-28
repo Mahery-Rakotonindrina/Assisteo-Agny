@@ -19,7 +19,8 @@
     "lists": "Lists",
     "food": "Food log",
     "papers": "Papers",
-    "garage": "Garage"
+    "garage": "Garage",
+    "expenses": "Expenses"
   },
   "scan": {
     "greeting": {
@@ -603,7 +604,8 @@
       "kinds": {
         "scan": "Scan",
         "deep": "Deep analysis",
-        "question": "Question"
+        "question": "Question",
+        "summary": "Expenses review"
       },
       "perCall": "per call · {calls} call(s), {total} in all",
       "noCalls": "no call",
@@ -1506,7 +1508,8 @@
     "label": "Shortcuts",
     "foodHint": "What you ate today",
     "papersHint": "ID, insurance, warranties",
-    "garageHint": "Service, fuel, reminders"
+    "garageHint": "Service, fuel, reminders",
+    "expensesHint": "Monthly budget, what is left"
   },
   "food": {
     "title": "Food journal",
@@ -1915,6 +1918,282 @@
       "oilChangeByKm": "Oil change due around {km} km (estimated on {date}).",
       "odometerTitle": "Odometer: {name}",
       "odometerBody": "No reading for {days} days: update the mileage to keep the oil change estimate right."
+    }
+  },
+  "expenses": {
+    "title": "My expenses",
+    "subtitle": "Your monthly budget: what you spend, what comes in and what is left.",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
+    "tabs": {
+      "month": "Month",
+      "income": "Income",
+      "recurring": "Fixed",
+      "history": "History",
+      "budget": "Budget"
+    },
+    "add": "Add an expense",
+    "save": "Save",
+    "cancel": "Cancel",
+    "remove": "Delete",
+    "edit": "Edit",
+    "correct": "Correct",
+    "exclude": "Leave out of budget",
+    "include": "Back in the budget",
+    "excluded": "not in budget",
+    "openSource": "Open",
+    "categories": {
+      "market": "Market and food",
+      "jirama": "JIRAMA",
+      "rent": "Rent",
+      "transport": "Transport (taxi-be, fuel)",
+      "phone": "Phone credit and internet",
+      "school": "School",
+      "health": "Health",
+      "family": "Family",
+      "online": "Online shopping and parcels",
+      "car": "Car",
+      "leisure": "Leisure",
+      "savings": "Savings",
+      "other": "Other"
+    },
+    "payments": {
+      "cash": "Cash",
+      "mobile": "Mobile Money",
+      "card": "Card"
+    },
+    "incomes": {
+      "salary": "Salary",
+      "sales": "Sales",
+      "other": "Other income"
+    },
+    "origins": {
+      "manual": "Typed in",
+      "recurring": "Fixed",
+      "bill": "Bill",
+      "shopping": "Shopping",
+      "parcel": "Parcel",
+      "fuel": "Fuel",
+      "maintenance": "Service",
+      "vehicle": "Garage"
+    },
+    "form": {
+      "title": "Expense",
+      "amount": "Amount",
+      "currency": "Currency",
+      "rate": "Rate: 1 {currency} in Ar",
+      "category": "Category",
+      "date": "Date",
+      "payment": "Paid with",
+      "note": "Note",
+      "link": "It is the same expense as",
+      "noLink": "None (a new expense)",
+      "linked": "The linked expense",
+      "converted": "That is",
+      "scope": "For whom",
+      "personal": "Personal",
+      "shared": "Household",
+      "personalHint": "Just for you: nobody else sees it.",
+      "sharedHint": "Counted in the budget of “{name}”: its members will see it."
+    },
+    "month": {
+      "spent": "Spent",
+      "lastMonth": "Last month",
+      "noPrevious": "Nothing last month",
+      "more": "+{percent}% ({amount} more than last month)",
+      "less": "−{percent}% ({amount} less than last month)",
+      "byCategory": "By category",
+      "list": "This month’s expenses",
+      "empty": "No expenses this month. Add the first one, or pay a bill in My papers.",
+      "sourcesHint": "Paid bills, ticked shopping, parcels and the garage are added on their own. Tap a line to correct it or leave it out of the budget."
+    },
+    "income": {
+      "total": "Income",
+      "left": "What is left",
+      "add": "Add income",
+      "empty": "No income this month.",
+      "kind": "Kind",
+      "recurringHint": "A salary that comes every month? Add it in the Fixed tab."
+    },
+    "recurring": {
+      "add": "Add a fixed expense",
+      "addIncome": "Add a fixed income",
+      "empty": "No fixed expenses. Rent, school fees, subscriptions: add them once, they come back every month.",
+      "income": "Income",
+      "everyMonth": "on the {day} of every month",
+      "reminds": {
+        "none": "No reminder",
+        "eve": "Reminder the day before",
+        "day": "Reminder on the day"
+      },
+      "skipped": "not this month",
+      "skip": "Not this month",
+      "unskip": "Back this month",
+      "label": "Name",
+      "placeholder": "Rent, school fees, Canal+…",
+      "incomePlaceholder": "Salary, rent received…",
+      "day": "Day of the month",
+      "remind": "Reminder",
+      "lastDayHint": "In shorter months, it will be the last day of the month.",
+      "stop": "Stop"
+    },
+    "history": {
+      "period": "Period",
+      "months": "{count} months",
+      "average": "Average per month",
+      "total": "Total",
+      "chart": "Spending month by month",
+      "byCategory": "Average by category",
+      "perMonth": "{amount} a month"
+    },
+    "budget": {
+      "title": "Monthly budget",
+      "overall": "Total budget",
+      "hint": "Set a cap for the month, overall or by category. You are warned at 80%, then when it is exceeded.",
+      "saved": "Budget saved",
+      "warningBanner": "{scope}: you have already used {percent}% of the budget. {amount} left.",
+      "overBanner": "{scope}: budget exceeded ({percent}%), by {amount}."
+    },
+    "custom": {
+      "title": "Your categories",
+      "add": "Add the category",
+      "name": "New category",
+      "placeholder": "Church, dues…",
+      "color": "Colour",
+      "icon": "Icon"
+    },
+    "reminders": {
+      "eveTitle": "{label}: to pay tomorrow",
+      "dayTitle": "{label}: to pay today",
+      "body": "{amount} to pay on {date}.",
+      "warningTitle": "{scope}: 80% of the budget reached",
+      "overTitle": "{scope}: budget exceeded",
+      "budgetBody": "{spent} spent out of {cap} this month."
+    },
+    "export": {
+      "excel": "Excel",
+      "pdf": "PDF",
+      "downloaded": "File downloaded.",
+      "failed": "The export didn’t work. Try again.",
+      "exportedOn": "Exported on {date}",
+      "sheetExpenses": "Expenses",
+      "sheetCategories": "By category",
+      "total": "Total",
+      "yes": "Yes",
+      "no": "No",
+      "columns": {
+        "date": "Date",
+        "category": "Category",
+        "label": "Label",
+        "origin": "Origin",
+        "payment": "Payment",
+        "original": "Original amount (rate)",
+        "amountMga": "Amount",
+        "counted": "Counted"
+      },
+      "categoryColumns": {
+        "category": "Category",
+        "spent": "Spent",
+        "cap": "Budget"
+      }
+    },
+    "receipt": {
+      "title": "My expenses",
+      "add": "Add to my expenses",
+      "saved": "Expense added",
+      "already": "Already in your expenses ({amount}).",
+      "open": "Open",
+      "loading": "Loading your expenses…"
+    },
+    "review": {
+      "title": "Month’s review",
+      "ask": "Month’s review",
+      "again": "Review again",
+      "loading": "Reviewing…",
+      "hint": "The AI only reads your month’s totals (no note, no shop) and gives you a few findings and tips.",
+      "tips": "Tips",
+      "at": "Review of {date}",
+      "demoAt": "Sample review (demo mode), {date}",
+      "offline": "No connection: try again once you’re online.",
+      "limit": "That’s enough reviews for today: come back tomorrow.",
+      "failed": "The review didn’t work. Try again in a moment."
+    },
+    "views": {
+      "label": "Personal or household",
+      "personal": "Personal",
+      "household": "Household"
+    },
+    "household": {
+      "title": "Household budget",
+      "subtitle": "Your family's shared budget: everyone adds their expenses, and you see the total together.",
+      "loading": "Loading the household…",
+      "signInTitle": "Sign in to share a budget",
+      "signInBody": "A household budget is shared between accounts. Sign in, then type the code your family sent you.",
+      "stale": "Offline: this is the household as of your last connection.",
+      "unreachable": "The server can't be reached right now.",
+      "retry": "Try again",
+      "joinTitle": "Join a household",
+      "joinBody": "Type the code you received: 6 characters, valid for 48 hours.",
+      "code": "Invitation code",
+      "codeInvalid": "The code has 6 characters, for example 4K7-P2Q.",
+      "join": "Join",
+      "joined": "Welcome to the household!",
+      "createTitle": "Create a household",
+      "createBody": "Share a budget with your family. Everyone picks, expense by expense, what goes to the household; your personal expenses stay yours.",
+      "name": "Household name",
+      "namePlaceholder": "The Rakoto family",
+      "create": "Create the household",
+      "created": "Household “{name}” created",
+      "spent": "Spent by the household",
+      "membersCount": "Members",
+      "budgetTitle": "Shared budget",
+      "budgetHint": "The month's cap for the whole household, and per category if you like. Every member sees it.",
+      "byMember": "By member",
+      "you": "You",
+      "formerMember": "Former member",
+      "by": "by {name}",
+      "add": "Add a household expense",
+      "list": "Household expenses",
+      "empty": "No household expense this month. Add one, or switch one of your expenses to “Household”.",
+      "manage": "Manage the household",
+      "inviteTitle": "Invite your family",
+      "inviteBody": "Create a code and send it on WhatsApp. It works for 48 hours.",
+      "makeCode": "Create a code",
+      "newCode": "New code",
+      "share": "Share",
+      "revoke": "Cancel the code",
+      "revoked": "Code cancelled",
+      "expires": "Valid until {date}",
+      "shareTitle": "Join our budget",
+      "shareText": "Join our budget “{name}” in Assisteo Agny: open My expenses, then “Join a household”, and type the code {code} (valid for 48 hours).",
+      "copied": "Message copied: paste it in WhatsApp.",
+      "members": "Members ({count})",
+      "owner": "Created the household",
+      "member": "Member",
+      "remove": "Remove",
+      "removeConfirm": "Yes, remove",
+      "settings": "Household settings",
+      "saved": "Household saved",
+      "leave": "Leave the household",
+      "leaveHint": "You're leaving “{name}”. Your household expenses will go back to your personal ones.",
+      "delete": "Delete the household",
+      "deleteHint": "You created “{name}”: leaving deletes it for everyone. Your household expenses will go back to your personal ones.",
+      "confirm": "Yes, go on",
+      "left": "You left the household",
+      "deleted": "Household deleted",
+      "errors": {
+        "sign_in_required": "Sign in first.",
+        "plan_required": "Only an Admin account can create a household during the test.",
+        "already_member": "You're already in a household. Leave it first.",
+        "not_member": "You're no longer in this household.",
+        "not_owner": "Only the household's creator can do that.",
+        "invalid_code": "This code doesn't exist. Check it, or ask for a new one.",
+        "expired": "This code has expired (48 hours). Ask for a new one.",
+        "household_full": "This household is full (12 members).",
+        "rate_limited": "Too many tries. Try again in an hour.",
+        "network": "No connection. Try again once you're online.",
+        "failed": "That didn't work. Try again."
+      }
     }
   }
 }

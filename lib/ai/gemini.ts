@@ -2,8 +2,17 @@ import { ApiError, createPartFromBase64, FinishReason, GoogleGenAI, ThinkingLeve
 import { z } from "zod";
 import type { AiUsage, EngineOptions } from "./claude";
 import { AnalysisError } from "./errors";
-import { askSystemPrompt, buildUserPrompt, firstAskText, isReadTask, SYSTEM_PROMPT } from "./prompt";
-import { AnalysisSchema, imagesOf, type Analysis, type AnalyzeRequest, type AskRequest } from "./schema";
+import { askSystemPrompt, buildSummaryPrompt, buildUserPrompt, firstAskText, isReadTask, SUMMARY_SYSTEM_PROMPT, SYSTEM_PROMPT } from "./prompt";
+import {
+  AnalysisSchema,
+  ExpenseSummarySchema,
+  imagesOf,
+  type Analysis,
+  type AnalyzeRequest,
+  type AskRequest,
+  type ExpenseSummary,
+  type ExpenseSummaryRequest,
+} from "./schema";
 
 // Free-tier friendly alternative to Claude (Google AI Studio key, no billing).
 // The "-latest" aliases always point at the current Flash models.
@@ -32,6 +41,7 @@ function canFallBack(error: unknown, signal?: AbortSignal) {
 
 // Gemini accepts a subset of JSON Schema; the draft URI is not part of it.
 const responseJsonSchema = { ...z.toJSONSchema(AnalysisSchema), $schema: undefined };
+const summaryJsonSchema = { ...z.toJSONSchema(ExpenseSummarySchema), $schema: undefined };
 
 const blockedReasons = new Set<FinishReason | undefined>([
   FinishReason.SAFETY,
@@ -164,6 +174,40 @@ export async function askWithGemini(
       lastError = error;
       const retryable = canFallBack(error, signal);
       if (!retryable || signal?.aborted) break;
+    }
+  }
+  throw toAnalysisError(lastError);
+}
+
+/** "Mes dépenses": the month's review from its totals, on Flash-Lite first (a short text task). */
+export async function summarizeWithGemini(input: ExpenseSummaryRequest, signal?: AbortSignal): Promise<{ summary: ExpenseSummary; model: string; usage?: AiUsage }> {
+  const client = getClient();
+  const chain = [...new Set([process.env.GEMINI_SUMMARY_MODEL ?? FALLBACK_MODEL, GEMINI_MODEL])];
+  let lastError: unknown;
+  for (const candidate of chain) {
+    try {
+      const response = await client.models.generateContent({
+        model: candidate,
+        contents: buildSummaryPrompt(input),
+        config: {
+          systemInstruction: SUMMARY_SYSTEM_PROMPT,
+          responseMimeType: "application/json",
+          responseJsonSchema: summaryJsonSchema,
+          abortSignal: signal,
+          httpOptions: { timeout: ATTEMPT_TIMEOUT_MS },
+          thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+        },
+      });
+      const finish = response.candidates?.[0]?.finishReason;
+      if (response.promptFeedback?.blockReason || blockedReasons.has(finish)) {
+        throw new AnalysisError("refused", 422, "Gemini blocked this review.");
+      }
+      const parsed = ExpenseSummarySchema.safeParse(safeJson(response.text));
+      if (!parsed.success) throw new AnalysisError("upstream_error", 502, `Unusable Gemini review (finishReason: ${finish}).`);
+      return { summary: parsed.data, model: response.modelVersion ?? candidate, usage: geminiUsage(response.usageMetadata) };
+    } catch (error) {
+      lastError = error;
+      if (!canFallBack(error, signal)) break;
     }
   }
   throw toAnalysisError(lastError);

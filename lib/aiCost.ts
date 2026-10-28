@@ -4,7 +4,7 @@ import type { PlanOffer } from "./plans";
 // (lib/server/stats.ts, fields "ai:<kind>:<model>:calls|in|out"), priced per
 // million tokens. Prices are set in /admin: the defaults are indicative.
 
-export const aiKinds = ["scan", "deep", "question"] as const;
+export const aiKinds = ["scan", "deep", "question", "summary"] as const;
 export type AiKind = (typeof aiKinds)[number];
 
 /** US dollars per million tokens, for the models whose name contains `match`. */
@@ -26,7 +26,7 @@ export function usageRows(counters: Array<Record<string, number>>): AiUsageRow[]
   const rows = new Map<string, AiUsageRow>();
   for (const day of counters) {
     for (const [field, value] of Object.entries(day)) {
-      const match = field.match(/^ai:(scan|deep|question):(.+):(calls|in|out)$/);
+      const match = field.match(/^ai:(scan|deep|question|summary):(.+):(calls|in|out)$/);
       if (!match) continue;
       const [, kind, model, part] = match as unknown as [string, AiKind, string, "calls" | "in" | "out"];
       const key = `${kind}|${model}`;

@@ -135,6 +135,89 @@ test("a Premium account adds a vehicle and two fills, and sees the consumption",
   await expect(page.getByTestId("fuel-last")).toHaveText("7 L");
 });
 
+test("an Admin account adds an expense and sees the month's total", async ({ page }) => {
+  await prepare(page);
+  // The demo server answers "free": pretend the account is Admin.
+  await page.route("**/api/plan", async (route) => {
+    const response = await route.fetch();
+    await route.fulfill({ response, json: { ...(await response.json()), plan: "unlimited" } });
+  });
+  await page.goto("/");
+  await expect(page.getByRole("link", { name: /Mes dépenses|^Dépenses$/ }).first()).toBeVisible();
+  await page.goto("/expenses");
+  await expect(page.getByRole("heading", { level: 1, name: "Mes dépenses" })).toBeVisible();
+  await page.getByRole("button", { name: "Ajouter une dépense" }).click();
+  await page.getByLabel("Montant", { exact: true }).fill("12500");
+  await page.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(page.getByTestId("expenses-total")).toHaveText(/^12\s500 Ar$/);
+});
+
+test("an Admin account gets the month's review (demo)", async ({ page }) => {
+  await prepare(page);
+  await page.route("**/api/plan", async (route) => {
+    const response = await route.fetch();
+    await route.fulfill({ response, json: { ...(await response.json()), plan: "unlimited" } });
+  });
+  await page.goto("/expenses");
+  await page.getByRole("button", { name: "Ajouter une dépense" }).click();
+  await page.getByLabel("Montant", { exact: true }).fill("20000");
+  await page.getByRole("button", { name: "Enregistrer" }).click();
+  await page.getByRole("button", { name: "Bilan du mois" }).click();
+  const review = page.getByTestId("month-review");
+  await expect(review.getByText(/^Tu as dépensé 20\s000 Ar ce mois-ci\.$/)).toBeVisible({ timeout: 15_000 });
+  await expect(review.getByText(/Bilan d’exemple \(mode démo\)/)).toBeVisible();
+  // Kept on the device.
+  await page.reload();
+  await expect(page.getByTestId("month-review").getByText(/^Tu as dépensé/)).toBeVisible();
+});
+
+test("without the Admin plan, My expenses is not in the menu and its page only offers to join a household", async ({ page }) => {
+  await prepare(page);
+  // Once the plan is known (free), the menu is final.
+  const plan = page.waitForResponse("**/api/plan");
+  await page.goto("/");
+  await plan;
+  await expect(page.getByRole("link", { name: /Mes dépenses|^Dépenses$/ })).toHaveCount(0);
+  // Signed in, without a household (the demo server has no accounts).
+  await page.route("**/api/household", (route) => route.fulfill({ json: { userId: "11111111-1111-4111-8111-111111111111", household: null } }));
+  await page.goto("/expenses");
+  await expect(page.getByRole("heading", { level: 1, name: "Budget du foyer" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Rejoindre un foyer" })).toBeVisible();
+  await expect(page.getByText("Créer un foyer")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Ajouter une dépense" })).toHaveCount(0);
+});
+
+test("an Admin account creates a household and sees its invitation code", async ({ page }) => {
+  await prepare(page);
+  await page.route("**/api/plan", async (route) => {
+    const response = await route.fetch();
+    await route.fulfill({ response, json: { ...(await response.json()), plan: "unlimited" } });
+  });
+  // The household's server, as Supabase would answer it.
+  const userId = "11111111-1111-4111-8111-111111111111";
+  let household: unknown = null;
+  await page.route("**/api/household", async (route) => {
+    const body = route.request().postDataJSON() as { action?: string; name?: string } | null;
+    if (body?.action === "create")
+      household = { id: "h1", name: body.name, role: "owner", budget: { categories: {} }, members: [{ userId, role: "owner", joinedAt: new Date().toISOString(), label: "an…@example.com" }], invite: null };
+    if (body?.action === "invite" && household) household = { ...(household as object), invite: { code: "4K7P2Q", expiresAt: new Date(Date.now() + 48 * 3600_000).toISOString() } };
+    await route.fulfill({ json: { userId, household } });
+  });
+  await page.goto("/expenses");
+  await page.getByRole("radio", { name: "Foyer" }).click();
+  await page.getByLabel("Nom du foyer").fill("Famille Rabe");
+  await page.getByRole("button", { name: "Créer le foyer" }).click();
+  await expect(page.getByRole("heading", { level: 2, name: "Famille Rabe" })).toBeVisible();
+  await page.getByRole("button", { name: "Créer un code" }).click();
+  await expect(page.getByTestId("household-code")).toHaveText("4K7-P2Q");
+  // A shared expense counts in the household's month.
+  await page.getByRole("button", { name: "Ajouter une dépense du foyer" }).click();
+  const form = page.getByRole("form", { name: "Dépense" });
+  await form.getByLabel("Montant", { exact: true }).fill("45000");
+  await form.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(page.getByTestId("household-total")).toHaveText(/^45\s000 Ar$/);
+});
+
 test("back on the free plan, the vehicles stay visible but read only", async ({ page }) => {
   await prepare(page);
   const premium = async (route: import("@playwright/test").Route) => {

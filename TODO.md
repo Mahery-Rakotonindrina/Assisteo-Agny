@@ -160,6 +160,21 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Liste de tous les comptes, pas seulement les abonnés — carte « Comptes » : inscrits, nouveaux du mois, offre de chacun, date d’inscription et de dernière connexion, recherche, filtres Abonnés / Sans offre / Admins
 - [x] Export comptable des paiements (Excel) — dans « Abonnés » : ce mois, mois dernier, cette année ou tout ; 3 feuilles : paiements, totaux par mois et par offre, totaux par moyen de paiement
 - [x] Plusieurs administrateurs avec leur propre accès, journal des actions — l’offre Admin donne l’accès avec son propre compte, retiré dès que l’offre s’arrête ; réservé au propriétaire (jeton) : nommer ou retirer un admin, double authentification, journal (500 dernières actions : qui, quoi, quand)
+- [ ] Tableau des fonctionnalités : toutes les fonctions de l'app, avec à côté les offres qui les activent (Gratuit, Lite, Premium, Pro, Admin)
+- [ ] Fonctionnalités réglables par offre : dans « Offres », cocher ou décocher chaque fonctionnalité pour chaque offre ; les réglages actuels sont proposés par défaut
+- [ ] Fonctionnalités réglables par abonné : à l'ajout ou au renouvellement d'un abonné, les fonctionnalités de son offre sont cochées par défaut, et on peut en ajouter ou en retirer pour lui seul
+- [ ] L'app de chaque utilisateur suit ces réglages (menus, boutons, étiquettes « à partir de… », refus côté serveur), tout de suite et sans nouvel APK
+- [ ] Chaque changement de fonctionnalités noté dans le journal des actions admin
+- [ ] Créer une nouvelle offre depuis l'Admin (nom, couleur, prix, quotas, fonctionnalités)
+- [ ] Avant d'enregistrer un changement d'offre : nombre d'abonnés concernés, et choix « tous » ou « seulement les nouveaux abonnements et renouvellements »
+- [ ] Règle commune quand une fonctionnalité est retirée : données gardées, écran en lecture seule, rappels coupés, tout revient si elle est réactivée
+- [ ] Dépendances entre fonctionnalités (rappels du garage → rappels ; budget en famille → « Mes dépenses ») : avertissement, et les fonctions qui en dépendent sont décochées avec
+- [ ] Page « Les offres », liste des avantages et page Découvrir mises à jour automatiquement selon les réglages
+- [ ] Fonctionnalité « en test » pour une liste de comptes testeurs choisis, sans nouvelle version
+- [ ] Interrupteur d'urgence : couper une fonctionnalité pour tout le monde en un clic (IA trop chère, bug)
+- [ ] Accès temporaire à une fonctionnalité pour un abonné (ex. le garage offert 7 jours), arrêté tout seul à la date prévue
+- [ ] Quotas réglables par abonné (scans, questions, colis suivis…), pas seulement par offre
+- [ ] Fiche d'un abonné : ses fonctionnalités et leur origine (son offre, ajout à la main, accès temporaire jusqu'au…)
 
 ## 13. Réglages
 
@@ -195,3 +210,23 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Alerte si le site tombe (contrôle toutes les 10 min, base et Redis compris, ticket GitHub qui te mentionne, fermé au retour)
 - [x] Test automatique de restauration des sauvegardes (chaque semaine sur la vraie sauvegarde, et à chaque envoi de code sur des données d'exemple)
 - [x] Double authentification pour l'admin (appli d'authentification + codes de secours)
+
+## 16. Mes dépenses (offre Admin, en test)
+
+Budget du mois du foyer. Réservé à l'offre Admin pendant le test, ouvert aux autres offres ensuite.
+
+- [x] Écran « Mes dépenses », visible seulement avec l'offre Admin (masqué pour les autres pendant le test) — /expenses, menu et raccourci seulement avec l’offre Admin ; synchronisé avec le compte
+- [x] Ajout rapide d'une dépense : montant en ariary, catégorie, date, note, moyen de paiement (espèces, Mobile Money, carte) — modifier et supprimer aussi
+- [x] Catégories adaptées à Madagascar : marché et alimentation, JIRAMA, loyer, transport (taxi-be, carburant), crédit et internet, école, santé, famille, achats en ligne et colis, voiture, loisirs, épargne, autres ; catégories personnelles en plus — nom, couleur et icône
+- [x] Vue du mois : total dépensé, répartition par catégorie (graphique), comparaison avec le mois dernier, liste des dépenses — choix du mois, barres par catégorie
+- [x] Budget du mois : plafond global et par catégorie, barre de progression, alerte à 80 % puis au dépassement — bandeau, et notification avec les rappels
+- [x] Reprise automatique des dépenses déjà connues dans l'app, sans double saisie : factures payées (Mes papiers), courses (prix des listes), frais de colis, pleins et entretien du garage — calculées, jamais copiées ; lien vers la source, « hors budget », une saisie peut remplacer une ligne
+- [x] Dépenses qui reviennent chaque mois (loyer, écolage, abonnements), ajoutées automatiquement — le 31 tombe le dernier jour ; « pas ce mois-ci » ou corriger
+- [x] Scanner un ticket de caisse ou une capture de reçu MVola / Orange Money / Airtel Money : la dépense se remplit toute seule — offre Admin, bouton « Ajouter à mes dépenses » sur le résultat, pas de doublon par référence
+- [x] Revenus du mois (salaire, ventes) et ce qu'il reste — revenus fixes possibles
+- [x] Historique sur 6 et 12 mois, moyenne par catégorie
+- [x] Rappels des échéances (loyer le 5, écolage…) — la veille ou le jour même, à 9 h ; ajout à l’agenda
+- [x] Bilan du mois rédigé par l'IA (« Tu as dépensé 30 % de plus en transport… ») — offre Admin, seuls les totaux partent, 10 bilans par jour
+- [x] Export Excel ou PDF du mois
+- [x] Achats en yuan, dollar ou euro convertis en ariary au taux du jour, comme pour les colis — montant d’origine, devise et taux gardés
+- [x] Budget partagé en famille — un Admin crée le foyer et invite par un code de 48 h (partage WhatsApp) ; tout compte connecté le rejoint ; chaque dépense est « Perso » ou « Foyer » ; le créateur gère membres, nom et budget commun ; vue du mois par membre et par catégorie

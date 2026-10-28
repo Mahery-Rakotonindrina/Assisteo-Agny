@@ -1,8 +1,18 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { AnalysisError } from "./errors";
-import { askSystemPrompt, buildUserPrompt, firstAskText, isReadTask, SYSTEM_PROMPT } from "./prompt";
-import { AnalysisSchema, imagesOf, type Analysis, type AnalyzeRequest, type AskRequest, type PageImage } from "./schema";
+import { askSystemPrompt, buildSummaryPrompt, buildUserPrompt, firstAskText, isReadTask, SUMMARY_SYSTEM_PROMPT, SYSTEM_PROMPT } from "./prompt";
+import {
+  AnalysisSchema,
+  ExpenseSummarySchema,
+  imagesOf,
+  type Analysis,
+  type AnalyzeRequest,
+  type AskRequest,
+  type ExpenseSummary,
+  type ExpenseSummaryRequest,
+  type PageImage,
+} from "./schema";
 
 const imageBlock = (page: PageImage) => ({ type: "image" as const, source: { type: "base64" as const, media_type: page.mediaType, data: page.image } });
 
@@ -80,6 +90,37 @@ export async function analyzeWithClaude(
   }
 
   return { analysis: response.parsed_output, model: response.model, usage: claudeUsage(response.usage) };
+}
+
+/** "Mes dépenses": the month's review from its totals (low effort: a short text task). */
+export async function summarizeWithClaude(input: ExpenseSummaryRequest, signal?: AbortSignal): Promise<{ summary: ExpenseSummary; model: string; usage?: AiUsage }> {
+  const model = process.env.ANTHROPIC_SUMMARY_MODEL ?? CLAUDE_MODEL;
+  let response;
+  try {
+    response = await getClient().beta.messages.parse(
+      {
+        model,
+        max_tokens: 4000,
+        ...(supportsFallbacks(model) && { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const }),
+        output_config: {
+          ...(supportsEffort(model) && { effort: "low" as const }),
+          format: betaZodOutputFormat(ExpenseSummarySchema),
+        },
+        system: [{ type: "text", text: SUMMARY_SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
+        messages: [{ role: "user", content: buildSummaryPrompt(input) }],
+      },
+      { signal },
+    );
+  } catch (error) {
+    throw toAnalysisError(error, model);
+  }
+  if (response.stop_reason === "refusal") {
+    throw new AnalysisError("refused", 422, response.stop_details?.explanation ?? "The model declined this review.");
+  }
+  if (response.stop_reason === "max_tokens" || !response.parsed_output) {
+    throw new AnalysisError("upstream_error", 502, `Unusable model output (stop_reason: ${response.stop_reason}).`);
+  }
+  return { summary: response.parsed_output, model: response.model, usage: claudeUsage(response.usage) };
 }
 
 /** Cheapest call that proves a key works and its account has credit. */

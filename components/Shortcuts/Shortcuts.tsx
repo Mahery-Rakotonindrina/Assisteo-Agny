@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { BookOpen, Car, FolderLock, Receipt } from "lucide-react";
+import { BookOpen, Car, FolderLock, Receipt, Wallet } from "lucide-react";
 import { PlanBadge } from "@/components/PlanBadge";
+import { useInHousehold } from "@/hooks/useHousehold";
 import { useNow } from "@/hooks/useNow";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -24,6 +25,7 @@ export function Shortcuts({ entries }: { entries: HistoryEntry[] }) {
   const bills = listBills(entries, now);
   const { toPay } = billTotals(bills, now);
   const { has } = usePlan();
+  const inHousehold = useInHousehold();
   const { vehicles } = useVehicles();
   const garageDue = vehicles.reduce((count, vehicle) => count + dueReminders(vehicle, now).length, 0);
 
@@ -75,6 +77,15 @@ export function Shortcuts({ entries }: { entries: HistoryEntry[] }) {
           </small>
         </span>
       </Link>
+      {(has("expenses") || inHousehold) && (
+        <Link href="/expenses" className={styles.shortcut} style={{ "--tone": "var(--cat-food)" } as React.CSSProperties}>
+          <Wallet size={18} />
+          <span>
+            <strong>{t("expenses.title")}</strong>
+            <small>{t("shortcuts.expensesHint")}</small>
+          </span>
+        </Link>
+      )}
     </nav>
   );
 }
