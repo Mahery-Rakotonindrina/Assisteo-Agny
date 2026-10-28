@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  acceptSharedExpense,
   formatInviteCode,
   HouseholdActionSchema,
   householdErrorKey,
@@ -338,5 +339,25 @@ describe("household errors", () => {
     expect(HouseholdActionSchema.safeParse({ action: "update", budget: { total: 500000, categories: { market: 200000 } } }).success).toBe(true);
     expect(HouseholdActionSchema.safeParse({ action: "update", budget: { total: -1, categories: {} } }).success).toBe(false);
     expect(HouseholdActionSchema.safeParse({ action: "create", name: "  " }).success).toBe(false);
+  });
+});
+
+describe("acceptSharedExpense", () => {
+  const good = { id: "e1", kind: "expense", createdAt: 1, updatedAt: 2, at: Date.UTC(2026, 9, 27), amountMga: 25000, category: "market", userId: "u2", dirty: false };
+
+  it("keeps a well-formed expense and drops unknown fields", () => {
+    const accepted = acceptSharedExpense({ ...good, extra: "x".repeat(10_000) });
+    expect(accepted).toMatchObject(good);
+    expect(accepted).not.toHaveProperty("extra");
+  });
+
+  it("skips what another member's device should never write", () => {
+    expect(acceptSharedExpense({ ...good, amountMga: -5 })).toBeNull();
+    expect(acceptSharedExpense({ ...good, amountMga: Number.POSITIVE_INFINITY })).toBeNull();
+    expect(acceptSharedExpense({ ...good, amountMga: "25000" })).toBeNull();
+    expect(acceptSharedExpense({ ...good, kind: "income" })).toBeNull();
+    expect(acceptSharedExpense({ ...good, at: Date.UTC(1990, 0, 1) })).toBeNull();
+    expect(acceptSharedExpense({ ...good, note: "x".repeat(501) })).toBeNull();
+    expect(acceptSharedExpense({ ...good, payment: "cheque" })).toBeNull();
   });
 });

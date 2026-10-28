@@ -27,6 +27,8 @@ export type RowSyncOptions<T> = {
   withAuthor?: (record: T, userId: string) => T;
   /** Only these local records are pushed (shared rows: one's own). */
   canPush?: (record: T, uid: string) => boolean;
+  /** Checks a pulled record (shared rows: written by others); null skips it. */
+  accept?: (record: T) => T | null;
 };
 
 const time = (value: string | null) => (value ? new Date(value).getTime() : 0);
@@ -40,7 +42,7 @@ function toData<T extends SyncedRecord>(record: T) {
 }
 
 export function createRowSync<T extends SyncedRecord>(table: string, store: SyncedStore<T>, options: RowSyncOptions<T> = {}) {
-  const { match, withAuthor, canPush } = options;
+  const { match, withAuthor, canPush, accept } = options;
   let running: Promise<void> | null = null;
 
   function sync(uid: string) {
@@ -63,8 +65,11 @@ export function createRowSync<T extends SyncedRecord>(table: string, store: Sync
             changed = true;
           }
         } else if (!local || local.updatedAt !== remoteAt) {
-          const record = { ...row.data, id: row.id, updatedAt: remoteAt, dirty: false };
-          await store.rawPut(withAuthor && row.user_id ? withAuthor(record, row.user_id) : record);
+          const pulled = { ...row.data, id: row.id, updatedAt: remoteAt, dirty: false };
+          const record = withAuthor && row.user_id ? withAuthor(pulled, row.user_id) : pulled;
+          const accepted = accept ? accept(record) : record;
+          if (!accepted) continue;
+          await store.rawPut(accepted);
           changed = true;
         }
       }

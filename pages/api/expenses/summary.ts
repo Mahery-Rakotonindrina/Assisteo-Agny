@@ -60,9 +60,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     if (usage) await track({ type: "ai", kind: "summary", model, ...usage });
     return res.status(200).json({ summary, model, demo: false } satisfies ExpenseSummaryResponse);
   } catch (error) {
-    // A review that failed doesn't count in the day's.
-    await refundRateLimit(dailyKey, DAY_MS);
+    // The caller hung up: the AI may already have been billed, so the review
+    // still counts (otherwise cutting requests short would beat the limit).
     if (abort.signal.aborted) return;
+    // A review that failed on our side doesn't count in the day's.
+    await refundRateLimit(dailyKey, DAY_MS);
     await track({ type: "error", route: "summary", code: error instanceof AnalysisError ? error.code : "upstream_error" });
     if (error instanceof AnalysisError) {
       if (error.code === "invalid_key") return sendError(res, 503, "unavailable", "The AI service is not configured correctly.");

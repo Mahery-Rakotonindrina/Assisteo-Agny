@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { ApiErrorCode } from "@/lib/ai/schema";
-import { budgetLines, expenseCategories, monthKey, monthTotals, type ManualExpense } from "@/lib/expenses";
+import { budgetLines, expenseCategories, monthKey, monthTotals, paymentMethods, type ManualExpense } from "@/lib/expenses";
 
 // "Mes dépenses" shared with the family: a household, its members, the
 // invitation codes and the expenses shared with it. Pure, so it can be tested;
@@ -136,6 +136,36 @@ export type HouseholdExpense = Omit<ManualExpense, "sourceKey"> & { userId?: str
 
 /** Written by this user (or on this device, before the first sync). */
 export const isMine = (expense: Pick<HouseholdExpense, "userId">, me: string | null) => !expense.userId || expense.userId === me;
+
+const MAX_AMOUNT = 1e12;
+const sharedExpenseSchema = z.object({
+  id: z.string().min(1).max(100),
+  kind: z.literal("expense"),
+  createdAt: z.number().default(0),
+  updatedAt: z.number(),
+  at: z.number().min(Date.UTC(2000, 0, 1)).max(Date.UTC(2100, 0, 1)),
+  amountMga: z.number().min(0).max(MAX_AMOUNT),
+  category: z.string().min(1).max(80),
+  note: z.string().max(500).optional(),
+  payment: z.enum(paymentMethods).optional(),
+  currency: z.enum(["CNY", "USD", "EUR"]).optional(),
+  originalAmount: z.number().min(0).max(MAX_AMOUNT).optional(),
+  rate: z.number().positive().max(1e6).optional(),
+  reference: z.string().max(120).optional(),
+  scanId: z.string().max(100).optional(),
+  userId: z.string().max(64).optional(),
+  dirty: z.boolean().optional(),
+});
+
+/**
+ * A shared expense as it comes from the server. Each member writes their own
+ * rows, so another member's are checked before they reach this device: unknown
+ * fields are dropped, a malformed row (wrong amount, date, kind…) is skipped.
+ */
+export function acceptSharedExpense(record: unknown): HouseholdExpense | null {
+  const parsed = sharedExpenseSchema.safeParse(record);
+  return parsed.success ? parsed.data : null;
+}
 
 /** The household's month: total, by category and by member (the largest first), and its budget. */
 export function householdMonth(expenses: HouseholdExpense[], month: string, budget: HouseholdBudget | undefined, me: string | null) {
