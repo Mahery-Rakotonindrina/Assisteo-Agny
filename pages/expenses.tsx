@@ -16,6 +16,7 @@ import { useExpenseLabels } from "@/hooks/useExpenseLabels";
 import { useExpenses } from "@/hooks/useExpenses";
 import { useBudgetSources, useExpenseSources } from "@/hooks/useExpenseSources";
 import { useHousehold } from "@/hooks/useHousehold";
+import { useLoans } from "@/hooks/useLoans";
 import { useNow } from "@/hooks/useNow";
 import { useParcels } from "@/hooks/useParcels";
 import { usePlan } from "@/hooks/usePlan";
@@ -71,7 +72,7 @@ export default function ExpensesPage() {
   return (
     <>
       <Seo title={`${allowed ? t("expenses.title") : t("expenses.household.title")} · ${t("meta.title")}`} noindex />
-      {!known ? null : allowed ? <Expenses canRemind={has("reminders")} reseller={has("reseller")} joinCode={joinCode} /> : <HouseholdOnly joinCode={joinCode} />}
+      {!known ? null : allowed ? <Expenses canRemind={has("reminders")} reseller={has("reseller")} withLoans={has("loans")} joinCode={joinCode} /> : <HouseholdOnly joinCode={joinCode} />}
     </>
   );
 }
@@ -123,7 +124,7 @@ function MonthPicker({ month, onPick }: { month: string; onPick: (month: string)
   );
 }
 
-function Expenses({ canRemind, reseller, joinCode }: { canRemind: boolean; reseller: boolean; joinCode?: string }) {
+function Expenses({ canRemind, reseller, withLoans, joinCode }: { canRemind: boolean; reseller: boolean; withLoans: boolean; joinCode?: string }) {
   const { t } = useTranslation();
   const now = useNow(60_000);
   const { records } = useExpenses();
@@ -183,7 +184,9 @@ function Expenses({ canRemind, reseller, joinCode }: { canRemind: boolean; resel
     };
   }, [records, sources, month]);
   // Where the money really is: the pockets, always personal (never the household's).
-  const book = useMemo(() => walletBook(records, allSources, now), [records, allSources, now]);
+  // With "Prêts" too: lending and repayments move the pockets (lib/loanLink.ts).
+  const { loans } = useLoans();
+  const book = useMemo(() => walletBook(records, allSources, now, withLoans ? loans : []), [records, allSources, now, withLoans, loans]);
   const pockets = useMemo<PocketChoice>(
     () => ({ wallets: activeWallets(book.context.wallets), lastUsed: lastUsedWallet(records, book.context), primary: book.context.primary?.id }),
     [book, records],

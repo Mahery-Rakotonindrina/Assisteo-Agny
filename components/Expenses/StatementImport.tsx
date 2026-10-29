@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import { FileStack, Loader2, Scale, Upload } from "lucide-react";
 import { Button } from "@/components/Button";
+import { useLinkedLoans } from "@/components/Loans/RepaymentPrompt";
 import { useToast } from "@/components/Toast";
 import { useExpenseLabels } from "@/hooks/useExpenseLabels";
 import { useExpenseSources } from "@/hooks/useExpenseSources";
@@ -8,6 +9,8 @@ import { useTranslation } from "@/hooks/useTranslation";
 import type { Statement } from "@/lib/ai/schema";
 import { incomeKinds, type ExpenseRecord, type IncomeKind, type StatementTag } from "@/lib/expenses";
 import { formatAriary, formatDate } from "@/lib/format";
+import { repaymentKeys, repaymentProposal } from "@/lib/loanLink";
+import type { Loan } from "@/lib/loans";
 import {
   balanceProposal,
   importDrafts,
@@ -25,6 +28,7 @@ import {
 import { activeWallets, type WalletBook } from "@/lib/wallets";
 import { haptics } from "@/services/device";
 import { expenseStore } from "@/services/expenseStore";
+import { loanStore } from "@/services/loanStore";
 import { pickStatementFiles, readStatementFiles } from "@/services/statementImport";
 import { ApiError } from "@/types/api";
 import { ExpenseSheet } from "./ExpenseSheet";
@@ -83,6 +87,8 @@ export function StatementImport({ records, book }: Props) {
 function StatementFlow({ records, book, onClose }: Props & { onClose: () => void }) {
   const { t, locale } = useTranslation();
   const sources = useExpenseSources();
+  // With "Prêts": a line counted as a repayment already is there already.
+  const loans = useLinkedLoans();
   const input = useRef<HTMLInputElement>(null);
   const [state, setState] = useState<Step>({ step: "pick" });
 
@@ -93,7 +99,10 @@ function StatementFlow({ records, book, onClose }: Props & { onClose: () => void
     try {
       const response = await readStatementFiles(pick, locale);
       if (!isAriaryStatement(response.statement)) return setState({ step: "pick", error: t("expenses.statement.errors.currency") });
-      const lines = markDuplicates(statementLines(response.statement, Date.now()), knownOperations(records, sources));
+      const repaid = repaymentKeys(loans);
+      const lines = markDuplicates(statementLines(response.statement, Date.now()), knownOperations(records, sources)).map((line) =>
+        !line.duplicate && repaid.has(line.key) ? { ...line, duplicate: "imported" as const } : line,
+      );
       const found: Read = { statement: response.statement, lines, demo: response.demo };
       if (lines.length === 0) return setState({ step: "pick", error: t("expenses.statement.errors.empty") });
       // Everything there already: nothing to check.
@@ -110,7 +119,7 @@ function StatementFlow({ records, book, onClose }: Props & { onClose: () => void
         {t("expenses.statement.reading")}
       </p>
     );
-  if (state.step === "review") return <Review {...state} records={records} book={book} onDone={(done) => setState({ ...state, ...done, step: "done" })} />;
+  if (state.step === "review") return <Review {...state} records={records} book={book} loans={loans} onDone={(done) => setState({ ...state, ...done, step: "done" })} />;
   if (state.step === "done") return <Result {...state} book={book} onClose={onClose} />;
 
   return (
@@ -150,10 +159,10 @@ function errorText(error: unknown, t: Translate) {
   return t(`expenses.statement.errors.${known.includes(code) ? code : "failed"}`);
 }
 
-type ReviewProps = Read & { records: ExpenseRecord[]; book?: WalletBook; onDone: (done: Done) => void };
+type ReviewProps = Read & { records: ExpenseRecord[]; book?: WalletBook; loans: Loan[]; onDone: (done: Done) => void };
 
 /** One line per operation: checked, unless it is there already; its category, and the other pocket of a move. */
-function Review({ statement, lines, demo, records, book, onDone }: ReviewProps) {
+function Review({ statement, lines, demo, records, book, loans, onDone }: ReviewProps) {
   const { t, locale } = useTranslation();
   const toast = useToast();
   const { categories } = useExpenseLabels(records);
@@ -164,7 +173,20 @@ function Review({ statement, lines, demo, records, book, onDone }: ReviewProps) 
   const [incomeOf, setIncomeOf] = useState<Record<string, IncomeKind>>({});
   const [otherOf, setOtherOf] = useState<Record<string, string>>({});
   const [importing, setImporting] = useState(false);
+  // "Remboursement de Rakoto" ("Prêts"): unchecked by default; checked, the line is a repayment, not an income or an expense.
+  const [repayOf, setRepayOf] = useState<Set<string>>(() => new Set());
   const money = (value: number) => formatAriary(value, locale);
+  const proposals = useMemo(
+    () =>
+      new Map(
+        lines.flatMap((line) => {
+          if (line.duplicate || line.direction === "own") return [];
+          const proposal = repaymentProposal(loans, { key: line.key, at: line.at, amountMga: line.amountMga, label: line.counterparty, ...(line.direction === "in" && { flow: "income" as const }) });
+          return proposal && !proposal.same ? [[line.key, proposal] as const] : [];
+        }),
+      ),
+    [lines, loans],
+  );
 
   const other = (line: StatementLine) => otherOf[line.key] ?? otherWallet(wallets, wallet, line);
   // A move between pockets needs the statement's pocket and another one.
@@ -192,7 +214,18 @@ function Review({ statement, lines, demo, records, book, onDone }: ReviewProps) 
         .filter((line) => !taken.has(line.key))
         .map((line) => ({ ...line, category: categoryOf[line.key] ?? line.category, income: incomeOf[line.key] ?? line.income }));
       const others = Object.fromEntries(fresh.map((line) => [line.key, other(line)]));
-      const drafts = importDrafts(fresh, { wallet: wallets.find((item) => item.id === wallet), tag, others, feesNote: t("expenses.statement.feesNote", { name: tag.name }) });
+      const repaying = fresh.filter((line) => repayOf.has(line.key) && proposals.has(line.key));
+      const options = { wallet: wallets.find((item) => item.id === wallet), tag, others, feesNote: t("expenses.statement.feesNote", { name: tag.name }) };
+      const drafts = importDrafts(
+        fresh.filter((line) => !repaying.includes(line)),
+        options,
+      );
+      // A repayment: on its loan, in the statement's pocket; only its fees are an expense.
+      for (const line of repaying) {
+        const proposal = proposals.get(line.key)!;
+        await loanStore.addRepayment(proposal.loan.id, { amountMga: proposal.amountMga, at: line.at, wallet: wallet || undefined, sourceKey: line.key });
+        drafts.expenses.push(...importDrafts([line], options).expenses.filter((draft) => draft.sourceKey !== line.key));
+      }
       for (const draft of drafts.expenses) await expenseStore.saveExpense(draft);
       for (const draft of drafts.incomes) await expenseStore.saveIncome(draft);
       for (const draft of drafts.transfers) await expenseStore.saveTransfer(draft);
@@ -293,6 +326,21 @@ function Review({ statement, lines, demo, records, book, onDone }: ReviewProps) 
                 ) : (
                   <small className={styles.hint}>{t("expenses.statement.ownNeedsWallets")}</small>
                 ))}
+              {on && proposals.has(line.key) && (
+                <label className={styles.statementCheck} data-testid="statement-repayment">
+                  <input
+                    type="checkbox"
+                    checked={repayOf.has(line.key)}
+                    onChange={() => {
+                      const next = new Set(repayOf);
+                      if (next.has(line.key)) next.delete(line.key);
+                      else next.add(line.key);
+                      setRepayOf(next);
+                    }}
+                  />
+                  <small>{t(`loans.link.statement.${proposals.get(line.key)!.loan.direction}`, { name: proposals.get(line.key)!.person })}</small>
+                </label>
+              )}
             </li>
           );
         })}

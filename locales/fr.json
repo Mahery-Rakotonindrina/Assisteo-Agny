@@ -2013,7 +2013,11 @@
       },
       "interestFixed": "Intérêts ou frais (Ar)",
       "interestPercent": "Intérêts (% du montant)",
-      "totalDue": "À rendre en tout : {amount}"
+      "totalDue": "À rendre en tout : {amount}",
+      "wallet": {
+        "lent": "De quelle poche sort l’argent ?",
+        "borrowed": "Dans quelle poche arrive l’argent ?"
+      }
     },
     "saved": {
       "lent": "C’est noté : {person} te doit {amount}.",
@@ -2065,7 +2069,9 @@
         "late": "En retard"
       },
       "ack": "Reconnaissance de dette (PDF)",
-      "export": "Exporter"
+      "export": "Exporter",
+      "nudge": "{name} devait te rendre de l’argent aujourd’hui. Tu peux le relancer sur WhatsApp.",
+      "receipt": "Voir le reçu"
     },
     "repay": {
       "title": {
@@ -2075,7 +2081,11 @@
       "left": "Il reste {amount} à rendre.",
       "capped": "C’est plus que le reste : seuls {amount} seront notés.",
       "saved": "{amount} noté. Reste {left}.",
-      "savedAll": "Tout est remboursé."
+      "savedAll": "Tout est remboursé.",
+      "wallet": {
+        "lent": "Dans quelle poche arrive l’argent ?",
+        "borrowed": "De quelle poche sort l’argent ?"
+      }
     },
     "reminder": {
       "message": "Bonjour {name}, petit rappel pour les {amount} que je t’ai prêtés. Dis-moi quand tu peux me les rendre. Merci !",
@@ -2225,6 +2235,46 @@
       "remove": "Supprimer la preuve",
       "confirmRemove": "Oui, supprimer la preuve",
       "removed": "Preuve supprimée."
+    },
+    "reminders": {
+      "label": "Me rappeler les échéances",
+      "hint": "La veille à 9 h, et le jour même pour relancer quelqu’un qui te doit de l’argent.",
+      "appOnly": "Les rappels d’échéance marchent dans l’application Android seulement.",
+      "allow": "Autoriser les notifications",
+      "denied": "Autorise les notifications de l’app dans les réglages de ton téléphone.",
+      "titleEve": "Échéance demain",
+      "titleDay": "Échéance aujourd’hui",
+      "eve": {
+        "lent": "{name} doit te rendre {amount} demain.",
+        "borrowed": "Tu dois rendre {amount} à {name} demain."
+      },
+      "day": "{name} devait te rendre {amount} aujourd’hui. Le relancer ?"
+    },
+    "link": {
+      "ask": {
+        "lent": "C’est un remboursement de {name} ?",
+        "borrowed": "C’est un remboursement à {name} ?"
+      },
+      "left": "(reste {amount})",
+      "yes": "Oui, c’est un remboursement",
+      "same": "Un remboursement de {amount} de {name} est déjà noté le {date} : c’est le même ?",
+      "sameYes": "Oui, c’est le même",
+      "another": "Non, c’en est un autre",
+      "counted": {
+        "lent": "Compté comme remboursement de {name} ({amount})",
+        "borrowed": "Compté comme remboursement à {name} ({amount})"
+      },
+      "open": "Voir le prêt",
+      "undo": "Annuler",
+      "saved": {
+        "lent": "Remboursement noté. {name} te doit encore {amount}.",
+        "borrowed": "Remboursement noté. Tu dois encore {amount} à {name}."
+      },
+      "badge": "Remboursement",
+      "statement": {
+        "lent": "Remboursement de {name}",
+        "borrowed": "Remboursement à {name}"
+      }
     }
   },
   "garage": {
@@ -2811,6 +2861,12 @@
         "airtel_money": "Airtel Money",
         "bank": "Banque",
         "other": "Autre"
+      },
+      "loan": {
+        "lent": "Prêt à {name}",
+        "borrowed": "Emprunt à {name}",
+        "repaid_in": "Remboursement de {name}",
+        "repaid_out": "Remboursement à {name}"
       }
     },
     "forecast": {

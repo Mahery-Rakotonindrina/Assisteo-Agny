@@ -5,10 +5,12 @@ import { ChevronDown, ChevronRight, Download, HandCoins, Paperclip, Plus, Search
 import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
 import { AckSheet, ExportSheet, LoanSheet, PersonDetail, RepaySheet } from "@/components/Loans";
+import { LoanReminderSetting } from "@/components/Loans/LoanReminderSetting";
 import styles from "@/components/Loans/Loans.module.scss";
 import { SegmentedControl } from "@/components/SegmentedControl";
 import { Seo } from "@/components/Seo";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
+import { useLoanPockets } from "@/hooks/useLoanPockets";
 import { useLoans } from "@/hooks/useLoans";
 import { useNow } from "@/hooks/useNow";
 import { usePlan } from "@/hooks/usePlan";
@@ -38,12 +40,13 @@ export default function LoansPage() {
   const known = plan !== null;
   const { loans, isLoading } = useLoans();
   const allowed = has("loans");
+  const canRemind = has("reminders");
 
   return (
     <>
       <Seo title={`${t("loans.title")} · ${t("meta.title")}`} noindex />
       {!known || isLoading ? null : allowed || loans.length > 0 ? (
-        <Loans loans={loans} readOnly={!allowed} direction={router.query.dir === "borrowed" ? "borrowed" : "lent"} />
+        <Loans loans={loans} readOnly={!allowed} canRemind={canRemind} direction={router.query.dir === "borrowed" ? "borrowed" : "lent"} />
       ) : (
         <motion.div className={styles.page} variants={stagger} initial="hidden" animate="show">
           <motion.header variants={rise} className={styles.header}>
@@ -56,9 +59,11 @@ export default function LoansPage() {
   );
 }
 
-function Loans({ loans, readOnly, direction }: { loans: Loan[]; readOnly: boolean; direction: LoanDirection }) {
+function Loans({ loans, readOnly, canRemind, direction }: { loans: Loan[]; readOnly: boolean; canRemind: boolean; direction: LoanDirection }) {
   const { t, locale } = useTranslation();
   const router = useRouter();
+  // With "Mes dépenses" too: the pocket the money leaves, or comes into.
+  const pockets = useLoanPockets();
   const isDesktop = useIsDesktop();
   const now = useNow(60_000);
   const [search, setSearch] = useState("");
@@ -78,6 +83,8 @@ function Loans({ loans, readOnly, direction }: { loans: Loan[]; readOnly: boolea
   const repaid = repaidLoans(loans, direction, now);
   const openKey = typeof router.query.person === "string" ? router.query.person : null;
   const opened = openKey ? people.find((person) => person.key === openKey) : undefined;
+  // "?nudge=1": opened from the "Le relancer ?" notification.
+  const nudge = router.query.nudge === "1";
   // The loan being repaid, kept fresh as the list changes.
   const repayLoan = repaying ? (loans.find((loan) => loan.id === repaying.id) ?? null) : null;
   const ackLoan = acknowledging ? (loans.find((loan) => loan.id === acknowledging.id) ?? null) : null;
@@ -266,6 +273,12 @@ function Loans({ loans, readOnly, direction }: { loans: Loan[]; readOnly: boolea
             ))}
         </motion.div>
       )}
+
+      {!readOnly && canRemind && (
+        <motion.div variants={rise}>
+          <LoanReminderSetting />
+        </motion.div>
+      )}
     </>
   );
 
@@ -281,6 +294,7 @@ function Loans({ loans, readOnly, direction }: { loans: Loan[]; readOnly: boolea
       onRepay={setRepaying}
       onExport={() => setExporting({ person: opened.name })}
       onAck={setAcknowledging}
+      nudge={nudge}
     />
   );
 
@@ -313,8 +327,9 @@ function Loans({ loans, readOnly, direction }: { loans: Loan[]; readOnly: boolea
         draft={{ direction, person: editing?.kind === "add" ? editing.person : undefined, phone: editing?.kind === "add" ? editing.phone : undefined }}
         loan={editing?.kind === "edit" ? editing.loan : undefined}
         loans={loans}
+        pockets={pockets}
       />
-      <RepaySheet open={repayLoan !== null} onClose={() => setRepaying(null)} loan={repayLoan} />
+      <RepaySheet open={repayLoan !== null} onClose={() => setRepaying(null)} loan={repayLoan} pockets={pockets} />
       <AckSheet open={ackLoan !== null} onClose={() => setAcknowledging(null)} loan={ackLoan} />
       <ExportSheet open={exporting !== null} onClose={() => setExporting(null)} loans={exported} person={exporting?.person} />
     </motion.div>

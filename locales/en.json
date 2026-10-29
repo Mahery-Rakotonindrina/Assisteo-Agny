@@ -2013,7 +2013,11 @@
       },
       "interestFixed": "Interest or fees (Ar)",
       "interestPercent": "Interest (% of the amount)",
-      "totalDue": "To pay back in all: {amount}"
+      "totalDue": "To pay back in all: {amount}",
+      "wallet": {
+        "lent": "Which pocket does the money come out of?",
+        "borrowed": "Which pocket does the money go into?"
+      }
     },
     "saved": {
       "lent": "Noted: {person} owes you {amount}.",
@@ -2065,7 +2069,9 @@
         "late": "Late"
       },
       "ack": "Acknowledgment of debt (PDF)",
-      "export": "Export"
+      "export": "Export",
+      "nudge": "{name} was due to pay you back today. You can send a reminder on WhatsApp.",
+      "receipt": "See the receipt"
     },
     "repay": {
       "title": {
@@ -2075,7 +2081,11 @@
       "left": "{amount} left to pay back.",
       "capped": "That’s more than what’s left: only {amount} will be noted.",
       "saved": "{amount} noted. {left} left.",
-      "savedAll": "All paid back."
+      "savedAll": "All paid back.",
+      "wallet": {
+        "lent": "Which pocket does the money go into?",
+        "borrowed": "Which pocket does the money come out of?"
+      }
     },
     "reminder": {
       "message": "Hello {name}, a friendly reminder about the {amount} I lent you. Let me know when you can pay me back. Thanks!",
@@ -2225,6 +2235,46 @@
       "remove": "Remove the proof",
       "confirmRemove": "Yes, remove the proof",
       "removed": "Proof removed."
+    },
+    "reminders": {
+      "label": "Remind me of due dates",
+      "hint": "The day before at 9 am, and on the day itself to remind someone who owes you money.",
+      "appOnly": "Due date reminders only work in the Android app.",
+      "allow": "Allow notifications",
+      "denied": "Allow the app’s notifications in your phone’s settings.",
+      "titleEve": "Due tomorrow",
+      "titleDay": "Due today",
+      "eve": {
+        "lent": "{name} should pay you back {amount} tomorrow.",
+        "borrowed": "You should pay back {amount} to {name} tomorrow."
+      },
+      "day": "{name} was due to pay you back {amount} today. Send a reminder?"
+    },
+    "link": {
+      "ask": {
+        "lent": "Is this {name} paying you back?",
+        "borrowed": "Is this you paying back {name}?"
+      },
+      "left": "({amount} left)",
+      "yes": "Yes, it’s a repayment",
+      "same": "A repayment of {amount} from {name} is already noted on {date}: is it the same one?",
+      "sameYes": "Yes, the same one",
+      "another": "No, another one",
+      "counted": {
+        "lent": "Counted as {name} paying you back ({amount})",
+        "borrowed": "Counted as you paying back {name} ({amount})"
+      },
+      "open": "See the loan",
+      "undo": "Undo",
+      "saved": {
+        "lent": "Repayment noted. {name} still owes you {amount}.",
+        "borrowed": "Repayment noted. You still owe {name} {amount}."
+      },
+      "badge": "Repayment",
+      "statement": {
+        "lent": "Paid back by {name}",
+        "borrowed": "Paid back to {name}"
+      }
     }
   },
   "garage": {
@@ -2811,6 +2861,12 @@
         "airtel_money": "Airtel Money",
         "bank": "Bank",
         "other": "Other"
+      },
+      "loan": {
+        "lent": "Lent to {name}",
+        "borrowed": "Borrowed from {name}",
+        "repaid_in": "Paid back by {name}",
+        "repaid_out": "Paid back to {name}"
       }
     },
     "forecast": {
