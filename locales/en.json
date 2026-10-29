@@ -1275,7 +1275,10 @@
       "profit": "Profit: {amount}",
       "loss": "Loss: {amount}",
       "locked": "Sale price, client payment and profit: with the {plan} plan.",
-      "dueShort": "{amount} due"
+      "dueShort": "{amount} due",
+      "forLabel": "This parcel is",
+      "forMe": "For me",
+      "forResale": "To resell"
     },
     "expected": "Expected delivery: {date}",
     "expectedToday": "Arrives today",
@@ -2174,7 +2177,8 @@
       "mobile_money": "Mobile Money",
       "plan": "Subscription",
       "sale": "Sale",
-      "fees": "Mobile Money fees"
+      "fees": "Mobile Money fees",
+      "activity": "Activity"
     },
     "form": {
       "title": "Expense",
@@ -2501,7 +2505,8 @@
       "expense": "Counted in My expenses",
       "income": "Counted in your income",
       "off": "Not counted in My expenses",
-      "garage": "Fuel, service and costs counted in My expenses"
+      "garage": "Fuel, service and costs counted in My expenses",
+      "activity": "Counted in My activity"
     },
     "feesLabel": "Withdrawal or transfer fees",
     "pockets": {
@@ -2650,7 +2655,32 @@
         "saved": "Set aside",
         "unsaved": "Taken back from savings",
         "pot": "Pot received"
-      }
+      },
+      "removeHeld": "Delete “{name}”? The {amount} set aside will go back to your pockets.",
+      "removePot": "Delete “{name}”? Your payments and the pot received will be taken out of your pockets.",
+      "removeEmpty": "Delete “{name}”?",
+      "removeConfirm": "Yes, delete"
+    },
+    "activity": {
+      "line": "My activity: profit this month",
+      "title": "My activity · {month}",
+      "income": "Profit from my activity",
+      "bought": "Bought this month",
+      "sales": "Sales this month",
+      "profit": "Profit",
+      "profitHint": "Sales minus what the parcels sold cost",
+      "toCollect": "To collect (all sales)",
+      "toCollectHint": "What your clients still owe",
+      "stock": "Stock not sold yet",
+      "parcels": "{count} parcel(s)",
+      "topClients": "Best clients this month",
+      "clientDetail": "{count} parcel(s) · profit {profit}",
+      "separate": "Keep my reselling apart from the home budget",
+      "separateOff": "Off: what your parcels cost counts in your expenses, and their sale price in your income.",
+      "separateOn": "On: your parcels to resell no longer count in the home budget. Only the month's profit comes into your income. Your pockets don't change.",
+      "parcelsLink": "See my parcels",
+      "lines": "This month's purchases and sales",
+      "purchase": "Purchase: {title}"
     }
   }
 }

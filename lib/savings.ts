@@ -77,7 +77,18 @@ export function nextPaymentKey(status: Pick<TontineStatus, "next" | "received">)
 }
 
 /** A tontine's set-aside money: what was paid in, until the pot comes back. */
-const tontineHeld = (tontine: Tontine) => (tontine.received ? 0 : Math.max(0, sum(tontine.deposits ?? [])));
+export const tontineHeld = (tontine: Tontine) => (tontine.received ? 0 : Math.max(0, sum(tontine.deposits ?? [])));
+
+/**
+ * What deleting a goal or a tontine undoes in the pockets (asked first):
+ * the money set aside comes back, or, once a tontine's pot was received,
+ * its payments and the pot both leave the pockets' history.
+ */
+export function removalEffect(record: SavingsGoal | Tontine): { kind: "held"; amountMga: number } | { kind: "pot" } | { kind: "nothing" } {
+  if (record.kind === "tontine" && record.received) return { kind: "pot" };
+  const held = record.kind === "tontine" ? tontineHeld(record) : goalSaved(record);
+  return held > 0 ? { kind: "held", amountMga: held } : { kind: "nothing" };
+}
 
 /** "Mis de côté": every goal's money and what was paid into the tontines not received yet. */
 export function savedTotal(records: ExpenseRecord[]) {

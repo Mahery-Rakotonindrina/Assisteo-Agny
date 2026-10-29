@@ -7,7 +7,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { barPercent, tontineFrequencies, type ExpenseRecord, type SavingsGoal, type Tontine, type TontineFrequency } from "@/lib/expenses";
 import { formatAriary, formatDate } from "@/lib/format";
 import { dayString } from "@/lib/papers";
-import { goalPerMonth, goalSaved, goalsOf, nextPaymentKey, roundDay, tontinesOf, tontineStatus } from "@/lib/savings";
+import { goalPerMonth, goalSaved, goalsOf, nextPaymentKey, removalEffect, roundDay, tontinesOf, tontineStatus } from "@/lib/savings";
 import type { WalletBook } from "@/lib/wallets";
 import { haptics } from "@/services/device";
 import { expenseStore } from "@/services/expenseStore";
@@ -195,28 +195,62 @@ function SavingsList({ goals, tontines, now, saved, onOpen }: ListProps) {
   );
 }
 
-function FormButtons({ valid, onCancel, onRemove }: { valid: boolean; onCancel: () => void; onRemove?: () => void }) {
+/** "Supprimer « Rentrée scolaire » ? Les 120 000 Ar mis de côté reviendront dans tes poches.": deleting undoes every move of its pockets. */
+function useRemovalQuestion() {
+  const { t, locale } = useTranslation();
+  return (record: SavingsGoal | Tontine) => {
+    const effect = removalEffect(record);
+    return effect.kind === "held"
+      ? t("expenses.savings.removeHeld", { name: record.name, amount: formatAriary(effect.amountMga, locale) })
+      : t(effect.kind === "pot" ? "expenses.savings.removePot" : "expenses.savings.removeEmpty", { name: record.name });
+  };
+}
+
+/** The form's buttons; deleting is asked first (`question`), then confirmed. */
+function FormButtons({ valid, onCancel, onRemove, question }: { valid: boolean; onCancel: () => void; onRemove?: () => void; question?: string }) {
   const { t } = useTranslation();
+  const [asking, setAsking] = useState(false);
   return (
-    <div className={styles.row}>
-      <Button type="submit" icon={<Check />} disabled={!valid}>
-        {t("expenses.save")}
-      </Button>
-      <Button variant="ghost" onClick={onCancel}>
-        {t("expenses.cancel")}
-      </Button>
-      {onRemove && (
-        <Button variant="ghost" icon={<Trash2 />} onClick={onRemove}>
-          {t("expenses.savings.remove")}
-        </Button>
+    <>
+      {asking && (
+        <p className={styles.hint} role="alert" data-testid="savings-remove-question">
+          {question}
+        </p>
       )}
-    </div>
+      <div className={styles.row}>
+        {asking ? (
+          <>
+            <Button variant="danger" icon={<Trash2 />} onClick={onRemove}>
+              {t("expenses.savings.removeConfirm")}
+            </Button>
+            <Button variant="ghost" onClick={() => setAsking(false)}>
+              {t("expenses.cancel")}
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button type="submit" icon={<Check />} disabled={!valid}>
+              {t("expenses.save")}
+            </Button>
+            <Button variant="ghost" onClick={onCancel}>
+              {t("expenses.cancel")}
+            </Button>
+            {onRemove && (
+              <Button variant="ghost" icon={<Trash2 />} onClick={() => setAsking(true)}>
+                {t("expenses.savings.remove")}
+              </Button>
+            )}
+          </>
+        )}
+      </div>
+    </>
   );
 }
 
 /** A savings goal: its name, what is aimed at, and by when (if wanted). */
 function GoalForm({ goal, onDone }: { goal?: SavingsGoal; onDone: () => void }) {
   const { t } = useTranslation();
+  const ask = useRemovalQuestion();
   const [name, setName] = useState(goal?.name ?? "");
   const [target, setTarget] = useState(goal ? String(goal.targetMga) : "");
   const [due, setDue] = useState(goal?.dueAt ? dayString(goal.dueAt) : "");
@@ -250,6 +284,7 @@ function GoalForm({ goal, onDone }: { goal?: SavingsGoal; onDone: () => void }) 
       <FormButtons
         valid={valid}
         onCancel={onDone}
+        question={goal && ask(goal)}
         onRemove={
           goal &&
           (() => {
@@ -264,6 +299,7 @@ function GoalForm({ goal, onDone }: { goal?: SavingsGoal; onDone: () => void }) 
 /** A tontine: what each member pays, how often, how many they are, from when, and the user's turn. */
 function TontineForm({ tontine, canRemind, onDone }: { tontine?: Tontine; canRemind: boolean; onDone: () => void }) {
   const { t, locale } = useTranslation();
+  const ask = useRemovalQuestion();
   const [name, setName] = useState(tontine?.name ?? "");
   const [amount, setAmount] = useState(tontine ? String(tontine.amountMga) : "");
   const [frequency, setFrequency] = useState<TontineFrequency>(tontine?.frequency ?? "monthly");
@@ -336,6 +372,7 @@ function TontineForm({ tontine, canRemind, onDone }: { tontine?: Tontine; canRem
       <FormButtons
         valid={valid}
         onCancel={onDone}
+        question={tontine && ask(tontine)}
         onRemove={
           tontine &&
           (() => {

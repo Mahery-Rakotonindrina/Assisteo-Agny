@@ -1,5 +1,7 @@
 import { clear, createStore, del, get, set, values } from "idb-keyval";
 import {
+  ACTIVITY_ID,
+  type ActivitySetting,
   BUDGET_ID,
   exclusionId,
   type Budget,
@@ -136,6 +138,11 @@ export const expenseStore = {
   async setBudget(total: number | undefined, categories: Record<string, number | undefined>) {
     const kept = Object.fromEntries(Object.entries(categories).flatMap(([key, value]) => (cleanAmount(value) ? [[key, cleanAmount(value)!]] : [])));
     await save<Budget>("budget", BUDGET_ID, { total: cleanAmount(total), categories: kept });
+  },
+
+  /** Resellers: keep the reselling apart from the household's budget, or not. */
+  async setActivitySeparate(separate: boolean) {
+    await save<ActivitySetting>("activity", ACTIVITY_ID, { separate });
   },
 
   async saveCategory(draft: Draft<CustomCategory>) {

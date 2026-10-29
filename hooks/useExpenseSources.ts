@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 import { listBills } from "@/lib/bills";
 import { isMine } from "@/lib/household";
-import { sourceItems } from "@/lib/expenses";
+import { sourceItems, type ExpenseRecord, type SourceItem } from "@/lib/expenses";
+import { budgetSources, excludedKeys, separatesActivity } from "@/lib/resale";
 import { useHistory } from "./useHistory";
 import { useHousehold, useHouseholdExpenses } from "./useHousehold";
 import { useLists } from "./useLists";
@@ -39,4 +40,15 @@ export function useExpenseSources() {
       }),
     [entries, lists, parcels, vehicles, payments, shared, me],
   );
+}
+
+/**
+ * What the budget counts of those lines: the reselling left out once the
+ * user keeps it apart (reseller tools only), one "profit from my activity"
+ * income per month instead. The pockets keep reading every line.
+ */
+export function useBudgetSources(records: ExpenseRecord[], sources: SourceItem[]) {
+  const { has } = usePlan();
+  const separate = has("reseller") && separatesActivity(records);
+  return useMemo(() => budgetSources(sources, separate, excludedKeys(records)), [sources, separate, records]);
 }

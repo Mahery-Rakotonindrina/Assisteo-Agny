@@ -241,7 +241,7 @@ Budget du mois du foyer. Réservé à l'offre Admin pendant le test, ouvert aux 
 - [x] Prévision de fin de mois : « À ce rythme, il te restera 45 000 Ar le 30 », dépenses fixes à venir comprises — dans « Il te reste », mois en cours dès le 3e jour, grosses dépenses rares écartées du rythme, « Comment c’est calculé ? »
 - [x] Objectifs d’épargne (« Rentrée scolaire : 120 000 / 300 000 Ar ») et suivi d’une tontine ou de cotisations — « Mis de côté » sous les poches : ni dépense ni revenu, l’argent sort de sa poche ; tontine avec mon tour, prochain versement et rappel la veille
 - [x] Recherche dans toutes les dépenses et tous les revenus (ex. tout ce qui a été payé à la JIRAMA cette année) — loupe de l’en-tête, tous les mois, sans accents ni majuscules, montant compris ; un résultat ouvre son mois et sa ligne
-- [ ] Revendeurs : l’activité séparée de la maison (achats de colis à revendre et ventes à part, bénéfice du mois), pour ne pas gonfler le budget de la maison
+- [x] Revendeurs : l’activité séparée de la maison (achats de colis à revendre et ventes à part, bénéfice du mois), pour ne pas gonfler le budget de la maison — réglage dans la feuille « Mon activité » (sous « Il te reste », outils revendeur), désactivé par défaut ; activé, une seule ligne « Bénéfice de mon activité » par mois, poches inchangées ; bascule « Pour moi / Pour revendre » sur le colis ; confirmation avant de supprimer un objectif ou une tontine
 - [ ] Ouvrir « Mes dépenses » à d’autres offres que l’Admin — une case à cocher dans Admin → Offres ; reste à choisir les offres
 
 ## 17. Prêts (offre Admin, en test)
