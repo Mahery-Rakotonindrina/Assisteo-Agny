@@ -19,6 +19,8 @@ export const config = {
 
 /** Statements a day per account, on top of the month's scans. */
 const STATEMENTS_PER_DAY = 10;
+// A free account given "expenses" by the Admin has no monthly scans to spend: fewer a day.
+const FREE_STATEMENTS_PER_DAY = 2;
 const DAY_MS = 24 * 60 * 60 * 1000;
 /** More operations than any month of a household: the rest is dropped. */
 const MAX_OPERATIONS = 400;
@@ -59,12 +61,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     return res.status(200).json({ statement: mockStatement(Date.now()), model: "demo", demo: true, pages } satisfies StatementResponse);
   }
 
-  const { account, current, features } = await resolvePlan(req);
+  const { account, current, features, quotas } = await resolvePlan(req);
   if (!account) return sendError(res, 401, "sign_in_required", "Sign in to import a statement.");
   if (!features.has("expenses")) return sendError(res, 403, "plan_required", "Importing a statement is not part of your plan.");
 
   const dailyKey = `statement:day:${account.id}`;
-  const daily = await rateLimit(dailyKey, STATEMENTS_PER_DAY, DAY_MS);
+  const daily = await rateLimit(dailyKey, current.plan === "free" ? FREE_STATEMENTS_PER_DAY : STATEMENTS_PER_DAY, DAY_MS);
   if (!daily.ok) {
     res.setHeader("Retry-After", String(daily.retryAfterS));
     return sendError(res, 429, "rate_limited", "Today's statements are used up, come back tomorrow.");
@@ -77,7 +79,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     for (; booked > 0; booked -= 1) await releasePlanScan(account.id).catch(() => undefined);
   };
   if (current.plan !== "free") {
-    const { scans } = await limitsFor(current.plan);
+    // The subscriber's own limits (Admin) apply, as for a scan.
+    const { scans } = await limitsFor(current.plan, undefined, quotas, features);
     for (let page = 0; page < pages; page += 1) {
       if (!(await reservePlanScan(account.id, scans))) {
         await giveBack();
