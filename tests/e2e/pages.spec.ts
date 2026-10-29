@@ -206,6 +206,55 @@ test("My expenses explains each tab, adds an expense in 3 steps and an income, a
   await expect(welcome).toHaveCount(0);
 });
 
+test("My pockets: two pockets, an expense from MVola, a move between them and a corrected balance", async ({ page }) => {
+  await prepare(page);
+  await page.route("**/api/plan", async (route) => {
+    const response = await route.fetch();
+    await route.fulfill({ response, json: { ...(await response.json()), plan: "unlimited", features: undefined } });
+  });
+  await page.goto("/expenses");
+
+  // The first time: where the money is.
+  await page.getByRole("button", { name: /Où est ton argent \?/ }).click();
+  const setup = page.getByRole("dialog", { name: "Où est ton argent ?" });
+  await setup.getByLabel(/^Espèces : combien/).fill("45000");
+  await setup.getByRole("checkbox", { name: "MVola" }).check();
+  await setup.getByLabel(/^MVola : combien/).fill("230000");
+  await setup.getByRole("button", { name: "Enregistrer" }).click();
+  const pockets = page.getByTestId("pockets");
+  await expect(page.getByTestId("pockets-total")).toHaveText(/^275\s000 Ar$/);
+  await expect(pockets).toHaveText(/^Espèces 45\s000 Ar · MVola 230\s000 Ar$/);
+
+  // An expense paid with MVola: its balance goes down, "Il te reste" as before.
+  await page.getByRole("button", { name: "Ajouter une dépense" }).click();
+  await page.getByLabel("Montant", { exact: true }).fill("12000");
+  await page.getByRole("radio", { name: "MVola" }).click();
+  await page.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(pockets).toHaveText(/MVola 218\s000 Ar$/);
+  await expect(page.getByTestId("expenses-total")).toHaveText(/^12\s000 Ar$/);
+
+  // A move from MVola to cash, with its fees (an expense).
+  await page.getByRole("button", { name: "Voir mes poches" }).click();
+  const sheet = page.getByRole("dialog", { name: "Mes poches" });
+  await sheet.getByRole("button", { name: "Virement entre mes poches" }).click();
+  const move = page.getByRole("dialog", { name: "Virement entre mes poches" });
+  await move.getByRole("radiogroup", { name: "De" }).getByRole("radio", { name: "MVola" }).click();
+  await move.getByLabel("Montant", { exact: true }).fill("50000");
+  await move.getByLabel(/^Frais/).fill("1000");
+  await move.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(pockets).toHaveText(/^Espèces 95\s000 Ar · MVola 167\s000 Ar$/);
+  await expect(page.getByTestId("expenses-total")).toHaveText(/^13\s000 Ar$/);
+
+  // "Corriger le solde": the real MVola balance.
+  await page.getByRole("dialog", { name: "Mes poches" }).getByRole("button", { name: /^MVola/ }).click();
+  await page.getByRole("dialog", { name: "Mes poches" }).getByRole("button", { name: "Corriger le solde" }).click();
+  await page.getByLabel(/^Ton solde MVola est en vrai de/).fill("170000");
+  await page.getByRole("dialog", { name: "Corriger le solde" }).getByRole("button", { name: "Enregistrer" }).click();
+  await expect(page.getByText(/^Solde corrigé : \+3\s000 Ar/)).toBeVisible();
+  await expect(pockets).toHaveText(/MVola 170\s000 Ar$/);
+  await expect(page.getByTestId("expenses-total")).toHaveText(/^13\s000 Ar$/);
+});
+
 test("an Admin account gets the month's review (demo)", async ({ page }) => {
   await prepare(page);
   await page.route("**/api/plan", async (route) => {
