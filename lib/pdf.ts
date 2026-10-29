@@ -140,6 +140,27 @@ export class PdfWriter {
     this.doc.addImage(dataUrl, "JPEG", x, this.y, width, height, undefined, "FAST");
   }
 
+  /** Empty room, in mm. */
+  space(height: number) {
+    this.ensure(height);
+    this.y += height;
+  }
+
+  /** Side-by-side boxes to sign in, each with its caption above (debt acknowledgment). */
+  signatures(captions: string[]) {
+    const height = 34;
+    this.ensure(height);
+    const gap = 8;
+    const width = (WIDTH - gap * (captions.length - 1)) / captions.length;
+    captions.forEach((caption, index) => {
+      const x = MARGIN + index * (width + gap);
+      this.doc.setFont("helvetica", "normal").setFontSize(9.5).setTextColor(60);
+      this.doc.text(this.doc.splitTextToSize(pdfText(caption), width) as string[], x, this.y + 4);
+      this.doc.setDrawColor(170).setLineWidth(0.3).rect(x, this.y + 11, width, height - 13);
+    });
+    this.y += height + 2;
+  }
+
   /** A thin line between two items. */
   rule() {
     this.ensure(6);

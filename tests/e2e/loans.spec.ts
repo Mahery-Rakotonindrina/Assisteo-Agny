@@ -85,3 +85,54 @@ test("without the Admin plan, Loans is not in the menu", async ({ page }) => {
   await expect(page.getByText("Prêts n’est pas encore ouvert à ton offre.")).toBeVisible();
   await expect(page.getByRole("button", { name: "J’ai prêté de l’argent" })).toHaveCount(0);
 });
+
+test("a loan paid back in 3 times, with a partial repayment", async ({ page }) => {
+  await asAdmin(page);
+  await page.goto("/loans");
+  await page.getByRole("button", { name: "J’ai prêté de l’argent" }).click();
+  await page.getByLabel("À qui ?").fill("Rakoto");
+  await page.getByLabel("Montant (Ar)").fill("60000");
+  await page.getByLabel("Rembourser en plusieurs fois").check();
+  await page.getByLabel("Combien de fois ?").fill("3");
+  await expect(page.getByLabel(/^Montant de l’échéance du/)).toHaveCount(3);
+  await page.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(page.getByRole("button", { name: /Rakoto/ })).toContainText(/Prochaine échéance : 20\s000\sAr le/);
+
+  await page.getByRole("button", { name: /Rakoto/ }).click();
+  await page.getByRole("button", { name: "On m’a rendu…" }).click();
+  await page.getByLabel("Montant (Ar)").fill("30000");
+  await page.getByRole("button", { name: "Enregistrer" }).click();
+  const schedule = page.getByTestId("loan-schedule");
+  await expect(schedule.getByText("Payée")).toHaveCount(1);
+  await expect(schedule.getByText("En partie")).toHaveCount(1);
+  await expect(schedule.getByText("À venir")).toHaveCount(1);
+  await expect(page.getByTestId("loan-left")).toHaveText(/^Reste 30\s000\sAr$/);
+});
+
+test("a loan with interest: the total to pay back is followed", async ({ page }) => {
+  await asAdmin(page);
+  await page.goto("/loans");
+  await page.getByRole("button", { name: "J’ai prêté de l’argent" }).click();
+  await page.getByLabel("À qui ?").fill("Rakoto");
+  await page.getByLabel("Montant (Ar)").fill("100000");
+  await page.getByLabel("Intérêts ou frais convenus").check();
+  await page.getByLabel("Intérêts ou frais (Ar)").fill("10000");
+  await expect(page.getByTestId("loan-form-total")).toHaveText(/À rendre en tout : 110\s000\sAr/);
+  await page.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(page.getByTestId("loans-total")).toHaveText(/^110\s000\sAr$/);
+  await page.getByRole("button", { name: /Rakoto/ }).click();
+  await expect(page.getByTestId("loan-interest")).toHaveText(/Prêté 100\s000\sAr · Intérêts 10\s000\sAr · À rendre 110\s000\sAr/);
+});
+
+test("« Reconnaissance de dette (PDF) » gives a file", async ({ page }) => {
+  await asAdmin(page);
+  await page.addInitScript(() => { Object.defineProperty(navigator, "canShare", { value: () => false }); }); // phones open the share sheet: force the download
+  await page.goto("/loans");
+  await lend(page, "Rakoto", "50000");
+  await page.getByRole("button", { name: /Rakoto/ }).click();
+  await page.getByRole("button", { name: "Reconnaissance de dette (PDF)" }).click();
+  await page.getByLabel("Ton nom (celui qui prête)").fill("Hery");
+  const download = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Créer le PDF" }).click();
+  expect((await download).suggestedFilename()).toMatch(/^reconnaissance-de-dette-Rakoto\.pdf$/);
+});

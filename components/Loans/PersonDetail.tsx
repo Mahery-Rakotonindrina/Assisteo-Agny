@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { ArrowLeft, CircleCheck, Copy, MessageCircle, Pencil, Plus, Trash2, Undo2, X } from "lucide-react";
+import { ArrowLeft, CircleCheck, Copy, Download, FileText, MessageCircle, Pencil, Plus, Trash2, Undo2, X } from "lucide-react";
 import { Button } from "@/components/Button";
 import { useToast } from "@/components/Toast";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDate } from "@/lib/format";
-import { loanMoney, loanPaid, loanRemaining, loanStatus, whatsappLink, type Loan, type PersonLoans } from "@/lib/loans";
+import { loanInterest, loanMoney, loanNextDue, loanPaid, loanRemaining, loanStatus, loanTotal, scheduleState, whatsappLink, type Loan, type PersonLoans } from "@/lib/loans";
 import { copyText, haptics } from "@/services/device";
 import { loanStore } from "@/services/loanStore";
 import styles from "./Loans.module.scss";
@@ -17,10 +17,14 @@ type Props = {
   onAdd: () => void;
   onEdit: (loan: Loan) => void;
   onRepay: (loan: Loan) => void;
+  /** "Exporter": this person's loans. */
+  onExport: () => void;
+  /** "Reconnaissance de dette (PDF)" of one loan. */
+  onAck: (loan: Loan) => void;
 };
 
 /** One person's loans in one direction: each with its repayments, and what can be done. */
-export function PersonDetail({ person, now, readOnly, onBack, onAdd, onEdit, onRepay }: Props) {
+export function PersonDetail({ person, now, readOnly, onBack, onAdd, onEdit, onRepay, onExport, onAck }: Props) {
   const { t, locale } = useTranslation();
   const toast = useToast();
   const direction = person.loans[0]?.direction ?? "lent";
@@ -56,7 +60,7 @@ export function PersonDetail({ person, now, readOnly, onBack, onAdd, onEdit, onR
         </div>
       </div>
 
-      {(canRemind || !readOnly) && (
+      {(canRemind || !readOnly || person.loans.length > 0) && (
         <div className={styles.row}>
           {canRemind &&
             (whatsapp ? (
@@ -79,25 +83,31 @@ export function PersonDetail({ person, now, readOnly, onBack, onAdd, onEdit, onR
               {t(`loans.detail.another.${direction}`)}
             </Button>
           )}
+          <Button variant="ghost" icon={<Download />} onClick={onExport}>
+            {t("loans.detail.export")}
+          </Button>
         </div>
       )}
 
       <ul className={styles.loans}>
         {person.loans.map((loan) => (
-          <LoanCard key={loan.id} loan={loan} now={now} readOnly={readOnly} onEdit={() => onEdit(loan)} onRepay={() => onRepay(loan)} />
+          <LoanCard key={loan.id} loan={loan} now={now} readOnly={readOnly} onEdit={() => onEdit(loan)} onRepay={() => onRepay(loan)} onAck={() => onAck(loan)} />
         ))}
       </ul>
     </section>
   );
 }
 
-function LoanCard({ loan, now, readOnly, onEdit, onRepay }: { loan: Loan; now: number; readOnly: boolean; onEdit: () => void; onRepay: () => void }) {
+function LoanCard({ loan, now, readOnly, onEdit, onRepay, onAck }: { loan: Loan; now: number; readOnly: boolean; onEdit: () => void; onRepay: () => void; onAck: () => void }) {
   const { t, locale } = useTranslation();
   const toast = useToast();
   const [confirmRemove, setConfirmRemove] = useState(false);
   const status = loanStatus(loan, now);
   const left = loanRemaining(loan);
   const money = (value: number) => loanMoney(value, locale);
+  const interest = loanInterest(loan);
+  const next = loanNextDue(loan, now);
+  const installments = scheduleState(loan, now);
 
   const markRepaid = async () => {
     haptics.tap();
@@ -111,14 +121,36 @@ function LoanCard({ loan, now, readOnly, onEdit, onRepay }: { loan: Loan; now: n
   return (
     <li className={styles.loan} data-status={status} data-testid="loan-card">
       <div className={styles.loanHead}>
-        <strong>{money(loan.amountMga)}</strong>
+        <strong>{money(loanTotal(loan))}</strong>
         {status === "late" && <span className={styles.lateBadge}>{t("loans.late")}</span>}
         {status === "repaid" && <span className={styles.repaidBadge}>{t("loans.detail.repaidBadge")}</span>}
       </div>
       <small>
         {t(`loans.detail.on.${loan.direction}`, { date: formatDate(loan.at, locale) })}
-        {loan.dueAt !== undefined && ` · ${t("loans.dueOn", { date: formatDate(loan.dueAt, locale) })}`}
+        {next?.scheduled
+          ? ` · ${t("loans.nextDue", { amount: money(next.amountMga), date: formatDate(next.dueAt, locale) })}`
+          : loan.dueAt !== undefined && ` · ${t("loans.dueOn", { date: formatDate(loan.dueAt, locale) })}`}
       </small>
+      {interest > 0 && (
+        <small data-testid="loan-interest">
+          {[t(`loans.detail.principal.${loan.direction}`, { amount: money(loan.amountMga) }), t("loans.detail.interest", { amount: money(interest) }), t("loans.detail.total", { amount: money(loanTotal(loan)) })].join(" · ")}
+        </small>
+      )}
+      {installments.length > 0 && (
+        <ul className={styles.schedule} aria-label={t("loans.detail.schedule")} data-testid="loan-schedule">
+          {installments.map((item) => (
+            <li key={item.id}>
+              <span>
+                {t("loans.detail.installment", { amount: money(item.amountMga), date: formatDate(item.dueAt, locale) })}
+                {item.status !== "paid" && item.paidMga > 0 && <small>{` · ${t("loans.detail.installmentLeft", { amount: money(item.leftMga) })}`}</small>}
+              </span>
+              <span className={styles.state} data-status={item.status}>
+                {t(`loans.detail.installmentStatus.${item.status}`)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
       {loan.note && <p className={styles.note}>{loan.note}</p>}
 
       {loan.repayments.length > 0 && (
@@ -154,6 +186,9 @@ function LoanCard({ loan, now, readOnly, onEdit, onRepay }: { loan: Loan; now: n
               </Button>
             </>
           )}
+          <Button variant="ghost" icon={<FileText />} onClick={onAck}>
+            {t("loans.detail.ack")}
+          </Button>
           <Button variant="ghost" icon={<Pencil />} onClick={onEdit}>
             {t("loans.detail.edit")}
           </Button>

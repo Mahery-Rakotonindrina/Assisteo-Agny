@@ -1992,7 +1992,26 @@
       "note": "Note (optional)",
       "notePlaceholder": "for school fees",
       "save": "Save",
-      "missing": "Write the person’s name and the amount."
+      "missing": "Write the person’s name and the amount.",
+      "split": "Pay back in several times",
+      "times": "How many times?",
+      "frequency": "How often",
+      "frequencies": {
+        "week": "Every week",
+        "month": "Every month"
+      },
+      "firstDue": "First payment",
+      "installments": "The payments (you can change the amounts)",
+      "installmentLabel": "Amount of the payment on {date}",
+      "scheduleMismatch": "The payments add up to {sum}, but {total} is to be paid back.",
+      "interest": "Agreed interest or fees",
+      "interestKinds": {
+        "fixed": "In Ar",
+        "percent": "In %"
+      },
+      "interestFixed": "Interest or fees (Ar)",
+      "interestPercent": "Interest (% of the amount)",
+      "totalDue": "To pay back in all: {amount}"
     },
     "saved": {
       "lent": "Noted: {person} owes you {amount}.",
@@ -2027,7 +2046,24 @@
       "whatsapp": "Remind on WhatsApp",
       "copy": "Copy the message",
       "copied": "Message copied: paste it in WhatsApp or a text.",
-      "copyFailed": "Couldn’t copy the message."
+      "copyFailed": "Couldn’t copy the message.",
+      "principal": {
+        "lent": "Lent {amount}",
+        "borrowed": "Borrowed {amount}"
+      },
+      "interest": "Interest {amount}",
+      "total": "To pay back {amount}",
+      "schedule": "Payment plan",
+      "installment": "{amount} on {date}",
+      "installmentLeft": "{amount} left",
+      "installmentStatus": {
+        "paid": "Paid",
+        "partial": "Partly paid",
+        "upcoming": "Coming",
+        "late": "Late"
+      },
+      "ack": "Acknowledgment of debt (PDF)",
+      "export": "Export"
     },
     "repay": {
       "title": {
@@ -2042,6 +2078,104 @@
     "reminder": {
       "message": "Hello {name}, a friendly reminder about the {amount} I lent you. Let me know when you can pay me back. Thanks!",
       "messageDue": "Hello {name}, a friendly reminder about the {amount} I lent you, due {date}. Let me know when you can pay me back. Thanks!"
+    },
+    "nextDue": "Next payment: {amount} on {date}",
+    "ack": {
+      "title": "Acknowledgment of debt",
+      "owe": "I, the undersigned {debtor}, acknowledge that I owe {creditor} the sum of {words} ({amount}).",
+      "withInterest": "This sum is made of {amount} lent on {date}, and {interest} of agreed interest or fees.",
+      "lentOn": "This sum was lent to me on {date}.",
+      "schedule": "I undertake to pay it back in {count} payments, on the following dates:",
+      "dueOn": "I undertake to pay it back by {date} at the latest.",
+      "noDue": "I undertake to pay it back.",
+      "alreadyPaid": "To date, {paid} has already been paid back; {left} is left to pay.",
+      "installment": "{amount} by {date}",
+      "signedAt": "Signed in {place}, on {date}.",
+      "signDebtor": "Signature of {name}, preceded by “Read and approved”",
+      "signCreditor": "Signature of {name}",
+      "file": "acknowledgment-of-debt",
+      "me": {
+        "lent": "Your name (the lender)",
+        "borrowed": "Your name (the borrower)"
+      },
+      "place": "Place (optional)",
+      "placePlaceholder": "Antananarivo",
+      "hint": "Print it or send it, then both of you sign it.",
+      "make": "Create the PDF"
+    },
+    "export": {
+      "button": "Export (Excel, PDF)",
+      "sheetTitle": "Export my loans",
+      "sheetTitlePerson": "Export the loans with {name}",
+      "excel": "Excel",
+      "excelHint": "A spreadsheet: each loan, then a summary per person.",
+      "pdf": "PDF",
+      "pdfHint": "A summary per person, easy to send.",
+      "working": "Creating the file…",
+      "downloaded": "File downloaded",
+      "failed": "The file could not be created. Try again.",
+      "title": "My loans",
+      "titlePerson": "Loans with {name}",
+      "exportedOn": "Exported on {date}",
+      "file": "loans",
+      "line": "{date} · {total} · {left} left · {status}",
+      "columns": {
+        "person": "Person",
+        "direction": "Way",
+        "at": "Date",
+        "amountMga": "Amount",
+        "interestMga": "Interest",
+        "totalMga": "Total to pay back",
+        "paidMga": "Paid back",
+        "remainingMga": "Left",
+        "dueAt": "Due",
+        "status": "Status",
+        "note": "Note",
+        "loans": "Loans",
+        "lateMga": "Late"
+      },
+      "status": {
+        "open": "Ongoing",
+        "late": "Late",
+        "repaid": "Repaid"
+      },
+      "sheetLoansBy": {
+        "lent": "Owed to me",
+        "borrowed": "I owe"
+      },
+      "sheetPeopleBy": {
+        "lent": "Per person (owed to me)",
+        "borrowed": "Per person (I owe)"
+      },
+      "totalBy": {
+        "lent": "Total owed to me",
+        "borrowed": "Total I owe"
+      }
+    },
+    "stats": {
+      "title": "In figures ({year})",
+      "total": {
+        "lent": "Lent",
+        "borrowed": "Borrowed"
+      },
+      "paid": {
+        "lent": "Paid back to you",
+        "borrowed": "You paid back"
+      },
+      "remaining": {
+        "lent": "Still owed",
+        "borrowed": "Left to pay back"
+      },
+      "count": "Number of loans",
+      "averageDays": "Average time to pay back",
+      "days": "{count} days",
+      "dayOne": "1 day",
+      "noneYet": "Not yet",
+      "late": {
+        "lent": "The latest",
+        "borrowed": "Where you are the latest"
+      },
+      "empty": "No loans this year."
     }
   },
   "garage": {

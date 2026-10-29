@@ -1,5 +1,5 @@
 import { clear, createStore, del, get, set, values } from "idb-keyval";
-import { cappedRepayment, loanRemaining, type Loan, type LoanDirection, type Repayment } from "@/lib/loans";
+import { cappedRepayment, loanRemaining, MAX_INSTALLMENTS, type Installment, type Loan, type LoanDirection, type LoanInterest, type Repayment } from "@/lib/loans";
 import { createId } from "./historyStore";
 
 // "Prêts": what the user lent or borrowed, and the repayments. Local-first
@@ -16,6 +16,9 @@ export type LoanFields = {
   amountMga: number;
   at: number;
   dueAt?: number;
+  /** Paid back in several times (two or more). */
+  schedule?: Installment[];
+  interest?: LoanInterest;
   note?: string;
 };
 
@@ -43,17 +46,39 @@ async function change(id: string, update: (loan: Loan) => Loan) {
 const cleanText = (text: string | undefined, max: number) => text?.trim().replace(/\s+/g, " ").slice(0, max) || undefined;
 const cleanAmount = (value: number) => (Number.isFinite(value) && value > 0 ? Math.round(value) : undefined);
 
+/** At least two installments with a day and an amount, by day; none otherwise. */
+function cleanSchedule(schedule: Installment[] | undefined) {
+  if (!Array.isArray(schedule)) return undefined;
+  const items = schedule
+    .filter((item) => Number.isFinite(item?.dueAt) && cleanAmount(item.amountMga) !== undefined)
+    .slice(0, MAX_INSTALLMENTS)
+    .sort((a, b) => a.dueAt - b.dueAt)
+    .map((item, index) => ({ id: typeof item.id === "string" && item.id ? item.id : `e${index + 1}`, dueAt: item.dueAt, amountMga: cleanAmount(item.amountMga)! }));
+  return items.length >= 2 ? items : undefined;
+}
+
+/** A fixed amount or a share (up to 1 000 %); none when zero. */
+function cleanInterest(interest: LoanInterest | undefined): LoanInterest | undefined {
+  if (!interest || !Number.isFinite(interest.value) || interest.value <= 0) return undefined;
+  if (interest.kind === "percent") return { kind: "percent", value: Math.min(1000, Math.round(interest.value * 100) / 100) };
+  return { kind: "fixed", value: Math.round(interest.value) };
+}
+
 function cleanFields(fields: LoanFields) {
   const person = cleanText(fields.person, 60);
   const amountMga = cleanAmount(fields.amountMga);
   if (!person || amountMga === undefined) return null;
+  const schedule = cleanSchedule(fields.schedule);
   return {
     direction: fields.direction === "borrowed" ? "borrowed" : "lent",
     person,
     phone: cleanText(fields.phone, 24),
     amountMga,
     at: Number.isFinite(fields.at) ? fields.at : Date.now(),
-    dueAt: fields.dueAt !== undefined && Number.isFinite(fields.dueAt) ? fields.dueAt : undefined,
+    // With a schedule, the loan is due by its last installment.
+    dueAt: schedule ? schedule[schedule.length - 1].dueAt : fields.dueAt !== undefined && Number.isFinite(fields.dueAt) ? fields.dueAt : undefined,
+    schedule,
+    interest: cleanInterest(fields.interest),
     note: cleanText(fields.note, 200),
   } satisfies LoanFields;
 }
