@@ -1,10 +1,10 @@
 import { useRouter } from "next/router";
 import { motion } from "motion/react";
 import { useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, HandCoins, Plus, Search } from "lucide-react";
+import { ChevronDown, ChevronRight, Download, HandCoins, Plus, Search } from "lucide-react";
 import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
-import { LoanSheet, PersonDetail, RepaySheet } from "@/components/Loans";
+import { AckSheet, ExportSheet, LoanSheet, PersonDetail, RepaySheet } from "@/components/Loans";
 import styles from "@/components/Loans/Loans.module.scss";
 import { SegmentedControl } from "@/components/SegmentedControl";
 import { Seo } from "@/components/Seo";
@@ -14,7 +14,8 @@ import { useNow } from "@/hooks/useNow";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDate } from "@/lib/format";
-import { loanMoney, loansByPerson, loanTotals, personKey, repaidAt, repaidLoans, searchPeople, type Loan, type LoanDirection } from "@/lib/loans";
+import { loanStats, personLoans } from "@/lib/loanReport";
+import { loanMoney, loansByPerson, loanTotal, loanTotals, personKey, repaidAt, repaidLoans, searchPeople, type Loan, type LoanDirection } from "@/lib/loans";
 import { rise, stagger } from "@/lib/motion";
 
 /** The search shows once the list is longer than this. */
@@ -63,6 +64,10 @@ function Loans({ loans, readOnly, direction }: { loans: Loan[]; readOnly: boolea
   const [showRepaid, setShowRepaid] = useState(false);
   const [editing, setEditing] = useState<Editing>(null);
   const [repaying, setRepaying] = useState<Loan | null>(null);
+  const [acknowledging, setAcknowledging] = useState<Loan | null>(null);
+  // "all": every loan; a name: that person's loans, both ways.
+  const [exporting, setExporting] = useState<{ person?: string } | null>(null);
+  const [showStats, setShowStats] = useState(false);
   const money = (value: number) => loanMoney(value, locale);
 
   const people = useMemo(() => loansByPerson(loans, direction, now), [loans, direction, now]);
@@ -74,6 +79,10 @@ function Loans({ loans, readOnly, direction }: { loans: Loan[]; readOnly: boolea
   const opened = openKey ? people.find((person) => person.key === openKey) : undefined;
   // The loan being repaid, kept fresh as the list changes.
   const repayLoan = repaying ? (loans.find((loan) => loan.id === repaying.id) ?? null) : null;
+  const ackLoan = acknowledging ? (loans.find((loan) => loan.id === acknowledging.id) ?? null) : null;
+  const exported = exporting?.person ? personLoans(loans, exporting.person) : loans;
+  const stats = useMemo(() => loanStats(loans, direction, now), [loans, direction, now]);
+  const year = new Date(now).getFullYear();
 
   const go = (query: { dir?: LoanDirection; person?: string | null }) => {
     const dir = query.dir ?? direction;
@@ -128,6 +137,14 @@ function Loans({ loans, readOnly, direction }: { loans: Loan[]; readOnly: boolea
         </motion.div>
       )}
 
+      {loans.length > 0 && (
+        <motion.div variants={rise}>
+          <Button variant="ghost" block icon={<Download />} onClick={() => setExporting({})}>
+            {t("loans.export.button")}
+          </Button>
+        </motion.div>
+      )}
+
       {owing.length === 0 && repaid.length === 0 ? (
         <motion.div variants={rise}>
           <EmptyState title={t(`loans.empty.${direction}.title`)} body={t(`loans.empty.${direction}.body`)} />
@@ -153,7 +170,9 @@ function Loans({ loans, readOnly, direction }: { loans: Loan[]; readOnly: boolea
                     <strong>{person.name}</strong>
                     <small>
                       {person.open === 1 ? t("loans.openOne") : t("loans.open", { count: person.open })}
-                      {person.nextDue !== undefined && ` · ${t("loans.dueOn", { date: formatDate(person.nextDue, locale) })}`}
+                      {person.next?.scheduled
+                        ? ` · ${t("loans.nextDue", { amount: money(person.next.amountMga), date: formatDate(person.next.dueAt, locale) })}`
+                        : person.nextDue !== undefined && ` · ${t("loans.dueOn", { date: formatDate(person.nextDue, locale) })}`}
                     </small>
                   </span>
                   <span className={styles.amount}>
@@ -182,7 +201,7 @@ function Loans({ loans, readOnly, direction }: { loans: Loan[]; readOnly: boolea
                           <small>{t("loans.repaidOn", { date: formatDate(repaidAt(loan), locale) })}</small>
                         </span>
                         <span className={styles.amount}>
-                          <strong>{money(loan.amountMga)}</strong>
+                          <strong>{money(loanTotal(loan))}</strong>
                         </span>
                       </button>
                     </li>
@@ -192,6 +211,58 @@ function Loans({ loans, readOnly, direction }: { loans: Loan[]; readOnly: boolea
             </motion.div>
           )}
         </>
+      )}
+
+      {loans.length > 0 && (
+        <motion.div variants={rise} className={styles.repaid}>
+          <button type="button" className={styles.fold} aria-expanded={showStats} onClick={() => setShowStats(!showStats)}>
+            <span>{t("loans.stats.title", { year })}</span>
+            <ChevronDown size={18} data-open={showStats || undefined} />
+          </button>
+          {showStats &&
+            (stats.count === 0 ? (
+              <p className={styles.hint}>{t("loans.stats.empty")}</p>
+            ) : (
+              <div className={styles.stats} data-testid="loans-stats">
+                <div>
+                  <span>{t(`loans.stats.total.${direction}`)}</span>
+                  <strong>{money(stats.totalMga)}</strong>
+                </div>
+                <div>
+                  <span>{t(`loans.stats.paid.${direction}`)}</span>
+                  <strong>{money(stats.paidMga)}</strong>
+                </div>
+                <div>
+                  <span>{t(`loans.stats.remaining.${direction}`)}</span>
+                  <strong>{money(stats.remainingMga)}</strong>
+                </div>
+                <div>
+                  <span>{t("loans.stats.count")}</span>
+                  <strong>{stats.count}</strong>
+                </div>
+                <div className={styles.statsWide}>
+                  <span>{t("loans.stats.averageDays")}</span>
+                  <strong>
+                    {stats.averageDays === null ? t("loans.stats.noneYet") : stats.averageDays === 1 ? t("loans.stats.dayOne") : t("loans.stats.days", { count: stats.averageDays })}
+                  </strong>
+                </div>
+                {stats.late.length > 0 && (
+                  <>
+                    <div className={styles.statsWide}>
+                      <span>{t(`loans.stats.late.${direction}`)}</span>
+                    </div>
+                    <ol>
+                      {stats.late.map((person) => (
+                        <li key={person.name}>
+                          {person.name} · {money(person.lateMga)}
+                        </li>
+                      ))}
+                    </ol>
+                  </>
+                )}
+              </div>
+            ))}
+        </motion.div>
       )}
     </>
   );
@@ -206,6 +277,8 @@ function Loans({ loans, readOnly, direction }: { loans: Loan[]; readOnly: boolea
       onAdd={() => setEditing({ kind: "add", person: opened.name, phone: opened.phone })}
       onEdit={(loan) => setEditing({ kind: "edit", loan })}
       onRepay={setRepaying}
+      onExport={() => setExporting({ person: opened.name })}
+      onAck={setAcknowledging}
     />
   );
 
@@ -240,6 +313,8 @@ function Loans({ loans, readOnly, direction }: { loans: Loan[]; readOnly: boolea
         loans={loans}
       />
       <RepaySheet open={repayLoan !== null} onClose={() => setRepaying(null)} loan={repayLoan} />
+      <AckSheet open={ackLoan !== null} onClose={() => setAcknowledging(null)} loan={ackLoan} />
+      <ExportSheet open={exporting !== null} onClose={() => setExporting(null)} loans={exported} person={exporting?.person} />
     </motion.div>
   );
 }

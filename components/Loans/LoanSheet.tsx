@@ -6,8 +6,23 @@ import { Button } from "@/components/Button";
 import { useToast } from "@/components/Toast";
 import { useNow } from "@/hooks/useNow";
 import { useTranslation } from "@/hooks/useTranslation";
-import { startOfDay, toDateInput } from "@/lib/format";
-import { loanMoney, cappedRepayment, dayFromInput, dueIn, knownPhone, loanRemaining, type Loan, type LoanDirection } from "@/lib/loans";
+import { formatDate, startOfDay, toDateInput } from "@/lib/format";
+import {
+  loanMoney,
+  cappedRepayment,
+  dayFromInput,
+  dueIn,
+  knownPhone,
+  loanRemaining,
+  loanTotal,
+  MAX_INSTALLMENTS,
+  scheduleFrequency,
+  splitSchedule,
+  type Loan,
+  type LoanDirection,
+  type LoanInterest,
+  type ScheduleFrequency,
+} from "@/lib/loans";
 import { parseNumber } from "@/lib/money";
 import { spring } from "@/lib/motion";
 import { haptics } from "@/services/device";
@@ -15,6 +30,8 @@ import { loanStore } from "@/services/loanStore";
 import styles from "./Loans.module.scss";
 
 const noSubscribe = () => () => {};
+// Read when the form is saved, never while rendering.
+const timestamp = () => Date.now();
 
 /** The day picked as a time: now when it is today, else midday that day. */
 function pickedAt(day: string) {
@@ -25,7 +42,7 @@ function pickedAt(day: string) {
 }
 
 /** A bottom sheet (a centred card on a computer), over the page. */
-function Sheet({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: ReactNode }) {
+export function Sheet({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: ReactNode }) {
   const { t } = useTranslation();
   const mounted = useSyncExternalStore(noSubscribe, () => true, () => false);
   if (!mounted) return null;
@@ -87,14 +104,42 @@ function LoanFields({ direction, draft, loan, loans, onClose, onSaved }: { direc
   const [dueDay, setDueDay] = useState(loan?.dueAt !== undefined ? toDateInput(loan.dueAt) : "");
   const [phone, setPhone] = useState(loan?.phone ?? draft.phone ?? "");
   const [note, setNote] = useState(loan?.note ?? "");
+  const saved = loan?.schedule;
+  const [split, setSplit] = useState(Boolean(saved?.length));
+  const [times, setTimes] = useState(String(saved?.length ?? 3));
+  const [frequency, setFrequency] = useState<ScheduleFrequency>(saved ? scheduleFrequency(saved) : "month");
+  const [firstDay, setFirstDay] = useState(toDateInput(saved?.[0]?.dueAt ?? dueIn("month", now)));
+  // Amounts changed by hand, by position; cleared once the parts are worked out again.
+  const [parts, setParts] = useState<Record<number, string>>(() => Object.fromEntries((saved ?? []).map((item, index) => [index, String(item.amountMga)])));
+  const [withInterest, setWithInterest] = useState(Boolean(loan?.interest));
+  const [interestKind, setInterestKind] = useState<LoanInterest["kind"]>(loan?.interest?.kind ?? "fixed");
+  const [interestValue, setInterestValue] = useState(loan?.interest ? String(loan.interest.value) : "");
   const [error, setError] = useState(false);
+  const [mismatch, setMismatch] = useState(false);
   const [saving, setSaving] = useState(false);
   const names = [...new Set(loans.map((item) => item.person.trim()))];
   const today = toDateInput(now);
 
+  const typedAmount = parseNumber(amount);
+  const typedInterest = withInterest ? parseNumber(interestValue) : null;
+  const interest: LoanInterest | undefined = typedInterest !== null && typedInterest > 0 ? { kind: interestKind, value: typedInterest } : undefined;
+  const total = typedAmount !== null && typedAmount > 0 ? loanTotal({ amountMga: Math.round(typedAmount), interest }) : 0;
+  const count = Math.min(MAX_INSTALLMENTS, Math.max(2, Math.round(parseNumber(times) ?? 2)));
+  const firstAt = dayFromInput(firstDay);
+  const schedule =
+    split && total > 0 && firstAt !== undefined
+      ? splitSchedule(total, count, frequency, firstAt).map((item, index) => (parts[index] === undefined ? item : { ...item, amountMga: Math.round(parseNumber(parts[index]) ?? 0) }))
+      : [];
+  const scheduleSum = schedule.reduce((sum, item) => sum + item.amountMga, 0);
+  /** Something the parts are worked out from changed: they are split equally again. */
+  const resplit = () => {
+    setParts({});
+    setMismatch(false);
+  };
+
   const dueAt = () => {
-    if (due === "week") return dueIn("week", Date.now());
-    if (due === "month") return dueIn("month", Date.now());
+    if (due === "week") return dueIn("week", timestamp());
+    if (due === "month") return dueIn("month", timestamp());
     if (due === "pick") return dayFromInput(dueDay);
     return undefined;
   };
@@ -107,8 +152,23 @@ function LoanFields({ direction, draft, loan, loans, onClose, onSaved }: { direc
       haptics.error();
       return;
     }
+    if (split && (schedule.length < 2 || scheduleSum !== total || schedule.some((item) => item.amountMga <= 0))) {
+      setMismatch(true);
+      haptics.error();
+      return;
+    }
     setSaving(true);
-    const fields = { direction, person, phone, amountMga: value, at: loan && toDateInput(loan.at) === day ? loan.at : pickedAt(day), dueAt: dueAt(), note };
+    const fields = {
+      direction,
+      person,
+      phone,
+      amountMga: value,
+      at: loan && toDateInput(loan.at) === day ? loan.at : pickedAt(day),
+      dueAt: split ? undefined : dueAt(),
+      schedule: split ? schedule : undefined,
+      interest,
+      note,
+    };
     try {
       if (loan) {
         await loanStore.edit(loan.id, fields);
@@ -163,6 +223,7 @@ function LoanFields({ direction, draft, loan, loans, onClose, onSaved }: { direc
           onChange={(event) => {
             setAmount(event.target.value);
             setError(false);
+            resplit();
           }}
           inputMode="numeric"
           placeholder="50 000"
@@ -178,17 +239,150 @@ function LoanFields({ direction, draft, loan, loans, onClose, onSaved }: { direc
           <input type="date" value={day} max={today} onChange={(event) => setDay(event.target.value || today)} aria-label={t("loans.form.date")} />
         </div>
       </div>
-      <div className={styles.field}>
-        <span>{t("loans.form.due")}</span>
-        <div className={styles.chips}>
-          {(["none", "week", "month", "pick"] as const).map((choice) => (
-            <button key={choice} type="button" className={styles.chip} data-on={due === choice || undefined} onClick={() => setDue(choice)}>
-              {t(`loans.form.dueChoices.${choice}`)}
-            </button>
-          ))}
+      <label className={styles.toggle}>
+        <input
+          type="checkbox"
+          checked={withInterest}
+          onChange={(event) => {
+            setWithInterest(event.target.checked);
+            resplit();
+          }}
+        />
+        {t("loans.form.interest")}
+      </label>
+      {withInterest && (
+        <div className={styles.group}>
+          <div className={styles.chips}>
+            {(["fixed", "percent"] as const).map((kind) => (
+              <button
+                key={kind}
+                type="button"
+                className={styles.chip}
+                data-on={interestKind === kind || undefined}
+                onClick={() => {
+                  setInterestKind(kind);
+                  resplit();
+                }}
+              >
+                {t(`loans.form.interestKinds.${kind}`)}
+              </button>
+            ))}
+          </div>
+          <label className={styles.field}>
+            <span>{interestKind === "fixed" ? t("loans.form.interestFixed") : t("loans.form.interestPercent")}</span>
+            <input
+              value={interestValue}
+              onChange={(event) => {
+                setInterestValue(event.target.value);
+                resplit();
+              }}
+              inputMode="decimal"
+              placeholder={interestKind === "fixed" ? "10 000" : "10"}
+            />
+          </label>
+          {total > 0 && (
+            <p className={styles.left} data-testid="loan-form-total">
+              {t("loans.form.totalDue", { amount: loanMoney(total, locale) })}
+            </p>
+          )}
         </div>
-        {due === "pick" && <input type="date" value={dueDay} onChange={(event) => setDueDay(event.target.value)} aria-label={t("loans.form.dueDay")} />}
-      </div>
+      )}
+      <label className={styles.toggle}>
+        <input
+          type="checkbox"
+          checked={split}
+          onChange={(event) => {
+            setSplit(event.target.checked);
+            resplit();
+          }}
+        />
+        {t("loans.form.split")}
+      </label>
+      {split && (
+        <div className={styles.group}>
+          <label className={styles.field}>
+            <span>{t("loans.form.times")}</span>
+            <input
+              value={times}
+              onChange={(event) => {
+                setTimes(event.target.value);
+                resplit();
+              }}
+              inputMode="numeric"
+              placeholder="3"
+            />
+          </label>
+          <div className={styles.field}>
+            <span>{t("loans.form.frequency")}</span>
+            <div className={styles.chips}>
+              {(["week", "month"] as const).map((choice) => (
+                <button
+                  key={choice}
+                  type="button"
+                  className={styles.chip}
+                  data-on={frequency === choice || undefined}
+                  onClick={() => {
+                    setFrequency(choice);
+                    resplit();
+                  }}
+                >
+                  {t(`loans.form.frequencies.${choice}`)}
+                </button>
+              ))}
+            </div>
+          </div>
+          <label className={styles.field}>
+            <span>{t("loans.form.firstDue")}</span>
+            <input
+              type="date"
+              value={firstDay}
+              onChange={(event) => {
+                setFirstDay(event.target.value);
+                resplit();
+              }}
+            />
+          </label>
+          {schedule.length > 0 && (
+            <div className={styles.field}>
+              <span>{t("loans.form.installments")}</span>
+              <ul className={styles.installments}>
+                {schedule.map((item, index) => (
+                  <li key={item.id}>
+                    <span>{formatDate(item.dueAt, locale)}</span>
+                    <input
+                      value={parts[index] ?? String(item.amountMga)}
+                      onChange={(event) => {
+                        setParts({ ...parts, [index]: event.target.value });
+                        setMismatch(false);
+                      }}
+                      inputMode="numeric"
+                      aria-label={t("loans.form.installmentLabel", { date: formatDate(item.dueAt, locale) })}
+                    />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {mismatch && (
+            <p className={styles.error} role="alert">
+              {t("loans.form.scheduleMismatch", { sum: loanMoney(scheduleSum, locale), total: loanMoney(total, locale) })}
+            </p>
+          )}
+        </div>
+      )}
+      {!split && (
+        <div className={styles.field}>
+          <span>{t("loans.form.due")}</span>
+          <div className={styles.chips}>
+            {(["none", "week", "month", "pick"] as const).map((choice) => (
+              <button key={choice} type="button" className={styles.chip} data-on={due === choice || undefined} onClick={() => setDue(choice)}>
+                {t(`loans.form.dueChoices.${choice}`)}
+              </button>
+            ))}
+          </div>
+          {due === "pick" && <input type="date" value={dueDay} onChange={(event) => setDueDay(event.target.value)} aria-label={t("loans.form.dueDay")} />}
+        </div>
+      )}
       <label className={styles.field}>
         <span>{t("loans.form.phone")}</span>
         <input value={phone} onChange={(event) => setPhone(event.target.value)} inputMode="tel" type="tel" placeholder="034 12 345 67" maxLength={24} />

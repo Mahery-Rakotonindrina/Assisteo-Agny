@@ -1991,7 +1991,26 @@
       "note": "Note (facultatif)",
       "notePlaceholder": "pour l’écolage",
       "save": "Enregistrer",
-      "missing": "Écris le nom de la personne et le montant."
+      "missing": "Écris le nom de la personne et le montant.",
+      "split": "Rembourser en plusieurs fois",
+      "times": "Combien de fois ?",
+      "frequency": "Fréquence",
+      "frequencies": {
+        "week": "Chaque semaine",
+        "month": "Chaque mois"
+      },
+      "firstDue": "1re échéance",
+      "installments": "Les échéances (tu peux changer les montants)",
+      "installmentLabel": "Montant de l’échéance du {date}",
+      "scheduleMismatch": "Les échéances font {sum}, mais il faut rendre {total}.",
+      "interest": "Intérêts ou frais convenus",
+      "interestKinds": {
+        "fixed": "En Ar",
+        "percent": "En %"
+      },
+      "interestFixed": "Intérêts ou frais (Ar)",
+      "interestPercent": "Intérêts (% du montant)",
+      "totalDue": "À rendre en tout : {amount}"
     },
     "saved": {
       "lent": "C’est noté : {person} te doit {amount}.",
@@ -2026,7 +2045,24 @@
       "whatsapp": "Relancer sur WhatsApp",
       "copy": "Copier le message",
       "copied": "Message copié : colle-le dans WhatsApp ou un SMS.",
-      "copyFailed": "Impossible de copier le message."
+      "copyFailed": "Impossible de copier le message.",
+      "principal": {
+        "lent": "Prêté {amount}",
+        "borrowed": "Emprunté {amount}"
+      },
+      "interest": "Intérêts {amount}",
+      "total": "À rendre {amount}",
+      "schedule": "Échéancier",
+      "installment": "{amount} le {date}",
+      "installmentLeft": "reste {amount}",
+      "installmentStatus": {
+        "paid": "Payée",
+        "partial": "En partie",
+        "upcoming": "À venir",
+        "late": "En retard"
+      },
+      "ack": "Reconnaissance de dette (PDF)",
+      "export": "Exporter"
     },
     "repay": {
       "title": {
@@ -2041,6 +2077,104 @@
     "reminder": {
       "message": "Bonjour {name}, petit rappel pour les {amount} que je t’ai prêtés. Dis-moi quand tu peux me les rendre. Merci !",
       "messageDue": "Bonjour {name}, petit rappel pour les {amount} que je t’ai prêtés, à rendre le {date}. Dis-moi quand tu peux me les rendre. Merci !"
+    },
+    "nextDue": "Prochaine échéance : {amount} le {date}",
+    "ack": {
+      "title": "Reconnaissance de dette",
+      "owe": "Je soussigné(e) {debtor}, reconnais devoir à {creditor} la somme de {words} ({amount}).",
+      "withInterest": "Cette somme comprend {amount} prêtés le {date}, et {interest} d’intérêts ou de frais convenus.",
+      "lentOn": "Cette somme m’a été prêtée le {date}.",
+      "schedule": "Je m’engage à la rembourser en {count} fois, aux dates suivantes :",
+      "dueOn": "Je m’engage à la rembourser au plus tard le {date}.",
+      "noDue": "Je m’engage à la rembourser.",
+      "alreadyPaid": "À ce jour, {paid} ont déjà été remboursés ; il reste {left} à rembourser.",
+      "installment": "{amount} au plus tard le {date}",
+      "signedAt": "Fait à {place}, le {date}.",
+      "signDebtor": "Signature de {name}, précédée de « Lu et approuvé »",
+      "signCreditor": "Signature de {name}",
+      "file": "reconnaissance-de-dette",
+      "me": {
+        "lent": "Ton nom (celui qui prête)",
+        "borrowed": "Ton nom (celui qui emprunte)"
+      },
+      "place": "Lieu (facultatif)",
+      "placePlaceholder": "Antananarivo",
+      "hint": "Imprime-le ou envoie-le, puis signez-le tous les deux.",
+      "make": "Créer le PDF"
+    },
+    "export": {
+      "button": "Exporter (Excel, PDF)",
+      "sheetTitle": "Exporter mes prêts",
+      "sheetTitlePerson": "Exporter les prêts avec {name}",
+      "excel": "Excel",
+      "excelHint": "Un tableau : chaque prêt, puis un résumé par personne.",
+      "pdf": "PDF",
+      "pdfHint": "Un récapitulatif par personne, facile à envoyer.",
+      "working": "Création du fichier…",
+      "downloaded": "Fichier téléchargé",
+      "failed": "Le fichier n’a pas pu être créé. Réessaie.",
+      "title": "Mes prêts",
+      "titlePerson": "Prêts avec {name}",
+      "exportedOn": "Exporté le {date}",
+      "file": "prets",
+      "line": "{date} · {total} · reste {left} · {status}",
+      "columns": {
+        "person": "Personne",
+        "direction": "Sens",
+        "at": "Date",
+        "amountMga": "Montant",
+        "interestMga": "Intérêts",
+        "totalMga": "Total à rendre",
+        "paidMga": "Remboursé",
+        "remainingMga": "Reste",
+        "dueAt": "Échéance",
+        "status": "État",
+        "note": "Note",
+        "loans": "Prêts",
+        "lateMga": "En retard"
+      },
+      "status": {
+        "open": "En cours",
+        "late": "En retard",
+        "repaid": "Remboursé"
+      },
+      "sheetLoansBy": {
+        "lent": "On me doit",
+        "borrowed": "Je dois"
+      },
+      "sheetPeopleBy": {
+        "lent": "Par personne (on me doit)",
+        "borrowed": "Par personne (je dois)"
+      },
+      "totalBy": {
+        "lent": "Total on me doit",
+        "borrowed": "Total je dois"
+      }
+    },
+    "stats": {
+      "title": "En chiffres ({year})",
+      "total": {
+        "lent": "Prêté",
+        "borrowed": "Emprunté"
+      },
+      "paid": {
+        "lent": "On t’a rendu",
+        "borrowed": "Tu as rendu"
+      },
+      "remaining": {
+        "lent": "Encore dû",
+        "borrowed": "Reste à rendre"
+      },
+      "count": "Nombre de prêts",
+      "averageDays": "Délai moyen de remboursement",
+      "days": "{count} jours",
+      "dayOne": "1 jour",
+      "noneYet": "Pas encore",
+      "late": {
+        "lent": "Les plus en retard",
+        "borrowed": "Là où tu es le plus en retard"
+      },
+      "empty": "Aucun prêt cette année."
     }
   },
   "garage": {

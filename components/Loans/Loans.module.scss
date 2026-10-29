@@ -480,3 +480,147 @@
   padding: 0.85rem 1.25rem calc(1rem + var(--safe-bottom));
   background: linear-gradient(to top, var(--bg-elevated) 70%, transparent);
 }
+
+// ---- Schedule, interest, exports, figures --------------------------------------------
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 600;
+  font-size: 0.92rem;
+
+  input {
+    width: 1.15rem;
+    height: 1.15rem;
+    accent-color: var(--accent-mark);
+  }
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.8rem 0.9rem;
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--border);
+}
+
+.installments {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  li > span {
+    flex: 0 0 7.5rem;
+    font-size: 0.86rem;
+    color: var(--text-muted);
+  }
+
+  input {
+    flex: 1;
+    height: 2.4rem;
+  }
+}
+
+.schedule {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.86rem;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  li > span:first-child {
+    flex: 1;
+    min-width: 0;
+  }
+
+  small {
+    color: var(--text-muted);
+  }
+}
+
+.state {
+  flex-shrink: 0;
+  padding: 0.1rem 0.5rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.74rem;
+  font-weight: 700;
+  background: var(--surface-strong);
+  color: var(--text-muted);
+
+  &[data-status="paid"] {
+    color: var(--text);
+  }
+
+  &[data-status="late"] {
+    color: var(--danger);
+    background: color-mix(in srgb, var(--danger) 14%, transparent);
+  }
+}
+
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+
+  small {
+    display: block;
+    margin-top: -0.3rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+}
+
+.stats {
+  @include card;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem 1rem;
+  padding: 0.9rem 1rem;
+  border-radius: var(--radius-md);
+
+  div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+  }
+
+  span {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  strong {
+    font-variant-numeric: tabular-nums;
+  }
+
+  ol {
+    grid-column: 1 / -1;
+    margin: 0;
+    padding-left: 1.2rem;
+    font-size: 0.9rem;
+  }
+}
+
+.statsWide {
+  grid-column: 1 / -1;
+}
