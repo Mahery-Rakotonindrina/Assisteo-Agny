@@ -442,6 +442,50 @@
     "useOwnKey": "Utiliser ma clé IA"
   },
   "admin": {
+    "migrationNeeded": "Colle d’abord la migration 0011 dans Supabase (SQL Editor) : sans elle, ce réglage ne peut pas être gardé.",
+    "card": {
+      "quotaFallback": "Plafond de secours (aucun nombre réglé)",
+      "open": "Fiche",
+      "features": "Ses fonctions",
+      "quotas": "Ses quotas",
+      "origins": {
+        "plan": "Offre {plan}",
+        "added": "Ajouté à la main",
+        "removed": "Retiré à la main",
+        "grant": "Offert jusqu’au {date}",
+        "test": "En test",
+        "testOut": "En test, pas pour ce compte",
+        "off": "Coupé pour tout le monde",
+        "missing": "Manque : {list}",
+        "notInPlan": "Pas dans l’offre {plan}"
+      },
+      "quotaPlan": "Offre {plan}",
+      "quotaOwn": "Réglé à la main",
+      "unlimited": "Sans limite",
+      "freePlan": "Sans abonnement : seules les fonctions offertes s’ajoutent à l’offre Gratuit.",
+      "needsMigration": "Pour offrir une fonction ou régler un abonné à part, colle d’abord la migration 0011 dans Supabase.",
+      "offer": "Offrir une fonction",
+      "feature": "La fonction",
+      "duration": "Pour combien de temps",
+      "durations": {
+        "week": "7 jours",
+        "month": "30 jours",
+        "date": "Jusqu’au…"
+      },
+      "lastDay": "Dernier jour",
+      "note": "Note",
+      "notePlaceholder": "Ex. Essai demandé sur WhatsApp",
+      "give": "Offrir",
+      "given": "Fonction offerte.",
+      "deepNeedsLimit": "Ce compte n’a pas de nombre d’analyses approfondies par mois : règle-le d’abord sur son abonnement (jamais sur Gratuit).",
+      "offers": "Fonctions offertes",
+      "none": "Aucune pour l’instant.",
+      "running": "En cours, jusqu’au {date}",
+      "ended": "Fini le {date}",
+      "givenOn": "Offert le {date}",
+      "stop": "Arrêter maintenant",
+      "stopped": "Offre arrêtée."
+    },
     "title": "Administration",
     "subtitle": "Réglages du serveur, appliqués immédiatement à toutes les apps.",
     "token": "Jeton d’administration",
@@ -487,6 +531,15 @@
       "noFeedback": "Pas encore d’avis."
     },
     "subs": {
+      "own": {
+        "title": "Fonctionnalités et quotas",
+        "hint": "Cochées : celles de l’offre. Change-les pour cet abonné seulement ; le reste suit l’offre, même si elle change.",
+        "byHand": "à la main",
+        "quotas": "Quotas",
+        "quotasHint": "Préremplis avec ceux de l’offre. 0 = sans limite.",
+        "reset": "Revenir à l’offre",
+        "deepNeedsLimit": "L’analyse approfondie a besoin d’un nombre par mois ici (0 voudrait dire sans limite, avec l’IA la plus chère)."
+      },
       "title": "Abonnés",
       "subtitle": "Le paiement se fait hors de l’app : note ici qui a payé quelle offre, et pour combien de temps.",
       "disabled": "Les comptes ne sont pas configurés sur le serveur.",
@@ -700,6 +753,9 @@
       "github": "GitHub (nouvel APK)",
       "more": "Voir {count} de plus",
       "actions": {
+        "feature_keep": "Offre changée pour les nouveaux seulement",
+        "feature_grant": "Fonction offerte",
+        "feature_grant_stop": "Fonction offerte arrêtée",
         "login": "Connexion",
         "subscription_add": "Abonnement ajouté",
         "subscription_edit": "Abonnement modifié",
@@ -791,6 +847,12 @@
       "deleted": "Code supprimé"
     },
     "features": {
+      "applyTitle": "À qui ça s’applique",
+      "applyAll": "Tous les abonnés actifs",
+      "applyAllHint": "Comme avant : chacun suit son offre.",
+      "applyNew": "Seulement les nouveaux abonnements et renouvellements",
+      "applyNewHint": "Les abonnés actifs touchés ({count}) gardent leurs droits actuels jusqu’à leur renouvellement.",
+      "kept": "{count} abonnés actifs gardent leurs droits actuels.",
       "title": "Fonctionnalités par offre",
       "subtitle": "Coche ce que chaque offre comprend. Les apps suivent sans nouvelle version, sauf l’APK déjà installé (voir plus bas). Les réglages de départ sont ceux d’aujourd’hui.",
       "apkHint": "L’APK Android déjà installé garde l’ancienne échelle pour ses menus et ses étiquettes jusqu’à sa prochaine version. Le serveur, lui, applique tout de suite tes réglages.",
@@ -1287,6 +1349,7 @@
     "costsReadOnly": "Coût total gardé : {amount}. Ton offre ne comprend plus les coûts des colis : tu ne peux plus les modifier."
   },
   "plans": {
+    "offered": "{name} offert jusqu’au {date}",
     "names": {
       "free": "Gratuit",
       "lite": "Lite",

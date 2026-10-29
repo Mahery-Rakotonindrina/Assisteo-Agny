@@ -139,21 +139,73 @@ export type FeatureInput = {
   /** The account's e-mail, for the testers; null when signed out. */
   email?: string | null;
   config: FeatureSettings;
-  // Lot B: the subscription's own list, and temporary access, go here.
-  /** Added for this account alone (its subscription, a temporary access). */
+  /** The running subscription's own features (a difference from its plan); none: the plan as it is. */
+  subscription?: { features?: FeatureDiff | null } | null;
+  /** Features offered for a while (Admin → an account's card): only those running at `now` count. */
+  grants?: ReadonlyArray<Pick<FeatureGrant, "feature" | "startsAt" | "endsAt">>;
+  now?: number;
+  /** Added for this account alone. */
   granted?: readonly PlanFeature[];
   /** Taken off for this account alone. */
   removed?: readonly PlanFeature[];
 };
 
+/** A subscription's own features: what it has on top of its plan, and what it goes without. */
+export type FeatureDiff = { add: PlanFeature[]; remove: PlanFeature[] };
+
+/** A subscription's own limits, each replacing its plan's (0 still means no limit). */
+export type QuotaOverrides = Partial<PlanLimits>;
+export const quotaKeys = ["scans", "questionsPerDay", "parcels", "deepPerMonth"] as const satisfies ReadonlyArray<keyof PlanLimits>;
+
+/** A feature offered to an e-mail for a while, whatever its plan (supabase/migrations/0011). */
+export type FeatureGrant = {
+  id: string;
+  email: string;
+  feature: PlanFeature;
+  /** ISO dates; `endsAt` is exclusive and always set: an offer stops by itself. */
+  startsAt: string;
+  endsAt: string;
+  note: string | null;
+  createdBy: string | null;
+  createdAt: string;
+};
+
+/** The offered features running at `now`, each with its latest end. */
+export function runningGrants(grants: FeatureInput["grants"] = [], now = Date.now()): Map<PlanFeature, string> {
+  const running = new Map<PlanFeature, string>();
+  for (const grant of grants) {
+    if (time(grant.startsAt) > now || time(grant.endsAt) <= now) continue;
+    const known = running.get(grant.feature);
+    if (!known || time(grant.endsAt) > time(known)) running.set(grant.feature, grant.endsAt);
+  }
+  return running;
+}
+
+/** The features an account would have by its plan and its own settings, before the states and the needs. */
+function ownFeatures({ plan, config, subscription, grants, now, granted = [], removed = [] }: FeatureInput): Set<PlanFeature> {
+  const add = subscription?.features?.add ?? [];
+  const remove = subscription?.features?.remove ?? [];
+  const running = runningGrants(grants, now);
+  return new Set(
+    planFeatures.filter((feature) => {
+      if (running.has(feature)) return true;
+      const own = config.features[plan]?.includes(feature) || add.includes(feature) || granted.includes(feature);
+      return own && !remove.includes(feature) && !removed.includes(feature);
+    }),
+  );
+}
+
 /**
- * What an account may use right now: its plan's features (with its own
- * additions and removals), then the features in test (testers and
- * administrators only) and the switched-off ones (nobody), then the
- * features whose needs are missing.
+ * What an account may use right now: its plan's features, with its
+ * subscription's own additions and removals and the features offered to it
+ * for a while; then the features in test (testers and administrators only,
+ * whatever was added or offered) and the switched-off ones (nobody), then
+ * the features whose needs are missing.
  */
-export function effectiveFeatures({ plan, email, config, granted = [], removed = [] }: FeatureInput): Set<PlanFeature> {
+export function effectiveFeatures(input: FeatureInput): Set<PlanFeature> {
+  const { plan, email, config } = input;
   const mail = email?.trim().toLowerCase() || null;
+  const own = ownFeatures(input);
   const result = new Set<PlanFeature>();
   for (const feature of planFeatures) {
     const { mode, testers } = config.featureStatus[feature] ?? { mode: "on", testers: [] };
@@ -162,8 +214,7 @@ export function effectiveFeatures({ plan, email, config, granted = [], removed =
       if (isAdminPlan(plan) || (mail !== null && testers.includes(mail))) result.add(feature);
       continue;
     }
-    const own = config.features[plan]?.includes(feature) || granted.includes(feature);
-    if (own && !removed.includes(feature)) result.add(feature);
+    if (own.has(feature)) result.add(feature);
   }
   // Drop what lacks a need, until nothing changes (a need may itself be dropped).
   for (let changed = true; changed; ) {
@@ -176,6 +227,138 @@ export function effectiveFeatures({ plan, email, config, granted = [], removed =
     }
   }
   return result;
+}
+
+/** Why an account has a feature, or why not (Admin → an account's card). */
+export type FeatureOrigin =
+  /** Its plan has it. */
+  | { kind: "plan"; on: true }
+  /** Ticked on its subscription. */
+  | { kind: "added"; on: true }
+  /** Offered until `endsAt` (exclusive). */
+  | { kind: "grant"; on: true; endsAt: string }
+  /** In test: the testers and the administrators have it, nobody else. */
+  | { kind: "test"; on: boolean }
+  /** Switched off for everyone. */
+  | { kind: "off"; on: false }
+  /** Unticked on its subscription. */
+  | { kind: "removed"; on: false }
+  /** It would have it, but a feature it needs is missing. */
+  | { kind: "missing"; on: false; needs: PlanFeature[] }
+  /** Not in its plan. */
+  | { kind: "notInPlan"; on: false };
+
+export type FeatureLine = { feature: PlanFeature } & FeatureOrigin;
+
+/** Every feature with whether the account has it and why: the same reckoning as `effectiveFeatures`. */
+export function featureOrigins(input: FeatureInput): FeatureLine[] {
+  const effective = effectiveFeatures(input);
+  const { plan, config, subscription, grants, now } = input;
+  const planHas = (feature: PlanFeature) => Boolean(config.features[plan]?.includes(feature));
+  const add = subscription?.features?.add ?? [];
+  const remove = subscription?.features?.remove ?? [];
+  const running = runningGrants(grants, now);
+  const own = ownFeatures(input);
+  return planFeatures.map((feature): FeatureLine => {
+    const mode = config.featureStatus[feature]?.mode ?? "on";
+    if (mode === "off") return { feature, kind: "off", on: false };
+    if (mode === "test") return { feature, kind: "test", on: effective.has(feature) };
+    if (effective.has(feature)) {
+      const kept = !remove.includes(feature);
+      if (planHas(feature) && kept) return { feature, kind: "plan", on: true };
+      if (add.includes(feature) && kept) return { feature, kind: "added", on: true };
+      const endsAt = running.get(feature);
+      return endsAt ? { feature, kind: "grant", on: true, endsAt } : { feature, kind: "plan", on: true };
+    }
+    if (own.has(feature)) return { feature, kind: "missing", on: false, needs: (featureNeeds[feature] ?? []).filter((need) => !effective.has(need)) };
+    if (remove.includes(feature) && planHas(feature)) return { feature, kind: "removed", on: false };
+    return { feature, kind: "notInPlan", on: false };
+  });
+}
+
+/** A difference kept only where it differs: what the plan has is not added, what it lacks is not removed; null when nothing is left. */
+export function normalizeDiff(planList: readonly PlanFeature[], diff: FeatureDiff | null | undefined): FeatureDiff | null {
+  if (!diff) return null;
+  const add = planFeatures.filter((feature) => diff.add.includes(feature) && !planList.includes(feature));
+  const remove = planFeatures.filter((feature) => diff.remove.includes(feature) && planList.includes(feature));
+  return add.length > 0 || remove.length > 0 ? { add, remove } : null;
+}
+
+/** The features a subscription has by its plan and its own difference (before the states and the needs). */
+export function subscriptionFeatureList(planList: readonly PlanFeature[], diff: FeatureDiff | null | undefined): PlanFeature[] {
+  return planFeatures.filter((feature) => (planList.includes(feature) || Boolean(diff?.add.includes(feature))) && !diff?.remove.includes(feature));
+}
+
+/** The difference that gives `wanted` on top of `planList`; null when they are the same. */
+export function diffFor(planList: readonly PlanFeature[], wanted: readonly PlanFeature[]): FeatureDiff | null {
+  return normalizeDiff(planList, { add: wanted.filter((feature) => !planList.includes(feature)), remove: planList.filter((feature) => !wanted.includes(feature)) });
+}
+
+/**
+ * "Only new subscriptions and renewals": the difference that keeps what a
+ * running subscription has now (its plan by `before`, its own difference)
+ * once its plan becomes `after`; null when that is the plan again.
+ */
+export function keptDiff(before: readonly PlanFeature[], after: readonly PlanFeature[], diff: FeatureDiff | null | undefined): FeatureDiff | null {
+  return diffFor(after, subscriptionFeatureList(before, diff));
+}
+
+/** Own limits kept only where they differ from the plan's; null when none is left. */
+export function normalizeQuotas(base: PlanLimits, quotas: QuotaOverrides | null | undefined): QuotaOverrides | null {
+  if (!quotas) return null;
+  const kept: QuotaOverrides = {};
+  for (const key of quotaKeys) {
+    const value = quotas[key];
+    if (typeof value === "number" && Number.isFinite(value) && value !== base[key]) kept[key] = value;
+  }
+  return Object.keys(kept).length > 0 ? kept : null;
+}
+
+/** The plan's limits with a subscription's own over them. The Admin plan stays without limits. */
+export function withQuotas(plan: PlanId, base: PlanLimits, quotas: QuotaOverrides | null | undefined): PlanLimits {
+  if (plan === "unlimited") return base;
+  return { ...base, ...normalizeQuotas(base, quotas) };
+}
+
+/** The deep analyses a month when none is set: the smallest count of the paid plans, else 5. */
+export function deepFallbackLimit(offers: Record<SoldPlanId, Pick<PlanLimits, "deepPerMonth">>): number {
+  const counts = soldPlans.map((plan) => offers[plan].deepPerMonth).filter((count) => count > 0);
+  return counts.length > 0 ? Math.min(...counts) : 5;
+}
+
+/**
+ * The emergency cap: an account other than Admin that may use deep analyses
+ * (its plan, its own, an offer) with no monthly count (0 = no limit, on the
+ * costliest model) gets `deepFallbackLimit` instead. Checked whenever the
+ * limits are reckoned, so a renewal or "back to the plan" never leaves an
+ * offered access without a limit.
+ */
+export function withDeepFallback(
+  plan: PlanId,
+  limits: PlanLimits,
+  features: ReadonlySet<PlanFeature> | undefined,
+  offers: Record<SoldPlanId, Pick<PlanLimits, "deepPerMonth">>,
+): { limits: PlanLimits; fallback: boolean } {
+  if (plan === "unlimited" || !features?.has("deepAnalysis") || limits.deepPerMonth > 0) return { limits, fallback: false };
+  return { limits: { ...limits, deepPerMonth: deepFallbackLimit(offers) }, fallback: true };
+}
+
+/**
+ * Deep analyses on a subscription without a monthly count (0 = no limit),
+ * because of its own settings (deep analyses ticked on it, or its count set
+ * to 0): refused when saving, like `deepWithoutLimit` for a plan. Admin aside.
+ */
+export function subscriptionDeepWithoutLimit(
+  plan: PaidPlanId,
+  config: Pick<PlansConfig, "features" | "offers">,
+  diff: FeatureDiff | null | undefined,
+  quotas: QuotaOverrides | null | undefined,
+): boolean {
+  if (plan === "unlimited") return false;
+  const deep = withQuotas(plan, config.offers[plan], quotas).deepPerMonth;
+  const has = subscriptionFeatureList(config.features[plan], diff).includes("deepAnalysis");
+  const own = Boolean(diff?.add.includes("deepAnalysis")) || quotas?.deepPerMonth === 0;
+  return has && deep === 0 && own;
 }
 
 /** The features anyone on `plan` gets (no tester, nothing of their own): what the public pages announce. */
@@ -235,6 +418,11 @@ export type Subscription = {
   paymentRef: string | null;
   note: string | null;
   createdAt: string;
+  // Missing before migration 0011: the plan as it is.
+  /** Its own features, as a difference from its plan; null: the plan's. */
+  features?: FeatureDiff | null;
+  /** Its own limits; null: the plan's. */
+  quotas?: QuotaOverrides | null;
 };
 
 export type ActivePlan = {
@@ -267,6 +455,16 @@ export function activePlan(rows: Array<Pick<Subscription, "plan" | "startsAt" | 
     }
   }
   return { plan, endsAt: end === Infinity ? null : end };
+}
+
+/**
+ * The subscription whose own settings apply at `now`: among those running
+ * at the plan the e-mail has, the latest started (a renewal, once begun).
+ */
+export function activeSubscription<T extends Pick<Subscription, "plan" | "startsAt" | "endsAt">>(rows: T[], now: number): T | null {
+  const { plan } = activePlan(rows, now);
+  if (plan === "free") return null;
+  return rows.filter((row) => row.plan === plan && isActive(row, now)).sort((a, b) => time(b.startsAt) - time(a.startsAt))[0] ?? null;
 }
 
 export const durations = ["week", "month", "quarter", "half", "year", "none"] as const;
@@ -347,6 +545,8 @@ export type PlanResponse = {
   featureFrom?: Partial<Record<PlanFeature, PlanId | null>>;
   /** What the account paid for its subscriptions (amount known only), for "Mes dépenses". */
   payments?: SubscriptionPayment[];
+  /** The features offered to this account for a while, running now (Admin → its card). */
+  grants?: Array<{ feature: PlanFeature; endsAt: number }>;
 };
 
 export type SubscriptionPayment = { id: string; plan: PaidPlanId; amountMga: number; paidAt: number };

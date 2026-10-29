@@ -1,0 +1,78 @@
+@use "../../styles/mixins" as *;
+
+.email {
+  overflow-wrap: anywhere;
+}
+
+.loading {
+  min-height: 12rem;
+}
+
+.plan {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.7rem;
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text-subtle);
+
+    &[data-on] {
+      color: var(--text);
+
+      > svg {
+        color: var(--accent-text);
+      }
+    }
+
+    // What differs from the plan stands out: set by hand, offered, cut.
+    &[data-kind="added"],
+    &[data-kind="grant"],
+    &[data-kind="removed"],
+    &[data-kind="off"],
+    &[data-kind="missing"] {
+      small {
+        color: var(--accent-text);
+        font-weight: 600;
+      }
+    }
+
+    strong {
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+
+    small {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      text-align: end;
+    }
+  }
+}
+
+.value {
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.none {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}

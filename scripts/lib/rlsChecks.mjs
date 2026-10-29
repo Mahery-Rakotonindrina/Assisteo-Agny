@@ -1,5 +1,5 @@
 // The Row Level Security of the shared budget (migration 0009_households.sql)
-// and of the loans (0010_loans.sql),
+// of the loans (0010_loans.sql) and of the features offered for a while (0011),
 // tested as Supabase runs it: each query as the "authenticated" role with a
 // user id, or as the server ("service_role"). `client.query(text, params)`
 // must return { rows }. Returns the problems found (empty: all good).
@@ -239,6 +239,21 @@ export async function runRlsChecks(client) {
       return /permission denied/.test(error.message) ? null : error.message;
     }
   });
+  // ---- Features offered for a while (migration 0011): the server's alone ---------
+  await server("insert into public.feature_grants (email, feature, ends_at, created_by) values ('anna.rabe@example.com', 'garage', now() + interval '7 days', 'owner')");
+  const hidden = async (label, run) =>
+    check(label, async () => {
+      try {
+        return (await run()).length ? "rows visible" : null;
+      } catch (error) {
+        return /permission denied/.test(error.message) ? null : error.message;
+      }
+    });
+  await hidden("a visitor reads no offered features", () => tryVisitor("select 1 from public.feature_grants"));
+  await hidden("an account doesn't read its own offered features", () => tryUser(anna, "select 1 from public.feature_grants"));
+  await refused("a visitor can't offer a feature", () => tryVisitor("insert into public.feature_grants (email, feature, ends_at) values ('x@example.com', 'garage', now() + interval '1 day')"), /row-level security|permission denied/);
+  await refused("an account can't offer itself a feature", () => tryUser(ben, "insert into public.feature_grants (email, feature, ends_at) values ('ben@example.com', 'garage', now() + interval '1 day')"), /row-level security|permission denied/);
+  await refused("an offer always ends after it starts", () => server("insert into public.feature_grants (email, feature, starts_at, ends_at) values ('x@example.com', 'garage', now(), now())"), /check constraint/);
   await check("the owner gets their shared expenses back too", async () => ((await count(anna, "select 1 from public.expenses where id = 'shared-1' and deleted_at is null")) ? null : "not given back"));
   return problems;
 }
