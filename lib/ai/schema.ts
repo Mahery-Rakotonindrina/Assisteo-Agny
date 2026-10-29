@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { expenseCategories } from "@/lib/expenses";
+import { expenseCategories, incomeKinds } from "@/lib/expenses";
 
 // No eval-based fast paths: the web CSP forbids eval, and Zod's probe for it
 // would otherwise log a violation on every page.
@@ -446,6 +446,66 @@ export const ExpenseSummarySchema = z.object({
 export type ExpenseSummary = z.infer<typeof ExpenseSummarySchema>;
 
 export type ExpenseSummaryResponse = { summary: ExpenseSummary; model: string; demo: boolean };
+
+// ---- "Mes dépenses": a Mobile Money or bank statement ------------------------
+// Screenshots of the history or the statement's PDF, read once: the images are
+// neither kept on the server nor in the scans' history.
+
+/** Screenshots of one statement sent at once (each counts as a scan). */
+export const MAX_STATEMENT_PAGES = 10;
+/** A statement's PDF: about 3 MB, so the request stays under the host's 4.5 MB. */
+export const MAX_STATEMENT_PDF_BASE64_LENGTH = Math.floor((3 * 1024 * 1024 * 4) / 3);
+
+export const StatementRequestSchema = z
+  .strictObject({
+    locale: z.enum(["fr", "en"]),
+    pages: z.array(PageSchema).min(1).max(MAX_STATEMENT_PAGES).optional(),
+    pdf: z.string().min(1).max(MAX_STATEMENT_PDF_BASE64_LENGTH).optional(),
+    /** The user's day (YYYY-MM-DD), for the "Aujourd'hui" and "Hier" of the histories. */
+    today: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/).optional(),
+  })
+  .refine((input) => Boolean(input.pages) !== Boolean(input.pdf), "Send either screenshots or one PDF.");
+export type StatementRequest = z.infer<typeof StatementRequestSchema>;
+
+export const statementKinds = ["mobile_money", "bank"] as const;
+/** Which way an operation moved this account's money. */
+export const statementSides = ["debit", "credit"] as const;
+
+export const StatementOperationSchema = z.object({
+  date: z.string().nullable().describe("The day of the operation, as YYYY-MM-DD; null if not shown."),
+  amount: z.number().describe("The amount moved, fees apart, as a positive plain number in the statement's currency."),
+  direction: z
+    .enum(receiptDirections)
+    .describe(
+      "out when the user paid or sent money to someone else (a payment, a transfer sent, phone credit, a bill); in when the user received money from someone else; own when the money only moved between the user's own pockets: cash withdrawn (\"Retrait\"), cash deposited on their own account (\"Dépôt\"), a transfer between their own accounts.",
+    ),
+  side: z.enum(statementSides).describe("debit when the money left this account (a payment, a transfer sent, a withdrawal), credit when it came into it (money received, a deposit)."),
+  ownKind: z.enum(ownKinds).nullable().describe("Only when direction is own: withdrawal, deposit or transfer; null otherwise."),
+  counterparty: z.string().nullable().describe("The other side's name (merchant, person, bank): never a phone number or an account number; null if none."),
+  reference: z.string().nullable().describe("The transaction reference or ID exactly as printed; null if none."),
+  fees: z.number().nullable().describe("The fees of this operation shown apart, as a plain number; null if none."),
+  category: z
+    .enum(expenseCategories)
+    .nullable()
+    .describe("For out: the best budget category (market, jirama, rent, transport, phone, school, health, family, online, car, leisure, savings, other); null otherwise."),
+  incomeKind: z.enum(incomeKinds).nullable().describe("For in: salary, sales (a client paid), family (help from relatives) or other; null otherwise."),
+  balanceAfter: z.number().nullable().describe("The balance shown right after this operation, as a plain number; null if not shown."),
+});
+export type StatementOperation = z.infer<typeof StatementOperationSchema>;
+
+export const StatementSchema = z.object({
+  institution: z.string().nullable().describe("The operator or bank as named on the statement (\"MVola\", \"Orange Money\", \"BNI Madagascar\"…); null if unclear."),
+  kind: z.enum(statementKinds).nullable().describe("mobile_money for MVola, Orange Money or Airtel Money; bank for a bank; null if unclear."),
+  operator: z.enum(mobileMoneyOperators).nullable().describe("The Mobile Money operator: mvola, orange_money or airtel_money; null for a bank."),
+  currency: z.string().nullable().describe("ISO code of the amounts: MGA for ariary (Ar), EUR, USD…; null if not shown."),
+  periodStart: z.string().nullable().describe("The first day the statement covers, as YYYY-MM-DD; null if not shown."),
+  periodEnd: z.string().nullable().describe("The last day the statement covers, as YYYY-MM-DD; null if not shown."),
+  closingBalance: z.number().nullable().describe("The balance at the end of the statement (the most recent one shown); null if not shown."),
+  operations: z.array(StatementOperationSchema).describe("Every operation shown, each once, in the order printed."),
+});
+export type Statement = z.infer<typeof StatementSchema>;
+
+export type StatementResponse = { statement: Statement; model: string; demo: boolean; pages: number };
 
 export type AiProvider = "claude" | "gemini" | "demo";
 

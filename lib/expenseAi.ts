@@ -12,6 +12,7 @@ import {
   shiftMonth,
   type Budget,
   type ExpenseRecord,
+  type Income,
   type ManualExpense,
   type PaymentMethod,
   receiptKey,
@@ -62,6 +63,12 @@ export function receiptDraft(scan: Scan): Partial<ManualExpense> | null {
 export function receiptDuplicate(records: ExpenseRecord[], scan: Scan): ManualExpense | undefined {
   const reference = scan.analysis.document?.receipt?.reference ?? undefined;
   return byKind(records, "expense").find((record) => record.scanId === scan.id || sameReference(record.reference, reference));
+}
+
+/** The income imported from a statement with this receipt's reference (money received). */
+export function receiptIncomeDuplicate(records: ExpenseRecord[], scan: Scan): Income | undefined {
+  const reference = scan.analysis.document?.receipt?.reference ?? undefined;
+  return byKind(records, "income").find((record) => sameReference(record.reference, reference));
 }
 
 // ---- The month's review ------------------------------------------------------------------

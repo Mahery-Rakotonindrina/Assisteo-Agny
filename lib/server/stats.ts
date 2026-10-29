@@ -18,7 +18,7 @@ const devicesKey = (day: string) => `stats:${day}:devices`;
 export type StatsEvent =
   | { type: "scan"; mode: string; category: string; ownKey: boolean; durationMs: number }
   | { type: "question"; ownKey: boolean }
-  | { type: "error"; route: "analyze" | "ask" | "summary"; code: string }
+  | { type: "error"; route: "analyze" | "ask" | "summary" | "statement"; code: string }
   | { type: "feedback"; vote: "up" | "down"; category: string }
   /** Tokens spent on the server's AI key, per kind of call and model. */
   | { type: "ai"; kind: AiKind; model: string; inputTokens: number; outputTokens: number };
