@@ -4,11 +4,13 @@ import { AnalysisError } from "./errors";
 import {
   askSystemPrompt,
   buildLoanScanPrompt,
+  buildStatementPrompt,
   buildSummaryPrompt,
   buildUserPrompt,
   firstAskText,
   isReadTask,
   LOAN_SCAN_SYSTEM_PROMPT,
+  STATEMENT_SYSTEM_PROMPT,
   SUMMARY_SYSTEM_PROMPT,
   SYSTEM_PROMPT,
 } from "./prompt";
@@ -17,6 +19,7 @@ import {
   ExpenseSummarySchema,
   imagesOf,
   LoanReadingSchema,
+  StatementSchema,
   type Analysis,
   type AnalyzeRequest,
   type AskRequest,
@@ -25,6 +28,8 @@ import {
   type LoanReading,
   type LoanScanRequest,
   type PageImage,
+  type Statement,
+  type StatementRequest,
 } from "./schema";
 
 const imageBlock = (page: PageImage) => ({ type: "image" as const, source: { type: "base64" as const, media_type: page.mediaType, data: page.image } });
@@ -134,6 +139,40 @@ export async function summarizeWithClaude(input: ExpenseSummaryRequest, signal?:
     throw new AnalysisError("upstream_error", 502, `Unusable model output (stop_reason: ${response.stop_reason}).`);
   }
   return { summary: response.parsed_output, model: response.model, usage: claudeUsage(response.usage) };
+}
+
+/** "Mes dépenses": every operation of a statement (screenshots or a PDF), on the server's key. */
+export async function readStatementWithClaude(input: StatementRequest, signal?: AbortSignal): Promise<{ statement: Statement; model: string; usage?: AiUsage }> {
+  const model = CLAUDE_MODEL;
+  const files = input.pdf
+    ? [{ type: "document" as const, source: { type: "base64" as const, media_type: "application/pdf" as const, data: input.pdf } }]
+    : (input.pages ?? []).map(imageBlock);
+  let response;
+  try {
+    response = await getClient().beta.messages.parse(
+      {
+        model,
+        max_tokens: 32000,
+        ...(supportsFallbacks(model) && { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const }),
+        output_config: {
+          ...(supportsEffort(model) && { effort: "low" as const }),
+          format: betaZodOutputFormat(StatementSchema),
+        },
+        system: [{ type: "text", text: STATEMENT_SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
+        messages: [{ role: "user", content: [...files, { type: "text", text: buildStatementPrompt(input) }] }],
+      },
+      { signal },
+    );
+  } catch (error) {
+    throw toAnalysisError(error, model);
+  }
+  if (response.stop_reason === "refusal") {
+    throw new AnalysisError("refused", 422, response.stop_details?.explanation ?? "The model declined this statement.");
+  }
+  if (response.stop_reason === "max_tokens" || !response.parsed_output) {
+    throw new AnalysisError("upstream_error", 502, `Unusable model output (stop_reason: ${response.stop_reason}).`);
+  }
+  return { statement: response.parsed_output, model: response.model, usage: claudeUsage(response.usage) };
 }
 
 /** "Prêts": a debt acknowledgment read from its photo (low effort: a reading task). */

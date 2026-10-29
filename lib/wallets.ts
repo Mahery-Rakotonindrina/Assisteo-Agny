@@ -8,6 +8,7 @@ import {
   monthExpenses,
   monthIncomes,
   monthKey,
+  ownReceiptState,
   shiftMonth,
   type ExpenseOrigin,
   type ExpenseRecord,
@@ -53,7 +54,7 @@ export function primaryWallet(wallets: Wallet[]) {
 }
 
 /** A pocket of that type: the default one if it is, else the first. */
-function ofType(wallets: Wallet[], type: WalletType) {
+export function ofType(wallets: Wallet[], type: WalletType) {
   const matching = activeWallets(wallets).filter((wallet) => wallet.type === type);
   const primary = primaryWallet(wallets);
   return matching.find((wallet) => wallet.id === primary?.id) ?? matching[0];
@@ -179,6 +180,8 @@ export function scannedMoves(records: ExpenseRecord[], sources: SourceItem[], co
     const fees = sources.find((other) => other.feesOf === source.key)?.amountMga ?? 0;
     const amountMga = source.amountMga - fees;
     if (amountMga <= 0) continue;
+    // Imported from a statement already (same reference), or looking so: counted there.
+    if (ownReceiptState(source, records, fees)) continue;
     const start = known(context, context.picks.get(source.key));
     const arrival = known(context, context.picks.get(arrivalKey(source.key)));
     const account = receiptWallet(context.wallets, source)?.id;

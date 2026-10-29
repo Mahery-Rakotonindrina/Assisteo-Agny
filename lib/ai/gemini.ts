@@ -5,11 +5,13 @@ import { AnalysisError } from "./errors";
 import {
   askSystemPrompt,
   buildLoanScanPrompt,
+  buildStatementPrompt,
   buildSummaryPrompt,
   buildUserPrompt,
   firstAskText,
   isReadTask,
   LOAN_SCAN_SYSTEM_PROMPT,
+  STATEMENT_SYSTEM_PROMPT,
   SUMMARY_SYSTEM_PROMPT,
   SYSTEM_PROMPT,
 } from "./prompt";
@@ -18,6 +20,7 @@ import {
   ExpenseSummarySchema,
   imagesOf,
   LoanReadingSchema,
+  StatementSchema,
   type Analysis,
   type AnalyzeRequest,
   type AskRequest,
@@ -25,6 +28,8 @@ import {
   type ExpenseSummaryRequest,
   type LoanReading,
   type LoanScanRequest,
+  type Statement,
+  type StatementRequest,
 } from "./schema";
 
 // Free-tier friendly alternative to Claude (Google AI Studio key, no billing).
@@ -56,6 +61,7 @@ function canFallBack(error: unknown, signal?: AbortSignal) {
 const responseJsonSchema = { ...z.toJSONSchema(AnalysisSchema), $schema: undefined };
 const summaryJsonSchema = { ...z.toJSONSchema(ExpenseSummarySchema), $schema: undefined };
 const loanJsonSchema = { ...z.toJSONSchema(LoanReadingSchema), $schema: undefined };
+const statementJsonSchema = { ...z.toJSONSchema(StatementSchema), $schema: undefined };
 
 const blockedReasons = new Set<FinishReason | undefined>([
   FinishReason.SAFETY,
@@ -219,6 +225,45 @@ export async function summarizeWithGemini(input: ExpenseSummaryRequest, signal?:
       const parsed = ExpenseSummarySchema.safeParse(safeJson(response.text));
       if (!parsed.success) throw new AnalysisError("upstream_error", 502, `Unusable Gemini review (finishReason: ${finish}).`);
       return { summary: parsed.data, model: response.modelVersion ?? candidate, usage: geminiUsage(response.usageMetadata) };
+    } catch (error) {
+      lastError = error;
+      if (!canFallBack(error, signal)) break;
+    }
+  }
+  throw toAnalysisError(lastError);
+}
+
+/**
+ * "Mes dépenses": every operation of a statement, on Flash first (many small
+ * figures to read right), Flash-Lite when it is saturated. A PDF goes as it
+ * is: Gemini reads its pages itself.
+ */
+export async function readStatementWithGemini(input: StatementRequest, signal?: AbortSignal): Promise<{ statement: Statement; model: string; usage?: AiUsage }> {
+  const client = getClient();
+  const chain = [...new Set([process.env.GEMINI_STATEMENT_MODEL ?? GEMINI_MODEL, FALLBACK_MODEL])];
+  const files = input.pdf ? [createPartFromBase64(input.pdf, "application/pdf")] : (input.pages ?? []).map((page) => createPartFromBase64(page.image, page.mediaType));
+  let lastError: unknown;
+  for (const candidate of chain) {
+    try {
+      const response = await client.models.generateContent({
+        model: candidate,
+        contents: [...files, buildStatementPrompt(input)],
+        config: {
+          systemInstruction: STATEMENT_SYSTEM_PROMPT,
+          responseMimeType: "application/json",
+          responseJsonSchema: statementJsonSchema,
+          abortSignal: signal,
+          httpOptions: { timeout: DEEP_TIMEOUT_MS },
+          thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+        },
+      });
+      const finish = response.candidates?.[0]?.finishReason;
+      if (response.promptFeedback?.blockReason || blockedReasons.has(finish)) {
+        throw new AnalysisError("refused", 422, "Gemini blocked this statement.");
+      }
+      const parsed = StatementSchema.safeParse(safeJson(response.text));
+      if (!parsed.success) throw new AnalysisError("upstream_error", 502, `Unusable Gemini statement (finishReason: ${finish}).`);
+      return { statement: parsed.data, model: response.modelVersion ?? candidate, usage: geminiUsage(response.usageMetadata) };
     } catch (error) {
       lastError = error;
       if (!canFallBack(error, signal)) break;

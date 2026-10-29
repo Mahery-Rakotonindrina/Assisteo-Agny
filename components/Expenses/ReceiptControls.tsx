@@ -8,9 +8,10 @@ import { useExpenseSources } from "@/hooks/useExpenseSources";
 import { useHousehold, useHouseholdExpenses } from "@/hooks/useHousehold";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
-import { receiptDraft, receiptDuplicate } from "@/lib/expenseAi";
-import { byKind, keepKey, monthExpenses, monthIncomes, monthKey, receiptKey } from "@/lib/expenses";
+import { receiptDraft, receiptDuplicate, receiptIncomeDuplicate } from "@/lib/expenseAi";
+import { byKind, keepKey, monthExpenses, monthIncomes, monthKey, moveKeepKey, ownReceiptState, receiptKey } from "@/lib/expenses";
 import { isMine } from "@/lib/household";
+import { isStatementKey } from "@/lib/statement";
 import { formatAriary } from "@/lib/format";
 import { haptics } from "@/services/device";
 import { expenseStore } from "@/services/expenseStore";
@@ -56,6 +57,20 @@ export function ReceiptControls({ entry }: { entry: HistoryEntry }) {
   // The same transaction typed in already, personal or moved to the household.
   const mineShared = shared.filter((expense) => isMine(expense, snapshot?.userId ?? null));
   const duplicate = receiptDuplicate([...records, ...mineShared], entry);
+  // Imported from a statement already (same reference): only that line counts, like a second scan.
+  const imported = duplicate && isStatementKey(duplicate.sourceKey) ? duplicate : receiptIncomeDuplicate(records, entry);
+  if (imported)
+    return (
+      <p className={styles.receiptStatus} data-testid="receipt-status">
+        <Receipt size={15} />
+        <span>
+          {t("expenses.receipt.alreadyImported")} ·{" "}
+          <Link href={{ pathname: "/expenses", query: { month: monthKey(imported.at), tab: imported.kind === "income" ? "income" : "month", focus: `manual:${imported.id}` } }}>
+            {t("expenses.receipt.view")}
+          </Link>
+        </span>
+      </p>
+    );
   if (duplicate) {
     const sharedDuplicate = mineShared.some((expense) => expense.id === duplicate.id);
     return (
@@ -116,6 +131,31 @@ export function ReceiptControls({ entry }: { entry: HistoryEntry }) {
     </p>
   );
   const kept = byKind(records, "exclusion").some((record) => record.sourceKey === keepKey(key));
+  // A withdrawal or transfer imported from a statement already: only that move counts.
+  const moved = source.own && !kept ? ownReceiptState(source, records, fees?.amountMga ?? 0) : undefined;
+  if (moved === "imported")
+    return (
+      <p className={styles.receiptStatus} data-testid="receipt-status">
+        <ArrowLeftRight size={15} />
+        <span>
+          {t("expenses.receipt.alreadyImported")} · <Link href={{ pathname: "/expenses", query: { month } }}>{t("expenses.receipt.view")}</Link>
+        </span>
+      </p>
+    );
+  if (moved === "doubt")
+    return (
+      <div className={styles.panel}>
+        <p className={styles.receiptStatus} data-testid="receipt-status">
+          <ArrowLeftRight size={15} />
+          <span>{t("expenses.receipt.doubt")}</span>
+        </p>
+        <div className={styles.row}>
+          <Button variant="secondary" icon={<Check />} onClick={() => void expenseStore.setExcluded(moveKeepKey(key), true)}>
+            {t("expenses.keepAnyway")}
+          </Button>
+        </div>
+      </div>
+    );
   if (source.own && !kept)
     return (
       <div className={styles.panel}>

@@ -89,6 +89,9 @@ export type Converted = { currency?: ForeignCurrency; originalAmount?: number; r
 
 type Base = { id: string; createdAt: number; updatedAt: number; deletedAt?: number; dirty?: boolean };
 
+/** Imported from a statement (lib/statement.ts): which one, for the line's label. Older apps ignore it. */
+export type StatementTag = { name: string; from?: number; to?: number };
+
 export type ManualExpense = Base &
   Converted & {
     kind: "expense";
@@ -106,6 +109,8 @@ export type ManualExpense = Base &
     scanId?: string;
     /** The pocket it was paid from (lib/wallets.ts); none before pockets existed. `payment` stays filled for older apps. */
     wallet?: string;
+    /** Imported from a statement (its sourceKey is then "statement:…"). */
+    statement?: StatementTag;
   };
 
 export type Income = Base & {
@@ -120,6 +125,10 @@ export type Income = Base & {
   sourceKey?: string;
   /** The pocket it came into. */
   wallet?: string;
+  /** Imported from a statement (its sourceKey is then "statement:…"). */
+  statement?: StatementTag;
+  /** Its transaction reference (from a statement): a receipt scanned with the same one is not counted again. */
+  reference?: string;
 };
 
 export type Recurring = Base & {
@@ -178,7 +187,20 @@ export type Wallet = Base & {
 };
 
 /** Money moved by hand from one pocket to another: neither spent nor earned. Its fees are an expense, from the first pocket. */
-export type Transfer = Base & { kind: "transfer"; from: string; to: string; at: number; amountMga: number; feesMga?: number; note?: string; scanId?: string };
+export type Transfer = Base & {
+  kind: "transfer";
+  from: string;
+  to: string;
+  at: number;
+  amountMga: number;
+  feesMga?: number;
+  note?: string;
+  scanId?: string;
+  /** Imported from a statement: its operation's key ("statement:…"), never imported twice, and its transaction reference. */
+  sourceKey?: string;
+  statement?: StatementTag;
+  reference?: string;
+};
 
 /** "My balance is really…": the difference, at that moment (neither spent nor earned). */
 export type Correction = Base & { kind: "correction"; wallet: string; at: number; amountMga: number };
@@ -572,6 +594,24 @@ const DOUBT_DAYS = 3;
 const looksSame = (a: { at: number; amountMga: number }, b: { at: number; amountMga: number }) =>
   a.amountMga === b.amountMga && Math.abs(dayStart(a.at) - dayStart(b.at)) <= DOUBT_DAYS * 86_400_000 + 3_600_000;
 
+/** "Count it anyway": a scanned withdrawal or transfer that looked imported already (keepKey alone means "it's an expense"). */
+export const moveKeepKey = (sourceKey: string) => keepKey(`move:${sourceKey}`);
+
+/**
+ * A scanned withdrawal, deposit or transfer to oneself against the moves
+ * imported from a statement: "imported" with the same reference (neither its
+ * move nor its fees count), "doubt" with the same amount within 3 days (left
+ * out until "count it anyway"). The receipt's total has its fees in it.
+ */
+export function ownReceiptState(source: Pick<SourceItem, "key" | "own" | "at" | "amountMga" | "reference">, records: ExpenseRecord[], fees = 0): "imported" | "doubt" | undefined {
+  if (!source.own) return undefined;
+  const imported = byKind(records, "transfer").filter((transfer) => transfer.sourceKey?.startsWith("statement:"));
+  if (source.reference && imported.some((transfer) => sameReference(transfer.reference, source.reference))) return "imported";
+  if (byKind(records, "exclusion").some((record) => record.sourceKey === moveKeepKey(source.key))) return undefined;
+  const amounts = [source.amountMga, source.amountMga - fees];
+  return imported.some((transfer) => amounts.includes(transfer.amountMga) && looksSame(transfer, { at: source.at, amountMga: transfer.amountMga })) ? "doubt" : undefined;
+}
+
 /** Of two receipts of the same flow and amount, the later scan looks like the earlier one, unless both have their own reference. */
 const laterCopy = (source: Computed, other: Computed) =>
   other.key !== source.key &&
@@ -586,10 +626,11 @@ const laterCopy = (source: Computed, other: Computed) =>
  * typed-in expense, another line of the app (garage, shopping, parcel), or an
  * earlier scan. Only the receipt is in doubt, never the other line.
  */
-function inDoubt(source: Computed, sources: Computed[], manual: ManualExpense[]) {
+function inDoubt(source: Computed, sources: Computed[], manual: Array<Pick<ManualExpense, "at" | "amountMga">>) {
   const receipts = sources.filter((other) => isReceipt(other) && (!other.own || other.key === source.key));
   if (receipts.some((other) => laterCopy(source, other))) return true;
-  if (source.flow === "income") return false;
+  // Money received: only the incomes imported from a statement are compared (those typed in are not receipts' copies).
+  if (source.flow === "income") return manual.some((other) => looksSame(other, source));
   const lines = sources.filter((other) => !other.flow && !isReceipt(other) && other.origin !== "fees" && other.origin !== "plan");
   return [...lines, ...manual].some((other) => looksSame(other, source));
 }
@@ -649,6 +690,11 @@ export function monthExpenses(records: ExpenseRecord[], sources: Computed[], key
     // A withdrawal or a transfer to oneself: neither spent nor earned, unless the user says it is an expense (then its fees are in its total).
     if (source.own && !marks.has(keepKey(source.key))) continue;
     if (source.feesOf && (marks.has(keepKey(source.feesOf)) || manual.some((record) => record.scanId === source.scanId))) continue;
+    // A withdrawal imported from a statement already (or looking so): the move's fees are counted there.
+    if (source.feesOf) {
+      const move = sources.find((other) => other.key === source.feesOf);
+      if (move && !marks.has(keepKey(move.key)) && ownReceiptState(move, records, source.amountMga)) continue;
+    }
     if (isReceipt(source)) {
       if (manual.some((record) => record.scanId === source.scanId || sameReference(record.reference, source.reference))) continue;
       const doubt = !marks.has(keepKey(source.key)) && inDoubt(source, sources, manual);
@@ -695,7 +741,9 @@ export type IncomeItem = {
 export function monthIncomes(records: ExpenseRecord[], key: string, sources: Computed[] = []): IncomeItem[] {
   const linked = linkedKeys(records);
   const marks = new Set(byKind(records, "exclusion").map((record) => record.sourceKey));
-  const items: IncomeItem[] = byKind(records, "income")
+  const typed = byKind(records, "income");
+  const imported = typed.filter((record) => record.sourceKey?.startsWith("statement:"));
+  const items: IncomeItem[] = typed
     .filter((record) => inMonth(record.at, key))
     .map((record) => ({ key: `manual:${record.id}`, origin: "manual", at: record.at, amountMga: record.amountMga, income: incomeKindOf(record.income, record.from), label: record.note, excluded: false, record }));
   for (const recurring of byKind(records, "recurring")) {
@@ -708,7 +756,9 @@ export function monthIncomes(records: ExpenseRecord[], key: string, sources: Com
   for (const source of sources) {
     if (source.flow !== "income" || source.sameAs || !inMonth(source.at, key) || linked.has(source.key)) continue;
     const origin: IncomeOrigin = source.origin === "sale" || source.origin === "mobile_money" || source.origin === "activity" ? source.origin : "receipt";
-    const doubt = isReceipt(source) && !marks.has(keepKey(source.key)) && inDoubt(source, sources, []);
+    // A receipt of money received imported already from a statement (same reference): counted there.
+    if (isReceipt(source) && typed.some((record) => sameReference(record.reference, source.reference))) continue;
+    const doubt = isReceipt(source) && !marks.has(keepKey(source.key)) && inDoubt(source, sources, imported);
     items.push({
       key: source.key,
       origin,

@@ -31,6 +31,7 @@ import { EmptyNote } from "./EmptyNote";
 import { ExpenseForm, type LinkChoice, type ShareChoice } from "./ExpenseForm";
 import { ExpenseSheet } from "./ExpenseSheet";
 import styles from "./Expenses.module.scss";
+import { ImportedBadge, StatementImport } from "./StatementImport";
 import { WalletChips, type PocketChoice } from "./WalletChips";
 
 type Props = {
@@ -128,6 +129,7 @@ export function MonthPanel({ month, records, items, incomes, budget, budgetLines
         <Button size="lg" variant="secondary" icon={<Camera />} href="/?mode=document">
           {t("expenses.receiptPhoto")}
         </Button>
+        <StatementImport records={records} book={book} />
       </div>
 
       {items.length === 0 ? (
@@ -207,6 +209,7 @@ export function MonthPanel({ month, records, items, incomes, budget, budgetLines
                             <small>
                               {computed && <span className={styles.badge}>{t("expenses.auto", { origin: t(`expenses.origins.${item.origin}`) })}</span>}
                               {item.doubt && <span className={styles.badge} data-tone="warning">{t("expenses.doubt")}</span>}
+                              <ImportedBadge record={item.record} />
                               {[item.label && categoryName(item.category), item.record?.payment && t(`expenses.payments.${item.record.payment}`), item.excluded && !item.doubt && t("expenses.excluded")]
                                 .filter(Boolean)
                                 .join(" · ")}
