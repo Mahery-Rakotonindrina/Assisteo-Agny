@@ -1,3 +1,4 @@
+import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 import { ChevronRight, EyeOff, Package, RotateCcw, Store } from "lucide-react";
 import { Button } from "@/components/Button";
@@ -23,7 +24,10 @@ type Props = { month: string; records: ExpenseRecord[]; sources: SourceItem[]; b
 export function Activity({ month, records, sources, book, pockets }: Props) {
   const { t, locale } = useTranslation();
   const { parcels } = useParcels();
-  const [open, setOpen] = useState(false);
+  const router = useRouter();
+  // "?activity=open" (from a parcel's "Counted in My activity →"): the sheet, open on arrival, until closed.
+  const [choice, setOpen] = useState<boolean | null>(null);
+  const open = choice ?? router.query.activity === "open";
   const summary = useMemo(() => activityMonth(parcels, month, excludedKeys(records)), [parcels, month, records]);
   const separate = separatesActivity(records);
   // Kept apart, the purchases and sales are not in the month's lists: shown here instead.

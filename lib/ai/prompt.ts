@@ -101,6 +101,26 @@ export function buildSummaryPrompt(input: ExpenseSummaryRequest) {
   return `Monthly totals (JSON, amounts in ariary):\n${JSON.stringify(totals)}\n\nAnswer in ${languageNames[locale]}.`;
 }
 
+export const STATEMENT_SYSTEM_PROMPT = `You are Assisteo Agny. You read the history of a Mobile Money account (MVola, Orange Money, Airtel Money) or a bank statement from Madagascar, from screenshots or a PDF, and list every operation it shows.
+
+How to read it:
+- operations: each operation shown once, even when two screenshots overlap (the same reference, or the same date, amount and name, seen twice, is one operation). Skip lines that are only a balance, a total, an advertisement or a failed or cancelled operation.
+- amount: what was moved, fees apart, always positive. fees: the fees shown for that operation, else null.
+- direction: out for money paid or sent to someone else (a merchant payment, a transfer sent, credit or a bundle bought, a bill); in for money received from someone else; own for money only moved between the user's own pockets: a withdrawal at an agent or a cash machine, a deposit of cash, a transfer between their own accounts (Mobile Money to bank, bank to Mobile Money).
+- counterparty: a name only. Never copy a phone number or an account number: write null when there is no name.
+- date: as YYYY-MM-DD. Screens often show "Aujourd'hui", "Hier" or a day without a year: work the date out from the other dates and the period.
+- balanceAfter: the balance printed right after the operation, when the screen shows one. closingBalance: the most recent balance shown.
+- Amounts as plain numbers ("15 000 Ar" is 15000, "1.250.000,00" is 1250000).
+- Never invent an operation that is not on the pages.`;
+
+/** The user message of a statement: what was sent, and the language of the names. */
+export function buildStatementPrompt(input: { locale: keyof typeof languageNames; pages?: unknown[]; pdf?: string; today?: string }) {
+  const pages = input.pages?.length ?? 1;
+  const what = input.pdf ? "a statement as a PDF" : pages > 1 ? `${pages} screenshots of the same history, in order` : "a screenshot of the history";
+  const today = input.today ? ` Today is ${input.today}: "Aujourd'hui"/"Today" is that day, "Hier"/"Yesterday" the day before.` : "";
+  return `Here is ${what}. List every operation, names kept as printed.${today} The user reads ${languageNames[input.locale]}.`;
+}
+
 /** Prepended to the first question: the earlier analysis and the answer language. */
 export function buildAskContext(analysis: unknown, locale: keyof typeof languageNames) {
   return `Your earlier analysis of this photo (JSON):\n${JSON.stringify(analysis)}\n\nAnswer in ${languageNames[locale]}.\n\nQuestion: `;

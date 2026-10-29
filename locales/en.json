@@ -660,7 +660,8 @@
         "scan": "Scan",
         "deep": "Deep analysis",
         "question": "Question",
-        "summary": "Expenses review"
+        "summary": "Expenses review",
+        "statement": "Imported statement"
       },
       "perCall": "per call · {calls} call(s), {total} in all",
       "noCalls": "no call",
@@ -2433,7 +2434,8 @@
       "isExpense": "It’s an expense",
       "isOwn": "It’s a move between my accounts",
       "feesCounted": "Fees counted in your expenses: {amount}",
-      "alreadyCounted": "Counted already (scanned once before)"
+      "alreadyCounted": "Counted already (scanned once before)",
+      "alreadyImported": "Counted already (imported from a statement)"
     },
     "review": {
       "title": "What the AI thinks of your month",
@@ -2744,6 +2746,62 @@
       "parcelsLink": "See my parcels",
       "lines": "This month's purchases and sales",
       "purchase": "Purchase: {title}"
+    },
+    "statement": {
+      "open": "Import a statement",
+      "title": "Import a statement",
+      "intro": "Add screenshots of your MVola, Orange Money, Airtel Money or bank history (up to 10), or the statement's PDF.",
+      "privacy": "The screenshots are read once, then forgotten: only the operations you import stay. Each page counts as one of the month's scans.",
+      "choose": "Choose the screenshots or the PDF",
+      "reading": "Reading every operation…",
+      "heading": "{name} statement from {from} to {to}",
+      "demo": "Sample statement: in demo mode, the AI did not read your screenshots.",
+      "wallet": "Which pocket?",
+      "noWallet": "Without pockets: withdrawals and transfers between your own accounts are not imported.",
+      "totals": "{count} operation(s) · out {out} · in {in}",
+      "alreadyCount": "{count} already there, unticked",
+      "already": "already there",
+      "fees": "fees {amount}",
+      "kinds": {
+        "out": "Payment",
+        "in": "Money received",
+        "withdrawal": "Withdrawal",
+        "deposit": "Deposit",
+        "transfer": "Transfer between your accounts"
+      },
+      "to": "To which pocket?",
+      "from": "From which pocket?",
+      "toWallet": "To {name}",
+      "fromWallet": "From {name}",
+      "ownNeedsWallets": "Create a second pocket (cash, bank…) to count this move.",
+      "import": "Import {count} operation(s)",
+      "result": "{added} operation(s) added, {already} already there",
+      "balance": "The statement ends at {amount}, your {name} pocket had {held}.",
+      "balanceYes": "Set your {name} pocket to {amount}",
+      "balanceDone": "{name} pocket corrected.",
+      "close": "Done",
+      "defaultName": "Statement",
+      "feesNote": "{name} fees",
+      "imported": "Imported",
+      "tag": "Imported · {name} statement from {from} to {to}",
+      "tagNoPeriod": "Imported · {name} statement",
+      "errors": {
+        "tooMany": "10 screenshots at most: import the rest a second time.",
+        "pdfAlone": "A PDF is read on its own: choose it without screenshots.",
+        "pdfTooBig": "This PDF is too heavy (3 MB at most): take screenshots instead.",
+        "unsupported": "Choose images or a PDF.",
+        "currency": "This statement is not in ariary: it can't be imported.",
+        "empty": "No operation found. Try sharper screenshots.",
+        "network": "No connection. Try again once you have network.",
+        "plan_limit": "This month's scans are used up: each page counts as one.",
+        "plan_required": "Importing a statement is not part of your plan.",
+        "rate_limited": "Too many statements today. Try again later.",
+        "sign_in_required": "Sign in to import a statement.",
+        "invalid_request": "These files can't be read (10 pages at most).",
+        "refused": "The AI could not read this statement.",
+        "failed": "Reading failed. Try again in a moment.",
+        "save": "The import stopped. Try again: nothing will be added twice."
+      }
     }
   }
 }

@@ -15,6 +15,7 @@ import { EmptyNote } from "./EmptyNote";
 import { dayOf, parseAmount, today } from "./ExpenseForm";
 import { ExpenseSheet } from "./ExpenseSheet";
 import styles from "./Expenses.module.scss";
+import { ImportedBadge } from "./StatementImport";
 import { startingWallet, WalletChips, type PocketChoice } from "./WalletChips";
 
 /** An income being edited, or values to start from: the kind as the user picks it (help from the family included). */
@@ -103,6 +104,7 @@ export function IncomePanel({ month, incomes, defaultAt, focus, book, pockets }:
                             {t("expenses.doubt")}
                           </span>
                         )}
+                        <ImportedBadge record={item.record} />
                         {item.doubt ? formatDate(item.at, locale) : detail(item)}
                       </small>
                     </span>
@@ -200,7 +202,7 @@ function IncomeForm({ initial, pockets, onDone }: { initial: IncomeDraft; pocket
       });
       toast(t("expenses.saved.recurring", { amount: formatAriary(Math.round(value), locale), day: date.getDate() }));
     } else {
-      await expenseStore.saveIncome({ id: initial.id, at, amountMga: value, income: stored.kind, from: stored.from, note: named, sourceKey: initial.sourceKey, wallet: wallet || undefined });
+      await expenseStore.saveIncome({ id: initial.id, at, amountMga: value, income: stored.kind, from: stored.from, note: named, sourceKey: initial.sourceKey, wallet: wallet || undefined, statement: initial.statement, reference: initial.reference });
       toast(initial.id ? t("expenses.saved.changed") : t("expenses.saved.income", { amount: formatAriary(Math.round(value), locale), kind: t(`expenses.incomes.${income}`) }));
     }
     onDone();

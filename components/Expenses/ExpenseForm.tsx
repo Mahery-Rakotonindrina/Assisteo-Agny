@@ -12,6 +12,7 @@ import { haptics } from "@/services/device";
 import { expenseStore } from "@/services/expenseStore";
 import { marketRate } from "@/services/fx";
 import { householdExpenseStore, saveExpenseIn, type ExpenseScope } from "@/services/householdExpenseStore";
+import { isStatementKey } from "@/lib/statement";
 import { paymentForWallet, walletForPayment } from "@/lib/wallets";
 import { Chips, iconOf } from "./CategoryChips";
 import styles from "./Expenses.module.scss";
@@ -127,6 +128,8 @@ export function ExpenseForm({ records, initial, links, onDone, onSaved, from = "
         // Kept from a scanned receipt (no duplicates).
         reference: initial?.reference,
         scanId: initial?.scanId,
+        // Kept from a statement (its line's label).
+        ...(!shared && initial?.statement && { statement: initial.statement }),
         ...(!shared && wallet && { wallet }),
         ...(foreign && { currency: currency as ForeignCurrency, originalAmount: typed, rate: rateValue }),
       },
@@ -228,7 +231,8 @@ export function ExpenseForm({ records, initial, links, onDone, onSaved, from = "
           <span>{t("expenses.form.note")}</span>
           <input value={note} onChange={(event) => setNote(event.target.value)} maxLength={200} placeholder={t("expenses.form.noteExample")} />
         </label>
-        {!shared && (links.length > 0 || sourceKey) && (
+        {/* An imported line keeps its statement's key (never imported twice): nothing to link. */}
+        {!shared && !isStatementKey(sourceKey) && (links.length > 0 || sourceKey) && (
           <label className={styles.wide}>
             <span>{t("expenses.form.link")}</span>
             <select value={sourceKey} onChange={(event) => setSourceKey(event.target.value)}>

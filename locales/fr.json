@@ -660,7 +660,8 @@
         "scan": "Scan",
         "deep": "Analyse approfondie",
         "question": "Question",
-        "summary": "Bilan des dépenses"
+        "summary": "Bilan des dépenses",
+        "statement": "Relevé importé"
       },
       "perCall": "par appel · {calls} appel(s), {total} en tout",
       "noCalls": "aucun appel",
@@ -2433,7 +2434,8 @@
       "isExpense": "C’est une dépense",
       "isOwn": "C’est un mouvement entre mes comptes",
       "feesCounted": "Frais comptés dans tes dépenses : {amount}",
-      "alreadyCounted": "Déjà compté (scanné une première fois)"
+      "alreadyCounted": "Déjà compté (scanné une première fois)",
+      "alreadyImported": "Déjà compté (importé d’un relevé)"
     },
     "review": {
       "title": "Ce que l’IA pense de ton mois",
@@ -2744,6 +2746,62 @@
       "parcelsLink": "Voir mes colis",
       "lines": "Achats et ventes du mois",
       "purchase": "Achat : {title}"
+    },
+    "statement": {
+      "open": "Importer un relevé",
+      "title": "Importer un relevé",
+      "intro": "Ajoute les captures de ton historique MVola, Orange Money, Airtel Money ou de ta banque (jusqu’à 10), ou le PDF du relevé.",
+      "privacy": "Les captures sont lues une fois, puis oubliées : seules les opérations que tu importes restent. Chaque page compte comme un scan du mois.",
+      "choose": "Choisir les captures ou le PDF",
+      "reading": "Je lis toutes les opérations…",
+      "heading": "Relevé {name} du {from} au {to}",
+      "demo": "Relevé d’exemple : en mode démo, l’IA n’a pas lu tes captures.",
+      "wallet": "Dans quelle poche ?",
+      "noWallet": "Sans poche : les retraits et les virements entre tes comptes ne sont pas importés.",
+      "totals": "{count} opération(s) · sorties {out} · entrées {in}",
+      "alreadyCount": "{count} déjà là, décochée(s)",
+      "already": "déjà là",
+      "fees": "frais {amount}",
+      "kinds": {
+        "out": "Paiement",
+        "in": "Argent reçu",
+        "withdrawal": "Retrait",
+        "deposit": "Dépôt",
+        "transfer": "Virement entre tes comptes"
+      },
+      "to": "Vers quelle poche ?",
+      "from": "Depuis quelle poche ?",
+      "toWallet": "Vers {name}",
+      "fromWallet": "Depuis {name}",
+      "ownNeedsWallets": "Crée une deuxième poche (espèces, banque…) pour compter ce mouvement.",
+      "import": "Importer {count} opération(s)",
+      "result": "{added} opération(s) ajoutée(s), {already} déjà là",
+      "balance": "Le relevé finit avec {amount}, ta poche {name} en avait {held}.",
+      "balanceYes": "Mettre ta poche {name} à {amount}",
+      "balanceDone": "Poche {name} corrigée.",
+      "close": "C’est fait",
+      "defaultName": "Relevé",
+      "feesNote": "Frais {name}",
+      "imported": "Importé",
+      "tag": "Importé · Relevé {name} du {from} au {to}",
+      "tagNoPeriod": "Importé · Relevé {name}",
+      "errors": {
+        "tooMany": "10 captures au plus : importe le reste une seconde fois.",
+        "pdfAlone": "Un PDF se lit seul : choisis-le sans captures.",
+        "pdfTooBig": "Ce PDF est trop lourd (3 Mo au plus) : fais plutôt des captures.",
+        "unsupported": "Choisis des images ou un PDF.",
+        "currency": "Ce relevé n’est pas en ariary : il ne peut pas être importé.",
+        "empty": "Je n’ai trouvé aucune opération. Essaie avec des captures plus nettes.",
+        "network": "Pas de connexion. Réessaie quand tu as du réseau.",
+        "plan_limit": "Tes scans du mois sont épuisés : chaque page en compte un.",
+        "plan_required": "L’import d’un relevé n’est pas dans ton offre.",
+        "rate_limited": "Trop de relevés pour aujourd’hui. Réessaie plus tard.",
+        "sign_in_required": "Connecte-toi pour importer un relevé.",
+        "invalid_request": "Ces fichiers ne peuvent pas être lus (10 pages au plus).",
+        "refused": "L’IA n’a pas pu lire ce relevé.",
+        "failed": "La lecture a échoué. Réessaie dans un moment.",
+        "save": "L’import s’est arrêté. Réessaie : rien ne sera ajouté deux fois."
+      }
     }
   }
 }
