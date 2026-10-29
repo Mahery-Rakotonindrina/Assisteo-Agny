@@ -155,7 +155,7 @@ test("a photo joins a loan as proof, then shows in the list and on the card", as
   await expect(page.getByTestId("loan-proofs").getByRole("button")).toHaveCount(1);
 
   await page.getByRole("button", { name: "Voir la preuve 1" }).click();
-  await expect(page.getByRole("img", { name: "Preuve" })).toBeVisible();
+  await expect(page.getByRole("img", { name: "Preuve", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Supprimer la preuve" }).click();
   await page.getByRole("button", { name: "Oui, supprimer la preuve" }).click();
   await expect(page.getByText("Preuve supprimée.")).toBeVisible();
