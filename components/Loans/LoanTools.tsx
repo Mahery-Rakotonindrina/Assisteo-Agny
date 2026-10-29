@@ -41,7 +41,9 @@ function AckFields({ loan, onClose }: { loan: Loan; onClose: () => void }) {
   const { t, locale } = useTranslation();
   const toast = useToast();
   const accountName = useAccountName();
-  const [me, setMe] = useState(accountName);
+  // Null until typed: the account's name shows, even when the account is read after the sheet opened.
+  const [typed, setTyped] = useState<string | null>(null);
+  const me = typed ?? accountName;
   const [place, setPlace] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -67,7 +69,7 @@ function AckFields({ loan, onClose }: { loan: Loan; onClose: () => void }) {
       <p className={styles.hint}>{t("loans.ack.hint")}</p>
       <label className={styles.field}>
         <span>{t(`loans.ack.me.${loan.direction}`)}</span>
-        <input value={me} onChange={(event) => setMe(event.target.value)} maxLength={80} autoComplete="name" />
+        <input value={me} onChange={(event) => setTyped(event.target.value)} maxLength={80} autoComplete="name" />
       </label>
       <label className={styles.field}>
         <span>{t("loans.ack.place")}</span>

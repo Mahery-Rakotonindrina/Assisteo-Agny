@@ -108,6 +108,25 @@ export function loanNextDue(loan: LoanDue, now: number): NextDue | undefined {
   return loan.dueAt !== undefined ? { dueAt: loan.dueAt, amountMga: loanRemaining(loan), scheduled: false } : undefined;
 }
 
+/**
+ * What is late: with a schedule, only the unpaid part of the installments
+ * whose day is past (and, once they are all past, what the parts left out);
+ * without one, all that is left once the due day is past.
+ */
+export function loanLateAmount(loan: LoanDue, now: number) {
+  const left = loanRemaining(loan);
+  if (left <= 0) return 0;
+  const today = startOfDay(now);
+  if (loan.schedule?.length) {
+    const states = scheduleState(loan, now);
+    const late = states.filter((item) => item.status === "late").reduce((sum, item) => sum + item.leftMga, 0);
+    // Parts adding up to less than the total: the rest is due with the last one.
+    const unplanned = Math.max(0, left - states.reduce((sum, item) => sum + item.leftMga, 0));
+    return late + (unplanned > 0 && states[states.length - 1].dueAt < today ? unplanned : 0);
+  }
+  return loan.dueAt !== undefined && loan.dueAt < today ? left : 0;
+}
+
 /** Repaid once nothing is left; late from the day after the due day (the next installment's, with a schedule). */
 export function loanStatus(loan: LoanDue, now: number): LoanStatus {
   if (loanRemaining(loan) <= 0) return "repaid";
@@ -242,7 +261,7 @@ export function loansByPerson(loans: Loan[], direction: LoanDirection, now: numb
       person.open += 1;
       if (status === "late") {
         person.late = true;
-        person.lateAmount += left;
+        person.lateAmount += loanLateAmount(loan, now);
       }
       const next = loanNextDue(loan, now);
       if (next && (person.nextDue === undefined || next.dueAt < person.nextDue)) {

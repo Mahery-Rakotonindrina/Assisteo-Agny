@@ -263,7 +263,7 @@ L’argent prêté ou emprunté, par personne. Ni dépense ni revenu : rien n’
 - [ ] Scanner une reconnaissance de dette : la fiche se remplit toute seule
 - [x] Remboursement en plusieurs fois prévu d’avance (échéancier), intérêts ou frais convenus — parts égales modifiables, chaque semaine ou chaque mois ; prochaine échéance et retard calculés sur l’échéancier ; intérêts fixes ou en %, le total à rendre est suivi
 - [x] Reconnaissance de dette en PDF, à faire signer ou à envoyer — montant en chiffres et en lettres (fr, en), échéancier et intérêts, deux cases de signature
-- [x] Export Excel ou PDF du récapitulatif par personne — tout l’écran ou une seule personne ; Excel : « Prêts » et « Par personne »
+- [x] Export Excel ou PDF du récapitulatif par personne — tout l’écran ou une seule personne ; une feuille par sens (« On me doit », « Je dois ») et son « Par personne », chacune avec son total ; le PDF a une section par sens
 - [ ] Choisir la personne dans les contacts du téléphone
 - [ ] Partager à l’emprunteur un lien qui montre ce qu’il doit encore
 - [x] Statistiques : total prêté sur l’année, qui rembourse en retard — section repliable « En chiffres », pour « On me doit » et « Je dois »

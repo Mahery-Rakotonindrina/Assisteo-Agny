@@ -11,12 +11,14 @@ import {
   dayFromInput,
   installmentDay,
   loanInterest,
+  loanLateAmount,
   loanNextDue,
   loanPaid,
   loanRemaining,
   loansByPerson,
   loanStatus,
   loanTotal,
+  loanTotals,
   scheduleFrequency,
   scheduleState,
   splitSchedule,
@@ -134,6 +136,30 @@ describe("interest or fees agreed", () => {
     expect(created.dueAt).toBe(day("2026-11-08"));
     await loanStore.edit(created.id, { direction: "lent", person: "Rakoto", amountMga: 100_000, at: day("2026-10-01"), schedule: schedule.slice(0, 1) });
     expect((await loanStore.get(created.id))!.schedule).toBeUndefined();
+  });
+});
+
+describe("what is late", () => {
+  it("counts only the unpaid part of the past installments", () => {
+    // 1 200 000 Ar in 12 times from 2026-10-05: only the first one is past.
+    const schedule = splitSchedule(1_200_000, 12, "month", day("2026-10-05"));
+    const big = loan({ amountMga: 1_200_000, schedule, dueAt: schedule[11].dueAt });
+    expect(loanLateAmount(big, NOW)).toBe(100_000);
+    expect(loanLateAmount({ ...big, repayments: [paid(40_000)] }, NOW)).toBe(60_000);
+    expect(loanLateAmount({ ...big, repayments: [paid(100_000)] }, NOW)).toBe(0);
+    const people = loansByPerson([big], "lent", NOW);
+    expect(people[0]).toMatchObject({ late: true, lateAmount: 100_000, remaining: 1_200_000 });
+    // The top card and the home shortcut.
+    expect(loanTotals(people)).toEqual({ total: 1_200_000, people: 1, late: 100_000 });
+    // The Excel's "En retard" and the top 3 of « En chiffres ».
+    expect(personSummaries([big], NOW)[0].lateMga).toBe(100_000);
+    expect(loanStats([big], "lent", NOW).late).toEqual([{ name: "Rakoto", lateMga: 100_000 }]);
+  });
+
+  it("counts all that is left without a schedule, as before", () => {
+    expect(loanLateAmount(loan({ dueAt: day("2026-10-20"), repayments: [paid(30_000)] }), NOW)).toBe(70_000);
+    expect(loanLateAmount(loan({ dueAt: day("2026-11-20") }), NOW)).toBe(0);
+    expect(loanLateAmount(loan(), NOW)).toBe(0);
   });
 });
 
