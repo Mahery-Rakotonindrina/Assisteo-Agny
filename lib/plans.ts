@@ -30,10 +30,12 @@ export type PlanFeature =
   /** Reminders: on a scan (with repetition, snooze, calendar), insurance notices, parcel arrivals, the garage. */
   | "reminders"
   /** "Mes dépenses": the monthly budget. Admin only while tested; opening it is a change of featureFrom alone. */
-  | "expenses";
+  | "expenses"
+  /** "Prêts": who owes me, whom I owe. Admin only while tested, like "expenses". */
+  | "loans";
 
 /** Every feature, in the order of the Admin table and of the offers page. */
-export const planFeatures = ["reminders", "parcelCosts", "pdfExport", "ownKey", "deepAnalysis", "multiPage", "garage", "reseller", "expenses"] as const satisfies readonly PlanFeature[];
+export const planFeatures = ["reminders", "parcelCosts", "pdfExport", "ownKey", "deepAnalysis", "multiPage", "garage", "reseller", "expenses", "loans"] as const satisfies readonly PlanFeature[];
 // Fails to compile when a feature is missing from the list.
 const everyFeatureListed: Exclude<PlanFeature, (typeof planFeatures)[number]> extends never ? true : never = true;
 void everyFeatureListed;
@@ -43,7 +45,7 @@ void everyFeatureListed;
  * default of the Admin settings (`PlansConfig.features`), and what an app
  * goes by until the server sent its settings (an older APK keeps it).
  */
-const featureFrom: Record<PlanFeature, PlanId> = { ownKey: "lite", parcelCosts: "lite", reseller: "pro", deepAnalysis: "premium", multiPage: "premium", pdfExport: "lite", garage: "premium", reminders: "lite", expenses: "unlimited" };
+const featureFrom: Record<PlanFeature, PlanId> = { ownKey: "lite", parcelCosts: "lite", reseller: "pro", deepAnalysis: "premium", multiPage: "premium", pdfExport: "lite", garage: "premium", reminders: "lite", expenses: "unlimited", loans: "unlimited" };
 
 /**
  * What a feature needs to work: it is dropped when one of them is missing.

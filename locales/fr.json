@@ -20,6 +20,7 @@
     "food": "Journal",
     "papers": "Papiers",
     "garage": "Garage",
+    "loans": "Prêts",
     "expenses": "Dépenses"
   },
   "scan": {
@@ -831,6 +832,7 @@
         "multiPage": "Plusieurs pages",
         "garage": "Mon garage",
         "reseller": "Outils revendeur",
+        "loans": "Prêts",
         "expenses": "Mes dépenses"
       },
       "descriptions": {
@@ -842,6 +844,7 @@
         "multiPage": "Un document en plusieurs pages, analysé d’un coup.",
         "garage": "Véhicules, entretien, rappels de vidange et d’assurance, pleins et dépenses.",
         "reseller": "Un client par colis, ce qu’il doit, totaux par client, export et relevés.",
+        "loans": "Qui me doit, à qui je dois : remboursements, retards, relance WhatsApp. Rien n’est compté dans les dépenses.",
         "expenses": "Le budget du mois, seul ou en foyer, et le bilan du mois par l’IA."
       },
       "deepNeedsLimit": "Impossible d’enregistrer : {list} n’a pas de quota d’analyses approfondies (0 = sans limite). Mets d’abord un nombre par mois plus haut, dans les prix et quotas des offres. Gratuit n’a pas de quota : pas d’analyse approfondie."
@@ -1330,6 +1333,7 @@
       "pdfExport": "Export PDF des documents et de l’historique",
       "garage": "Mon garage : entretien, rappels d’assurance et de vidange, pleins et dépenses",
       "reminders": "Rappels : sur tes scans (avec répétition et report), assurance, arrivée des colis",
+      "loans": "Prêts : qui te doit, à qui tu dois, relance WhatsApp",
       "expenses": "Mes dépenses : le budget du mois, seul ou en foyer"
     },
     "how": "Comment s’abonner",
@@ -1573,6 +1577,7 @@
     "foodHint": "Ce que tu as mangé aujourd’hui",
     "papersHint": "CNI, assurances, garanties",
     "garageHint": "Entretien, pleins, rappels",
+    "loansHint": "Qui te doit, à qui tu dois",
     "expensesHint": "Budget du mois, ce qu’il reste"
   },
   "food": {
@@ -1847,6 +1852,130 @@
     },
     "finalTitle": "Prêt à essayer ?",
     "finalBody": "Une première photo suffit pour voir ce que l’IA peut faire pour toi."
+  },
+  "loans": {
+    "title": "Prêts",
+    "subtitle": "L’argent que tu as prêté, et celui que tu dois. Rien n’est compté dans tes dépenses.",
+    "unavailable": "Prêts n’est pas encore ouvert à ton offre.",
+    "readOnly": "Prêts n’est plus dans ton offre : tes prêts restent visibles, sans modification.",
+    "directionLabel": "On me doit ou je dois",
+    "directions": {
+      "lent": "On me doit",
+      "borrowed": "Je dois"
+    },
+    "summary": {
+      "lent": "On te doit en tout",
+      "borrowed": "Tu dois en tout",
+      "people": "{count} personnes",
+      "peopleOne": "1 personne",
+      "late": "dont {amount} en retard"
+    },
+    "add": {
+      "lent": "J’ai prêté de l’argent",
+      "borrowed": "J’ai emprunté"
+    },
+    "empty": {
+      "lent": {
+        "title": "Personne ne te doit d’argent",
+        "body": "Note ici l’argent que tu as prêté : tu sauras toujours qui te doit quoi."
+      },
+      "borrowed": {
+        "title": "Tu ne dois rien à personne",
+        "body": "Note ici l’argent que tu as emprunté : tu sauras toujours ce qu’il te reste à rendre."
+      }
+    },
+    "allRepaid": {
+      "lent": "Tout le monde t’a remboursé.",
+      "borrowed": "Tu as tout rendu."
+    },
+    "search": "Chercher une personne",
+    "noMatch": "Personne ne porte ce nom.",
+    "late": "En retard",
+    "open": "{count} prêts en cours",
+    "openOne": "1 prêt en cours",
+    "dueOn": "à rendre le {date}",
+    "repaidSection": "Remboursés ({count})",
+    "repaidOn": "Remboursé le {date}",
+    "shortcutOwed": "On te doit {amount}",
+    "shortcutLate": "{amount} en retard",
+    "close": "Fermer",
+    "form": {
+      "title": {
+        "lent": "J’ai prêté de l’argent",
+        "borrowed": "J’ai emprunté de l’argent"
+      },
+      "titleEdit": "Modifier le prêt",
+      "person": {
+        "lent": "À qui ?",
+        "borrowed": "Qui t’a prêté ?"
+      },
+      "personPlaceholder": "Rakoto, Tante Lalao…",
+      "amount": "Montant (Ar)",
+      "date": "Date",
+      "today": "Aujourd’hui",
+      "due": "À rendre pour (facultatif)",
+      "dueDay": "Date à laquelle rendre",
+      "dueChoices": {
+        "none": "Pas de date",
+        "week": "Dans 1 semaine",
+        "month": "Dans 1 mois",
+        "pick": "Choisir"
+      },
+      "phone": "Téléphone (facultatif)",
+      "note": "Note (facultatif)",
+      "notePlaceholder": "pour l’écolage",
+      "save": "Enregistrer",
+      "missing": "Écris le nom de la personne et le montant."
+    },
+    "saved": {
+      "lent": "C’est noté : {person} te doit {amount}.",
+      "borrowed": "C’est noté : tu dois {amount} à {person}.",
+      "edited": "Prêt modifié."
+    },
+    "detail": {
+      "back": "Retour à la liste",
+      "left": {
+        "lent": "Te doit encore {amount}",
+        "borrowed": "Tu lui dois encore {amount}"
+      },
+      "settled": "Tout est remboursé",
+      "on": {
+        "lent": "Prêté le {date}",
+        "borrowed": "Emprunté le {date}"
+      },
+      "another": {
+        "lent": "Nouveau prêt",
+        "borrowed": "Nouvel emprunt"
+      },
+      "repayments": "Remboursements",
+      "repaymentLine": "{amount} rendus le {date}",
+      "removeRepayment": "Retirer ce remboursement",
+      "leftOne": "Reste {amount}",
+      "repaidBadge": "Remboursé",
+      "markRepaid": "Marquer comme remboursé",
+      "edit": "Modifier",
+      "remove": "Supprimer",
+      "confirmRemove": "Supprimer pour de bon",
+      "removed": "Prêt supprimé.",
+      "whatsapp": "Relancer sur WhatsApp",
+      "copy": "Copier le message",
+      "copied": "Message copié : colle-le dans WhatsApp ou un SMS.",
+      "copyFailed": "Impossible de copier le message."
+    },
+    "repay": {
+      "title": {
+        "lent": "On m’a rendu…",
+        "borrowed": "J’ai rendu…"
+      },
+      "left": "Il reste {amount} à rendre.",
+      "capped": "C’est plus que le reste : seuls {amount} seront notés.",
+      "saved": "{amount} noté. Reste {left}.",
+      "savedAll": "Tout est remboursé."
+    },
+    "reminder": {
+      "message": "Bonjour {name}, petit rappel pour les {amount} que je t’ai prêtés. Dis-moi quand tu peux me les rendre. Merci !",
+      "messageDue": "Bonjour {name}, petit rappel pour les {amount} que je t’ai prêtés, à rendre le {date}. Dis-moi quand tu peux me les rendre. Merci !"
+    }
   },
   "garage": {
     "title": "Mon garage",
@@ -2374,6 +2503,62 @@
       "off": "Pas compté dans Mes dépenses",
       "garage": "Pleins, entretien et frais comptés dans Mes dépenses"
     },
-    "feesLabel": "Frais de retrait ou de transfert"
+    "feesLabel": "Frais de retrait ou de transfert",
+    "pockets": {
+      "ask": "Où est ton argent ? Ajoute tes poches",
+      "open": "Voir mes poches",
+      "inPockets": "Dans tes poches :",
+      "pendingCount": "{count} virement(s) à préciser",
+      "title": "Mes poches",
+      "setupTitle": "Où est ton argent ?",
+      "setupHint": "Coche là où tu gardes ton argent, et dis combien il y a aujourd’hui. Tu pourras corriger plus tard.",
+      "howMuch": "Combien il y a aujourd’hui ?",
+      "howMuchOf": "{name} : combien il y a aujourd’hui ?",
+      "defaultHint": "Les Espèces sont ta poche par défaut : une dépense sans poche y est comptée. Tu peux changer ça dans Mes poches.",
+      "saved": "Tes poches sont prêtes",
+      "default": "Par défaut",
+      "since": "{amount} le {date}",
+      "noMovement": "Rien n’a bougé depuis.",
+      "toChoose": "à préciser",
+      "correct": "Corriger le solde",
+      "correctHint": "D’après l’app, il y a {amount}. Si ce n’est pas ça, écris le vrai montant : la différence est notée comme une correction, ni dépense ni revenu.",
+      "really": "Ton solde {name} est en vrai de…",
+      "corrected": "Solde corrigé : {amount}",
+      "correction": "Correction du solde",
+      "makeDefault": "Mettre par défaut",
+      "archive": "Archiver",
+      "unarchive": "Remettre",
+      "archiveHint": "Archivée, la poche est cachée, mais ses mouvements sont gardés.",
+      "archived": "Poches archivées ({count})",
+      "move": "Virement entre mes poches",
+      "income": "Revenu",
+      "pendingTitle": "À préciser",
+      "pendingHint": "Ces mouvements entre tes poches viennent de reçus scannés. Dis où l’argent est allé : tant que ce n’est pas fait, seule la sortie est comptée.",
+      "pendingMove": "{amount} le {date}",
+      "fromWhich": "De quelle poche ?",
+      "fromName": "Depuis {name}",
+      "toWhich": "Vers quelle poche ?",
+      "transfer": "Virement entre mes poches",
+      "transferHint": "L’argent change de poche : ce n’est ni une dépense ni un revenu. Les frais, eux, sont une dépense.",
+      "from": "De",
+      "to": "Vers",
+      "fees": "Frais (si tu en as payé)",
+      "transferred": "Virement noté : {amount}",
+      "add": "Ajouter une poche",
+      "type": "Type",
+      "name": "Nom",
+      "fromWhichPaid": "Payé avec",
+      "intoWhich": "Reçu dans",
+      "lineWallet": "Payé avec",
+      "lineWalletIn": "Reçu dans",
+      "types": {
+        "cash": "Espèces",
+        "mvola": "MVola",
+        "orange_money": "Orange Money",
+        "airtel_money": "Airtel Money",
+        "bank": "Banque",
+        "other": "Autre"
+      }
+    }
   }
 }

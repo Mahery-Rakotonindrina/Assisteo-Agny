@@ -60,6 +60,14 @@ export type VehicleEnergy = (typeof vehicleEnergies)[number];
 export const receiptDirections = ["out", "in", "own"] as const;
 export type ReceiptDirection = (typeof receiptDirections)[number];
 
+/**
+ * Money moved between one's own pockets, which way: cash withdrawn from a
+ * Mobile Money or bank account (withdrawal), cash put on it (deposit), or
+ * one account to another (transfer). Null when not "own" or unclear.
+ */
+export const ownKinds = ["withdrawal", "deposit", "transfer"] as const;
+export type OwnKind = (typeof ownKinds)[number];
+
 /** How a receipt was paid, and with which Mobile Money operator. */
 export const receiptPayments = ["cash", "mobile_money", "card"] as const;
 export type ReceiptPayment = (typeof receiptPayments)[number];
@@ -192,6 +200,12 @@ export const AnalysisSchema = z.object({
               "out when the user paid a merchant, sent money to another person or bought phone credit (a till receipt, a payment, a transfer sent); in when the user received money from someone else (Mobile Money \"Vous avez reçu…\", \"You have received…\": merchant is then the sender's name); own when the money only moved between the user's own pockets: cash withdrawn at an agent or a counter (\"Retrait\"), cash deposited on their own account (\"Dépôt\"), a transfer between their own accounts (Mobile Money to bank, bank to Mobile Money, one operator to another); null if unclear.",
             ),
           fees: z.number().nullable().describe("The fees shown on their own (withdrawal or transfer fees), as a plain number in the receipt's currency; null if none shown."),
+          ownKind: z
+            .enum(ownKinds)
+            .nullable()
+            .describe(
+              "Only when direction is own: withdrawal when cash was taken out of the Mobile Money or bank account (\"Retrait\", at an agent or a counter), deposit when cash was put on it (\"Dépôt\"), transfer when it went from one of the user's accounts to another (Mobile Money to bank, one operator to another); null otherwise or if unclear.",
+            ),
         })
         .nullable()
         .describe("Only for proof of a payment already made: a till receipt, a shop invoice or a Mobile Money (MVola, Orange Money, Airtel Money) confirmation, SMS or screen; null otherwise."),
@@ -312,8 +326,8 @@ export function normalizeStoredAnalysis(raw: unknown): unknown {
           registration: null,
           receipt: null,
           ...document,
-          // Read before the direction and the fees existed: money paid, no fees apart.
-          ...(document.receipt ? { receipt: { direction: null, fees: null, ...(document.receipt as Record<string, unknown>) } } : {}),
+          // Read before the direction, the fees and the kind of own move existed: money paid, no fees apart.
+          ...(document.receipt ? { receipt: { direction: null, fees: null, ownKind: null, ...(document.receipt as Record<string, unknown>) } } : {}),
         }
       : null,
     parcel: analysis.parcel ? { shippingMode: null, ...(analysis.parcel as Record<string, unknown>) } : null,

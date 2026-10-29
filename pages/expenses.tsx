@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import { AlertTriangle, CalendarSync, ChevronLeft, ChevronRight, History, PiggyBank, Receipt, User, Users, Wallet, X } from "lucide-react";
 import { BudgetPanel, HistoryPanel, HouseholdPanel, IncomePanel, MonthPanel, MonthReview, RecurringPanel } from "@/components/Expenses";
 import styles from "@/components/Expenses/Expenses.module.scss";
+import { Pockets } from "@/components/Expenses/Pockets";
+import type { PocketChoice } from "@/components/Expenses/WalletChips";
 import { SegmentedControl } from "@/components/SegmentedControl";
 import { Seo } from "@/components/Seo";
 import { useDismissed } from "@/hooks/useDismissed";
@@ -33,6 +35,7 @@ import {
   type ManualExpense,
 } from "@/lib/expenses";
 import { formatAriary, formatMonthYear } from "@/lib/format";
+import { activeWallets, lastUsedWallet, walletBook, type WalletBook } from "@/lib/wallets";
 import { rise, stagger } from "@/lib/motion";
 
 const tabs = ["month", "income", "recurring", "history", "budget"] as const;
@@ -165,6 +168,12 @@ function Expenses({ canRemind, joinCode }: { canRemind: boolean; joinCode?: stri
       budget: budgetLines(budget, totals),
     };
   }, [records, sources, month]);
+  // Where the money really is: the pockets, always personal (never the household's).
+  const book = useMemo(() => walletBook(records, sources, now), [records, sources, now]);
+  const pockets = useMemo<PocketChoice>(
+    () => ({ wallets: activeWallets(book.context.wallets), lastUsed: lastUsedWallet(records, book.context), primary: book.context.primary?.id }),
+    [book, records],
+  );
   const pickView = (value: View) => {
     closeOpened();
     setView(value);
@@ -203,7 +212,7 @@ function Expenses({ canRemind, joinCode }: { canRemind: boolean; joinCode?: stri
       ) : (
         <>
           <motion.div variants={rise}>
-            <MonthCard balance={figures.balance} budget={figures.budget} records={records} />
+            <MonthCard balance={figures.balance} budget={figures.budget} records={records} book={book} now={now} />
           </motion.div>
 
           <motion.div variants={rise} className={styles.tabs}>
@@ -241,12 +250,14 @@ function Expenses({ canRemind, joinCode }: { canRemind: boolean; joinCode?: stri
                   budgetLines={figures.budget}
                   previousTotal={figures.previousTotal}
                   focus={focus}
+                  book={book}
+                  pockets={pockets}
                 />
                 {/* Keyed by month: a review asked for another month never shows under this one. */}
                 <MonthReview key={month} month={month} records={records} sources={sources} />
               </div>
             ) : tab === "income" ? (
-              <IncomePanel key={`${month}:${focus ?? ""}`} month={month} incomes={figures.incomes} defaultAt={defaultAt} focus={focus} />
+              <IncomePanel key={`${month}:${focus ?? ""}`} month={month} incomes={figures.incomes} defaultAt={defaultAt} focus={focus} book={book} pockets={pockets} />
             ) : tab === "recurring" ? (
               <RecurringPanel month={month} records={records} canRemind={canRemind} />
             ) : tab === "history" ? (
@@ -261,8 +272,8 @@ function Expenses({ canRemind, joinCode }: { canRemind: boolean; joinCode?: stri
   );
 }
 
-/** "Il te reste…": the month at a glance, above every tab, with the budget and its warnings. */
-function MonthCard({ balance, budget, records }: { balance: ReturnType<typeof monthBalance>; budget: BudgetLine[]; records: ExpenseRecord[] }) {
+/** "Il te reste…": the month at a glance, above every tab, with the budget, its warnings and what the pockets hold. */
+function MonthCard({ balance, budget, records, book, now }: { balance: ReturnType<typeof monthBalance>; budget: BudgetLine[]; records: ExpenseRecord[]; book: WalletBook; now: number }) {
   const { t, locale } = useTranslation();
   const { categoryName } = useExpenseLabels(records);
   const money = (value: number) => formatAriary(value, locale);
@@ -307,6 +318,7 @@ function MonthCard({ balance, budget, records }: { balance: ReturnType<typeof mo
           </span>
         </p>
       )}
+      <Pockets book={book} records={records} now={now} />
     </section>
   );
 }
