@@ -27,6 +27,7 @@ import { Chips, iconOf, incomeIcons } from "./CategoryChips";
 import { EmptyNote } from "./EmptyNote";
 import { parseAmount } from "./ExpenseForm";
 import { ExpenseSheet } from "./ExpenseSheet";
+import { EveningReminder } from "./EveningReminder";
 import styles from "./Expenses.module.scss";
 
 type Props = { month: string; records: ExpenseRecord[]; canRemind: boolean };
@@ -118,6 +119,8 @@ export function RecurringPanel({ month, records, canRemind }: Props) {
         </ul>
         </section>
       )}
+      {/* The evening reminder follows the reminders' plan, like the due dates. */}
+      {canRemind && <EveningReminder />}
       <ExpenseSheet
         open={editing !== null}
         title={editing?.id ? t("expenses.edit") : t(income ? "expenses.recurring.addIncome" : "expenses.recurring.add")}

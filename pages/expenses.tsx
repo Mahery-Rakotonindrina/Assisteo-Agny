@@ -5,6 +5,8 @@ import { AlertTriangle, CalendarSync, ChevronLeft, ChevronRight, History, PiggyB
 import { BudgetPanel, HistoryPanel, HouseholdPanel, IncomePanel, MonthPanel, MonthReview, RecurringPanel } from "@/components/Expenses";
 import styles from "@/components/Expenses/Expenses.module.scss";
 import { Pockets } from "@/components/Expenses/Pockets";
+import { Savings } from "@/components/Expenses/Savings";
+import { ExpenseSearch } from "@/components/Expenses/Search";
 import type { PocketChoice } from "@/components/Expenses/WalletChips";
 import { SegmentedControl } from "@/components/SegmentedControl";
 import { Seo } from "@/components/Seo";
@@ -24,6 +26,7 @@ import {
   hasOwnExpenses,
   monthBalance,
   monthExpenses,
+  monthForecast,
   monthIncomes,
   monthKey,
   monthStart,
@@ -33,7 +36,9 @@ import {
   type BudgetLine,
   type ExpenseRecord,
   type ManualExpense,
+  type MonthForecast,
 } from "@/lib/expenses";
+import type { SearchHit } from "@/lib/expenseSearch";
 import { formatAriary, formatMonthYear } from "@/lib/format";
 import { activeWallets, lastUsedWallet, walletBook, type WalletBook } from "@/lib/wallets";
 import { rise, stagger } from "@/lib/motion";
@@ -127,20 +132,23 @@ function Expenses({ canRemind, joinCode }: { canRemind: boolean; joinCode?: stri
   // "?month=2026-10&tab=income&focus=<key>": a line shown from where it comes from.
   const askedMonth = isMonth(router.query.month) ? router.query.month : null;
   const askedTab = isTab(router.query.tab) ? router.query.tab : null;
-  const focus = typeof router.query.focus === "string" ? router.query.focus : null;
+  // "?add=expense" (the evening reminder): the add form, open on the current month.
+  const adding = !opened && router.query.add === "expense";
+  const [chosenFocus, setFocus] = useState<string | null>(null);
+  const focus = chosenFocus ?? (typeof router.query.focus === "string" ? router.query.focus : null);
   const [picked, setPicked] = useState<string | null>(null);
-  const month = opened ? monthKey(opened.at) : (picked ?? askedMonth ?? current);
+  const month = opened ? monthKey(opened.at) : adding ? current : (picked ?? askedMonth ?? current);
   const [chosenTab, setTab] = useState<Tab | null>(null);
-  const tab: Tab = opened ? "month" : (chosenTab ?? askedTab ?? "month");
+  const tab: Tab = opened || adding ? "month" : (chosenTab ?? askedTab ?? "month");
   // "?join=" (an invitation) or "?view=household" opens the household's side.
   const [chosenView, setView] = useState<View | null>(null);
-  const view: View = opened ? "personal" : (chosenView ?? (joinCode || router.query.view === "household" ? "household" : "personal"));
+  const view: View = opened || adding ? "personal" : (chosenView ?? (joinCode || router.query.view === "household" ? "household" : "personal"));
   const snapshot = useHousehold();
   const household = snapshot?.household ?? null;
   const share = household ? { name: household.name, me: snapshot?.userId ?? null, choose: true } : null;
-  // Leaving the opened expense keeps its month on screen.
+  // Leaving the opened expense (or the add form of "?add=") keeps its month on screen.
   const closeOpened = () => {
-    if (!opened) return;
+    if (!opened && !adding) return;
     setPicked(month);
     setTab("month");
     void router.replace({ pathname: router.pathname }, undefined, { shallow: true });
@@ -178,14 +186,31 @@ function Expenses({ canRemind, joinCode }: { canRemind: boolean; joinCode?: stri
     closeOpened();
     setView(value);
   };
+  // A search result: a typed-in expense opens in its form ("?open="), any other line is shown in its month and tab.
+  const pickHit = (hit: SearchHit, key: string) => {
+    setView("personal");
+    if (hit.recordId) {
+      void router.replace({ pathname: router.pathname, query: { open: hit.recordId } }, undefined, { shallow: true });
+      return;
+    }
+    closeOpened();
+    setPicked(key);
+    setTab(hit.flow === "income" ? "income" : "month");
+    setFocus(hit.key);
+  };
+  const forecast = useMemo(() => monthForecast(figures.items, figures.incomes, month, now), [figures, month, now]);
 
   const defaultAt = month === current ? now : monthStart(month);
 
   return (
     <motion.div className={styles.page} variants={stagger} initial="hidden" animate="show">
-      <motion.header variants={rise} className={styles.header}>
-        <h1>{t("expenses.title")}</h1>
-        <p>{t("expenses.subtitle")}</p>
+      <motion.header variants={rise} className={`${styles.header} ${styles.headerRow}`}>
+        <div>
+          <h1>{t("expenses.title")}</h1>
+          <p>{t("expenses.subtitle")}</p>
+        </div>
+        {/* Personal only: the household's lines are not searched. */}
+        <ExpenseSearch records={records} sources={sources} now={now} onPick={pickHit} />
       </motion.header>
 
       <Welcome />
@@ -212,7 +237,7 @@ function Expenses({ canRemind, joinCode }: { canRemind: boolean; joinCode?: stri
       ) : (
         <>
           <motion.div variants={rise}>
-            <MonthCard balance={figures.balance} budget={figures.budget} records={records} book={book} now={now} />
+            <MonthCard balance={figures.balance} budget={figures.budget} records={records} book={book} now={now} forecast={forecast} pockets={pockets} canRemind={canRemind} />
           </motion.div>
 
           <motion.div variants={rise} className={styles.tabs}>
@@ -238,10 +263,11 @@ function Expenses({ canRemind, joinCode }: { canRemind: boolean; joinCode?: stri
             {tab === "month" ? (
               <div className={styles.panel}>
                 <MonthPanel
-                  key={`${month}:${opened?.id ?? ""}:${focus ?? ""}`}
+                  key={`${month}:${opened?.id ?? ""}:${focus ?? ""}:${adding ? "add" : ""}`}
                   share={share}
                   month={month}
                   initialEditing={opened}
+                  adding={adding}
                   onEdited={closeOpened}
                   records={records}
                   items={figures.items}
@@ -272,8 +298,19 @@ function Expenses({ canRemind, joinCode }: { canRemind: boolean; joinCode?: stri
   );
 }
 
-/** "Il te reste…": the month at a glance, above every tab, with the budget, its warnings and what the pockets hold. */
-function MonthCard({ balance, budget, records, book, now }: { balance: ReturnType<typeof monthBalance>; budget: BudgetLine[]; records: ExpenseRecord[]; book: WalletBook; now: number }) {
+type CardProps = {
+  balance: ReturnType<typeof monthBalance>;
+  budget: BudgetLine[];
+  records: ExpenseRecord[];
+  book: WalletBook;
+  now: number;
+  forecast: MonthForecast | null;
+  pockets: PocketChoice;
+  canRemind: boolean;
+};
+
+/** "Il te reste…": the month at a glance, above every tab, with the end-of-month forecast, the budget, its warnings, what the pockets hold and what is set aside. */
+function MonthCard({ balance, budget, records, book, now, forecast, pockets, canRemind }: CardProps) {
   const { t, locale } = useTranslation();
   const { categoryName } = useExpenseLabels(records);
   const money = (value: number) => formatAriary(value, locale);
@@ -298,6 +335,7 @@ function MonthCard({ balance, budget, records, book, now }: { balance: ReturnTyp
           {t("expenses.card.out")} <strong data-testid="expenses-total">{money(balance.spent)}</strong>
         </span>
       </p>
+      {forecast && <Forecast forecast={forecast} />}
       {cap !== null && (
         <div className={styles.cardBudget}>
           <span className={styles.track} data-level={level}>
@@ -319,7 +357,33 @@ function MonthCard({ balance, budget, records, book, now }: { balance: ReturnTyp
         </p>
       )}
       <Pockets book={book} records={records} now={now} />
+      <Savings records={records} book={book} pockets={pockets} canRemind={canRemind} now={now} />
     </section>
+  );
+}
+
+/** "À ce rythme, il te restera…": the current month only; how it is worked out, on demand. */
+function Forecast({ forecast }: { forecast: MonthForecast }) {
+  const { t, locale } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const money = (value: number) => formatAriary(value, locale);
+  const short = forecast.amount < 0;
+  return (
+    <div className={styles.forecast}>
+      <p data-tone={short ? "bad" : undefined} data-testid="expenses-forecast">
+        {t(short ? "expenses.forecast.missing" : "expenses.forecast.left", { amount: money(Math.abs(forecast.amount)), day: new Date(forecast.lastDay).getDate() })}
+      </p>
+      <button type="button" className={styles.linkButton} aria-expanded={open} onClick={() => setOpen(!open)}>
+        {t("expenses.forecast.how")}
+      </button>
+      {open && (
+        <ul className={styles.forecastHow}>
+          <li>{t("expenses.forecast.now", { amount: money(forecast.leftNow) })}</li>
+          <li>{t("expenses.forecast.upcoming", { out: money(forecast.upcomingOut), in: money(forecast.upcomingIn) })}</li>
+          <li>{t("expenses.forecast.pace", { daily: money(forecast.dailyAverage), days: forecast.daysLeft })}</li>
+        </ul>
+      )}
+    </div>
   );
 }
 

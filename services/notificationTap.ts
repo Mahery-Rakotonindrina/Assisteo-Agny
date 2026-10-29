@@ -1,3 +1,4 @@
+import { EVENING_ENTRY_ID } from "./eveningReminder";
 import { EXPENSE_NOTIFICATION_PREFIX } from "./expenseReminders";
 import { PARCEL_NOTIFICATION_PREFIX } from "./parcelReminders";
 import { isSnoozeAction } from "./reminders";
@@ -16,10 +17,11 @@ type TapActions = {
   snoozed?: (at: number) => void;
 };
 
-/** Where the notification itself leads: "Mes colis", the vehicle in "Mon garage", "Mes dépenses", or the scan offering "remind me later". */
+/** Where the notification itself leads: "Mes colis", the vehicle in "Mon garage", "Mes dépenses" (the add form for the evening one), or the scan offering "remind me later". */
 export function tapTarget(entryId: string): TapTarget {
   if (entryId.startsWith(PARCEL_NOTIFICATION_PREFIX)) return { pathname: "/parcels" };
   if (entryId.startsWith(VEHICLE_NOTIFICATION_PREFIX)) return { pathname: "/garage", query: { open: entryId.slice(VEHICLE_NOTIFICATION_PREFIX.length) } };
+  if (entryId === EVENING_ENTRY_ID) return { pathname: "/expenses", query: { add: "expense" } };
   if (entryId.startsWith(EXPENSE_NOTIFICATION_PREFIX)) return { pathname: "/expenses" };
   return { pathname: "/result", query: { id: entryId, reminded: "1" } };
 }

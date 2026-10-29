@@ -44,6 +44,8 @@ type Props = {
   previousTotal: number;
   /** An expense to open in the form right away (from a scanned receipt). */
   initialEditing?: ManualExpense | null;
+  /** The add form, open right away (from the evening reminder). */
+  adding?: boolean;
   onEdited?: () => void;
   /** The household an expense can be moved to, when the user is a member. */
   share?: ShareChoice | null;
@@ -57,12 +59,12 @@ type Props = {
 const DAY = 86_400_000;
 
 /** The month: where the money goes, every line by day, and the export. */
-export function MonthPanel({ month, records, items, incomes, budget, budgetLines, previousTotal, initialEditing, onEdited, share, focus, book, pockets }: Props) {
+export function MonthPanel({ month, records, items, incomes, budget, budgetLines, previousTotal, initialEditing, adding, onEdited, share, focus, book, pockets }: Props) {
   const { t, locale } = useTranslation();
   const toast = useToast();
   const now = useNow(60_000);
   const { categoryName, categoryColor } = useExpenseLabels(records);
-  const [editing, setEditing] = useState<Partial<ManualExpense> | null>(initialEditing ?? null);
+  const [editing, setEditing] = useState<Partial<ManualExpense> | null>(initialEditing ?? (adding ? { at: defaultDay(month) } : null));
   const [opened, setOpened] = useState<string | null>(focus ?? null);
   const [fresh, setFresh] = useState<string | null>(null);
   const [filter, setFilter] = useState<string | null>(null);
