@@ -558,6 +558,8 @@ export type ApiErrorCode =
   | "invalid_code"
   | "expired"
   | "household_full"
+  /** Admin: a setting that needs a database migration not applied yet (supabase/migrations). */
+  | "migration_needed"
   | "method_not_allowed";
 
 export type ApiErrorBody = {

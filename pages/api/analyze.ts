@@ -70,7 +70,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   }
 
   // The plan comes from the signed-in account's subscriptions (free when signed out).
-  const { account, current, features } = await resolvePlan(req);
+  const { account, current, features, quotas } = await resolvePlan(req);
   if (override && !features.has("ownKey")) {
     return sendError(res, 403, "plan_required", "Your own AI key needs a subscription.");
   }
@@ -88,7 +88,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   let quota: (TrialState & { userId: string }) | null = null;
   let deepQuota: TrialState | null = null;
   if (!override && current.plan !== "free" && account) {
-    const { scans, deepPerMonth } = await limitsFor(current.plan);
+    const { scans, deepPerMonth } = await limitsFor(current.plan, undefined, quotas);
     const usage = await reservePlanScan(account.id, scans);
     if (usage === null) {
       await track({ type: "error", route: "analyze", code: "plan_limit" }, statsDevice);

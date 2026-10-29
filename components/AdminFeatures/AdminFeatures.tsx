@@ -6,11 +6,12 @@ import { PlanIcon } from "@/components/PlanBadge";
 import { SegmentedControl } from "@/components/SegmentedControl";
 import { useToast } from "@/components/Toast";
 import { useTranslation } from "@/hooks/useTranslation";
-import { featureChanges, setPlanFeatures, tickAlso, untickAlso, type FeatureChange } from "@/lib/featureChanges";
+import { featureChanges, setPlanFeatures, tickAlso, untickAlso, type ApplyMode, type FeatureChange } from "@/lib/featureChanges";
 import { rise } from "@/lib/motion";
 import { deepWithoutLimit, featureNeeds, planFeatures, planIds, type FeatureMode, type FeatureSettings, type PlanFeature, type PlanId } from "@/lib/plans";
 import type { AdminFeaturesResponse } from "@/pages/api/admin/features";
 import { httpClient } from "@/services/httpClient";
+import { ApiError } from "@/types/api";
 import styles from "./AdminFeatures.module.scss";
 
 /** A tick or an untick that drags other features with it: asked before it applies. */
@@ -37,6 +38,8 @@ export function AdminFeatures({ token, plansVersion = 0 }: { token: string; plan
   const [review, setReview] = useState(false);
   const [busy, setBusy] = useState(false);
   const [armed, setArmed] = useState<PlanFeature | null>(null);
+  // A change of a plan's features: for every active subscriber (as before), or only new subscriptions and renewals.
+  const [apply, setApply] = useState<ApplyMode>("all");
   const headers = { Authorization: `Bearer ${token}` };
 
   const received = (result: AdminFeaturesResponse) => {
@@ -47,6 +50,7 @@ export function AdminFeatures({ token, plansVersion = 0 }: { token: string; plan
     setTesterText(Object.fromEntries(planFeatures.map((feature) => [feature, result.featureStatus[feature].testers.join("\n")])));
     setReview(false);
     setAsk(null);
+    setApply("all");
   };
 
   useEffect(() => {
@@ -90,13 +94,15 @@ export function AdminFeatures({ token, plansVersion = 0 }: { token: string; plan
     setDraft({ ...draft, featureStatus: { ...draft.featureStatus, [feature]: { ...draft.featureStatus[feature], testers } } });
   };
 
-  const put = async (settings: FeatureSettings) => {
+  const put = async (settings: FeatureSettings, mode: ApplyMode = "all") => {
     setBusy(true);
     try {
-      received(await httpClient.put<AdminFeaturesResponse>("/api/admin/features", settings, { headers }));
+      const result = await httpClient.put<AdminFeaturesResponse>("/api/admin/features", { ...settings, apply: mode }, { headers });
+      received(result);
+      if (result.kept !== undefined) toast(t("admin.features.kept", { count: result.kept }));
       return true;
-    } catch {
-      toast(t("admin.error"), "error");
+    } catch (error) {
+      toast(error instanceof ApiError && error.code === "migration_needed" ? t("admin.migrationNeeded") : t("admin.error"), "error");
       return false;
     } finally {
       setBusy(false);
@@ -121,6 +127,10 @@ export function AdminFeatures({ token, plansVersion = 0 }: { token: string; plan
     : [];
   const badTester = planFeatures.flatMap((feature) => (draft.featureStatus[feature].mode === "test" ? draft.featureStatus[feature].testers : [])).find((email) => !looksLikeEmail(email));
   const blocked = Boolean(badTester) || noDeepLimit.length > 0;
+
+  // The paid plans whose features change: only their running subscriptions may keep what they have.
+  const paidChanged = changes.flatMap((change) => (change.kind === "plan" && change.plan !== "free" ? [change.plan] : []));
+  const touched = subscribers ? paidChanged.reduce((sum, plan) => sum + subscribers[plan], 0) : null;
 
   const concerned = (plan: PlanId) => {
     if (plan === "free") return t("admin.features.freeAccounts");
@@ -280,8 +290,31 @@ export function AdminFeatures({ token, plansVersion = 0 }: { token: string; plan
               );
             })}
           </ul>
+          {paidChanged.length > 0 && (
+            <fieldset className={styles.apply}>
+              <legend>{t("admin.features.applyTitle")}</legend>
+              <label>
+                <input type="radio" name="feature-apply" checked={apply === "all"} onChange={() => setApply("all")} />
+                <span>
+                  <strong>{t("admin.features.applyAll")}</strong>
+                  <small>{t("admin.features.applyAllHint")}</small>
+                </span>
+              </label>
+              <label>
+                <input type="radio" name="feature-apply" checked={apply === "new"} onChange={() => setApply("new")} />
+                <span>
+                  <strong>{t("admin.features.applyNew")}</strong>
+                  <small>{touched === null ? t("admin.features.subscribersUnknown") : t("admin.features.applyNewHint", { count: touched })}</small>
+                </span>
+              </label>
+            </fieldset>
+          )}
           <div className={styles.actions}>
-            <Button icon={<Save />} disabled={busy || blocked} onClick={() => void put(draft).then((ok) => ok && toast(t("admin.saved")))}>
+            <Button
+              icon={<Save />}
+              disabled={busy || blocked}
+              onClick={() => void put(draft, paidChanged.length > 0 ? apply : "all").then((ok) => ok && apply === "all" && toast(t("admin.saved")))}
+            >
               {t("admin.features.confirm")}
             </Button>
             <Button variant="ghost" icon={<X />} disabled={busy} onClick={() => setReview(false)}>

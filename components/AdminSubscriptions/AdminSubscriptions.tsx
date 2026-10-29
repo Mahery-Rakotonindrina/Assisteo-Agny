@@ -1,7 +1,8 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { CalendarClock, ChevronDown, Copy, Mail, Pencil, Plus, RefreshCw, Save, Search, Square, Trash2, Users, X } from "lucide-react";
+import { CalendarClock, ChevronDown, Copy, IdCard, Mail, Pencil, Plus, RefreshCw, Save, Search, Square, Trash2, Users, X } from "lucide-react";
+import { AdminAccountCard } from "@/components/AdminAccountCard";
 import { Button } from "@/components/Button";
 import { PlanBadge, PlanIcon } from "@/components/PlanBadge";
 import { useToast } from "@/components/Toast";
@@ -9,12 +10,28 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { formatAriary, formatDate, toDateInput } from "@/lib/format";
 import { easeOut, rise, spring } from "@/lib/motion";
 import { offeredMethods, suggestedAmount } from "@/lib/offers";
-import { activePlan, durations, paidPlans, periodEnd, type ActivePlan, type Duration, type PaidPlanId, type PlansConfig, type Subscription } from "@/lib/plans";
+import {
+  activePlan,
+  durations,
+  normalizeDiff,
+  normalizeQuotas,
+  paidPlans,
+  periodEnd,
+  subscriptionDeepWithoutLimit,
+  type ActivePlan,
+  type Duration,
+  type FeatureDiff,
+  type PaidPlanId,
+  type PlansConfig,
+  type QuotaOverrides,
+  type Subscription,
+} from "@/lib/plans";
 import type { AdminDiscountResponse } from "@/pages/api/admin/promo-codes";
 import type { AdminSubscriptionsResponse } from "@/pages/api/admin/subscriptions";
 import { httpClient } from "@/services/httpClient";
 import { ApiError } from "@/types/api";
 import { AdminCharts } from "./AdminCharts";
+import { OwnSettings } from "./OwnSettings";
 import { PaymentsExport } from "./PaymentsExport";
 import styles from "./AdminSubscriptions.module.scss";
 
@@ -77,6 +94,9 @@ type Draft = {
   method: string;
   ref: string;
   note: string;
+  /** Its own features and limits; null: the plan's (a renewal starts from the plan). */
+  features: FeatureDiff | null;
+  quotas: QuotaOverrides | null;
 };
 
 const midnight = (day: string) => {
@@ -87,7 +107,7 @@ const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 const splitEmails = (value: string) => [...new Set(value.split(/[\s,;]+/).map((email) => email.trim().toLowerCase()).filter(Boolean))];
 
 function newDraft(now: number, patch: Partial<Draft> = {}): Draft {
-  return { emails: "", plan: "lite", start: toDateInput(now), duration: "month", end: "", amount: "", method: "mvola", ref: "", note: "", ...patch };
+  return { emails: "", plan: "lite", start: toDateInput(now), duration: "month", end: "", amount: "", method: "mvola", ref: "", note: "", features: null, quotas: null, ...patch };
 }
 
 function draftFor(row: Subscription): Draft {
@@ -105,6 +125,8 @@ function draftFor(row: Subscription): Draft {
     method: row.paymentMethod ?? "",
     ref: row.paymentRef ?? "",
     note: row.note ?? "",
+    features: row.features ?? null,
+    quotas: row.quotas ?? null,
   };
 }
 
@@ -139,6 +161,7 @@ export function AdminSubscriptions({ token, owner }: { token: string; owner: boo
   const [filter, setFilter] = useState<Filter>("all");
   const [draft, setDraft] = useState<Draft | null>(null);
   const [openEmail, setOpenEmail] = useState<string | null>(null);
+  const [cardEmail, setCardEmail] = useState<string | null>(null);
   const [now, setNow] = useState(timestamp);
   const headers = { Authorization: `Bearer ${token}` };
 
@@ -169,7 +192,10 @@ export function AdminSubscriptions({ token, owner }: { token: string; owner: boo
       reload();
       return true;
     } catch (error) {
-      toast(error instanceof ApiError && error.code === "owner_only" ? t("admin.ownerOnly") : t("admin.error"), "error");
+      toast(
+        error instanceof ApiError && error.code === "owner_only" ? t("admin.ownerOnly") : error instanceof ApiError && error.code === "migration_needed" ? t("admin.migrationNeeded") : t("admin.error"),
+        "error",
+      );
       return false;
     }
   };
@@ -354,6 +380,9 @@ export function AdminSubscriptions({ token, owner }: { token: string; owner: boo
                         <Button size="md" variant="secondary" icon={<RefreshCw />} onClick={() => renew(person)}>
                           {t("admin.subs.renew")}
                         </Button>
+                        <Button size="md" variant="secondary" icon={<IdCard />} onClick={() => setCardEmail(person.email)}>
+                          {t("admin.card.open")}
+                        </Button>
                         {person.status !== "offered" && person.shown !== "unlimited" && (
                           <>
                             <a
@@ -441,6 +470,7 @@ export function AdminSubscriptions({ token, owner }: { token: string; owner: boo
           if (ok) setDraft(null);
         }}
       />
+      <AdminAccountCard token={token} email={cardEmail} onClose={() => setCardEmail(null)} />
     </motion.section>
   );
 }
@@ -528,8 +558,16 @@ function SheetForm({
   const emails = splitEmails(draft.emails);
   const badEmail = emails.find((email) => !EMAIL.test(email));
   const range = period(draft, now);
-  const valid = emails.length > 0 && (!editing || emails.length === 1) && !badEmail && range !== null;
-  const [offers, setOffers] = useState<PlansConfig["offers"] | null>(null);
+  const [config, setConfig] = useState<PlansConfig | null>(null);
+  const offers = config?.offers ?? null;
+  // Its own features and limits, kept only where they differ from the plan chosen (none for Admin).
+  const sold = draft.plan === "unlimited" ? null : draft.plan;
+  const planList = config ? config.features[draft.plan] : null;
+  const limits = config && sold ? config.offers[sold] : null;
+  const ownFeatures = planList && sold ? normalizeDiff(planList, draft.features) : null;
+  const ownQuotas = limits ? normalizeQuotas(limits, draft.quotas) : null;
+  const deepWithoutLimit = Boolean(config && sold && subscriptionDeepWithoutLimit(sold, config, ownFeatures, ownQuotas));
+  const valid = emails.length > 0 && (!editing || emails.length === 1) && !badEmail && range !== null && !deepWithoutLimit;
   const [discount, setDiscount] = useState<AdminDiscountResponse["discount"]>(null);
   // An amount typed by the admin (or an edited record's) is never replaced by a suggestion.
   const [typed, setTyped] = useState(editing);
@@ -538,7 +576,7 @@ function SheetForm({
   useEffect(() => {
     httpClient
       .get<PlansConfig>("/api/admin/plans", { headers: { Authorization: `Bearer ${token}` } })
-      .then((config) => setOffers(config.offers))
+      .then(setConfig)
       .catch(() => undefined);
   }, [token]);
 
@@ -574,6 +612,9 @@ function SheetForm({
       paymentMethod: draft.method || null,
       paymentRef: draft.ref || null,
       note: draft.note || null,
+      // Unknown until the plans are read: left as they are. A new subscription without its own sends nothing.
+      ...(config && (editing || ownFeatures) && { features: ownFeatures }),
+      ...(config && (editing || ownQuotas) && { quotas: ownQuotas }),
     };
     await onSave(editing ? { ...fields, id: draft.id, email: emails[0] } : { ...fields, emails }, editing);
     setSaving(false);
@@ -632,6 +673,17 @@ function SheetForm({
           <p className={styles.adminWarning} data-plan="unlimited">
             {t("admin.subs.adminHint")}
           </p>
+        )}
+
+        {planList && limits && (
+          <OwnSettings
+            planList={planList}
+            limits={limits}
+            diff={ownFeatures}
+            quotas={ownQuotas}
+            deepWithoutLimit={deepWithoutLimit}
+            onChange={(features, quotas) => setDraft((current) => ({ ...current, features, quotas }))}
+          />
         )}
 
         <div className={styles.grid}>
