@@ -68,7 +68,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   let planUser: string | null = null;
   let usage: { used: number; limit: number } | undefined;
   if (!override && current.plan !== "free" && account) {
-    const { questionsPerDay } = await limitsFor(current.plan, undefined, quotas);
+    const { questionsPerDay } = await limitsFor(current.plan, undefined, quotas, features);
     const booked = await reservePlanAsk(account.id, questionsPerDay);
     if (!booked) return sendError(res, 403, "ask_limit", "Today's questions of your plan are used up.");
     await countServerCall();

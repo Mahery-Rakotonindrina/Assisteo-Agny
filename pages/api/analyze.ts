@@ -88,7 +88,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   let quota: (TrialState & { userId: string }) | null = null;
   let deepQuota: TrialState | null = null;
   if (!override && current.plan !== "free" && account) {
-    const { scans, deepPerMonth } = await limitsFor(current.plan, undefined, quotas);
+    const { scans, deepPerMonth } = await limitsFor(current.plan, undefined, quotas, features);
     const usage = await reservePlanScan(account.id, scans);
     if (usage === null) {
       await track({ type: "error", route: "analyze", code: "plan_limit" }, statsDevice);
@@ -131,6 +131,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     trial = { subject, ip, ...usage };
   }
 
+  // A deep analysis offered to a free account counts too, under the emergency cap (never without a limit).
+  let freeDeep: string | null = null;
+  if (deep && !quota && account) {
+    const { deepPerMonth } = await limitsFor(current.plan, undefined, quotas, features);
+    deepQuota = await reservePlanDeep(account.id, deepPerMonth);
+    if (!deepQuota) {
+      if (trial) await Promise.all([releaseTrialScan(trial.subject, trial.ip), releaseServerCall()]).catch(() => undefined);
+      await track({ type: "error", route: "analyze", code: "deep_limit" }, statsDevice);
+      return sendError(res, 403, "deep_limit", "This month's deep analyses are used up.");
+    }
+    freeDeep = account.id;
+  }
+
   // Stop paying for tokens if the user cancels or leaves the screen.
   const abort = new AbortController();
   res.on("close", () => {
@@ -159,7 +172,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     } satisfies AnalyzeResponse);
   } catch (error) {
     // A failed or cancelled analysis doesn't consume a trial scan.
-    if (trial) await Promise.all([releaseTrialScan(trial.subject, trial.ip), releaseServerCall()]).catch(() => undefined);
+    if (trial) await Promise.all([releaseTrialScan(trial.subject, trial.ip), releaseServerCall(), freeDeep && releasePlanDeep(freeDeep)]).catch(() => undefined);
     if (quota) await Promise.all([releasePlanScan(quota.userId), releaseServerCall(), deepQuota && releasePlanDeep(quota.userId)]).catch(() => undefined);
     if (abort.signal.aborted) return;
     await track({ type: "error", route: "analyze", code: error instanceof AnalysisError ? error.code : "upstream_error" }, statsDevice);

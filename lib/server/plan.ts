@@ -1,5 +1,5 @@
 import type { NextApiRequest } from "next";
-import { effectiveFeatures, runningGrants, withQuotas, type ActivePlan, type FeatureGrant, type PlanFeature, type PlanLimits, type PlansConfig, type QuotaOverrides } from "@/lib/plans";
+import { effectiveFeatures, runningGrants, withDeepFallback, withQuotas, type ActivePlan, type FeatureGrant, type PlanFeature, type PlanLimits, type PlansConfig, type QuotaOverrides } from "@/lib/plans";
 import { currentGrantsForEmail } from "./featureGrants";
 import { getPlansConfig } from "./planConfig";
 import { reportError } from "./reportError";
@@ -56,15 +56,27 @@ async function currentGrants(email: string | null): Promise<FeatureGrant[]> {
   }
 }
 
-/** What a plan allows, with a subscription's own limits over it (`quotas` of `resolvePlan`); 0 means no limit. */
-export async function limitsFor(plan: ActivePlan["plan"], config?: PlansConfig, quotas?: QuotaOverrides | null): Promise<PlanLimits> {
-  if (plan === "unlimited") return { scans: 0, questionsPerDay: 0, parcels: 0, deepPerMonth: 0 };
+/**
+ * What a plan allows, with a subscription's own limits over it (`quotas` of
+ * `resolvePlan`); 0 means no limit. With `features` (those of `resolvePlan`),
+ * deep analyses allowed without a monthly count get the emergency cap.
+ */
+export async function limitsFor(plan: ActivePlan["plan"], config?: PlansConfig, quotas?: QuotaOverrides | null, features?: ReadonlySet<PlanFeature>): Promise<PlanLimits> {
+  return (await limitsWithCap(plan, config, quotas, features)).limits;
+}
+
+/** `limitsFor`, telling whether the emergency cap applies (the account's card). */
+export async function limitsWithCap(plan: ActivePlan["plan"], config?: PlansConfig, quotas?: QuotaOverrides | null, features?: ReadonlySet<PlanFeature>) {
+  if (plan === "unlimited") return { limits: { scans: 0, questionsPerDay: 0, parcels: 0, deepPerMonth: 0 }, fallback: false };
   const plans = config ?? (await getPlansConfig());
+  let limits: PlanLimits;
   if (plan === "free") {
     const trial = await getTrialConfig();
-    // No deep analyses without a plan (the feature is refused before any count).
-    return { scans: trial.limit, questionsPerDay: trial.askLimit, parcels: plans.freeParcels, deepPerMonth: 0 };
+    // No deep analyses without a plan, but for an offered access (then under the cap).
+    limits = { scans: trial.limit, questionsPerDay: trial.askLimit, parcels: plans.freeParcels, deepPerMonth: 0 };
+  } else {
+    const { scans, questionsPerDay, parcels, deepPerMonth } = plans.offers[plan];
+    limits = withQuotas(plan, { scans, questionsPerDay, parcels, deepPerMonth }, quotas);
   }
-  const { scans, questionsPerDay, parcels, deepPerMonth } = plans.offers[plan];
-  return withQuotas(plan, { scans, questionsPerDay, parcels, deepPerMonth }, quotas);
+  return withDeepFallback(plan, limits, features, plans.offers);
 }

@@ -83,7 +83,7 @@ function CardSheet({ token, email, onClose }: { token: string; email: string; on
   const planName = card ? t(`plans.names.${card.plan}`) : "";
   const end = offerEnd(duration, day, now);
   // Deep analyses without a monthly count would have no limit: the server refuses it too.
-  const deepBlocked = feature === "deepAnalysis" && card !== null && card.plan !== "unlimited" && card.quotas.find((quota) => quota.key === "deepPerMonth")?.value === 0;
+  const deepBlocked = feature === "deepAnalysis" && card !== null && card.plan !== "unlimited" && card.quotas.some((quota) => quota.key === "deepPerMonth" && (quota.value === 0 || quota.fallback));
 
   const failure = (error: unknown) => toast(error instanceof ApiError && error.code === "migration_needed" ? t("admin.migrationNeeded") : t("admin.error"), "error");
 
@@ -192,10 +192,10 @@ function CardSheet({ token, email, onClose }: { token: string; email: string; on
             <h3 className={shared.group}>{t("admin.card.quotas")}</h3>
             <ul className={styles.lines} aria-label={t("admin.card.quotas")}>
               {card.quotas.map((quota) => (
-                <li key={quota.key} data-on="" data-kind={quota.own ? "added" : "plan"}>
+                <li key={quota.key} data-on="" data-kind={quota.fallback ? "missing" : quota.own ? "added" : "plan"}>
                   <strong>{t(`admin.plans.fields.${quota.key}`)}</strong>
                   <span className={styles.value}>{quota.value === 0 ? t("admin.card.unlimited") : formatNumber(quota.value, locale)}</span>
-                  <small>{quota.own ? t("admin.card.quotaOwn") : t("admin.card.quotaPlan", { plan: planName })}</small>
+                  <small>{quota.fallback ? t("admin.card.quotaFallback") : quota.own ? t("admin.card.quotaOwn") : t("admin.card.quotaPlan", { plan: planName })}</small>
                 </li>
               ))}
             </ul>

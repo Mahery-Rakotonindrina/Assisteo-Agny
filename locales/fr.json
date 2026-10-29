@@ -444,6 +444,7 @@
   "admin": {
     "migrationNeeded": "Colle d’abord la migration 0011 dans Supabase (SQL Editor) : sans elle, ce réglage ne peut pas être gardé.",
     "card": {
+      "quotaFallback": "Plafond de secours (aucun nombre réglé)",
       "open": "Fiche",
       "features": "Ses fonctions",
       "quotas": "Ses quotas",

@@ -444,6 +444,7 @@
   "admin": {
     "migrationNeeded": "Paste migration 0011 into Supabase (SQL Editor) first: without it, this setting can't be kept.",
     "card": {
+      "quotaFallback": "Emergency cap (no count set)",
       "open": "Card",
       "features": "Their features",
       "quotas": "Their limits",

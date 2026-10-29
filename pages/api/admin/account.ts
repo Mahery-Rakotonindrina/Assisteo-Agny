@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
   activePlan,
   activeSubscription,
+  effectiveFeatures,
   featureOrigins,
   normalizeQuotas,
   planFeatures,
@@ -16,7 +17,7 @@ import { guardAdmin } from "@/lib/server/adminAuth";
 import { logAdminAction } from "@/lib/server/adminLog";
 import { addGrant, getGrant, grantsForEmail, grantsReady, stopGrant } from "@/lib/server/featureGrants";
 import { sendError } from "@/lib/server/http";
-import { limitsFor } from "@/lib/server/plan";
+import { limitsFor, limitsWithCap } from "@/lib/server/plan";
 import { getPlansConfig } from "@/lib/server/planConfig";
 import { reportError } from "@/lib/server/reportError";
 import { MigrationNeededError } from "@/lib/server/schemaMissing";
@@ -32,7 +33,7 @@ export type AdminAccountCard = {
   /** Every feature, whether the account has it and why. */
   features: FeatureLine[];
   /** Each limit (0 = no limit), and whether its subscription sets it ("own") or its plan does. */
-  quotas: Array<{ key: keyof PlanLimits; value: number; own: boolean }>;
+  quotas: Array<{ key: keyof PlanLimits; value: number; own: boolean; /** Deep analyses allowed with no count: the emergency cap applies. */ fallback?: boolean }>;
   /** Every offer made to it, ended ones included, the latest first. */
   grants: FeatureGrant[];
   /** False before migration 0011: own settings and offers can't be kept yet. */
@@ -124,13 +125,20 @@ async function card(email: string): Promise<AdminAccountCard> {
   const [{ config, current, running }, grants, own, offers] = await Promise.all([planAndLimits(email, now), grantsForEmail(email), ownSettingsReady(), grantsReady()]);
   const base = await limitsFor(current.plan, config);
   const ownQuotas = current.plan === "unlimited" ? null : normalizeQuotas(base, running?.quotas);
+  const input = { plan: current.plan, email, config, subscription: running, grants, now };
+  // The limits as the server applies them, the emergency cap on deep analyses included.
+  const capped = await limitsWithCap(current.plan, config, running?.quotas, effectiveFeatures(input));
   return {
     email,
     plan: current.plan,
     endsAt: current.endsAt,
     subscriptionId: running?.id ?? null,
-    features: featureOrigins({ plan: current.plan, email, config, subscription: running, grants, now }),
-    quotas: quotaKeys.map((key) => ({ key, value: ownQuotas?.[key] ?? base[key], own: ownQuotas?.[key] !== undefined })),
+    features: featureOrigins(input),
+    quotas: quotaKeys.map((key) =>
+      capped.fallback && key === "deepPerMonth"
+        ? { key, value: capped.limits.deepPerMonth, own: false, fallback: true }
+        : { key, value: ownQuotas?.[key] ?? base[key], own: ownQuotas?.[key] !== undefined },
+    ),
     grants,
     ready: { own, grants: offers },
   };

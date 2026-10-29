@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { describeOwn, keepRunningRights, setPlanFeatures, toggleOwnFeature } from "@/lib/featureChanges";
 import {
   defaultFeatureSettings,
+  deepFallbackLimit,
   defaultPlansConfig,
   effectiveFeatures,
   featureOrigins,
@@ -12,6 +13,7 @@ import {
   planFeatures,
   planIds,
   subscriptionDeepWithoutLimit,
+  withDeepFallback,
   withQuotas,
   type FeatureSettings,
   type PlanFeature,
@@ -182,6 +184,33 @@ describe("only new subscriptions and renewals", () => {
     const rows = [{ email: "a@example.com", plan: "lite" as const, starts_at: "2026-10-01T00:00:00Z", ends_at: null, features: { add: [], remove: ["reminders" as PlanFeature] } }];
     const grants = [{ email: "B@example.com", feature: "reminders" as const, startsAt: "2026-10-01T00:00:00Z", endsAt: "2026-12-01T00:00:00Z" }];
     expect([...paidReminderUsers(users, rows, NOW, defaultFeatureSettings, grants)]).toEqual(["u2"]);
+  });
+});
+
+describe("the emergency cap on deep analyses", () => {
+  const grant = { feature: "deepAnalysis" as const, startsAt: "2026-10-01T00:00:00Z", endsAt: "2026-11-30T00:00:00Z" };
+
+  it("never leaves deep analyses without a limit once the count is back to 0", async () => {
+    const { limitsFor, limitsWithCap } = await import("@/lib/server/plan");
+    // A Lite offered deep analyses, its own count gone (renewed, or back to the plan).
+    const features = effectiveFeatures({ plan: "lite", config, grants: [grant], now: NOW });
+    expect(features.has("deepAnalysis")).toBe(true);
+    const capped = await limitsWithCap("lite", config, null, features);
+    expect(capped).toMatchObject({ fallback: true, limits: { deepPerMonth: 30 } });
+    // Its own count, when set, stays.
+    expect((await limitsFor("lite", config, { deepPerMonth: 5 }, features)).deepPerMonth).toBe(5);
+    // A free account with an offer too; without deep analyses, nothing changes.
+    expect((await limitsFor("free", config, null, effectiveFeatures({ plan: "free", config, grants: [grant], now: NOW }))).deepPerMonth).toBe(30);
+    expect((await limitsWithCap("lite", config, null, effectiveFeatures({ plan: "lite", config, now: NOW }))).fallback).toBe(false);
+    // Admin stays without a limit.
+    expect(await limitsWithCap("unlimited", config, null, effectiveFeatures({ plan: "unlimited", config, now: NOW }))).toMatchObject({ fallback: false, limits: { deepPerMonth: 0 } });
+  });
+
+  it("takes the smallest count of the paid plans, else 5", () => {
+    expect(deepFallbackLimit(config.offers)).toBe(30);
+    expect(deepFallbackLimit({ lite: { deepPerMonth: 0 }, premium: { deepPerMonth: 12 }, pro: { deepPerMonth: 8 } })).toBe(8);
+    expect(deepFallbackLimit({ lite: { deepPerMonth: 0 }, premium: { deepPerMonth: 0 }, pro: { deepPerMonth: 0 } })).toBe(5);
+    expect(withDeepFallback("pro", { scans: 0, questionsPerDay: 0, parcels: 0, deepPerMonth: 0 }, new Set(["deepAnalysis" as const]), config.offers).limits.deepPerMonth).toBe(30);
   });
 });
 

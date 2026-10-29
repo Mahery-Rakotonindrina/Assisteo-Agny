@@ -320,6 +320,29 @@ export function withQuotas(plan: PlanId, base: PlanLimits, quotas: QuotaOverride
   return { ...base, ...normalizeQuotas(base, quotas) };
 }
 
+/** The deep analyses a month when none is set: the smallest count of the paid plans, else 5. */
+export function deepFallbackLimit(offers: Record<SoldPlanId, Pick<PlanLimits, "deepPerMonth">>): number {
+  const counts = soldPlans.map((plan) => offers[plan].deepPerMonth).filter((count) => count > 0);
+  return counts.length > 0 ? Math.min(...counts) : 5;
+}
+
+/**
+ * The emergency cap: an account other than Admin that may use deep analyses
+ * (its plan, its own, an offer) with no monthly count (0 = no limit, on the
+ * costliest model) gets `deepFallbackLimit` instead. Checked whenever the
+ * limits are reckoned, so a renewal or "back to the plan" never leaves an
+ * offered access without a limit.
+ */
+export function withDeepFallback(
+  plan: PlanId,
+  limits: PlanLimits,
+  features: ReadonlySet<PlanFeature> | undefined,
+  offers: Record<SoldPlanId, Pick<PlanLimits, "deepPerMonth">>,
+): { limits: PlanLimits; fallback: boolean } {
+  if (plan === "unlimited" || !features?.has("deepAnalysis") || limits.deepPerMonth > 0) return { limits, fallback: false };
+  return { limits: { ...limits, deepPerMonth: deepFallbackLimit(offers) }, fallback: true };
+}
+
 /**
  * Deep analyses on a subscription without a monthly count (0 = no limit),
  * because of its own settings (deep analyses ticked on it, or its count set
