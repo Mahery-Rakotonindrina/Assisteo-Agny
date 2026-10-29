@@ -1,8 +1,10 @@
 import { byKind, newBudgetAlerts, nextDueReminder, type BudgetLevel, type BudgetLine, type DueAlert, type ExpenseRecord } from "@/lib/expenses";
+import { nextTontineReminder, type TontineAlert } from "@/lib/savings";
 import { cancelNotification, getNotificationPermission, notify, pendingNotificationIds } from "./notifications";
 
 // "Mes dépenses" notifications: a recurring expense's due date (the day
-// before or the day itself, at 9:00), and the budget reaching 80 % then
+// before or the day itself, at 9:00), a tontine's payment (the day before,
+// at 9:00), and the budget reaching 80 % then
 // going over. Same scheme as services/vehicleReminders.ts: the ids scheduled
 // on this device are kept here, not in the records.
 
@@ -12,7 +14,7 @@ export const EXPENSE_NOTIFICATION_PREFIX = "expense:";
 const STORAGE_KEY = "expense-reminders.v1";
 const ALERTS_KEY = "expense-budget-alerts.v1";
 
-/** What this device has scheduled, by recurring id. */
+/** What this device has scheduled, by recurring id (`tontine:<id>` for a tontine). */
 export type ScheduledExpenseReminders = Record<string, { id: number; at: number; text: string }>;
 
 type Texts = { title: string; body: string };
@@ -27,15 +29,22 @@ export type ExpenseReminderDeps = {
   save: (scheduled: ScheduledExpenseReminders) => void;
 };
 
-export type ExpenseReminderTexts = (alert: DueAlert) => Texts;
+/** A recurring expense's due date, or a tontine's next payment. */
+export type ExpenseAlert = DueAlert | TontineAlert;
+
+export type ExpenseReminderTexts = (alert: ExpenseAlert) => Texts;
 
 /** The reminders wanted now, by recurring id; none while the plan doesn't include them. */
 export function plannedExpenseReminders(records: ExpenseRecord[], now: number, enabled = true) {
-  const planned = new Map<string, DueAlert>();
+  const planned = new Map<string, ExpenseAlert>();
   if (!enabled) return planned;
   for (const recurring of byKind(records, "recurring")) {
     const alert = nextDueReminder(recurring, records, now);
     if (alert) planned.set(recurring.id, alert);
+  }
+  for (const tontine of byKind(records, "tontine")) {
+    const alert = nextTontineReminder(tontine, now);
+    if (alert) planned.set(`tontine:${tontine.id}`, alert);
   }
   return planned;
 }

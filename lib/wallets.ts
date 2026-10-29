@@ -18,6 +18,7 @@ import {
   type Wallet,
   type WalletType,
 } from "@/lib/expenses";
+import { savedTotal, savingsMoves } from "@/lib/savings";
 
 // "Mes poches": where the money really is (cash, MVola, the bank…). Pure, so
 // it can be tested. A pocket starts from what it held on a day; every line
@@ -215,7 +216,8 @@ export const typedMoves = (records: ExpenseRecord[]): PocketMove[] =>
 
 // ---- Balances -------------------------------------------------------------------------
 
-export type MovementType = "expense" | "income" | "move_in" | "move_out" | "correction";
+/** "saved": put aside (a goal, a tontine payment); "unsaved": taken back; "pot": the tontine's pot received. */
+export type MovementType = "expense" | "income" | "move_in" | "move_out" | "correction" | "saved" | "unsaved" | "pot";
 
 /** One change to a pocket, signed (negative: money out). */
 export type Movement = {
@@ -240,6 +242,8 @@ export type WalletBook = {
   moves: PocketMove[];
   /** Everything in the pockets shown (archived ones left out). */
   total: number;
+  /** Money set aside (goals, tontines): out of the pockets, so out of the total. */
+  saved: number;
 };
 
 /** At most 20 years of months are read back, from the oldest pocket. */
@@ -272,7 +276,8 @@ export function walletBook(records: ExpenseRecord[], sources: SourceItem[], now:
     movements.get(wallet.id)!.push({ ...movement, at });
   };
   const moves = [...typedMoves(records), ...scannedMoves(records, sources, context)].sort((a, b) => b.at - a.at || a.key.localeCompare(b.key));
-  if (context.wallets.length === 0) return { context, balances, movements, moves, total: 0 };
+  const saved = savedTotal(records);
+  if (context.wallets.length === 0) return { context, balances, movements, moves, total: 0, saved };
 
   const first = monthKey(Math.min(...context.wallets.map((wallet) => wallet.startAt)));
   const last = monthKey(now);
@@ -300,10 +305,11 @@ export function walletBook(records: ExpenseRecord[], sources: SourceItem[], now:
   }
   for (const correction of byKind(records, "correction"))
     add(correction.wallet, correction.at, correction.createdAt, { key: `correction:${correction.id}`, type: "correction", amountMga: correction.amountMga });
+  for (const move of savingsMoves(records)) add(move.wallet, move.at, move.at, { key: move.key, type: move.type, amountMga: move.amountMga, label: move.name });
 
   for (const list of movements.values()) list.sort((a, b) => b.at - a.at || a.key.localeCompare(b.key));
   const total = activeWallets(context.wallets).reduce((sum, wallet) => sum + (balances.get(wallet.id) ?? 0), 0);
-  return { context, balances, movements, moves, total };
+  return { context, balances, movements, moves, total, saved };
 }
 
 /** "My balance is really…": the correction to write (0: nothing to do). */

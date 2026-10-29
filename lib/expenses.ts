@@ -186,7 +186,41 @@ export type Correction = Base & { kind: "correction"; wallet: string; at: number
 /** The pocket picked for a computed line (a bill, a receipt…), by its key; "to:<key>" is a scanned move's arrival. */
 export type WalletPick = Base & { kind: "walletPick"; sourceKey: string; wallet: string };
 
-export type ExpenseRecord = ManualExpense | Income | Recurring | Budget | CustomCategory | Exclusion | Wallet | Transfer | Correction | WalletPick;
+// ---- Money set aside (lib/savings.ts) ------------------------------------------------
+// Neither spent nor earned: it only leaves a pocket (and comes back to one).
+// Kinds an older app doesn't know either.
+
+/** Money put in (or taken back, when negative), from or to a pocket. */
+export type SavingsDeposit = { id: string; at: number; amountMga: number; wallet?: string };
+
+/** "Rentrée scolaire": what is aimed at, by a day or not, and what was put aside. */
+export type SavingsGoal = Base & { kind: "savingsGoal"; name: string; targetMga: number; dueAt?: number; deposits: SavingsDeposit[] };
+
+export const tontineFrequencies = ["weekly", "monthly"] as const;
+export type TontineFrequency = (typeof tontineFrequencies)[number];
+
+/**
+ * A tontine (or a cotisation): each member pays the same amount each round,
+ * and one of them gets the pot. `myTurn` is the round (1 = the first) the
+ * user gets it.
+ */
+export type Tontine = Base & {
+  kind: "tontine";
+  name: string;
+  amountMga: number;
+  frequency: TontineFrequency;
+  members: number;
+  /** The first round's day (local midnight). */
+  startAt: number;
+  myTurn: number;
+  deposits: SavingsDeposit[];
+  /** The pot, once received. */
+  received?: { at: number; amountMga: number; wallet?: string };
+  /** A reminder the day before each payment (with the reminders' plan). */
+  remind: boolean;
+};
+
+export type ExpenseRecord = ManualExpense | Income | Recurring | Budget | CustomCategory | Exclusion | Wallet | Transfer | Correction | WalletPick | SavingsGoal | Tontine;
 
 export const BUDGET_ID = "budget";
 export const exclusionId = (sourceKey: string) => `exclusion:${sourceKey}`;
@@ -708,6 +742,62 @@ export function monthTotals(items: Pick<MonthItem, "amountMga" | "category" | "e
     categories.set(item.category, (categories.get(item.category) ?? 0) + item.amountMga);
   }
   return { total, byCategory: [...categories.entries()].map(([category, amount]) => ({ category, amount })).sort((a, b) => b.amount - a.amount) };
+}
+
+// ---- End of the month -------------------------------------------------------------------
+
+export type MonthForecast = {
+  /** What is left at the end of the month, to the nearest thousand (negative: what will be missing). */
+  amount: number;
+  /** The month's last day (local midnight). */
+  lastDay: number;
+  /** Incomes minus expenses counted up to today. */
+  leftNow: number;
+  /** Still to come this month: the fixed expenses (and anything dated later), the fixed incomes. */
+  upcomingOut: number;
+  upcomingIn: number;
+  /** Everyday spending so far, per day (fixed and large rare expenses left out). */
+  dailyAverage: number;
+  daysLeft: number;
+};
+
+/** An expense above 3 times the median is rare (a fridge, a wedding): it says nothing of the pace. */
+const RARE_FACTOR = 3;
+
+const median = (values: number[]) => {
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
+};
+
+/**
+ * "À ce rythme, il te restera…": the current month only, from its 3rd day,
+ * once something was counted. What is left today, minus the fixed expenses
+ * still to come, plus the fixed incomes still to come, minus the everyday
+ * pace (the expenses so far that are neither fixed nor rare, per day) over
+ * the days left. Rounded to the thousand.
+ */
+export function monthForecast(items: Pick<MonthItem, "at" | "amountMga" | "excluded" | "origin">[], incomes: Pick<IncomeItem, "at" | "amountMga" | "excluded">[], key: string, now: number): MonthForecast | null {
+  if (monthKey(now) !== key) return null;
+  const date = new Date(now);
+  const today = date.getDate();
+  if (today < 3) return null;
+  const counted = items.filter((item) => !item.excluded);
+  const earned = incomes.filter((item) => !item.excluded);
+  if (counted.length === 0 && earned.length === 0) return null;
+  const tonight = dayStart(now);
+  const passed = <T extends { at: number }>(line: T) => dayStart(line.at) <= tonight;
+  const sum = (lines: Array<{ amountMga: number }>) => lines.reduce((total, line) => total + line.amountMga, 0);
+  const leftNow = sum(earned.filter(passed)) - sum(counted.filter(passed));
+  const upcomingOut = sum(counted.filter((item) => !passed(item)));
+  const upcomingIn = sum(earned.filter((item) => !passed(item)));
+  const everyday = counted.filter((item) => passed(item) && item.origin !== "recurring").map((item) => item.amountMga);
+  const cap = everyday.length > 0 ? median(everyday) * RARE_FACTOR : 0;
+  const dailyAverage = sum(everyday.filter((amount) => amount <= cap).map((amountMga) => ({ amountMga }))) / today;
+  const lastDate = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+  const daysLeft = lastDate.getDate() - today;
+  const amount = Math.round((leftNow - upcomingOut + upcomingIn - dailyAverage * daysLeft) / 1000) * 1000;
+  return { amount: amount === 0 ? 0 : amount, lastDay: lastDate.getTime(), leftNow, upcomingOut, upcomingIn, dailyAverage: Math.round(dailyAverage), daysLeft };
 }
 
 /** This month against the last: the difference, and in percent (null when last month had nothing). */
