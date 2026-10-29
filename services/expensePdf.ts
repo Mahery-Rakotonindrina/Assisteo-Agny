@@ -1,5 +1,5 @@
 import type { Locale } from "@/i18n.config";
-import { categoryRecap, monthFigures, overallCap, pdfIncomeLines, pdfLines, type ExpenseExport } from "@/lib/expenseExport";
+import { categoryRecap, monthFigures, overallCap, pdfIncomeLines, pdfLines, pdfMoreSections, type ExpenseExport } from "@/lib/expenseExport";
 import { formatAriary } from "@/lib/format";
 import { PdfWriter } from "@/lib/pdf";
 
@@ -32,6 +32,16 @@ export async function expensesPdf(data: ExpenseExport, t: Translate, locale: Loc
   if (incomes.length > 0) {
     pdf.heading(t("expenses.income.list"));
     pdf.bullets(incomes);
+  }
+  // The pockets, the money set aside and the activity, when there are some.
+  for (const section of pdfMoreSections(data, t, locale, money)) {
+    pdf.heading(section.heading);
+    if (section.bullets?.length) pdf.bullets(section.bullets);
+    if (section.pairs?.length) pdf.pairs(section.pairs);
+    if (section.more) {
+      pdf.heading(section.more.heading);
+      pdf.bullets(section.more.bullets);
+    }
   }
   return pdf.finish("Assisteo Agny");
 }

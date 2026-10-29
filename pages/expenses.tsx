@@ -17,6 +17,7 @@ import { useExpenses } from "@/hooks/useExpenses";
 import { useBudgetSources, useExpenseSources } from "@/hooks/useExpenseSources";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useNow } from "@/hooks/useNow";
+import { useParcels } from "@/hooks/useParcels";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { overallCap } from "@/lib/expenseExport";
@@ -42,6 +43,7 @@ import {
 } from "@/lib/expenses";
 import type { SearchHit } from "@/lib/expenseSearch";
 import { formatAriary, formatMonthYear } from "@/lib/format";
+import { activityMonth, excludedKeys, separatesActivity } from "@/lib/resale";
 import { activeWallets, lastUsedWallet, walletBook, type WalletBook } from "@/lib/wallets";
 import { rise, stagger } from "@/lib/motion";
 
@@ -186,6 +188,9 @@ function Expenses({ canRemind, reseller, joinCode }: { canRemind: boolean; resel
     () => ({ wallets: activeWallets(book.context.wallets), lastUsed: lastUsedWallet(records, book.context), primary: book.context.primary?.id }),
     [book, records],
   );
+  // "Mon activité" of the month, with the reseller tools only (its profit goes in the month's review).
+  const { parcels } = useParcels();
+  const activity = useMemo(() => (reseller ? activityMonth(parcels, month, excludedKeys(records)) : null), [reseller, parcels, month, records]);
   const pickView = (value: View) => {
     closeOpened();
     setView(value);
@@ -280,6 +285,7 @@ function Expenses({ canRemind, reseller, joinCode }: { canRemind: boolean; resel
               <div className={styles.panel}>
                 <MonthPanel
                   key={`${month}:${opened?.id ?? ""}:${focus ?? ""}:${adding ? "add" : ""}`}
+                  activity={activity && separatesActivity(records) ? activity : null}
                   share={share}
                   month={month}
                   initialEditing={opened}
@@ -296,7 +302,7 @@ function Expenses({ canRemind, reseller, joinCode }: { canRemind: boolean; resel
                   pockets={pockets}
                 />
                 {/* Keyed by month: a review asked for another month never shows under this one. */}
-                <MonthReview key={month} month={month} records={records} sources={sources} />
+                <MonthReview key={month} month={month} records={records} sources={sources} book={book} activity={activity} />
               </div>
             ) : tab === "income" ? (
               <IncomePanel key={`${month}:${focus ?? ""}`} month={month} incomes={figures.incomes} defaultAt={defaultAt} focus={focus} book={book} pockets={pockets} />
