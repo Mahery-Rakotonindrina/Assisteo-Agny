@@ -165,8 +165,8 @@ function LoanFields({
   const [dueDay, setDueDay] = useState(loan?.dueAt !== undefined ? toDateInput(loan.dueAt) : "");
   const [phone, setPhone] = useState(loan?.phone ?? draft.phone ?? "");
   const [note, setNote] = useState(loan?.note ?? "");
-  // A loan written before the pockets (or without them) stays without one until picked.
-  const [wallet, setWallet] = useState(() => (loan ? (pockets?.wallets.some((item) => item.id === loan.wallet) ? loan.wallet! : "") : (pockets?.primary ?? pockets?.wallets[0]?.id ?? "")));
+  // A loan corrected keeps its pocket (archived since included) until another is picked; one written before the pockets stays without one.
+  const [wallet, setWallet] = useState(() => (loan ? (loan.wallet ?? "") : (pockets?.primary ?? pockets?.wallets[0]?.id ?? "")));
   const saved = loan?.schedule;
   const [split, setSplit] = useState(Boolean(saved?.length));
   const [times, setTimes] = useState(String(saved?.length ?? 3));

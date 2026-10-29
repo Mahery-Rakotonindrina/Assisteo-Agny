@@ -72,7 +72,7 @@ export function RepaymentPrompt({ source, wallet }: { source: RepaymentSource; w
   const { loan, same } = proposal;
   const yes = () =>
     run(async () => {
-      const kept = await recordRepayment(proposal, source, wallet);
+      const kept = await recordRepayment(proposal, source, wallet, t(`loans.link.surplusNote.${loan.direction}`, { name: proposal.person }));
       if (kept === null) return;
       haptics.success();
       const left = loanRemaining(loan) - kept;
@@ -85,9 +85,16 @@ export function RepaymentPrompt({ source, wallet }: { source: RepaymentSource; w
         <HandCoins size={15} />
         <span>
           {same
-            ? t("loans.link.same", { name: proposal.person, amount: money(same.repayment.amountMga), date: formatDate(same.repayment.at, locale) })
+            ? t(`loans.link.same.${loan.direction}`, { name: proposal.person, amount: money(same.repayment.amountMga), date: formatDate(same.repayment.at, locale) })
             : t(`loans.link.ask.${loan.direction}`, { name: proposal.person })}
-          {!same && <small>{` ${t("loans.link.left", { amount: money(loanRemaining(loan)) })}`}</small>}
+          {!same && (
+            <small>
+              {" "}
+              {proposal.surplusMga > 0
+                ? t(`loans.link.split.${loan.direction}`, { amount: money(proposal.amountMga), surplus: money(proposal.surplusMga) })
+                : t("loans.link.left", { amount: money(loanRemaining(loan)) })}
+            </small>
+          )}
         </span>
       </p>
       <div className={expenseStyles.row}>

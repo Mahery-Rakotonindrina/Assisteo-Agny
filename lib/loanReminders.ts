@@ -1,4 +1,5 @@
-import { loanNextDue, personKey, type Loan, type LoanDirection } from "./loans";
+import { startOfDay } from "./format";
+import { loanNextDue, loanRemaining, personKey, scheduleState, type Loan, type LoanDirection, type NextDue } from "./loans";
 
 // "Me rappeler les échéances" in "Prêts": a local notification the day
 // before the next payment expected (at 9 h), and for money lent, a second
@@ -43,6 +44,20 @@ export function loanTapTarget(entryId: string): { pathname: string; query: Recor
 }
 
 /**
+ * The next payment still to come (today included): loanNextDue, but with a
+ * schedule, an installment past and unpaid doesn't hide the next one.
+ */
+export function upcomingDue(loan: Loan, now: number): NextDue | undefined {
+  if (!loan.schedule?.length) return loanNextDue(loan, now);
+  if (loanRemaining(loan) <= 0) return undefined;
+  const today = startOfDay(now);
+  const next = scheduleState(loan, now).find((item) => item.leftMga > 0 && item.dueAt >= today);
+  if (next) return { dueAt: next.dueAt, amountMga: next.leftMga, scheduled: true };
+  const due = loanNextDue(loan, now);
+  return due && due.dueAt >= today ? due : undefined;
+}
+
+/**
  * The notifications to ring, the soonest first: for each loan still to pay
  * back with a next payment, the day before at 9 h, and for money lent the
  * day itself at 17 h; only those still to come. None when switched off or
@@ -53,7 +68,7 @@ export function loanReminders(loans: Loan[], now: number, enabled = true): LoanR
   const reminders: LoanReminder[] = [];
   for (const loan of loans) {
     if (loan.deletedAt) continue;
-    const next = loanNextDue(loan, now);
+    const next = upcomingDue(loan, now);
     if (!next) continue;
     const due = new Date(next.dueAt);
     const person = loan.person.trim();

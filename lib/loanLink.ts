@@ -50,14 +50,17 @@ export function loanMoves(loans: Loan[]): LoanMove[] {
   return moves;
 }
 
-/** The words of a name, accents and case aside, the very short ones ("l'", "de") left out. */
+/** Words that don't tell who it is: titles, and what shops are called. */
+const IGNORED_WORDS = new Set(["mr", "mme", "mlle", "madame", "monsieur", "dr", "chez", "epicerie", "boutique", "magasin", "station", "pharmacie", "ets", "sarl"]);
+
+/** The words of a name, accents and case aside, the very short ones ("l'", "de") and the ignored ones left out. */
 function nameWords(name: string) {
   return personKey(name)
     .split(/[^a-z0-9]+/)
-    .filter((word) => word.length >= 3);
+    .filter((word) => word.length >= 3 && !IGNORED_WORDS.has(word));
 }
 
-/** "RAKOTO Jean" and "Rakoto", "Épicerie Chez Rabe" and "l'épicerie": a word in common. */
+/** "RAKOTO Jean" and "Rakoto", "Épicerie Rabe" and "Chez Rabe": a real word in common ("Mme", "chez", "épicerie" don't count). */
 export function namesMatch(a: string | undefined, b: string | undefined) {
   if (!a || !b) return false;
   const words = new Set(nameWords(a));
@@ -83,6 +86,8 @@ export type RepaymentProposal = {
   person: string;
   /** The line's amount, capped to what is left on the loan. */
   amountMga: number;
+  /** What the line has beyond that: it stays an income (or an expense), see repaymentSurplus. */
+  surplusMga: number;
   /** A repayment of the same amount, within 3 days, typed in by hand already: "déjà enregistré ?". */
   same?: { loan: Loan; repayment: Repayment };
 };
@@ -116,7 +121,27 @@ export function repaymentProposal(loans: Loan[], source: RepaymentSource): Repay
       break;
     }
   }
-  return { loan, person: loan.person.trim(), amountMga, ...(same && { same }) };
+  return { loan, person: loan.person.trim(), amountMga, surplusMga: Math.round(source.amountMga) - amountMga, ...(same && { same }) };
+}
+
+/** The record (an income, or an expense for money paid out) that keeps a repayment's surplus counted. */
+export const surplusId = (sourceKey: string) => `surplus:${sourceKey}`;
+
+/**
+ * A line counted as a repayment is kept out whole: what it has beyond the
+ * repayment kept (paid more than what was left) is counted apart, so the
+ * totals stay right. 0 when nothing is left over.
+ */
+export function repaymentSurplus(source: Pick<RepaymentSource, "amountMga">, keptMga: number) {
+  return Math.max(0, Math.round(source.amountMga) - keptMga);
+}
+
+/** The surplus's record: an income from money received, an expense from money paid out ("other"). */
+export function surplusDraft(source: Pick<RepaymentSource, "key" | "at" | "amountMga" | "flow">, keptMga: number, note: string, wallet?: string) {
+  const amountMga = repaymentSurplus(source, keptMga);
+  if (amountMga <= 0) return null;
+  const fields = { id: surplusId(source.key), at: source.at, amountMga, note, ...(wallet && { wallet }) };
+  return source.flow === "income" ? { kind: "income" as const, draft: { ...fields, income: "other" as const } } : { kind: "expense" as const, draft: { ...fields, category: "other" } };
 }
 
 /** The keys of the lines counted as repayments (kept out of "Mes dépenses", and never imported again). */

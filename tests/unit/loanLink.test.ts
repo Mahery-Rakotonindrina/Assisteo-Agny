@@ -3,8 +3,8 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { pocketMonths } from "@/lib/expenseExport";
 import { byKind, exclusionId, monthBalance, monthExpenses, monthIncomes, receiptKey, sourceItems, type Exclusion, type ExpenseRecord, type ReceiptScan, type Wallet } from "@/lib/expenses";
 import { mockReceipt } from "@/lib/ai/mock";
-import { linkedRepayment, loanMoves, namesMatch, repaymentKeys, repaymentProposal } from "@/lib/loanLink";
-import { loanEntryId, loanReminders, loanTapTarget, LOAN_DAY_HOUR, LOAN_EVE_HOUR } from "@/lib/loanReminders";
+import { linkedRepayment, loanMoves, namesMatch, repaymentKeys, repaymentProposal, repaymentSurplus, surplusDraft, surplusId } from "@/lib/loanLink";
+import { loanEntryId, loanReminders, loanTapTarget, upcomingDue, LOAN_DAY_HOUR, LOAN_EVE_HOUR } from "@/lib/loanReminders";
 import { loanRemaining, type Loan } from "@/lib/loans";
 import { walletBook } from "@/lib/wallets";
 import { expenseStore } from "@/services/expenseStore";
@@ -82,12 +82,20 @@ describe("loans in the pockets", () => {
 describe("names", () => {
   it("compares the words, accents and case aside", () => {
     expect(namesMatch("Rakoto", "RAKOTO Jean")).toBe(true);
-    expect(namesMatch("l’épicerie", "Epicerie Chez Rabe")).toBe(true);
+    expect(namesMatch("Épicerie Rabe", "Chez Rabe")).toBe(true);
     expect(namesMatch("Rakotó", "rakoto")).toBe(true);
     expect(namesMatch("Rasoa", "Rakoto Jean")).toBe(false);
     // Very short words are left out ("de", "l'").
     expect(namesMatch("Fara de Tana", "Jean de Fianar")).toBe(false);
     expect(namesMatch(undefined, "Rakoto")).toBe(false);
+  });
+
+  it("titles and shop words alone are not a name in common", () => {
+    expect(namesMatch("Mme Rasoa", "Mme Fara")).toBe(false);
+    expect(namesMatch("l’épicerie", "Epicerie Chez Rabe")).toBe(false);
+    expect(namesMatch("Chez Koto", "Chez Rabe")).toBe(false);
+    expect(namesMatch("Boutique SARL Ets", "Magasin SARL Station Pharmacie")).toBe(false);
+    expect(namesMatch("Dr Rakoto", "Monsieur RAKOTO")).toBe(true);
   });
 });
 
@@ -100,6 +108,10 @@ describe("« C'est un remboursement de… ? »", () => {
     expect(proposal.loan.id).toBe("old");
     expect(proposal.person).toBe("Rakoto");
     expect(proposal.amountMga).toBe(50000);
+    // The 30 000 Ar beyond what was left stay an income.
+    expect(proposal.surplusMga).toBe(30000);
+    expect(repaymentSurplus(source, 50000)).toBe(30000);
+    expect(repaymentSurplus(source, 80000)).toBe(0);
     expect(proposal.same).toBeUndefined();
   });
 
@@ -111,9 +123,22 @@ describe("« C'est un remboursement de… ? »", () => {
   });
 
   it("the other way: a payment to someone owed", () => {
-    const owed = loan("b1", { direction: "borrowed", person: "l’épicerie", amountMga: 20000 });
-    const proposal = repaymentProposal([owed], { key: receiptKey("s2"), at: midnight(2026, 10, 22), amountMga: 15000, label: "Épicerie Chez Rabe" })!;
-    expect([proposal.loan.id, proposal.amountMga]).toEqual(["b1", 15000]);
+    const owed = loan("b1", { direction: "borrowed", person: "Épicerie Rabe", amountMga: 20000 });
+    const proposal = repaymentProposal([owed], { key: receiptKey("s2"), at: midnight(2026, 10, 22), amountMga: 15000, label: "Chez Rabe" })!;
+    expect([proposal.loan.id, proposal.amountMga, proposal.surplusMga]).toEqual(["b1", 15000, 0]);
+  });
+
+  it("the surplus's record (a receipt or a statement's line): an income for money received, an expense for money paid", () => {
+    const line = { key: "statement:abc", at: midnight(2026, 10, 22), amountMga: 25000 };
+    expect(surplusDraft(line, 20000, "Surplus à Rabe", "cash")).toEqual({
+      kind: "expense",
+      draft: { id: surplusId("statement:abc"), at: line.at, amountMga: 5000, note: "Surplus à Rabe", wallet: "cash", category: "other" },
+    });
+    expect(surplusDraft({ ...line, flow: "income" }, 20000, "Surplus de Rakoto")).toEqual({
+      kind: "income",
+      draft: { id: surplusId("statement:abc"), at: line.at, amountMga: 5000, note: "Surplus de Rakoto", income: "other" },
+    });
+    expect(surplusDraft(line, 25000, "x")).toBeNull();
   });
 
   it("« déjà enregistré ? » with a repayment of the same amount typed in within 3 days", () => {
@@ -143,19 +168,26 @@ describe("« Oui », then « Annuler » (on the device)", () => {
     const sources = sourceItems({ receipts });
     const line = sources.find((item) => item.key === receiptKey("s1"))!;
     const proposal = repaymentProposal(await loanStore.list(), { ...line, scanId: "s1" })!;
-    expect(await recordRepayment(proposal, { ...line, scanId: "s1" }, "mvola")).toBe(50000);
+    expect(await recordRepayment(proposal, { ...line, scanId: "s1" }, "mvola", "Surplus de Rakoto")).toBe(50000);
 
     const after = (await loanStore.get(created.id))!;
     expect(loanRemaining(after)).toBe(0);
     expect(after.repayments[0]).toMatchObject({ amountMga: 50000, wallet: "mvola", sourceKey: receiptKey("s1"), scanId: "s1" });
     const records = await expenseStore.list();
-    expect(monthIncomes(records, "2026-10", sources).find((item) => item.key === receiptKey("s1"))!.excluded).toBe(true);
-    // The pocket: 50 000 out, 50 000 back (not the receipt's 80 000 as an income).
-    expect(walletBook([...pockets, ...records], sources, now, await loanStore.list()).balances.get("mvola")).toBe(230000);
+    const incomes = monthIncomes(records, "2026-10", sources);
+    expect(incomes.find((item) => item.key === receiptKey("s1"))!.excluded).toBe(true);
+    // The 30 000 Ar beyond the 50 000 left are still an income, in the same pocket.
+    expect(monthBalance([], incomes).earned).toBe(30000);
+    expect(byKind(records, "income")).toMatchObject([{ id: surplusId(receiptKey("s1")), amountMga: 30000, note: "Surplus de Rakoto", wallet: "mvola", income: "other" }]);
+    // The pocket: 50 000 out, 50 000 back, 30 000 of income: the receipt's 80 000 counted once.
+    expect(walletBook([...pockets, ...records], sources, now, await loanStore.list()).balances.get("mvola")).toBe(260000);
 
     await undoRepayment(created.id, after.repayments[0]);
     expect((await loanStore.get(created.id))!.repayments).toEqual([]);
-    expect(byKind(await expenseStore.list(), "exclusion")).toEqual([]);
+    const back = await expenseStore.list();
+    expect(byKind(back, "exclusion")).toEqual([]);
+    expect(byKind(back, "income")).toEqual([]);
+    expect(monthBalance([], monthIncomes(back, "2026-10", sources)).earned).toBe(80000);
   });
 
   it("« C'est le même » links the repayment typed in; « Annuler » keeps it", async () => {
@@ -203,6 +235,21 @@ describe("due-day reminders", () => {
       ["day", "lent", 5, LOAN_DAY_HOUR, 50000],
     ]);
     expect(reminders.map((item) => item.entryId)).toEqual(["loan:borrowed:l’epicerie", "loan:lent:rakoto", "loan:nudge:rakoto"]);
+  });
+
+  it("an installment past and unpaid doesn't hide the next one", () => {
+    const schedule = [
+      { id: "e1", dueAt: midnight(2026, 10, 20), amountMga: 25000 },
+      { id: "e2", dueAt: midnight(2026, 11, 20), amountMga: 25000 },
+    ];
+    const late = loan("l1", { schedule, dueAt: schedule[1].dueAt });
+    expect(upcomingDue(late, now)).toEqual({ dueAt: schedule[1].dueAt, amountMga: 25000, scheduled: true });
+    expect(loanReminders([late], now).map((item) => [item.kind, new Date(item.at).getMonth() + 1, new Date(item.at).getDate()])).toEqual([
+      ["eve", 11, 19],
+      ["day", 11, 20],
+    ]);
+    // Every installment past: nothing to remind any more.
+    expect(loanReminders([late], day(2026, 11, 21))).toEqual([]);
   });
 
   it("follow the schedule's next installment (loanNextDue), not the last day", () => {

@@ -9,7 +9,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import type { Statement } from "@/lib/ai/schema";
 import { incomeKinds, type ExpenseRecord, type IncomeKind, type StatementTag } from "@/lib/expenses";
 import { formatAriary, formatDate } from "@/lib/format";
-import { repaymentKeys, repaymentProposal } from "@/lib/loanLink";
+import { repaymentKeys, repaymentProposal, surplusDraft } from "@/lib/loanLink";
 import type { Loan } from "@/lib/loans";
 import {
   balanceProposal,
@@ -223,8 +223,17 @@ function Review({ statement, lines, demo, records, book, loans, onDone }: Review
       // A repayment: on its loan, in the statement's pocket; only its fees are an expense.
       for (const line of repaying) {
         const proposal = proposals.get(line.key)!;
-        await loanStore.addRepayment(proposal.loan.id, { amountMga: proposal.amountMga, at: line.at, wallet: wallet || undefined, sourceKey: line.key });
+        const kept = (await loanStore.addRepayment(proposal.loan.id, { amountMga: proposal.amountMga, at: line.at, wallet: wallet || undefined, sourceKey: line.key })) ?? 0;
         drafts.expenses.push(...importDrafts([line], options).expenses.filter((draft) => draft.sourceKey !== line.key));
+        // Beyond what was left: still an income (or an expense), from this statement.
+        const surplus = surplusDraft(
+          { key: line.key, at: line.at, amountMga: line.amountMga, ...(line.direction === "in" && { flow: "income" as const }) },
+          kept,
+          t(`loans.link.surplusNote.${proposal.loan.direction}`, { name: proposal.person }),
+          wallet || undefined,
+        );
+        if (surplus?.kind === "income") drafts.incomes.push({ ...surplus.draft, statement: tag });
+        else if (surplus) drafts.expenses.push({ ...surplus.draft, statement: tag });
       }
       for (const draft of drafts.expenses) await expenseStore.saveExpense(draft);
       for (const draft of drafts.incomes) await expenseStore.saveIncome(draft);
@@ -338,7 +347,11 @@ function Review({ statement, lines, demo, records, book, loans, onDone }: Review
                       setRepayOf(next);
                     }}
                   />
-                  <small>{t(`loans.link.statement.${proposals.get(line.key)!.loan.direction}`, { name: proposals.get(line.key)!.person })}</small>
+                  <small>
+                    {t(`loans.link.statement.${proposals.get(line.key)!.loan.direction}`, { name: proposals.get(line.key)!.person })}
+                    {proposals.get(line.key)!.surplusMga > 0 &&
+                      ` · ${t(`loans.link.split.${proposals.get(line.key)!.loan.direction}`, { amount: money(proposals.get(line.key)!.amountMga), surplus: money(proposals.get(line.key)!.surplusMga) })}`}
+                  </small>
                 </label>
               )}
             </li>

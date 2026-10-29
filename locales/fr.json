@@ -2257,7 +2257,10 @@
       },
       "left": "(reste {amount})",
       "yes": "Oui, c’est un remboursement",
-      "same": "Un remboursement de {amount} de {name} est déjà noté le {date} : c’est le même ?",
+      "same": {
+        "lent": "Un remboursement de {amount} de {name} est déjà noté le {date} : c’est le même ?",
+        "borrowed": "Un remboursement de {amount} à {name} est déjà noté le {date} : c’est le même ?"
+      },
       "sameYes": "Oui, c’est le même",
       "another": "Non, c’en est un autre",
       "counted": {
@@ -2274,6 +2277,14 @@
       "statement": {
         "lent": "Remboursement de {name}",
         "borrowed": "Remboursement à {name}"
+      },
+      "split": {
+        "lent": "{amount} de remboursement, {surplus} comptés en revenu.",
+        "borrowed": "{amount} de remboursement, {surplus} comptés en dépense."
+      },
+      "surplusNote": {
+        "lent": "Surplus de {name}",
+        "borrowed": "Surplus à {name}"
       }
     }
   },

@@ -2257,7 +2257,10 @@
       },
       "left": "({amount} left)",
       "yes": "Yes, it’s a repayment",
-      "same": "A repayment of {amount} from {name} is already noted on {date}: is it the same one?",
+      "same": {
+        "lent": "A repayment of {amount} from {name} is already noted on {date}: is it the same one?",
+        "borrowed": "A repayment of {amount} to {name} is already noted on {date}: is it the same one?"
+      },
       "sameYes": "Yes, the same one",
       "another": "No, another one",
       "counted": {
@@ -2274,6 +2277,14 @@
       "statement": {
         "lent": "Paid back by {name}",
         "borrowed": "Paid back to {name}"
+      },
+      "split": {
+        "lent": "{amount} as a repayment, {surplus} counted as income.",
+        "borrowed": "{amount} as a repayment, {surplus} counted as an expense."
+      },
+      "surplusNote": {
+        "lent": "Extra from {name}",
+        "borrowed": "Extra to {name}"
       }
     }
   },
