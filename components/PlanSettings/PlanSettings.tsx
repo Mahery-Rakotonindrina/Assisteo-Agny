@@ -1,4 +1,4 @@
-import { Check, ShieldCheck, Sparkles } from "lucide-react";
+import { Check, Gift, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/Button";
 import { PlanIcon } from "@/components/PlanBadge";
 import { usePlan } from "@/hooks/usePlan";
@@ -43,6 +43,17 @@ export function PlanSettings() {
           </li>
         ))}
       </ul>
+
+      {/* Features offered for a while (Admin → the account's card); missing from an older server. */}
+      {plan.grants && plan.grants.length > 0 && (
+        <ul className={styles.perks} aria-label={t("admin.card.offers")}>
+          {plan.grants.map((grant) => (
+            <li key={grant.feature} data-offered="">
+              <Gift size={14} /> {t("plans.offered", { name: t(`admin.features.names.${grant.feature}`), date: formatDate(grant.endsAt - 1, locale) })}
+            </li>
+          ))}
+        </ul>
+      )}
 
       {!plan.signedIn && <p className={styles.hint}>{t("plans.signInHint")}</p>}
 

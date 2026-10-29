@@ -19,8 +19,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
   const installId = InstallIdSchema.safeParse(req.headers[installIdHeader]).data ?? null;
   const config = await getPlansConfig();
-  const { account, current, features } = await resolvePlan(req, config);
-  const limits = await limitsFor(current.plan, config);
+  const { account, current, features, quotas, grants } = await resolvePlan(req, config);
+  const limits = await limitsFor(current.plan, config, quotas, features);
 
   let usage: PlanResponse["usage"];
   if (current.plan !== "free" && account) usage = await getPlanUsage(account.id);
@@ -43,6 +43,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     payment: config.payment,
     features: planFeatures.filter((feature) => features.has(feature)),
     featureFrom: featureFromConfig(config),
+    grants: grants.map(({ feature, endsAt }) => ({ feature, endsAt: Date.parse(endsAt) })),
     ...offers,
   } satisfies PlanResponse);
 }

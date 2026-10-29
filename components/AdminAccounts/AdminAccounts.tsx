@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { Search, UserRound } from "lucide-react";
+import { IdCard, Search, UserRound } from "lucide-react";
+import { AdminAccountCard } from "@/components/AdminAccountCard";
 import { Button } from "@/components/Button";
 import { PlanBadge } from "@/components/PlanBadge";
 import shared from "@/components/AdminSubscriptions/AdminSubscriptions.module.scss";
@@ -36,6 +37,7 @@ export function AdminAccounts({ token }: { token: string }) {
   const [filter, setFilter] = useState<Filter>("all");
   const [shown, setShown] = useState(PAGE);
   const [now, setNow] = useState(timestamp);
+  const [cardEmail, setCardEmail] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -154,6 +156,11 @@ export function AdminAccounts({ token }: { token: string }) {
                 </small>
               </span>
               {account.plan !== "free" && <PlanBadge plan={account.plan} />}
+              {account.email && (
+                <Button size="md" variant="ghost" icon={<IdCard />} onClick={() => setCardEmail(account.email)} aria-label={`${t("admin.card.open")} · ${account.email}`}>
+                  {t("admin.card.open")}
+                </Button>
+              )}
             </div>
           </li>
         ))}
@@ -163,6 +170,7 @@ export function AdminAccounts({ token }: { token: string }) {
           {t("admin.accounts.more", { count: visible.length - shown })}
         </Button>
       )}
+      <AdminAccountCard token={token} email={cardEmail} onClose={() => setCardEmail(null)} />
     </motion.section>
   );
 }

@@ -29,6 +29,7 @@ export const RESTORE_KEYS = {
   household_invites: ["code"],
   household_expenses: ["household_id", "id"],
   subscriptions: ["id"],
+  feature_grants: ["id"],
 };
 
 export const TABLES = [...Object.keys(RESTORE_KEYS), "_migrations"];
@@ -177,7 +178,8 @@ export async function applyMigrations(client, log = () => {}) {
     try {
       await client.query("begin");
       await client.query(readFileSync(join(dir, file), "utf8"));
-      await client.query("insert into public._migrations (name) values ($1)", [file]);
+      // A migration pasted by hand may note itself as applied: no clash.
+      await client.query("insert into public._migrations (name) values ($1) on conflict (name) do nothing", [file]);
       await client.query("commit");
       log(`apply ${file}`);
     } catch (error) {

@@ -442,6 +442,50 @@
     "useOwnKey": "Use my AI key"
   },
   "admin": {
+    "migrationNeeded": "Paste migration 0011 into Supabase (SQL Editor) first: without it, this setting can't be kept.",
+    "card": {
+      "quotaFallback": "Emergency cap (no count set)",
+      "open": "Card",
+      "features": "Their features",
+      "quotas": "Their limits",
+      "origins": {
+        "plan": "{plan} plan",
+        "added": "Added by hand",
+        "removed": "Removed by hand",
+        "grant": "Offered until {date}",
+        "test": "In test",
+        "testOut": "In test, not for this account",
+        "off": "Switched off for everyone",
+        "missing": "Missing: {list}",
+        "notInPlan": "Not in the {plan} plan"
+      },
+      "quotaPlan": "{plan} plan",
+      "quotaOwn": "Set by hand",
+      "unlimited": "No limit",
+      "freePlan": "No subscription: only offered features add to the Free plan.",
+      "needsMigration": "To offer a feature or set a subscriber apart, paste migration 0011 into Supabase first.",
+      "offer": "Offer a feature",
+      "feature": "Feature",
+      "duration": "For how long",
+      "durations": {
+        "week": "7 days",
+        "month": "30 days",
+        "date": "Until…"
+      },
+      "lastDay": "Last day",
+      "note": "Note",
+      "notePlaceholder": "E.g. Trial asked for on WhatsApp",
+      "give": "Offer",
+      "given": "Feature offered.",
+      "deepNeedsLimit": "This account has no monthly count of deep analyses: set one on its subscription first (never on Free).",
+      "offers": "Offered features",
+      "none": "None yet.",
+      "running": "Running, until {date}",
+      "ended": "Ended on {date}",
+      "givenOn": "Offered on {date}",
+      "stop": "Stop now",
+      "stopped": "Offer stopped."
+    },
     "title": "Admin",
     "subtitle": "Server settings, applied immediately to every app.",
     "token": "Admin token",
@@ -487,6 +531,15 @@
       "noFeedback": "No feedback yet."
     },
     "subs": {
+      "own": {
+        "title": "Features and limits",
+        "hint": "Ticked: the plan's. Change them for this subscriber only; the rest follows the plan, even when it changes.",
+        "byHand": "by hand",
+        "quotas": "Limits",
+        "quotasHint": "Filled in with the plan's. 0 = no limit.",
+        "reset": "Back to the plan",
+        "deepNeedsLimit": "Deep analyses need a monthly count here (0 would mean no limit, on the costliest AI)."
+      },
       "title": "Subscribers",
       "subtitle": "Payment happens outside the app: record here who paid for which plan, and for how long.",
       "disabled": "Accounts are not configured on the server.",
@@ -699,6 +752,9 @@
       "github": "GitHub (new APK)",
       "more": "Show {count} more",
       "actions": {
+        "feature_keep": "Plan changed for new subscribers only",
+        "feature_grant": "Feature offered",
+        "feature_grant_stop": "Offered feature stopped",
         "login": "Sign-in",
         "subscription_add": "Subscription added",
         "subscription_edit": "Subscription edited",
@@ -790,6 +846,12 @@
       "deleted": "Code deleted"
     },
     "features": {
+      "applyTitle": "Who it applies to",
+      "applyAll": "Every active subscriber",
+      "applyAllHint": "As before: everyone follows their plan.",
+      "applyNew": "Only new subscriptions and renewals",
+      "applyNewHint": "The active subscribers concerned ({count}) keep what they have until they renew.",
+      "kept": "{count} active subscribers keep what they have.",
       "title": "Features by plan",
       "subtitle": "Tick what each plan includes. The apps follow without a new version, except the APK already installed (see below). The starting settings are today’s.",
       "apkHint": "The Android APK already installed keeps the old ladder for its menus and labels until its next version. The server applies your settings right away.",
@@ -1283,6 +1345,7 @@
     "costsReadOnly": "Total cost kept: {amount}. Your plan no longer includes parcel costs: you can’t change them anymore."
   },
   "plans": {
+    "offered": "{name} offered until {date}",
     "names": {
       "free": "Free",
       "lite": "Lite",

@@ -1,11 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { z } from "zod";
+import { describeOwn } from "@/lib/featureChanges";
 import { formatAriary } from "@/lib/format";
-import { paidPlans, type Subscription } from "@/lib/plans";
+import { normalizeDiff, normalizeQuotas, paidPlans, subscriptionDeepWithoutLimit, type PlansConfig, type Subscription } from "@/lib/plans";
 import { guardAdmin } from "@/lib/server/adminAuth";
 import { logAdminAction } from "@/lib/server/adminLog";
 import { sendError } from "@/lib/server/http";
 import { afterPayment } from "@/lib/server/offers";
+import { FeatureDiffSchema, getPlansConfig, QuotasSchema } from "@/lib/server/planConfig";
+import { MigrationNeededError } from "@/lib/server/schemaMissing";
 import { reportError } from "@/lib/server/reportError";
 import { accountsEnabled } from "@/lib/server/supabaseAdmin";
 import {
@@ -43,6 +46,9 @@ const Fields = z.object({
   paymentMethod: optionalText(40),
   paymentRef: optionalText(120),
   note: optionalText(500),
+  // Its own features and limits (migration 0011); missing or null: the plan's.
+  features: FeatureDiffSchema.nullable().optional(),
+  quotas: QuotasSchema.nullable().optional(),
 });
 const endsAfterStart = (value: { startsAt: string; endsAt: string | null }) => value.endsAt === null || Date.parse(value.endsAt) >= Date.parse(value.startsAt);
 const endMessage = { message: "The end must come after the start.", path: ["endsAt"] };
@@ -71,13 +77,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       return res.status(200).json({ subscriptions: await listSubscriptions() } satisfies AdminSubscriptionsResponse);
     }
 
+    // Its own settings, kept only where they differ from the plan; deep analyses without a count refused.
+    const own = <T extends { plan: Subscription["plan"]; features?: Subscription["features"]; quotas?: Subscription["quotas"] }>(fields: T, config: PlansConfig): T | null => {
+      if (fields.plan === "unlimited") return { ...fields, features: fields.features === undefined ? undefined : null, quotas: fields.quotas === undefined ? undefined : null };
+      const offer = config.offers[fields.plan];
+      const features = fields.features === undefined ? undefined : normalizeDiff(config.features[fields.plan], fields.features);
+      const quotas = fields.quotas === undefined ? undefined : normalizeQuotas(offer, fields.quotas);
+      return subscriptionDeepWithoutLimit(fields.plan, config, features, quotas) ? null : { ...fields, features, quotas };
+    };
+    const deepRefused = () => sendError(res, 400, "invalid_request", "Deep analyses need a monthly count on this subscription.");
+    const ownDetail = (row: Subscription) => describeOwn(row.features, row.quotas);
+
     if (req.method === "POST") {
       const parsed = AddSchema.safeParse(req.body);
       if (!parsed.success) return sendError(res, 400, "invalid_request", parsed.error.issues[0]?.message ?? "Invalid subscription.");
-      const { emails, ...fields } = parsed.data;
-      if (fields.plan === "unlimited" && !actor.owner) return ownerOnly();
+      const { emails, ...given } = parsed.data;
+      if (given.plan === "unlimited" && !actor.owner) return ownerOnly();
+      const fields = own(given, await getPlansConfig());
+      if (!fields) return deepRefused();
       const created = await addSubscriptions([...new Set(emails)].map((email) => ({ ...fields, email })));
-      await logAdminAction(actor.id, "subscription_add", detail(created.map((row) => row.email).join(", "), fields.plan, fields.amountMga));
+      await logAdminAction(actor.id, "subscription_add", [detail(created.map((row) => row.email).join(", "), fields.plan, fields.amountMga), created[0] && ownDetail(created[0])].filter(Boolean).join(" · "));
       // A payment uses up a waiting discount, and may earn a referrer their month.
       await afterPayment(actor.id, created.map((row) => row.email), fields.amountMga);
       return res.status(201).json({ subscriptions: created } satisfies AdminSubscriptionsResponse);
@@ -86,10 +105,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     if (req.method === "PUT") {
       const parsed = UpdateSchema.safeParse(req.body);
       if (!parsed.success) return sendError(res, 400, "invalid_request", parsed.error.issues[0]?.message ?? "Invalid subscription.");
-      const { id, ...input } = parsed.data;
-      if (!actor.owner && (input.plan === "unlimited" || (await getSubscription(id))?.plan === "unlimited")) return ownerOnly();
+      const { id, ...given } = parsed.data;
+      if (!actor.owner && (given.plan === "unlimited" || (await getSubscription(id))?.plan === "unlimited")) return ownerOnly();
+      const input = own(given, await getPlansConfig());
+      if (!input) return deepRefused();
       const updated = await updateSubscription(id, input);
-      await logAdminAction(actor.id, "subscription_edit", detail(updated.email, updated.plan, updated.amountMga));
+      await logAdminAction(actor.id, "subscription_edit", [detail(updated.email, updated.plan, updated.amountMga), ownDetail(updated) || (input.features === null && input.quotas === null ? "plan" : "")].filter(Boolean).join(" · "));
       return res.status(200).json(updated);
     }
 
@@ -112,6 +133,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       return res.status(204).end();
     }
   } catch (error) {
+    // Its own features or limits, before migration 0011: refused rather than saved without them.
+    if (error instanceof MigrationNeededError) return sendError(res, 409, "migration_needed", "Apply migration 0011_subscription_features first.");
     await reportError(error, { route: "admin/subscriptions" });
     return sendError(res, 500, "upstream_error", "The subscriptions could not be read or saved.");
   }
