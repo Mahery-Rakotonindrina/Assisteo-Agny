@@ -1,4 +1,5 @@
-// The Row Level Security of the shared budget (migration 0009_households.sql),
+// The Row Level Security of the shared budget (migration 0009_households.sql)
+// and of the loans (0010_loans.sql),
 // tested as Supabase runs it: each query as the "authenticated" role with a
 // user id, or as the server ("service_role"). `client.query(text, params)`
 // must return { rows }. Returns the problems found (empty: all good).
@@ -222,6 +223,21 @@ export async function runRlsChecks(client) {
     await server("select public.delete_household($1, $2)", [anna, hid]);
     const left = (await client.query("select (select count(*) from public.household_members)::int + (select count(*) from public.household_expenses)::int + (select count(*) from public.household_invites)::int as n")).rows[0].n;
     return left ? `${left} rows left` : null;
+  });
+  // ---- Loans (migration 0010_loans.sql): always personal --------------------------
+  await user(anna, "insert into public.loans (id, data, updated_at) values ('loan-1', '{\"amountMga\": 50000}', now())");
+  await check("each one reads only their own loans", async () => {
+    const seen = [await count(anna, "select 1 from public.loans"), await count(ben, "select 1 from public.loans")];
+    return seen.join("/") === "1/0" ? null : `saw ${seen.join("/")} rows`;
+  });
+  await check("nobody changes someone else's loan", async () => ((await user(ben, "update public.loans set data = '{}' where id = 'loan-1' returning id")).length ? "changed" : null));
+  await refused("nobody writes a loan in someone else's name", () => tryUser(ben, "insert into public.loans (user_id, id, data, updated_at) values ($1, 'loan-2', '{}', now())", [anna]), /row-level security/);
+  await check("a visitor reads no loans", async () => {
+    try {
+      return (await tryVisitor("select 1 from public.loans")).length ? "loans visible" : null;
+    } catch (error) {
+      return /permission denied/.test(error.message) ? null : error.message;
+    }
   });
   await check("the owner gets their shared expenses back too", async () => ((await count(anna, "select 1 from public.expenses where id = 'shared-1' and deleted_at is null")) ? null : "not given back"));
   return problems;

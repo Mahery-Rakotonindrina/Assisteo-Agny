@@ -20,6 +20,7 @@
     "food": "Food log",
     "papers": "Papers",
     "garage": "Garage",
+    "loans": "Loans",
     "expenses": "Expenses"
   },
   "scan": {
@@ -831,6 +832,7 @@
         "multiPage": "Several pages",
         "garage": "My garage",
         "reseller": "Reseller tools",
+        "loans": "Loans",
         "expenses": "My expenses"
       },
       "descriptions": {
@@ -842,6 +844,7 @@
         "multiPage": "A document in several pages, analysed at once.",
         "garage": "Vehicles, service, oil change and insurance reminders, fuel and expenses.",
         "reseller": "A client per parcel, what they owe, totals per client, export and statements.",
+        "loans": "Who owes me, whom I owe: repayments, overdue loans, WhatsApp reminders. Nothing counts in the expenses.",
         "expenses": "The month’s budget, alone or as a household, and the AI’s month review."
       },
       "deepNeedsLimit": "Can’t save: {list} has no deep analysis quota (0 = no limit). First set a number per month above, in the plans’ prices and quotas. Free has no quota: no deep analysis."
@@ -1330,6 +1333,7 @@
       "pdfExport": "PDF export of documents and history",
       "garage": "My garage: service log, insurance and oil change reminders, fuel and expenses",
       "reminders": "Reminders: on your scans (with repeat and snooze), insurance, parcel arrivals",
+      "loans": "Loans: who owes you, whom you owe, WhatsApp reminders",
       "expenses": "My expenses: the month’s budget, alone or as a household"
     },
     "how": "How to subscribe",
@@ -1573,6 +1577,7 @@
     "foodHint": "What you ate today",
     "papersHint": "ID, insurance, warranties",
     "garageHint": "Service, fuel, reminders",
+    "loansHint": "Who owes you, whom you owe",
     "expensesHint": "Monthly budget, what is left"
   },
   "food": {
@@ -1847,6 +1852,130 @@
     },
     "finalTitle": "Ready to try?",
     "finalBody": "One photo is enough to see what the AI can do for you."
+  },
+  "loans": {
+    "title": "Loans",
+    "subtitle": "The money you lent, and the money you owe. None of it counts in your expenses.",
+    "unavailable": "Loans isn’t open to your plan yet.",
+    "readOnly": "Loans is no longer in your plan: your loans stay visible, but can’t be changed.",
+    "directionLabel": "Owed to me or I owe",
+    "directions": {
+      "lent": "Owed to me",
+      "borrowed": "I owe"
+    },
+    "summary": {
+      "lent": "You’re owed in all",
+      "borrowed": "You owe in all",
+      "people": "{count} people",
+      "peopleOne": "1 person",
+      "late": "including {amount} overdue"
+    },
+    "add": {
+      "lent": "I lent money",
+      "borrowed": "I borrowed"
+    },
+    "empty": {
+      "lent": {
+        "title": "Nobody owes you money",
+        "body": "Write down the money you lend here: you’ll always know who owes you what."
+      },
+      "borrowed": {
+        "title": "You don’t owe anyone",
+        "body": "Write down the money you borrow here: you’ll always know what’s left to pay back."
+      }
+    },
+    "allRepaid": {
+      "lent": "Everyone has paid you back.",
+      "borrowed": "You’ve paid everything back."
+    },
+    "search": "Find a person",
+    "noMatch": "Nobody has that name.",
+    "late": "Overdue",
+    "open": "{count} open loans",
+    "openOne": "1 open loan",
+    "dueOn": "due {date}",
+    "repaidSection": "Paid back ({count})",
+    "repaidOn": "Paid back on {date}",
+    "shortcutOwed": "You’re owed {amount}",
+    "shortcutLate": "{amount} overdue",
+    "close": "Close",
+    "form": {
+      "title": {
+        "lent": "I lent money",
+        "borrowed": "I borrowed money"
+      },
+      "titleEdit": "Edit the loan",
+      "person": {
+        "lent": "To whom?",
+        "borrowed": "Who lent it to you?"
+      },
+      "personPlaceholder": "Rakoto, Aunt Lalao…",
+      "amount": "Amount (Ar)",
+      "date": "Date",
+      "today": "Today",
+      "due": "To pay back by (optional)",
+      "dueDay": "Day to pay back by",
+      "dueChoices": {
+        "none": "No date",
+        "week": "In 1 week",
+        "month": "In 1 month",
+        "pick": "Choose"
+      },
+      "phone": "Phone (optional)",
+      "note": "Note (optional)",
+      "notePlaceholder": "for school fees",
+      "save": "Save",
+      "missing": "Write the person’s name and the amount."
+    },
+    "saved": {
+      "lent": "Noted: {person} owes you {amount}.",
+      "borrowed": "Noted: you owe {amount} to {person}.",
+      "edited": "Loan updated."
+    },
+    "detail": {
+      "back": "Back to the list",
+      "left": {
+        "lent": "Still owes you {amount}",
+        "borrowed": "You still owe {amount}"
+      },
+      "settled": "All paid back",
+      "on": {
+        "lent": "Lent on {date}",
+        "borrowed": "Borrowed on {date}"
+      },
+      "another": {
+        "lent": "New loan",
+        "borrowed": "New borrowing"
+      },
+      "repayments": "Repayments",
+      "repaymentLine": "{amount} paid back on {date}",
+      "removeRepayment": "Remove this repayment",
+      "leftOne": "{amount} left",
+      "repaidBadge": "Paid back",
+      "markRepaid": "Mark as paid back",
+      "edit": "Edit",
+      "remove": "Delete",
+      "confirmRemove": "Delete for good",
+      "removed": "Loan deleted.",
+      "whatsapp": "Remind on WhatsApp",
+      "copy": "Copy the message",
+      "copied": "Message copied: paste it in WhatsApp or a text.",
+      "copyFailed": "Couldn’t copy the message."
+    },
+    "repay": {
+      "title": {
+        "lent": "They paid back…",
+        "borrowed": "I paid back…"
+      },
+      "left": "{amount} left to pay back.",
+      "capped": "That’s more than what’s left: only {amount} will be noted.",
+      "saved": "{amount} noted. {left} left.",
+      "savedAll": "All paid back."
+    },
+    "reminder": {
+      "message": "Hello {name}, a friendly reminder about the {amount} I lent you. Let me know when you can pay me back. Thanks!",
+      "messageDue": "Hello {name}, a friendly reminder about the {amount} I lent you, due {date}. Let me know when you can pay me back. Thanks!"
+    }
   },
   "garage": {
     "title": "My garage",

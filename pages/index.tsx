@@ -23,6 +23,7 @@ import { PLANS_HREF, TrialOver, TrialPill } from "@/components/Trial";
 import { useAiStatus } from "@/hooks/useAiStatus";
 import { useHistory } from "@/hooks/useHistory";
 import { useKeptExpenses } from "@/hooks/useExpenses";
+import { useKeptLoans } from "@/hooks/useLoans";
 import { useInHousehold } from "@/hooks/useHousehold";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import { useNow } from "@/hooks/useNow";
@@ -72,6 +73,7 @@ export default function ScanPage() {
   const { has, planFor } = usePlan();
   const inHousehold = useInHousehold();
   const keptExpenses = useKeptExpenses(!has("expenses"));
+  const keptLoans = useKeptLoans(!has("loans"));
   const multiPage = has("multiPage");
   const toast = useToast();
   const { entries, isLoading: historyLoading } = useHistory();
@@ -276,8 +278,8 @@ export default function ScanPage() {
               </motion.div>
             )}
 
-            {/* "Mes dépenses" has no other way in on a phone: its shortcut shows even before the first scan. */}
-            {(recent.length > 0 || has("expenses") || inHousehold || keptExpenses) && (
+            {/* "Mes dépenses" and "Prêts" have no other way in on a phone: their shortcuts show even before the first scan. */}
+            {(recent.length > 0 || has("expenses") || inHousehold || keptExpenses || has("loans") || keptLoans) && (
               <motion.div variants={rise}>
                 <Shortcuts entries={entries} />
               </motion.div>

@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { BookOpen, Car, FolderLock, Receipt, Wallet } from "lucide-react";
+import { BookOpen, Car, FolderLock, HandCoins, Receipt, Wallet } from "lucide-react";
 import { PlanBadge } from "@/components/PlanBadge";
 import { useKeptExpenses } from "@/hooks/useExpenses";
 import { useInHousehold } from "@/hooks/useHousehold";
+import { useKeptLoans, useLoans } from "@/hooks/useLoans";
 import { useNow } from "@/hooks/useNow";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -11,6 +12,7 @@ import { journalDay, totalIntake } from "@/lib/food";
 import { billTotals, listBills } from "@/lib/bills";
 import { formatAriary, formatNumber } from "@/lib/format";
 import { dueReminders } from "@/lib/garage";
+import { loanMoney, loansByPerson, loanTotals } from "@/lib/loans";
 import { listPapers } from "@/lib/papers";
 import type { HistoryEntry } from "@/types/history";
 import styles from "./Shortcuts.module.scss";
@@ -29,6 +31,9 @@ export function Shortcuts({ entries }: { entries: HistoryEntry[] }) {
   // Without the feature, one's kept expenses stay reachable (read only); false until mounted.
   const keptExpenses = useKeptExpenses(!has("expenses"));
   const { vehicles } = useVehicles();
+  const keptLoans = useKeptLoans(!has("loans"));
+  const { loans } = useLoans();
+  const owed = loanTotals(loansByPerson(loans, "lent", now));
   const garageDue = vehicles.reduce((count, vehicle) => count + dueReminders(vehicle, now).length, 0);
 
   return (
@@ -85,6 +90,21 @@ export function Shortcuts({ entries }: { entries: HistoryEntry[] }) {
           <span>
             <strong>{t("expenses.title")}</strong>
             <small>{t("shortcuts.expensesHint")}</small>
+          </span>
+        </Link>
+      )}
+      {(has("loans") || keptLoans) && (
+        <Link href="/loans" className={styles.shortcut} style={{ "--tone": "var(--cat-document)" } as React.CSSProperties}>
+          <HandCoins size={18} />
+          <span>
+            <strong>{t("loans.title")}</strong>
+            <small data-urgent={owed.late > 0 || undefined}>
+              {owed.late > 0
+                ? t("loans.shortcutLate", { amount: loanMoney(owed.late, locale) })
+                : owed.total > 0
+                  ? t("loans.shortcutOwed", { amount: loanMoney(owed.total, locale) })
+                  : t("shortcuts.loansHint")}
+            </small>
           </span>
         </Link>
       )}
