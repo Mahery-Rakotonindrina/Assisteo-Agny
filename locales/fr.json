@@ -2936,6 +2936,62 @@
         "failed": "La lecture a échoué. Réessaie dans un moment.",
         "save": "L’import s’est arrêté. Réessaie : rien ne sera ajouté deux fois."
       }
+    },
+    "exportMore": {
+      "wallet": "Poche",
+      "sheetPockets": "Mes poches",
+      "pocketColumns": {
+        "name": "Poche",
+        "start": "Début du mois",
+        "incomes": "Entrées",
+        "expenses": "Sorties",
+        "moves": "Virements",
+        "end": "Fin du mois"
+      },
+      "inPockets": "Dans tes poches",
+      "pocketLine": "{name} · début {start} · entrées {incomes} · sorties {expenses} · virements {moves} · fin {end}",
+      "sheetSavings": "Épargne et tontines",
+      "goalColumns": {
+        "name": "Objectif",
+        "target": "Visé",
+        "saved": "Mis de côté",
+        "left": "Reste",
+        "month": "Ce mois-ci"
+      },
+      "tontineColumns": {
+        "name": "Tontine",
+        "paid": "Versé",
+        "pot": "Cagnotte",
+        "potStatus": "Reçue ?",
+        "potDay": "Le",
+        "month": "Versé ce mois-ci"
+      },
+      "received": "Reçue",
+      "upcoming": "À venir",
+      "moves": "Mouvements du mois",
+      "moveColumns": {
+        "date": "Date",
+        "name": "Pour",
+        "type": "Mouvement",
+        "wallet": "Poche",
+        "amountMga": "Montant"
+      },
+      "moveTypes": {
+        "saved": "Mis de côté",
+        "unsaved": "Repris",
+        "paid": "Versement",
+        "pot": "Cagnotte reçue"
+      },
+      "goalLine": "{name} · {saved} mis de côté sur {target} · reste {left}",
+      "tontineLine": "{name} · versé {paid} · cagnotte {pot} · {status}",
+      "potReceived": "reçue le {date}",
+      "potUpcoming": "à venir le {date}",
+      "sheetActivity": "Mon activité",
+      "activityColumns": {
+        "line": "Ligne",
+        "amountMga": "Montant",
+        "parcels": "Colis"
+      }
     }
   }
 }

@@ -425,6 +425,14 @@ export const ExpenseSummaryRequestSchema = z.strictObject({
   averageTotal: amount,
   income: amount.nullable(),
   budget: amount.nullable(),
+  // Optional, never a name (older apps don't send them): what is in the pockets at the
+  // start and the end of the month, the net put aside in goals, the tontine payments and
+  // the reselling's profit. Pockets, savings and profit can go below 0.
+  pocketsStart: z.number().int().min(-1_000_000_000_000).max(1_000_000_000_000).optional(),
+  pocketsEnd: z.number().int().min(-1_000_000_000_000).max(1_000_000_000_000).optional(),
+  savedThisMonth: z.number().int().min(-1_000_000_000_000).max(1_000_000_000_000).optional(),
+  tontinePaid: amount.optional(),
+  activityProfit: z.number().int().min(-1_000_000_000_000).max(1_000_000_000_000).optional(),
   categories: z
     .array(
       z.strictObject({

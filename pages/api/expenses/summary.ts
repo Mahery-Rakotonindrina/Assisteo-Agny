@@ -3,6 +3,7 @@ import { AnalysisError } from "@/lib/ai/errors";
 import { mockExpenseSummary } from "@/lib/ai/mock";
 import { activeProvider, summarizeExpenses } from "@/lib/ai/provider";
 import { ExpenseSummaryRequestSchema, type ExpenseSummaryResponse } from "@/lib/ai/schema";
+import { withSavingsDemo } from "@/lib/ai/summaryDemo";
 import { applyCors, clientIp, sendError } from "@/lib/server/http";
 import { resolvePlan } from "@/lib/server/plan";
 import { rateLimit, refundRateLimit } from "@/lib/server/rateLimit";
@@ -17,7 +18,8 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 /**
  * "Mes dépenses": the month's review by the AI. The app sends the month's
- * totals only (no note, no shop, no single expense). Admin plan only.
+ * totals only (no note, no shop, no single expense; the pockets, savings and
+ * activity as totals too, when the app sends them). Admin plan only.
  */
 export default async function handler(req: NextApiRequest, res: NextApiResponse<ExpenseSummaryResponse | unknown>) {
   if (applyCors(req, res, ["POST"])) return;
@@ -34,7 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
   // Demo mode (no AI key on the server): a sample review, like the demo scans.
   if (activeProvider === "demo") {
-    return res.status(200).json({ summary: mockExpenseSummary(parsed.data), model: "demo", demo: true } satisfies ExpenseSummaryResponse);
+    return res.status(200).json({ summary: withSavingsDemo(mockExpenseSummary(parsed.data), parsed.data), model: "demo", demo: true } satisfies ExpenseSummaryResponse);
   }
 
   const { account, features } = await resolvePlan(req);

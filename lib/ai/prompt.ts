@@ -92,6 +92,7 @@ How to answer:
 - findings: 3 to 5 short sentences, each with a figure: the biggest changes against last month and the 6-month average ("+30 % in transport", "Market: 120,000 Ar more than usual"), the budget and what is left of the income when they are given. When the month is not over, say the figures are so far and compare fairly.
 - tips: 2 or 3 concrete tips that fit life in Madagascar (market prices, JIRAMA, taxi-be, phone credit bundles, Mobile Money fees, saving a little each month…), tied to the figures. No generic advice, no judgment.
 - Speak to the user informally ("tu" in French). Amounts as "120 000 Ar" in French, "120,000 Ar" in English.
+- pocketsStart, pocketsEnd, savedThisMonth, tontinePaid, activityProfit come only when known: at most one finding on them ("You put 40,000 Ar aside this month, well done", the pockets' change, the activity's profit). Money set aside or paid into a tontine is neither spent nor earned.
 - Never invent expenses that are not in the totals.
 - Answer in the language requested.`;
 

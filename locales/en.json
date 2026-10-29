@@ -2936,6 +2936,62 @@
         "failed": "Reading failed. Try again in a moment.",
         "save": "The import stopped. Try again: nothing will be added twice."
       }
+    },
+    "exportMore": {
+      "wallet": "Pocket",
+      "sheetPockets": "My pockets",
+      "pocketColumns": {
+        "name": "Pocket",
+        "start": "Start of month",
+        "incomes": "Money in",
+        "expenses": "Money out",
+        "moves": "Moves",
+        "end": "End of month"
+      },
+      "inPockets": "In your pockets",
+      "pocketLine": "{name} · start {start} · in {incomes} · out {expenses} · moves {moves} · end {end}",
+      "sheetSavings": "Savings and tontines",
+      "goalColumns": {
+        "name": "Goal",
+        "target": "Aimed at",
+        "saved": "Set aside",
+        "left": "Left",
+        "month": "This month"
+      },
+      "tontineColumns": {
+        "name": "Tontine",
+        "paid": "Paid in",
+        "pot": "Pot",
+        "potStatus": "Received?",
+        "potDay": "On",
+        "month": "Paid this month"
+      },
+      "received": "Received",
+      "upcoming": "To come",
+      "moves": "This month's movements",
+      "moveColumns": {
+        "date": "Date",
+        "name": "For",
+        "type": "Movement",
+        "wallet": "Pocket",
+        "amountMga": "Amount"
+      },
+      "moveTypes": {
+        "saved": "Set aside",
+        "unsaved": "Taken back",
+        "paid": "Payment",
+        "pot": "Pot received"
+      },
+      "goalLine": "{name} · {saved} set aside out of {target} · {left} left",
+      "tontineLine": "{name} · paid in {paid} · pot {pot} · {status}",
+      "potReceived": "received on {date}",
+      "potUpcoming": "to come on {date}",
+      "sheetActivity": "My activity",
+      "activityColumns": {
+        "line": "Line",
+        "amountMga": "Amount",
+        "parcels": "Parcels"
+      }
     }
   }
 }
