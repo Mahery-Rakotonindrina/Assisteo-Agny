@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 import { AlertTriangle, CalendarSync, ChevronLeft, ChevronRight, History, PiggyBank, Receipt, User, Users, Wallet, X } from "lucide-react";
 import { BudgetPanel, HistoryPanel, HouseholdPanel, IncomePanel, MonthPanel, MonthReview, RecurringPanel } from "@/components/Expenses";
+import { Activity } from "@/components/Expenses/Activity";
 import styles from "@/components/Expenses/Expenses.module.scss";
 import { Pockets } from "@/components/Expenses/Pockets";
 import { Savings } from "@/components/Expenses/Savings";
@@ -13,7 +14,7 @@ import { Seo } from "@/components/Seo";
 import { useDismissed } from "@/hooks/useDismissed";
 import { useExpenseLabels } from "@/hooks/useExpenseLabels";
 import { useExpenses } from "@/hooks/useExpenses";
-import { useExpenseSources } from "@/hooks/useExpenseSources";
+import { useBudgetSources, useExpenseSources } from "@/hooks/useExpenseSources";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useNow } from "@/hooks/useNow";
 import { usePlan } from "@/hooks/usePlan";
@@ -37,6 +38,7 @@ import {
   type ExpenseRecord,
   type ManualExpense,
   type MonthForecast,
+  type SourceItem,
 } from "@/lib/expenses";
 import type { SearchHit } from "@/lib/expenseSearch";
 import { formatAriary, formatMonthYear } from "@/lib/format";
@@ -67,7 +69,7 @@ export default function ExpensesPage() {
   return (
     <>
       <Seo title={`${allowed ? t("expenses.title") : t("expenses.household.title")} · ${t("meta.title")}`} noindex />
-      {!known ? null : allowed ? <Expenses canRemind={has("reminders")} joinCode={joinCode} /> : <HouseholdOnly joinCode={joinCode} />}
+      {!known ? null : allowed ? <Expenses canRemind={has("reminders")} reseller={has("reseller")} joinCode={joinCode} /> : <HouseholdOnly joinCode={joinCode} />}
     </>
   );
 }
@@ -119,11 +121,13 @@ function MonthPicker({ month, onPick }: { month: string; onPick: (month: string)
   );
 }
 
-function Expenses({ canRemind, joinCode }: { canRemind: boolean; joinCode?: string }) {
+function Expenses({ canRemind, reseller, joinCode }: { canRemind: boolean; reseller: boolean; joinCode?: string }) {
   const { t } = useTranslation();
   const now = useNow(60_000);
   const { records } = useExpenses();
-  const sources = useExpenseSources();
+  // Every line the app knows: the pockets read them all. The budget leaves the reselling out when it is kept apart (lib/resale.ts).
+  const allSources = useExpenseSources();
+  const sources = useBudgetSources(records, allSources);
   const current = monthKey(now);
   const router = useRouter();
   // "?open=<id>" (from a scanned receipt): that expense, open in the form, in its month.
@@ -177,7 +181,7 @@ function Expenses({ canRemind, joinCode }: { canRemind: boolean; joinCode?: stri
     };
   }, [records, sources, month]);
   // Where the money really is: the pockets, always personal (never the household's).
-  const book = useMemo(() => walletBook(records, sources, now), [records, sources, now]);
+  const book = useMemo(() => walletBook(records, allSources, now), [records, allSources, now]);
   const pockets = useMemo<PocketChoice>(
     () => ({ wallets: activeWallets(book.context.wallets), lastUsed: lastUsedWallet(records, book.context), primary: book.context.primary?.id }),
     [book, records],
@@ -237,7 +241,19 @@ function Expenses({ canRemind, joinCode }: { canRemind: boolean; joinCode?: stri
       ) : (
         <>
           <motion.div variants={rise}>
-            <MonthCard balance={figures.balance} budget={figures.budget} records={records} book={book} now={now} forecast={forecast} pockets={pockets} canRemind={canRemind} />
+            <MonthCard
+              month={month}
+              balance={figures.balance}
+              budget={figures.budget}
+              records={records}
+              book={book}
+              now={now}
+              forecast={forecast}
+              pockets={pockets}
+              canRemind={canRemind}
+              reseller={reseller}
+              sources={allSources}
+            />
           </motion.div>
 
           <motion.div variants={rise} className={styles.tabs}>
@@ -299,6 +315,7 @@ function Expenses({ canRemind, joinCode }: { canRemind: boolean; joinCode?: stri
 }
 
 type CardProps = {
+  month: string;
   balance: ReturnType<typeof monthBalance>;
   budget: BudgetLine[];
   records: ExpenseRecord[];
@@ -307,10 +324,14 @@ type CardProps = {
   forecast: MonthForecast | null;
   pockets: PocketChoice;
   canRemind: boolean;
+  /** The reseller tools: the month's activity, under the savings. */
+  reseller: boolean;
+  /** Every line the app knows (the activity's purchases and sales among them). */
+  sources: SourceItem[];
 };
 
 /** "Il te reste…": the month at a glance, above every tab, with the end-of-month forecast, the budget, its warnings, what the pockets hold and what is set aside. */
-function MonthCard({ balance, budget, records, book, now, forecast, pockets, canRemind }: CardProps) {
+function MonthCard({ month, balance, budget, records, book, now, forecast, pockets, canRemind, reseller, sources }: CardProps) {
   const { t, locale } = useTranslation();
   const { categoryName } = useExpenseLabels(records);
   const money = (value: number) => formatAriary(value, locale);
@@ -358,6 +379,7 @@ function MonthCard({ balance, budget, records, book, now, forecast, pockets, can
       )}
       <Pockets book={book} records={records} now={now} />
       <Savings records={records} book={book} pockets={pockets} canRemind={canRemind} now={now} />
+      {reseller && <Activity month={month} records={records} sources={sources} book={book} pockets={pockets} />}
     </section>
   );
 }

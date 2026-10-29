@@ -336,6 +336,71 @@ test("Savings and tontine: a goal, money set aside from a pocket, a tontine and 
   await expect(list.getByTestId("tontine-status")).toHaveText(/^Tu as versé 20\s000 Ar · Tu recevras 240\s000 Ar le/);
   await expect(page.getByTestId("savings-total")).toHaveText(/^40\s000 Ar$/);
   await expect(page.getByTestId("pockets-total")).toHaveText(/^5\s000 Ar$/);
+
+  // Deleting the goal is asked first: its money comes back to the pocket.
+  await list.getByTestId("savings-goal").getByRole("button", { name: "Modifier" }).click();
+  const editGoal = page.getByRole("dialog", { name: "Objectif d’épargne" });
+  await editGoal.getByRole("button", { name: "Supprimer" }).click();
+  await expect(editGoal.getByTestId("savings-remove-question")).toHaveText(/^Supprimer « Rentrée scolaire » \? Les 20\s000 Ar mis de côté reviendront dans tes poches\.$/);
+  await editGoal.getByRole("button", { name: "Annuler" }).click();
+  await expect(editGoal.getByTestId("savings-remove-question")).toBeHidden();
+  await editGoal.getByRole("button", { name: "Supprimer" }).click();
+  await editGoal.getByRole("button", { name: "Oui, supprimer" }).click();
+  await expect(list.getByTestId("savings-goal")).toHaveCount(0);
+  await expect(page.getByTestId("savings-total")).toHaveText(/^20\s000 Ar$/);
+  await expect(page.getByTestId("pockets-total")).toHaveText(/^25\s000 Ar$/);
+});
+
+test("a reseller keeps the activity apart from the home budget and sees the month's profit", async ({ page }) => {
+  await prepare(page);
+  // Admin has "expenses" and "reseller".
+  await page.route("**/api/plan", async (route) => {
+    const response = await route.fetch();
+    await route.fulfill({ response, json: { ...(await response.json()), plan: "unlimited", features: undefined } });
+  });
+  await page.goto("/");
+  // Two parcels this month: a dress sold to Rado (cost 80 000, sold 130 000, 30 000 still owed), a bag in stock (cost 50 000).
+  await page.evaluate(async () => {
+    const now = Date.now();
+    const info = { platform: null, orderNumber: null, trackingNumber: null, carrier: null, status: "in_transit", statusLabel: "En transit", lastEvent: null, items: [], total: null, seller: null, orderedAt: null, shippedAt: null, estimatedDelivery: null, destinationCity: null, shippingMode: null };
+    const base = { info, scanIds: [], timeline: [], createdAt: now, updatedAt: now, fees: [] };
+    const parcels = [
+      { ...base, id: "dress", title: "Robe rouge", client: "Rado", priceMga: 80000, salePriceMga: 130000, paidMga: 100000, soldAt: now },
+      { ...base, id: "bag", title: "Sac", forResale: true, priceMga: 50000 },
+    ];
+    await new Promise<void>((resolve, reject) => {
+      const request = indexedDB.open("assisteo-parcels");
+      request.onupgradeneeded = () => request.result.createObjectStore("parcels");
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        const tx = request.result.transaction("parcels", "readwrite");
+        for (const parcel of parcels) tx.objectStore("parcels").put(parcel, parcel.id);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      };
+    });
+  });
+  await page.goto("/expenses");
+  // Off by default: the purchases are expenses, the sale an income (as before).
+  await expect(page.getByTestId("expenses-total")).toHaveText(/^130\s000 Ar$/);
+  await expect(page.getByTestId("expenses-in")).toHaveText(/^130\s000 Ar$/);
+  await expect(page.getByTestId("activity-line")).toHaveText(/Mon activité : bénéfice du mois \+50\s000 Ar/);
+
+  await page.getByTestId("activity-line").click();
+  const sheet = page.getByTestId("activity-sheet");
+  await expect(sheet.getByTestId("activity-profit")).toHaveText(/^50\s000 Ar$/);
+  await expect(sheet.getByText("À encaisser (toutes ventes)", { exact: true })).toBeVisible();
+  await expect(sheet.getByText("Rado", { exact: true })).toBeVisible();
+  await sheet.getByRole("switch", { name: "Séparer mon activité de revente du budget de la maison" }).click();
+  await expect(sheet.getByText(/^Activé : tes colis à revendre/)).toBeVisible();
+  await page.keyboard.press("Escape");
+
+  // On: the parcels leave the budget, only the month's profit comes in.
+  await expect(page.getByTestId("expenses-total")).toHaveText(/^0 Ar$/);
+  await expect(page.getByTestId("expenses-in")).toHaveText(/^50\s000 Ar$/);
+  await page.getByRole("radio", { name: "Revenus" }).click();
+  await expect(page.getByText("Bénéfice de mon activité")).toBeVisible();
+  await expect(page.getByText("Ajouté tout seul · Activité")).toBeVisible();
 });
 
 test("an Admin account gets the month's review (demo)", async ({ page }) => {

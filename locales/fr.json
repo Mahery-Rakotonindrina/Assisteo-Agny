@@ -1337,7 +1337,10 @@
       "profit": "Bénéfice : {amount}",
       "loss": "Perte : {amount}",
       "locked": "Prix de vente, paiement du client et bénéfice : avec l’offre {plan}.",
-      "dueShort": "Reste {amount}"
+      "dueShort": "Reste {amount}",
+      "forLabel": "Ce colis est",
+      "forMe": "Pour moi",
+      "forResale": "Pour revendre"
     },
     "expected": "Livraison prévue : {date}",
     "expectedToday": "Arrive aujourd'hui",
@@ -2237,7 +2240,8 @@
       "mobile_money": "Mobile Money",
       "plan": "Abonnement",
       "sale": "Vente",
-      "fees": "Frais Mobile Money"
+      "fees": "Frais Mobile Money",
+      "activity": "Activité"
     },
     "form": {
       "title": "Dépense",
@@ -2564,7 +2568,8 @@
       "expense": "Compté dans Mes dépenses",
       "income": "Compté dans tes revenus",
       "off": "Pas compté dans Mes dépenses",
-      "garage": "Pleins, entretien et frais comptés dans Mes dépenses"
+      "garage": "Pleins, entretien et frais comptés dans Mes dépenses",
+      "activity": "Compté dans Mon activité"
     },
     "feesLabel": "Frais de retrait ou de transfert",
     "pockets": {
@@ -2713,7 +2718,32 @@
         "saved": "Mis de côté",
         "unsaved": "Repris de l’épargne",
         "pot": "Cagnotte reçue"
-      }
+      },
+      "removeHeld": "Supprimer « {name} » ? Les {amount} mis de côté reviendront dans tes poches.",
+      "removePot": "Supprimer « {name} » ? Tes versements et la cagnotte reçue seront retirés de tes poches.",
+      "removeEmpty": "Supprimer « {name} » ?",
+      "removeConfirm": "Oui, supprimer"
+    },
+    "activity": {
+      "line": "Mon activité : bénéfice du mois",
+      "title": "Mon activité · {month}",
+      "income": "Bénéfice de mon activité",
+      "bought": "Achats du mois",
+      "sales": "Ventes du mois",
+      "profit": "Bénéfice",
+      "profitHint": "Ventes moins ce qu’ont coûté les colis vendus",
+      "toCollect": "À encaisser (toutes ventes)",
+      "toCollectHint": "Ce que tes clients doivent encore",
+      "stock": "Stock pas encore vendu",
+      "parcels": "{count} colis",
+      "topClients": "Meilleurs clients du mois",
+      "clientDetail": "{count} colis · bénéfice {profit}",
+      "separate": "Séparer mon activité de revente du budget de la maison",
+      "separateOff": "Désactivé : le prix d’achat de tes colis compte dans tes dépenses, et le prix de vente dans tes revenus.",
+      "separateOn": "Activé : tes colis à revendre ne comptent plus dans le budget de la maison. Seul le bénéfice du mois entre dans tes revenus. Tes poches ne changent pas.",
+      "parcelsLink": "Voir mes colis",
+      "lines": "Achats et ventes du mois",
+      "purchase": "Achat : {title}"
     }
   }
 }

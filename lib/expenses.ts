@@ -220,9 +220,16 @@ export type Tontine = Base & {
   remind: boolean;
 };
 
-export type ExpenseRecord = ManualExpense | Income | Recurring | Budget | CustomCategory | Exclusion | Wallet | Transfer | Correction | WalletPick | SavingsGoal | Tontine;
+// ---- Resellers (lib/resale.ts) ---------------------------------------------------------
+// A kind an older app doesn't know either: it keeps counting the parcels as before.
+
+/** "Keep my reselling apart from the household's budget": one record, like the budget. */
+export type ActivitySetting = Base & { kind: "activity"; separate: boolean };
+
+export type ExpenseRecord = ManualExpense | Income | Recurring | Budget | CustomCategory | Exclusion | Wallet | Transfer | Correction | WalletPick | SavingsGoal | Tontine | ActivitySetting;
 
 export const BUDGET_ID = "budget";
+export const ACTIVITY_ID = "activity";
 export const exclusionId = (sourceKey: string) => `exclusion:${sourceKey}`;
 export const walletPickId = (sourceKey: string) => `walletPick:${sourceKey}`;
 /** The arrival of a scanned move between one's own pockets, picked by the user. */
@@ -314,7 +321,8 @@ export type ExpenseOrigin =
   | "mobile_money"
   | "plan"
   | "sale"
-  | "fees";
+  | "fees"
+  | "activity";
 
 /** One line of a month: typed in, recurring, or read from another part of the app. */
 export type MonthItem = {
@@ -370,6 +378,8 @@ export type SourceItem = Omit<MonthItem, "excluded" | "doubt" | "record" | "recu
   /** A parcel sold: the sale price minus what it cost (negative: a loss), and what the client still owes. */
   profitMga?: number;
   unpaidMga?: number;
+  /** A parcel bought to resell, its cost or its sale: out of the household's budget once the activity is kept apart (lib/resale.ts). */
+  resale?: true;
 };
 
 type Receipt = NonNullable<NonNullable<Analysis["document"]>["receipt"]>;
@@ -383,7 +393,7 @@ export type PlanPayment = { id: string; plan: string; amountMga: number; paidAt:
 export type SourceInputs = {
   bills?: Array<Pick<Bill, "kind" | "issuer" | "amountMga" | "paidAt"> & { entry: { id: string } }>;
   lists?: Array<Pick<SavedList, "id" | "title" | "kind" | "items" | "updatedAt">>;
-  parcels?: Array<Pick<Parcel, "id" | "title" | "priceMga" | "fees" | "createdAt"> & Partial<Pick<Parcel, "salePriceMga" | "paidMga" | "soldAt">>>;
+  parcels?: Array<Pick<Parcel, "id" | "title" | "priceMga" | "fees" | "createdAt"> & Partial<Pick<Parcel, "salePriceMga" | "paidMga" | "soldAt" | "client" | "forResale">>>;
   vehicles?: Array<Pick<Vehicle, "id" | "name" | "fuel" | "maintenance" | "expenses">>;
   /** Scans: the receipts among them count on their own. */
   receipts?: ReceiptScan[];
@@ -430,6 +440,10 @@ export const saleKey = (parcelId: string) => `sale:${parcelId}`;
 /** When a parcel was sold: the day its sale price was set, else (sold before that was kept) the day it was added, which never moves. */
 export const soldOn = (parcel: Pick<Parcel, "createdAt"> & Partial<Pick<Parcel, "soldAt">>) => parcel.soldAt ?? parcel.createdAt;
 
+/** A parcel bought to resell: marked so by hand, else one with a client or a sale price ("for me" by hand wins). */
+export const isForResale = (parcel: Partial<Pick<Parcel, "client" | "salePriceMga" | "forResale">>) =>
+  parcel.forResale ?? (Boolean(parcel.client?.trim()) || Boolean(parcel.salePriceMga && parcel.salePriceMga > 0));
+
 const planName = (plan: string) => plan.charAt(0).toUpperCase() + plan.slice(1);
 
 /**
@@ -462,7 +476,8 @@ export function sourceItems({ bills = [], lists = [], parcels = [], vehicles = [
   }
   for (const parcel of parcels) {
     const total = (parcel.priceMga ?? 0) + (parcel.fees ?? []).reduce((sum, fee) => sum + (fee.amountMga || 0), 0);
-    if (total > 0) items.push({ key: `parcel:${parcel.id}`, origin: "parcel", at: parcel.createdAt, amountMga: total, category: "online", label: parcel.title, href: "/parcels" });
+    const resale = isForResale(parcel) ? ({ resale: true } as const) : {};
+    if (total > 0) items.push({ key: `parcel:${parcel.id}`, origin: "parcel", at: parcel.createdAt, amountMga: total, category: "online", label: parcel.title, href: "/parcels", ...resale });
     // Sold (resellers): the whole sale price comes in, the month it was sold; the purchase stays an expense.
     const sale = parcel.salePriceMga;
     if (sale && sale > 0)
@@ -477,6 +492,7 @@ export function sourceItems({ bills = [], lists = [], parcels = [], vehicles = [
         href: "/parcels",
         profitMga: sale - total,
         unpaidMga: Math.max(0, sale - (parcel.paidMga ?? 0)),
+        ...resale,
       });
   }
   for (const vehicle of vehicles) {
@@ -646,7 +662,7 @@ export function monthExpenses(records: ExpenseRecord[], sources: Computed[], key
   return items.sort((a, b) => b.at - a.at || a.key.localeCompare(b.key));
 }
 
-export type IncomeOrigin = "manual" | "recurring" | "sale" | "mobile_money" | "receipt";
+export type IncomeOrigin = "manual" | "recurring" | "sale" | "mobile_money" | "receipt" | "activity";
 
 export type IncomeItem = {
   key: string;
@@ -691,7 +707,7 @@ export function monthIncomes(records: ExpenseRecord[], key: string, sources: Com
   }
   for (const source of sources) {
     if (source.flow !== "income" || source.sameAs || !inMonth(source.at, key) || linked.has(source.key)) continue;
-    const origin: IncomeOrigin = source.origin === "sale" || source.origin === "mobile_money" ? source.origin : "receipt";
+    const origin: IncomeOrigin = source.origin === "sale" || source.origin === "mobile_money" || source.origin === "activity" ? source.origin : "receipt";
     const doubt = isReceipt(source) && !marks.has(keepKey(source.key)) && inDoubt(source, sources, []);
     items.push({
       key: source.key,

@@ -45,11 +45,13 @@ export function IncomePanel({ month, incomes, defaultAt, focus, book, pockets }:
   }, [focus]);
 
   const title = (item: IncomeItem) =>
-    item.origin === "sale" && item.label
-      ? t("expenses.income.sale", { title: item.label })
-      : (item.origin === "mobile_money" || item.origin === "receipt") && item.label
-        ? t("expenses.income.from", { name: item.label })
-        : item.label || t(`expenses.incomes.${item.income}`);
+    item.origin === "activity"
+      ? t("expenses.activity.income")
+      : item.origin === "sale" && item.label
+        ? t("expenses.income.sale", { title: item.label })
+        : (item.origin === "mobile_money" || item.origin === "receipt") && item.label
+          ? t("expenses.income.from", { name: item.label })
+          : item.label || t(`expenses.incomes.${item.income}`);
 
   const detail = (item: IncomeItem) =>
     [
@@ -135,7 +137,8 @@ export function IncomePanel({ month, incomes, defaultAt, focus, book, pockets }:
                           {t(item.excluded ? "expenses.include" : "expenses.exclude")}
                         </Button>
                       )}
-                      {book && pockets && pockets.wallets.length > 0 && (
+                      {/* The activity's profit is not money that came in: the sales it adds up came into their own pockets. */}
+                      {book && pockets && pockets.wallets.length > 0 && item.origin !== "activity" && (
                         <div className={styles.linePocket}>
                           <WalletChips
                             label={t("expenses.pockets.lineWalletIn")}

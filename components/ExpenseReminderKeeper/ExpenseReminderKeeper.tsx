@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { useExpenseLabels } from "@/hooks/useExpenseLabels";
 import { useExpenseReminderTexts } from "@/hooks/useExpenseReminderTexts";
 import { useExpenses } from "@/hooks/useExpenses";
-import { useExpenseSources } from "@/hooks/useExpenseSources";
+import { useBudgetSources, useExpenseSources } from "@/hooks/useExpenseSources";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { BUDGET_ID, budgetLines, monthExpenses, monthKey, monthTotals, type Budget } from "@/lib/expenses";
@@ -46,7 +46,8 @@ export function ExpenseReminderKeeper() {
 /** Notifies once a month each cap reaching 80 %, then going over (whatever the expense came from). */
 function BudgetAlerts() {
   const { records, isLoading } = useExpenses();
-  const sources = useExpenseSources();
+  // What the budget counts: the reselling apart, when the user keeps it so.
+  const sources = useBudgetSources(records, useExpenseSources());
   const texts = useExpenseReminderTexts();
   const { t } = useTranslation();
   const { categoryName } = useExpenseLabels(records);
