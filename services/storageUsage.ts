@@ -1,6 +1,7 @@
 import type { HistoryEntry } from "@/types/history";
 import { historyStore } from "./historyStore";
 import { listStore } from "./listStore";
+import { loanProofStore } from "./loanProofStore";
 import { parcelStore } from "./parcelStore";
 import { scanQueue, type QueuedScan } from "./scanQueue";
 
@@ -16,6 +17,9 @@ export type StorageUsage = {
   scans: number;
   parcelsBytes: number;
   listsBytes: number;
+  /** The photos attached to loans as proofs ("Prêts"). */
+  proofsBytes: number;
+  proofs: number;
   /** Scans waiting for the network, with their photos. */
   queueBytes: number;
   queued: number;
@@ -35,19 +39,25 @@ export function summarizeStorage(input: {
   parcels: unknown[];
   lists: unknown[];
   queue: QueuedScan[];
+  /** The photo proofs of the loans (none before proofs existed). */
+  proofs?: Array<{ preview: string; thumbnail: string }>;
   estimate: number | null;
 }): StorageUsage {
   const history = input.history.filter((entry) => !entry.deletedAt);
   const photosBytes = history.reduce((total, entry) => total + photoBytes(entry), 0);
   const analysesBytes = history.reduce((total, entry) => total + textBytes({ ...entry, preview: "", thumbnail: "", pages: undefined }), 0);
   const queueBytes = input.queue.reduce((total, item) => total + textBytes(item), 0);
-  const known = photosBytes + analysesBytes + textBytes(input.parcels) + textBytes(input.lists) + queueBytes;
+  const proofs = input.proofs ?? [];
+  const proofsBytes = proofs.reduce((total, proof) => total + (proof.preview === proof.thumbnail ? 0 : proof.preview.length) + proof.thumbnail.length, 0);
+  const known = photosBytes + analysesBytes + textBytes(input.parcels) + textBytes(input.lists) + queueBytes + proofsBytes;
   return {
     photosBytes,
     analysesBytes,
     scans: history.length,
     parcelsBytes: textBytes(input.parcels),
     listsBytes: textBytes(input.lists),
+    proofsBytes,
+    proofs: proofs.length,
     queueBytes,
     queued: input.queue.length,
     // The browser counts more than our data (its own bookkeeping, the app's files on the web).
@@ -57,11 +67,12 @@ export function summarizeStorage(input: {
 
 /** Measures what the app keeps on this device right now. */
 export async function measureStorage(): Promise<StorageUsage> {
-  const [history, parcels, lists, queue, estimate] = await Promise.all([
+  const [history, parcels, lists, queue, proofs, estimate] = await Promise.all([
     historyStore.raw(),
     parcelStore.raw(),
     listStore.raw(),
     scanQueue.list(),
+    loanProofStore.raw().catch(() => []),
     typeof navigator !== "undefined" && navigator.storage?.estimate
       ? navigator.storage
           .estimate()
@@ -69,5 +80,5 @@ export async function measureStorage(): Promise<StorageUsage> {
           .catch(() => null)
       : Promise.resolve(null),
   ]);
-  return summarizeStorage({ history, parcels, lists, queue, estimate });
+  return summarizeStorage({ history, parcels, lists, queue, proofs, estimate });
 }

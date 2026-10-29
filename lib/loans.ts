@@ -18,6 +18,13 @@ export type Installment = { id: string; dueAt: number; amountMga: number };
 /** Interest or fees agreed on top of the loan: a fixed amount, or a share of it. */
 export type LoanInterest = { kind: "fixed" | "percent"; value: number };
 
+/**
+ * A proof attached to a loan: a photo taken for it ("photo", its image on the
+ * device and in the account's storage at `remote`), or a scan of the history
+ * ("scan", read from there, never copied).
+ */
+export type LoanProof = { id: string; kind: "photo" | "scan"; scanId?: string; remote?: string; addedAt: number };
+
 export const scheduleFrequencies = ["week", "month"] as const;
 export type ScheduleFrequency = (typeof scheduleFrequencies)[number];
 
@@ -35,6 +42,8 @@ export type Loan = {
   schedule?: Installment[];
   interest?: LoanInterest;
   note?: string;
+  /** Proofs attached (photos, scans of the history); the images live apart (lib/loanProof.ts). */
+  proofs?: LoanProof[];
   repayments: Repayment[];
   updatedAt: number;
   deletedAt?: number;

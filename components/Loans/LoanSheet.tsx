@@ -1,12 +1,13 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useState, useSyncExternalStore, type FormEvent, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { Check, X } from "lucide-react";
+import { Camera, Check, FileImage, ScanText, X } from "lucide-react";
 import { Button } from "@/components/Button";
 import { useToast } from "@/components/Toast";
 import { useNow } from "@/hooks/useNow";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDate, startOfDay, toDateInput } from "@/lib/format";
+import { loanScanDraft, otherParty, type LoanScanDraft } from "@/lib/loanScan";
 import {
   loanMoney,
   cappedRepayment,
@@ -25,9 +26,12 @@ import {
 } from "@/lib/loans";
 import { parseNumber } from "@/lib/money";
 import { spring } from "@/lib/motion";
+import { CaptureCancelledError, capturePhoto, type PhotoSource } from "@/services/camera";
 import { haptics } from "@/services/device";
 import { loanStore } from "@/services/loanStore";
+import { ApiError } from "@/types/api";
 import styles from "./Loans.module.scss";
+import { useAccountName } from "./useAccountName";
 
 const noSubscribe = () => () => {};
 // Read when the form is saved, never while rendering.
@@ -82,21 +86,57 @@ type Draft = { direction: LoanDirection; person?: string; phone?: string };
 /** "J'ai prêté de l'argent" / "J'ai emprunté", or a loan corrected (`loan`). */
 export function LoanSheet({ open, onClose, draft, loan, loans, onSaved }: { open: boolean; onClose: () => void; draft: Draft; loan?: Loan; loans: Loan[]; onSaved?: (loan: Loan) => void }) {
   const { t } = useTranslation();
-  const direction = loan?.direction ?? draft.direction;
+  // A scanned debt acknowledgment can turn "J'ai prêté" into "J'ai emprunté" (or back).
+  const [side, setSide] = useState<LoanDirection | null>(null);
+  const direction = loan?.direction ?? side ?? draft.direction;
   const title = loan ? t("loans.form.titleEdit") : t(`loans.form.title.${direction}`);
+  const close = () => {
+    setSide(null);
+    onClose();
+  };
   return (
-    <Sheet open={open} onClose={onClose} title={title}>
-      {open && <LoanFields key={loan?.id ?? `${direction}-${draft.person ?? ""}`} direction={direction} draft={draft} loan={loan} loans={loans} onClose={onClose} onSaved={onSaved} />}
+    <Sheet open={open} onClose={close} title={title}>
+      {open && (
+        <LoanFields
+          key={loan?.id ?? `${draft.direction}-${draft.person ?? ""}`}
+          direction={direction}
+          onDirection={loan ? undefined : setSide}
+          draft={draft}
+          loan={loan}
+          loans={loans}
+          onClose={close}
+          onSaved={onSaved}
+        />
+      )}
     </Sheet>
   );
 }
 
+type Scanned = { src: string; draft: LoanScanDraft };
+
 type DueChoice = "none" | "week" | "month" | "pick";
 
-function LoanFields({ direction, draft, loan, loans, onClose, onSaved }: { direction: LoanDirection; draft: Draft; loan?: Loan; loans: Loan[]; onClose: () => void; onSaved?: (loan: Loan) => void }) {
+function LoanFields({
+  direction,
+  onDirection,
+  draft,
+  loan,
+  loans,
+  onClose,
+  onSaved,
+}: {
+  direction: LoanDirection;
+  onDirection?: (direction: LoanDirection) => void;
+  draft: Draft;
+  loan?: Loan;
+  loans: Loan[];
+  onClose: () => void;
+  onSaved?: (loan: Loan) => void;
+}) {
   const { t, locale } = useTranslation();
   const toast = useToast();
   const now = useNow(60_000);
+  const accountName = useAccountName();
   const [person, setPerson] = useState(loan?.person ?? draft.person ?? "");
   const [amount, setAmount] = useState(loan ? String(loan.amountMga) : "");
   const [day, setDay] = useState(toDateInput(loan?.at ?? now));
@@ -117,6 +157,10 @@ function LoanFields({ direction, draft, loan, loans, onClose, onSaved }: { direc
   const [error, setError] = useState(false);
   const [mismatch, setMismatch] = useState(false);
   const [saving, setSaving] = useState(false);
+  // "Scanner une reconnaissance de dette": the photo (the loan's first proof) and what was read.
+  const [scanStep, setScanStep] = useState<"idle" | "choose" | "reading">("idle");
+  const [scanned, setScanned] = useState<Scanned | null>(null);
+  const [askSide, setAskSide] = useState(false);
   const names = [...new Set(loans.map((item) => item.person.trim()))];
   const today = toDateInput(now);
 
@@ -135,6 +179,77 @@ function LoanFields({ direction, draft, loan, loans, onClose, onSaved }: { direc
   const resplit = () => {
     setParts({});
     setMismatch(false);
+  };
+
+  /** The form filled in from the reading; the person is the other party than the user. */
+  const fill = (read: LoanScanDraft, side: LoanDirection | null) => {
+    if (side) {
+      onDirection?.(side);
+      setPerson(otherParty(read, side));
+    }
+    if (read.amountMga !== null) setAmount(String(read.amountMga));
+    if (read.day) setDay(read.day);
+    if (read.interest) {
+      setWithInterest(true);
+      setInterestKind(read.interest.kind);
+      setInterestValue(String(read.interest.value));
+    }
+    const installments = read.installments.flatMap((item) => {
+      const at = dayFromInput(item.dueDay);
+      return at === undefined ? [] : [{ id: item.dueDay, dueAt: at, amountMga: item.amountMga }];
+    });
+    if (installments.length >= 2) {
+      setSplit(true);
+      setTimes(String(installments.length));
+      setFrequency(scheduleFrequency(installments));
+      setFirstDay(toDateInput(installments[0].dueAt));
+      setParts(Object.fromEntries(installments.map((item, index) => [index, String(item.amountMga)])));
+    } else if (read.dueDay) {
+      setSplit(false);
+      setDue("pick");
+      setDueDay(read.dueDay);
+    }
+    if (read.place && !note) setNote(t("loans.scan.placeNote", { place: read.place }));
+    setError(false);
+    setMismatch(false);
+  };
+
+  const scan = async (source: PhotoSource) => {
+    if (scanStep === "reading") return;
+    let src: string;
+    try {
+      src = await capturePhoto(source);
+    } catch (captureError) {
+      if (!(captureError instanceof CaptureCancelledError)) toast(t("loans.scan.errors.failed"), "error");
+      return;
+    }
+    setScanStep("reading");
+    try {
+      const { readAcknowledgment } = await import("@/services/loanScan");
+      const { reading } = await readAcknowledgment(src, locale);
+      if (!reading.isAcknowledgment) {
+        toast(t("loans.scan.notAck"), "error");
+        setScanStep("choose");
+        return;
+      }
+      const read = loanScanDraft(reading, accountName, today);
+      haptics.success();
+      setScanned({ src, draft: read });
+      setAskSide(read.direction === null);
+      fill(read, read.direction);
+      setScanStep("idle");
+    } catch (scanError) {
+      const code = scanError instanceof ApiError ? scanError.code : "unknown";
+      const key = code === "plan_limit" ? "limit" : code === "sign_in_required" ? "signIn" : code === "network" ? "offline" : code === "plan_required" ? "plan" : "failed";
+      toast(t(`loans.scan.errors.${key}`), "error");
+      setScanStep("choose");
+    }
+  };
+
+  const chooseSide = (side: LoanDirection) => {
+    haptics.tap();
+    setAskSide(false);
+    if (scanned) fill(scanned.draft, side);
   };
 
   const dueAt = () => {
@@ -177,6 +292,8 @@ function LoanFields({ direction, draft, loan, loans, onClose, onSaved }: { direc
       } else {
         const created = await loanStore.create(fields);
         if (created) {
+          // The scanned acknowledgment is the loan's first proof.
+          if (scanned) await loanStore.addPhotoProof(created.id, scanned.src).catch(() => null);
           haptics.success();
           const params = { person: created.person, amount: loanMoney(created.amountMga, locale) };
           toast(t(`loans.saved.${direction}`, params));
@@ -191,6 +308,50 @@ function LoanFields({ direction, draft, loan, loans, onClose, onSaved }: { direc
 
   return (
     <form className={styles.sheetForm} onSubmit={(event) => void save(event)}>
+      {!loan && (
+        <div className={styles.scanBox} data-testid="loan-scan">
+          {scanStep === "reading" ? (
+            <p className={styles.hint} role="status">
+              {t("loans.scan.reading")}
+            </p>
+          ) : scanStep === "choose" ? (
+            <div className={styles.chips}>
+              <Button type="button" variant="secondary" icon={<Camera />} onClick={() => void scan("camera")}>
+                {t("loans.scan.camera")}
+              </Button>
+              <Button type="button" variant="secondary" icon={<FileImage />} onClick={() => void scan("gallery")}>
+                {t("loans.scan.gallery")}
+              </Button>
+            </div>
+          ) : (
+            <Button type="button" variant="ghost" icon={<ScanText />} onClick={() => setScanStep("choose")}>
+              {scanned ? t("loans.scan.again") : t("loans.scan.button")}
+            </Button>
+          )}
+          {scanned && scanStep === "idle" && <small className={styles.hint}>{t("loans.scan.filled")}</small>}
+          {scanned && askSide && (
+            <div className={styles.field}>
+              <span>{t("loans.scan.whichSide")}</span>
+              <div className={styles.chips}>
+                <button type="button" className={styles.chip} onClick={() => chooseSide("lent")}>
+                  {t("loans.scan.sideLent", { name: scanned.draft.lender ?? t("loans.scan.lender") })}
+                </button>
+                <button type="button" className={styles.chip} onClick={() => chooseSide("borrowed")}>
+                  {t("loans.scan.sideBorrowed", { name: scanned.draft.borrower ?? t("loans.scan.borrower") })}
+                </button>
+              </div>
+            </div>
+          )}
+          {scanned?.draft.amountsDiffer && (
+            <p className={styles.error} role="alert" data-testid="loan-scan-mismatch">
+              {t("loans.scan.amountsDiffer", {
+                figures: loanMoney(scanned.draft.amountMga ?? 0, locale),
+                words: scanned.draft.amountWords ?? loanMoney(scanned.draft.amountWordsValue ?? 0, locale),
+              })}
+            </p>
+          )}
+        </div>
+      )}
       <label className={styles.field}>
         <span>{t(`loans.form.person.${direction}`)}</span>
         <input

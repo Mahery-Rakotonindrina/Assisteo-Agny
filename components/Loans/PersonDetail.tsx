@@ -7,6 +7,7 @@ import { formatDate } from "@/lib/format";
 import { loanInterest, loanMoney, loanNextDue, loanPaid, loanRemaining, loanStatus, loanTotal, scheduleState, whatsappLink, type Loan, type PersonLoans } from "@/lib/loans";
 import { copyText, haptics } from "@/services/device";
 import { loanStore } from "@/services/loanStore";
+import { LoanProofs } from "./LoanProofs";
 import styles from "./Loans.module.scss";
 
 type Props = {
@@ -152,6 +153,7 @@ function LoanCard({ loan, now, readOnly, onEdit, onRepay, onAck }: { loan: Loan;
         </ul>
       )}
       {loan.note && <p className={styles.note}>{loan.note}</p>}
+      <LoanProofs loan={loan} readOnly={readOnly} />
 
       {loan.repayments.length > 0 && (
         <ul className={styles.repayments} aria-label={t("loans.detail.repayments")}>

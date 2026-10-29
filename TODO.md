@@ -259,8 +259,8 @@ L’argent prêté ou emprunté, par personne. Ni dépense ni revenu : rien n’
 - [ ] Lien avec « Mes poches » et « Mes dépenses » : prêter sort d’une poche, un remboursement y rentre, sans compter ni en dépense ni en revenu ; un « Vous avez reçu » MVola reconnu comme remboursement
 - [ ] Rappel la veille de l’échéance (notification)
 - [ ] Relance WhatsApp ou SMS programmée (« relancer dans 3 jours »)
-- [ ] Preuve jointe : photo d’une reconnaissance de dette, capture du transfert MVola
-- [ ] Scanner une reconnaissance de dette : la fiche se remplit toute seule
+- [x] Preuve jointe : photo d’une reconnaissance de dette, capture du transfert MVola — jusqu’à 5 par prêt (photo, image ou scan de l’historique), synchronisées dans le bucket `scans` (`<user id>/loans/…`, sans migration), jointes en annexe de la reconnaissance de dette en PDF
+- [x] Scanner une reconnaissance de dette : la fiche se remplit toute seule — l’IA lit prêteur, emprunteur, montant en chiffres et en lettres (écart signalé), dates, échéancier, intérêts et lieu ; le sens est deviné avec le nom du compte, sinon demandé ; compte 1 scan du mois, rendu si la lecture échoue
 - [x] Remboursement en plusieurs fois prévu d’avance (échéancier), intérêts ou frais convenus — parts égales modifiables, chaque semaine ou chaque mois ; prochaine échéance et retard calculés sur l’échéancier ; intérêts fixes ou en %, le total à rendre est suivi
 - [x] Reconnaissance de dette en PDF, à faire signer ou à envoyer — montant en chiffres et en lettres (fr, en), échéancier et intérêts, deux cases de signature
 - [x] Export Excel ou PDF du récapitulatif par personne — tout l’écran ou une seule personne ; une feuille par sens (« On me doit », « Je dois ») et son « Par personne », chacune avec son total ; le PDF a une section par sens

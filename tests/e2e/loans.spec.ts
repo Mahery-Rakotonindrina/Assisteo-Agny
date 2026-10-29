@@ -136,3 +136,45 @@ test("« Reconnaissance de dette (PDF) » gives a file", async ({ page }) => {
   await page.getByRole("button", { name: "Créer le PDF" }).click();
   expect((await download).suggestedFilename()).toMatch(/^reconnaissance-de-dette-Rakoto\.pdf$/);
 });
+
+/** Picks the test photo in the file chooser the button opens (the web camera plugin). */
+async function pickPhoto(page: Page, button: string) {
+  const chooser = page.waitForEvent("filechooser");
+  await page.getByRole("button", { name: button, exact: true }).click();
+  await (await chooser).setFiles("tests/e2e/fixtures/apple.jpg");
+}
+
+test("a photo joins a loan as proof, then shows in the list and on the card", async ({ page }) => {
+  await asAdmin(page);
+  await page.goto("/loans");
+  await lend(page, "Rakoto", "50000");
+  await page.getByRole("button", { name: /Rakoto/ }).click();
+  await page.getByRole("button", { name: "Ajouter une preuve" }).click();
+  await pickPhoto(page, "Choisir une image");
+  await expect(page.getByText("Preuve ajoutée.")).toBeVisible();
+  await expect(page.getByTestId("loan-proofs").getByRole("button")).toHaveCount(1);
+
+  await page.getByRole("button", { name: "Voir la preuve 1" }).click();
+  await expect(page.getByRole("img", { name: "Preuve" })).toBeVisible();
+  await page.getByRole("button", { name: "Supprimer la preuve" }).click();
+  await page.getByRole("button", { name: "Oui, supprimer la preuve" }).click();
+  await expect(page.getByText("Preuve supprimée.")).toBeVisible();
+  await expect(page.getByTestId("loan-proofs")).toHaveCount(0);
+});
+
+test("scanning a debt acknowledgment (demo) fills in the form, the photo kept as proof", async ({ page }) => {
+  await asAdmin(page);
+  await page.goto("/loans");
+  await page.getByRole("button", { name: "J’ai prêté de l’argent" }).click();
+  await page.getByRole("button", { name: "Scanner une reconnaissance de dette" }).click();
+  await pickPhoto(page, "Choisir une image");
+  // Signed out, the side can't be told from the account's name: asked.
+  await page.getByRole("button", { name: "Rasoa Marie : on me doit" }).click();
+  await expect(page.getByLabel("À qui ?")).toHaveValue("Rakoto Jean");
+  await expect(page.getByLabel("Montant (Ar)")).toHaveValue("150000");
+  await page.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(page.getByTestId("loans-total")).toHaveText(/^150\s000\sAr$/);
+  await expect(page.getByTestId("loan-has-proofs")).toBeVisible();
+  await page.getByRole("button", { name: /Rakoto Jean/ }).click();
+  await expect(page.getByTestId("loan-proofs").getByRole("button")).toHaveCount(1);
+});

@@ -1,6 +1,6 @@
 import type { IncomingHttpHeaders } from "node:http";
-import { analyzeWithClaude, askWithClaude, CLAUDE_MODEL, listClaudeModels, summarizeWithClaude, verifyClaudeKey, type AiUsage, type EngineOptions } from "./claude";
-import { analyzeWithGemini, askWithGemini, GEMINI_DEEP_MODEL, GEMINI_MODEL, listGeminiModels, summarizeWithGemini, verifyGeminiKey } from "./gemini";
+import { analyzeWithClaude, askWithClaude, CLAUDE_MODEL, listClaudeModels, readLoanWithClaude, summarizeWithClaude, verifyClaudeKey, type AiUsage, type EngineOptions } from "./claude";
+import { analyzeWithGemini, askWithGemini, GEMINI_DEEP_MODEL, GEMINI_MODEL, listGeminiModels, readLoanWithGemini, summarizeWithGemini, verifyGeminiKey } from "./gemini";
 import { analyzeWithOpenAICompatible, askWithOpenAICompatible, listOpenAICompatibleModels, verifyOpenAICompatibleKey } from "./openaiCompatible";
 import {
   AiOverrideSchema,
@@ -12,6 +12,7 @@ import {
   type AskRequest,
   type ExpenseSummaryRequest,
   type ListModelsRequest,
+  type LoanScanRequest,
 } from "./schema";
 
 type Engine = (input: AnalyzeRequest, signal?: AbortSignal, options?: EngineOptions) => Promise<{ analysis: Analysis; model: string; usage?: AiUsage }>;
@@ -108,6 +109,13 @@ export function summarizeExpenses(input: ExpenseSummaryRequest, signal?: AbortSi
   if (activeProvider === "claude") return summarizeWithClaude(input, signal);
   if (activeProvider === "gemini") return summarizeWithGemini(input, signal);
   throw new Error("summarizeExpenses called in demo mode.");
+}
+
+/** "Prêts": a debt acknowledgment read, always on the server's engine (never an own key). */
+export function readLoanDocument(input: LoanScanRequest, signal?: AbortSignal) {
+  if (activeProvider === "claude") return readLoanWithClaude(input, signal);
+  if (activeProvider === "gemini") return readLoanWithGemini(input, signal);
+  throw new Error("readLoanDocument called in demo mode.");
 }
 
 export function verifyKey(override: AiOverride) {

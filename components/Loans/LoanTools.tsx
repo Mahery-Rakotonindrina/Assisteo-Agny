@@ -3,15 +3,17 @@ import { FileSpreadsheet, FileText } from "lucide-react";
 import { Button } from "@/components/Button";
 import { useToast } from "@/components/Toast";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useAccount } from "@/lib/account/AccountProvider";
 import { formatDate, toDateInput } from "@/lib/format";
 import { XLSX_TYPE } from "@/lib/excel";
+import { annexProofs } from "@/lib/loanProof";
 import type { Loan } from "@/lib/loans";
 import { pdfFileName } from "@/lib/pdf";
 import { haptics } from "@/services/device";
 import { shareFile } from "@/services/fileShare";
+import { loanProofStore } from "@/services/loanProofStore";
 import { Sheet } from "./LoanSheet";
 import styles from "./Loans.module.scss";
+import { useAccountName } from "./useAccountName";
 
 // The papers of "Prêts": the debt acknowledgment of one loan, and the exports
 // (Excel, PDF) of every loan or of one person's. jsPDF and ExcelJS are only
@@ -29,14 +31,6 @@ export function AckSheet({ open, onClose, loan }: { open: boolean; onClose: () =
   );
 }
 
-/** The account's name, else its e-mail. */
-function useAccountName() {
-  const { session, email } = useAccount();
-  const meta = (session?.user.user_metadata ?? {}) as Record<string, unknown>;
-  const name = [meta.full_name, meta.name].find((value): value is string => typeof value === "string" && value.trim() !== "");
-  return name ?? email ?? "";
-}
-
 function AckFields({ loan, onClose }: { loan: Loan; onClose: () => void }) {
   const { t, locale } = useTranslation();
   const toast = useToast();
@@ -46,6 +40,9 @@ function AckFields({ loan, onClose }: { loan: Loan; onClose: () => void }) {
   const me = typed ?? accountName;
   const [place, setPlace] = useState("");
   const [busy, setBusy] = useState(false);
+  // The proofs' photos in annex, one page each (offered when there are some).
+  const proofs = annexProofs(loan);
+  const [withAnnex, setWithAnnex] = useState(true);
 
   const make = async (event: FormEvent) => {
     event.preventDefault();
@@ -54,7 +51,8 @@ function AckFields({ loan, onClose }: { loan: Loan; onClose: () => void }) {
     setBusy(true);
     try {
       const { exportAcknowledgment } = await import("@/services/loanPdf");
-      const result = await exportAcknowledgment(loan, { me, place }, timestamp(), t, locale);
+      const images = withAnnex ? (await Promise.all(proofs.map((proof) => loanProofStore.image(proof)))).flatMap((image) => (image ? [image.preview] : [])) : [];
+      const result = await exportAcknowledgment(loan, { me, place }, timestamp(), t, locale, images);
       if (result === "downloaded") toast(t("pdf.downloaded"));
       onClose();
     } catch {
@@ -75,6 +73,12 @@ function AckFields({ loan, onClose }: { loan: Loan; onClose: () => void }) {
         <span>{t("loans.ack.place")}</span>
         <input value={place} onChange={(event) => setPlace(event.target.value)} placeholder={t("loans.ack.placePlaceholder")} maxLength={60} />
       </label>
+      {proofs.length > 0 && (
+        <label className={styles.toggle}>
+          <input type="checkbox" checked={withAnnex} onChange={(event) => setWithAnnex(event.target.checked)} />
+          {proofs.length === 1 ? t("loans.ack.withProof") : t("loans.ack.withProofs", { count: proofs.length })}
+        </label>
+      )}
       <div className={styles.sheetActions}>
         <Button type="submit" block icon={<FileText />} disabled={busy}>
           {busy ? t("pdf.making") : t("loans.ack.make")}

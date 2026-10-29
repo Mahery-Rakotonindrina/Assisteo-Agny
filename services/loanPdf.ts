@@ -22,14 +22,17 @@ export type Acknowledgment = {
   /** "Fait à …, le …" */
   signedAt: string;
   signatures: [string, string];
+  /** The title of each proof joined in annex, one page each. */
+  annexes: string[];
 };
 
 /**
  * What the debt acknowledgment says. `me` is the user (from the account,
  * corrected in the sheet): the lender when they lent, the borrower when they
  * borrowed. The amount owed is the total to pay back, in figures and words.
+ * `annexCount` proofs follow, each on a page of its own.
  */
-export function acknowledgment(loan: Loan, names: { me: string; place: string }, now: number, t: Translate, locale: Locale): Acknowledgment {
+export function acknowledgment(loan: Loan, names: { me: string; place: string }, now: number, t: Translate, locale: Locale, annexCount = 0): Acknowledgment {
   const money = (value: number) => formatAriary(value, locale);
   const me = names.me.trim() || BLANK;
   const other = loan.person.trim() || BLANK;
@@ -78,12 +81,13 @@ export function acknowledgment(loan: Loan, names: { me: string; place: string },
       date: formatDate(now, locale),
     }),
     signatures: [t("loans.ack.signDebtor", { name: debtor }), t("loans.ack.signCreditor", { name: creditor })],
+    annexes: Array.from({ length: annexCount }, (_, index) => t("loans.ack.annex", { number: index + 1 })),
   };
 }
 
-/** "Reconnaissance de dette (PDF)". */
-export async function exportAcknowledgment(loan: Loan, names: { me: string; place: string }, now: number, t: Translate, locale: Locale) {
-  const text = acknowledgment(loan, names, now, t, locale);
+/** "Reconnaissance de dette (PDF)", with the proofs' photos (`annexes`, data URLs) in annex. */
+export async function exportAcknowledgment(loan: Loan, names: { me: string; place: string }, now: number, t: Translate, locale: Locale, annexes: string[] = []) {
+  const text = acknowledgment(loan, names, now, t, locale, annexes.length);
   const pdf = await PdfWriter.create();
   pdf.title(text.title);
   pdf.space(6);
@@ -93,6 +97,11 @@ export async function exportAcknowledgment(loan: Loan, names: { me: string; plac
   pdf.paragraph(text.signedAt);
   pdf.space(4);
   pdf.signatures(text.signatures);
+  annexes.forEach((image, index) => {
+    pdf.newPage();
+    pdf.subtitle(text.annexes[index]);
+    pdf.image(image, 240);
+  });
   const bytes = pdf.finish(t("pdf.footer"));
   return shareFile(pdfFileName(`${t("loans.ack.file")}-${loan.person}`), bytes, "application/pdf", text.title);
 }

@@ -2,16 +2,29 @@ import { ApiError, createPartFromBase64, FinishReason, GoogleGenAI, ThinkingLeve
 import { z } from "zod";
 import type { AiUsage, EngineOptions } from "./claude";
 import { AnalysisError } from "./errors";
-import { askSystemPrompt, buildSummaryPrompt, buildUserPrompt, firstAskText, isReadTask, SUMMARY_SYSTEM_PROMPT, SYSTEM_PROMPT } from "./prompt";
+import {
+  askSystemPrompt,
+  buildLoanScanPrompt,
+  buildSummaryPrompt,
+  buildUserPrompt,
+  firstAskText,
+  isReadTask,
+  LOAN_SCAN_SYSTEM_PROMPT,
+  SUMMARY_SYSTEM_PROMPT,
+  SYSTEM_PROMPT,
+} from "./prompt";
 import {
   AnalysisSchema,
   ExpenseSummarySchema,
   imagesOf,
+  LoanReadingSchema,
   type Analysis,
   type AnalyzeRequest,
   type AskRequest,
   type ExpenseSummary,
   type ExpenseSummaryRequest,
+  type LoanReading,
+  type LoanScanRequest,
 } from "./schema";
 
 // Free-tier friendly alternative to Claude (Google AI Studio key, no billing).
@@ -42,6 +55,7 @@ function canFallBack(error: unknown, signal?: AbortSignal) {
 // Gemini accepts a subset of JSON Schema; the draft URI is not part of it.
 const responseJsonSchema = { ...z.toJSONSchema(AnalysisSchema), $schema: undefined };
 const summaryJsonSchema = { ...z.toJSONSchema(ExpenseSummarySchema), $schema: undefined };
+const loanJsonSchema = { ...z.toJSONSchema(LoanReadingSchema), $schema: undefined };
 
 const blockedReasons = new Set<FinishReason | undefined>([
   FinishReason.SAFETY,
@@ -205,6 +219,40 @@ export async function summarizeWithGemini(input: ExpenseSummaryRequest, signal?:
       const parsed = ExpenseSummarySchema.safeParse(safeJson(response.text));
       if (!parsed.success) throw new AnalysisError("upstream_error", 502, `Unusable Gemini review (finishReason: ${finish}).`);
       return { summary: parsed.data, model: response.modelVersion ?? candidate, usage: geminiUsage(response.usageMetadata) };
+    } catch (error) {
+      lastError = error;
+      if (!canFallBack(error, signal)) break;
+    }
+  }
+  throw toAnalysisError(lastError);
+}
+
+/** "Prêts": a debt acknowledgment read from its photo, on Flash first (handwriting), then Flash-Lite. */
+export async function readLoanWithGemini(input: LoanScanRequest, signal?: AbortSignal): Promise<{ reading: LoanReading; model: string; usage?: AiUsage }> {
+  const client = getClient();
+  const chain = [...new Set([GEMINI_MODEL, FALLBACK_MODEL])];
+  let lastError: unknown;
+  for (const candidate of chain) {
+    try {
+      const response = await client.models.generateContent({
+        model: candidate,
+        contents: [createPartFromBase64(input.image, input.mediaType), buildLoanScanPrompt(input.locale)],
+        config: {
+          systemInstruction: LOAN_SCAN_SYSTEM_PROMPT,
+          responseMimeType: "application/json",
+          responseJsonSchema: loanJsonSchema,
+          abortSignal: signal,
+          httpOptions: { timeout: ATTEMPT_TIMEOUT_MS },
+          thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+        },
+      });
+      const finish = response.candidates?.[0]?.finishReason;
+      if (response.promptFeedback?.blockReason || blockedReasons.has(finish)) {
+        throw new AnalysisError("refused", 422, "Gemini blocked this document.");
+      }
+      const parsed = LoanReadingSchema.safeParse(safeJson(response.text));
+      if (!parsed.success) throw new AnalysisError("upstream_error", 502, `Unusable Gemini reading (finishReason: ${finish}).`);
+      return { reading: parsed.data, model: response.modelVersion ?? candidate, usage: geminiUsage(response.usageMetadata) };
     } catch (error) {
       lastError = error;
       if (!canFallBack(error, signal)) break;
