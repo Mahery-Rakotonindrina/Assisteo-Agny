@@ -90,6 +90,16 @@ function sampleBackup() {
         },
         { user_id: ben, id: "expense-2", data: { kind: "expense", at: 1759900000000, amountMga: 5000, category: "transport" }, updated_at: at(6), deleted_at: at(7) },
       ],
+      loans: [
+        {
+          user_id: anna,
+          id: "loan-1",
+          data: { direction: "lent", person: "Rakoto", phone: "034 12 345 67", amountMga: 200000, at: 1759900000000, dueAt: 1760500000000, note: "Pour l'écolage", repayments: [{ id: "r1", at: 1760000000000, amountMga: 50000 }] },
+          updated_at: at(6),
+          deleted_at: null,
+        },
+        { user_id: ben, id: "loan-2", data: { direction: "borrowed", person: "Tante Lalao", amountMga: 30000, at: 1759900000000, repayments: [] }, updated_at: at(6), deleted_at: at(7) },
+      ],
       households: [{ id: household, owner_id: anna, data: { name: "Famille Rabe", budget: { total: 900000, categories: { market: 300000 } } }, updated_at: at(5) }],
       household_members: [
         { household_id: household, user_id: anna, role: "owner", joined_at: at(5) },

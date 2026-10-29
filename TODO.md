@@ -243,3 +243,29 @@ Budget du mois du foyer. Réservé à l'offre Admin pendant le test, ouvert aux 
 - [ ] Recherche dans toutes les dépenses et tous les revenus (ex. tout ce qui a été payé à la JIRAMA cette année)
 - [ ] Revendeurs : l’activité séparée de la maison (achats de colis à revendre et ventes à part, bénéfice du mois), pour ne pas gonfler le budget de la maison
 - [ ] Ouvrir « Mes dépenses » à d’autres offres que l’Admin — une case à cocher dans Admin → Offres ; reste à choisir les offres
+
+## 17. Prêts (offre Admin, en test)
+
+L’argent prêté ou emprunté, par personne. Ni dépense ni revenu : rien n’entre dans « Mes dépenses » pour l’instant. Réservé à l’offre Admin pendant le test.
+
+- [x] Écran « Prêts » — /loans, menu et raccourci de l’accueil seulement avec l’offre Admin ; si l’offre ne l’a plus, les prêts déjà notés restent visibles, sans modification
+- [x] « On me doit » et « Je dois » — carte du total (« On te doit en tout : 850 000 Ar · 6 personnes », dont la part en retard)
+- [x] Liste par personne — reste à rendre, prêts en cours, prochaine échéance, badge « En retard » ; en retard d’abord, puis par échéance, puis par montant ; recherche par nom au-delà de 5 personnes
+- [x] « + J’ai prêté de l’argent » / « + J’ai emprunté » — personne (noms déjà connus proposés), montant, date (aujourd’hui par défaut), échéance facultative (1 semaine, 1 mois, au choix), téléphone, note
+- [x] Fiche d’une personne — chaque prêt avec ses remboursements et son reste ; « Il m’a rendu… » ou « J’ai rendu… » (prérempli avec le reste, jamais plus que le reste) ; « Marquer comme remboursé » ; modifier, supprimer avec confirmation
+- [x] « Relancer sur WhatsApp » — message poli prérempli, numéro malgache 03x xx xxx xx reconnu ; « Copier le message » sans téléphone
+- [x] Remboursés repliés en bas (« Remboursés (12) ») ; sur ordinateur, la liste à gauche et la fiche à droite
+- [x] Gardé sur l’appareil, synchronisé avec le compte (table `loans`, toujours perso) — table créée en production le 2026-10-29 (supabase/migrations/0010_loans.sql)
+- [ ] Lien avec « Mes poches » et « Mes dépenses » : prêter sort d’une poche, un remboursement y rentre, sans compter ni en dépense ni en revenu ; un « Vous avez reçu » MVola reconnu comme remboursement
+- [ ] Rappel la veille de l’échéance (notification)
+- [ ] Relance WhatsApp ou SMS programmée (« relancer dans 3 jours »)
+- [ ] Preuve jointe : photo d’une reconnaissance de dette, capture du transfert MVola
+- [ ] Scanner une reconnaissance de dette : la fiche se remplit toute seule
+- [ ] Remboursement en plusieurs fois prévu d’avance (échéancier), intérêts ou frais convenus
+- [ ] Reconnaissance de dette en PDF, à faire signer ou à envoyer
+- [ ] Export Excel ou PDF du récapitulatif par personne
+- [ ] Choisir la personne dans les contacts du téléphone
+- [ ] Partager à l’emprunteur un lien qui montre ce qu’il doit encore
+- [ ] Statistiques : total prêté sur l’année, qui rembourse en retard
+- [ ] Prêts partagés en famille (foyer)
+- [ ] Ouvrir « Prêts » à d’autres offres que l’Admin — une case à cocher dans Admin → Offres ; reste à choisir les offres

@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { motion } from "motion/react";
-import { BookOpen, Car, Download, FolderLock, History, ListChecks, Package, ScanLine, Settings2, ShieldCheck, Smartphone, UserRound, Wallet } from "lucide-react";
+import { BookOpen, Car, Download, FolderLock, HandCoins, History, ListChecks, Package, ScanLine, Settings2, ShieldCheck, Smartphone, UserRound, Wallet } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { useAiStatus } from "@/hooks/useAiStatus";
 import { useAndroidDownload } from "@/hooks/useAndroidDownload";
 import { useKeptExpenses } from "@/hooks/useExpenses";
 import { useInHousehold } from "@/hooks/useHousehold";
 import { useInstallPrompt } from "@/hooks/useInstallPrompt";
+import { useKeptLoans } from "@/hooks/useLoans";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAccount } from "@/lib/account/AccountProvider";
@@ -28,6 +29,9 @@ const links = [
 /** "Mes dépenses", shown only with a plan that includes it (Admin while tested). */
 const expensesLink = { href: "/expenses", key: "expenses", Icon: Wallet } as const;
 
+/** "Prêts", shown only with a plan that includes it (Admin while tested), or to whoever kept loans (read only). */
+const loansLink = { href: "/loans", key: "loans", Icon: HandCoins } as const;
+
 /** Shown to administrators (full access) only; the page still asks for the token. */
 const adminLink = { href: "/admin", key: "admin", Icon: ShieldCheck } as const;
 
@@ -38,8 +42,9 @@ export function Sidebar() {
   const inHousehold = useInHousehold();
   // Without the feature, one's kept expenses stay reachable (read only).
   const keptExpenses = useKeptExpenses(!has("expenses"));
+  const keptLoans = useKeptLoans(!has("loans"));
   // The plan is null on the server and at hydration: the extra links only appear once it is read.
-  const shown = [...links.slice(0, 6), ...(has("expenses") || inHousehold || keptExpenses ? [expensesLink] : []), ...links.slice(6), ...(isAdmin ? [adminLink] : [])];
+  const shown = [...links.slice(0, 6), ...(has("expenses") || inHousehold || keptExpenses ? [expensesLink] : []), ...(has("loans") || keptLoans ? [loansLink] : []), ...links.slice(6), ...(isAdmin ? [adminLink] : [])];
   const android = useAndroidDownload();
   const { t } = useTranslation();
   const aiStatus = useAiStatus();
