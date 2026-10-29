@@ -12,8 +12,10 @@ import { haptics } from "@/services/device";
 import { expenseStore } from "@/services/expenseStore";
 import { marketRate } from "@/services/fx";
 import { householdExpenseStore, saveExpenseIn, type ExpenseScope } from "@/services/householdExpenseStore";
+import { paymentForWallet, walletForPayment } from "@/lib/wallets";
 import { Chips, iconOf } from "./CategoryChips";
 import styles from "./Expenses.module.scss";
+import { startingWallet, WalletChips, type PocketChoice } from "./WalletChips";
 
 /** A number typed in a field ("12 500", "12,5"), or none. */
 export const parseAmount = (value: string) => {
@@ -45,10 +47,12 @@ type Props = {
   scope?: ExpenseScope;
   /** The household, when the user is a member. */
   share?: ShareChoice | null;
+  /** The user's pockets (personal expenses only). */
+  pockets?: PocketChoice;
 };
 
 /** Adds or edits an expense: amount first (in ariary or another currency), category, day, payment, note. */
-export function ExpenseForm({ records, initial, links, onDone, onSaved, from = "personal", scope: startScope, share }: Props) {
+export function ExpenseForm({ records, initial, links, onDone, onSaved, from = "personal", scope: startScope, share, pockets }: Props) {
   const { t, locale } = useTranslation();
   const { categories: allCategories } = useExpenseLabels(records);
   const origin: ExpenseScope | null = initial?.id ? from : null;
@@ -65,6 +69,21 @@ export function ExpenseForm({ records, initial, links, onDone, onSaved, from = "
   const [payment, setPayment] = useState<PaymentMethod | "">(initial?.payment ?? "");
   const [note, setNote] = useState(initial?.note ?? "");
   const [sourceKey, setSourceKey] = useState(initial?.sourceKey ?? "");
+  // The pocket: the one it has, else what the payment says, the last one used, the default one.
+  const [wallet, setWallet] = useState(() => startingWallet(pockets, initial?.wallet, initial?.payment));
+  const [walletPicked, setWalletPicked] = useState(Boolean(initial?.wallet));
+  const hasPockets = Boolean(pockets && pockets.wallets.length > 0);
+  const pickPayment = (value: PaymentMethod | "") => {
+    setPayment(value);
+    const matching = pockets && value ? walletForPayment(pockets.wallets, value) : undefined;
+    if (!walletPicked && matching) setWallet(matching.id);
+  };
+  const pickWallet = (id: string) => {
+    setWallet(id);
+    setWalletPicked(true);
+    // Kept filled for older apps, which know only the payment.
+    if (!payment) setPayment(paymentForWallet(pockets?.wallets.find((item) => item.id === id)) ?? "");
+  };
   const foreign = currency !== "MGA";
   // A line standing for a bill or a recurring item stays personal; a scanned receipt may move to the household.
   const canChoose = Boolean(share?.choose) && (!sourceKey || sourceKey.startsWith("receipt:"));
@@ -108,6 +127,7 @@ export function ExpenseForm({ records, initial, links, onDone, onSaved, from = "
         // Kept from a scanned receipt (no duplicates).
         reference: initial?.reference,
         scanId: initial?.scanId,
+        ...(!shared && wallet && { wallet }),
         ...(foreign && { currency: currency as ForeignCurrency, originalAmount: typed, rate: rateValue }),
       },
       share?.me ?? null,
@@ -190,7 +210,7 @@ export function ExpenseForm({ records, initial, links, onDone, onSaved, from = "
         </label>
         <label>
           <span>{t("expenses.form.payment")}</span>
-          <select value={payment} onChange={(event) => setPayment(event.target.value as PaymentMethod | "")}>
+          <select value={payment} onChange={(event) => pickPayment(event.target.value as PaymentMethod | "")}>
             <option value="">—</option>
             {paymentMethods.map((method) => (
               <option key={method} value={method}>
@@ -199,6 +219,11 @@ export function ExpenseForm({ records, initial, links, onDone, onSaved, from = "
             ))}
           </select>
         </label>
+        {hasPockets && !shared && pockets && (
+          <div className={styles.wide}>
+            <WalletChips label={t("expenses.pockets.fromWhichPaid")} wallets={pockets.wallets} value={wallet} onChange={pickWallet} />
+          </div>
+        )}
         <label className={styles.wide}>
           <span>{t("expenses.form.note")}</span>
           <input value={note} onChange={(event) => setNote(event.target.value)} maxLength={200} placeholder={t("expenses.form.noteExample")} />

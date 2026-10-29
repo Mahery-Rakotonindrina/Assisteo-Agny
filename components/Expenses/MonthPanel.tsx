@@ -24,12 +24,14 @@ import {
   type MonthItem,
 } from "@/lib/expenses";
 import { formatAriary, formatDate, formatMonthYear } from "@/lib/format";
+import { lineWallet, type WalletBook } from "@/lib/wallets";
 import { expenseStore } from "@/services/expenseStore";
 import { shareFile } from "@/services/fileShare";
 import { EmptyNote } from "./EmptyNote";
 import { ExpenseForm, type LinkChoice, type ShareChoice } from "./ExpenseForm";
 import { ExpenseSheet } from "./ExpenseSheet";
 import styles from "./Expenses.module.scss";
+import { WalletChips, type PocketChoice } from "./WalletChips";
 
 type Props = {
   month: string;
@@ -47,12 +49,15 @@ type Props = {
   share?: ShareChoice | null;
   /** A line to show first and open (from "Counted in My expenses →"). */
   focus?: string | null;
+  /** The pockets: the one each line is taken from, and the ones a form offers. */
+  book?: WalletBook;
+  pockets?: PocketChoice;
 };
 
 const DAY = 86_400_000;
 
 /** The month: where the money goes, every line by day, and the export. */
-export function MonthPanel({ month, records, items, incomes, budget, budgetLines, previousTotal, initialEditing, onEdited, share, focus }: Props) {
+export function MonthPanel({ month, records, items, incomes, budget, budgetLines, previousTotal, initialEditing, onEdited, share, focus, book, pockets }: Props) {
   const { t, locale } = useTranslation();
   const toast = useToast();
   const now = useNow(60_000);
@@ -220,7 +225,17 @@ export function MonthPanel({ month, records, items, incomes, budget, budgetLines
                               variant="ghost"
                               icon={<Pencil />}
                               onClick={() =>
-                                setEditing({ at: item.at, amountMga: item.amountMga, category: item.category, note: item.label, payment: item.recurring?.payment, sourceKey: item.key, scanId: item.scanId, reference: item.reference })
+                                setEditing({
+                                  at: item.at,
+                                  amountMga: item.amountMga,
+                                  category: item.category,
+                                  note: item.label,
+                                  payment: item.recurring?.payment,
+                                  sourceKey: item.key,
+                                  scanId: item.scanId,
+                                  reference: item.reference,
+                                  wallet: book && lineWallet(book.context, item),
+                                })
                               }
                             >
                               {t("expenses.correct")}
@@ -237,6 +252,16 @@ export function MonthPanel({ month, records, items, incomes, budget, budgetLines
                               <Button variant="ghost" icon={item.excluded ? <RotateCcw /> : <EyeOff />} onClick={() => void expenseStore.setExcluded(item.key, !item.excluded)}>
                                 {t(item.excluded ? "expenses.include" : "expenses.exclude")}
                               </Button>
+                            )}
+                            {book && pockets && pockets.wallets.length > 0 && (
+                              <div className={styles.linePocket}>
+                                <WalletChips
+                                  label={t("expenses.pockets.lineWallet")}
+                                  wallets={pockets.wallets}
+                                  value={lineWallet(book.context, item) ?? ""}
+                                  onChange={(id) => void expenseStore.setWalletPick((item as { feesOf?: string }).feesOf ?? item.key, id)}
+                                />
+                              </div>
                             )}
                           </div>
                         )}
@@ -286,6 +311,7 @@ export function MonthPanel({ month, records, items, incomes, budget, budgetLines
             initial={editing}
             links={links.filter((link) => link.key !== editing.sourceKey)}
             share={share}
+            pockets={pockets}
             onSaved={(saved) => {
               if (editing.id || saved.amountMga === undefined) toast(t("expenses.saved.changed"));
               else toast(t("expenses.saved.expense", { amount: money(saved.amountMga), category: categoryName(saved.category ?? "other") }));

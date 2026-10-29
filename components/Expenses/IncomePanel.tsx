@@ -8,12 +8,14 @@ import { incomeKindOf, incomeKinds, keepKey, monthKey, storedIncome, type Income
 import { formatAriary, formatDate } from "@/lib/format";
 import { dayString } from "@/lib/papers";
 import { haptics } from "@/services/device";
+import { lineWallet, type WalletBook } from "@/lib/wallets";
 import { expenseStore } from "@/services/expenseStore";
 import { Chips, incomeIcons } from "./CategoryChips";
 import { EmptyNote } from "./EmptyNote";
 import { dayOf, parseAmount, today } from "./ExpenseForm";
 import { ExpenseSheet } from "./ExpenseSheet";
 import styles from "./Expenses.module.scss";
+import { startingWallet, WalletChips, type PocketChoice } from "./WalletChips";
 
 /** An income being edited, or values to start from: the kind as the user picks it (help from the family included). */
 type IncomeDraft = Partial<Omit<Income, "income">> & { income?: IncomeKind };
@@ -24,10 +26,13 @@ type Props = {
   defaultAt: number;
   /** A line to show first and open (from "Counted in your income →"). */
   focus?: string | null;
+  /** The pockets: the one each line comes into, and the ones the form offers. */
+  book?: WalletBook;
+  pockets?: PocketChoice;
 };
 
 /** The month's incomes: typed in, every month (salary…), and what comes in on its own (sales, Mobile Money received). */
-export function IncomePanel({ month, incomes, defaultAt, focus }: Props) {
+export function IncomePanel({ month, incomes, defaultAt, focus, book, pockets }: Props) {
   const { t, locale } = useTranslation();
   const [editing, setEditing] = useState<IncomeDraft | null>(null);
   const [opened, setOpened] = useState<string | null>(focus ?? null);
@@ -117,7 +122,7 @@ export function IncomePanel({ month, incomes, defaultAt, focus }: Props) {
                           <Button
                             variant="ghost"
                             icon={<Pencil />}
-                            onClick={() => setEditing({ at: item.at, amountMga: item.amountMga, income: item.income, note: item.label, sourceKey: item.key })}
+                            onClick={() => setEditing({ at: item.at, amountMga: item.amountMga, income: item.income, note: item.label, sourceKey: item.key, wallet: book && lineWallet(book.context, item) })}
                           >
                             {t("expenses.correct")}
                           </Button>
@@ -130,6 +135,16 @@ export function IncomePanel({ month, incomes, defaultAt, focus }: Props) {
                           {t(item.excluded ? "expenses.include" : "expenses.exclude")}
                         </Button>
                       )}
+                      {book && pockets && pockets.wallets.length > 0 && (
+                        <div className={styles.linePocket}>
+                          <WalletChips
+                            label={t("expenses.pockets.lineWalletIn")}
+                            wallets={pockets.wallets}
+                            value={lineWallet(book.context, item) ?? ""}
+                            onChange={(id) => void expenseStore.setWalletPick(item.key, id)}
+                          />
+                        </div>
+                      )}
                     </div>
                   )}
                 </li>
@@ -139,13 +154,13 @@ export function IncomePanel({ month, incomes, defaultAt, focus }: Props) {
         </section>
       )}
       <ExpenseSheet open={editing !== null} title={editing?.id ? t("expenses.edit") : t("expenses.income.add")} onClose={() => setEditing(null)}>
-        {editing && <IncomeForm key={editing.id ?? editing.sourceKey ?? "new"} initial={editing} onDone={() => setEditing(null)} />}
+        {editing && <IncomeForm key={editing.id ?? editing.sourceKey ?? "new"} initial={editing} pockets={pockets} onDone={() => setEditing(null)} />}
       </ExpenseSheet>
     </div>
   );
 }
 
-function IncomeForm({ initial, onDone }: { initial: IncomeDraft; onDone: () => void }) {
+function IncomeForm({ initial, pockets, onDone }: { initial: IncomeDraft; pockets?: PocketChoice; onDone: () => void }) {
   const { t, locale } = useTranslation();
   const toast = useToast();
   const [amount, setAmount] = useState(initial.amountMga ? String(initial.amountMga) : "");
@@ -154,6 +169,7 @@ function IncomeForm({ initial, onDone }: { initial: IncomeDraft; onDone: () => v
   const [todayValue] = useState(today);
   const [note, setNote] = useState(initial.note ?? "");
   const [repeat, setRepeat] = useState(false);
+  const [wallet, setWallet] = useState(() => startingWallet(pockets, initial.wallet));
   const value = parseAmount(amount);
   // A new income may come back every month (a recurring item, as in the Fixed tab).
   const canRepeat = !initial.id && !initial.sourceKey;
@@ -181,7 +197,7 @@ function IncomeForm({ initial, onDone }: { initial: IncomeDraft; onDone: () => v
       });
       toast(t("expenses.saved.recurring", { amount: formatAriary(Math.round(value), locale), day: date.getDate() }));
     } else {
-      await expenseStore.saveIncome({ id: initial.id, at, amountMga: value, income: stored.kind, from: stored.from, note: named, sourceKey: initial.sourceKey });
+      await expenseStore.saveIncome({ id: initial.id, at, amountMga: value, income: stored.kind, from: stored.from, note: named, sourceKey: initial.sourceKey, wallet: wallet || undefined });
       toast(initial.id ? t("expenses.saved.changed") : t("expenses.saved.income", { amount: formatAriary(Math.round(value), locale), kind: t(`expenses.incomes.${income}`) }));
     }
     onDone();
@@ -221,6 +237,11 @@ function IncomeForm({ initial, onDone }: { initial: IncomeDraft; onDone: () => v
           <span>{t("expenses.form.note")}</span>
           <input value={note} onChange={(event) => setNote(event.target.value)} maxLength={200} />
         </label>
+        {pockets && pockets.wallets.length > 0 && !(canRepeat && repeat) && (
+          <div className={styles.wide}>
+            <WalletChips label={t("expenses.pockets.intoWhich")} wallets={pockets.wallets} value={wallet} onChange={setWallet} />
+          </div>
+        )}
         {canRepeat && (
           <div className={`${styles.wide} ${styles.switchRow}`}>
             <span>

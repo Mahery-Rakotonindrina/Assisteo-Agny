@@ -234,8 +234,8 @@ Budget du mois du foyer. Réservé à l'offre Admin pendant le test, ouvert aux 
 - [x] Ventes comptées comme revenus — prix de vente entier le mois de la vente (`soldAt`, sinon le mois où le colis a été ajouté), bénéfice ou perte et reste à payer affichés ; l’achat reste une dépense ; jamais dans le foyer
 - [x] Toutes les entrées et sorties d’argent comptées et reliées — tickets et reçus Mobile Money comptés tout seuls (sans double compte, « déjà compté ? »), Mobile Money reçu en revenu, revenu « chaque mois », abonnement Assisteo payé ; « Compté dans Mes dépenses → » sur la facture, le ticket, la liste, le colis et le garage
 - [x] Mouvements entre ses propres poches (retrait MVola en espèces, dépôt en banque, envoi vers son propre compte) reconnus par l’IA : ni dépense ni revenu, sinon un retrait scanné compte la même somme deux fois — `direction: "own"` ; seuls les frais (`fees`) comptent ; « C’est une dépense » sous le résultat si l’IA se trompe
-- [ ] Soldes réels par poche : espèces, MVola, Orange Money, Airtel Money, banque (« Espèces 45 000 · MVola 230 000 »)
-- [ ] Prêts et dettes : argent prêté ou emprunté, crédit chez l’épicier ; qui me doit, à qui je dois, remboursements comptés tout seuls
+- [x] Soldes réels par poche : espèces, MVola, Orange Money, Airtel Money, banque (« Espèces 45 000 · MVola 230 000 ») — sous « Il te reste » ; solde de départ, chaque ligne a sa poche (les reçus prennent celle de leur opérateur), « Corriger le solde », virements entre poches à la main ou depuis un retrait ou dépôt scanné (`ownKind`), frais comptés une fois ; jamais dans le foyer
+- [ ] Prêts et dettes : argent prêté ou emprunté, crédit chez l’épicier ; qui me doit, à qui je dois, remboursements comptés tout seuls — écran à part (§17) ; lien avec les poches plus tard
 - [ ] Import d’un relevé MVola ou bancaire (captures ou PDF de plusieurs pages) : toutes les opérations d’un coup, sans doublon
 - [ ] Rappel du soir « Tu as dépensé quelque chose aujourd’hui ? », avec ajout rapide depuis la notification ou l’accueil
 - [ ] Prévision de fin de mois : « À ce rythme, il te restera 45 000 Ar le 30 », dépenses fixes à venir comprises

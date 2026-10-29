@@ -1,5 +1,5 @@
 import type { Bill } from "@/lib/bills";
-import type { Analysis, BillKind } from "@/lib/ai/schema";
+import type { Analysis, BillKind, MobileMoneyOperator, OwnKind, ReceiptPayment } from "@/lib/ai/schema";
 import type { Vehicle } from "@/lib/garage";
 import type { ForeignCurrency } from "@/lib/money";
 import { parseDay } from "@/lib/papers";
@@ -104,6 +104,8 @@ export type ManualExpense = Base &
     /** Added from a scanned receipt: its transaction reference (no duplicates), and the scan. */
     reference?: string;
     scanId?: string;
+    /** The pocket it was paid from (lib/wallets.ts); none before pockets existed. `payment` stays filled for older apps. */
+    wallet?: string;
   };
 
 export type Income = Base & {
@@ -116,6 +118,8 @@ export type Income = Base & {
   note?: string;
   /** The recurring income's occurrence it replaces. */
   sourceKey?: string;
+  /** The pocket it came into. */
+  wallet?: string;
 };
 
 export type Recurring = Base & {
@@ -152,10 +156,44 @@ export type CustomCategory = Base & { kind: "category"; name: string; color: str
 /** A computed expense the user keeps out of the budget. */
 export type Exclusion = Base & { kind: "exclusion"; sourceKey: string };
 
-export type ExpenseRecord = ManualExpense | Income | Recurring | Budget | CustomCategory | Exclusion;
+// ---- Pockets (lib/wallets.ts) ----------------------------------------------------------
+// Kinds an older app doesn't know: it filters records by kind (byKind), so it
+// never counts them, and its sync keeps them as they are.
+
+export const walletTypes = ["cash", "mvola", "orange_money", "airtel_money", "bank", "other"] as const;
+export type WalletType = (typeof walletTypes)[number];
+
+/** Where the money is: cash, a Mobile Money account, the bank… with what it held on a day. */
+export type Wallet = Base & {
+  kind: "wallet";
+  name: string;
+  type: WalletType;
+  /** What it held at `startAt`; only what happens after counts on top. */
+  startMga: number;
+  startAt: number;
+  /** Hidden from the lists and the total; its movements are kept. */
+  archived?: boolean;
+  /** The pocket used when nothing says otherwise. */
+  primary?: boolean;
+};
+
+/** Money moved by hand from one pocket to another: neither spent nor earned. Its fees are an expense, from the first pocket. */
+export type Transfer = Base & { kind: "transfer"; from: string; to: string; at: number; amountMga: number; feesMga?: number; note?: string; scanId?: string };
+
+/** "My balance is really…": the difference, at that moment (neither spent nor earned). */
+export type Correction = Base & { kind: "correction"; wallet: string; at: number; amountMga: number };
+
+/** The pocket picked for a computed line (a bill, a receipt…), by its key; "to:<key>" is a scanned move's arrival. */
+export type WalletPick = Base & { kind: "walletPick"; sourceKey: string; wallet: string };
+
+export type ExpenseRecord = ManualExpense | Income | Recurring | Budget | CustomCategory | Exclusion | Wallet | Transfer | Correction | WalletPick;
 
 export const BUDGET_ID = "budget";
 export const exclusionId = (sourceKey: string) => `exclusion:${sourceKey}`;
+export const walletPickId = (sourceKey: string) => `walletPick:${sourceKey}`;
+/** The arrival of a scanned move between one's own pockets, picked by the user. */
+export const arrivalKey = (sourceKey: string) => `to:${sourceKey}`;
+export const transferFeesKey = (transferId: string) => `transfer:${transferId}:fees`;
 /**
  * "Count it anyway" for a receipt that looks already counted: an exclusion
  * record on this key. An older app never computes that key, so it ignores it.
@@ -263,6 +301,10 @@ export type MonthItem = {
   reference?: string;
   /** A receipt that looks counted already (same amount within 3 days): left out until "count it anyway". */
   doubt?: boolean;
+  /** The pocket the line is taken from, when its origin says so (a transfer's fees). */
+  wallet?: string;
+  /** When it was typed in, for a line dated by its day only (a pocket counts what comes after it was set). */
+  enteredAt?: number;
   record?: ManualExpense;
   recurring?: Recurring;
 };
@@ -280,6 +322,11 @@ export type SourceItem = Omit<MonthItem, "excluded" | "doubt" | "record" | "recu
    * "it's an expense" (an exclusion on keepKey).
    */
   own?: true;
+  /** Which way such a move went (read by the AI): it becomes a transfer between pockets (lib/wallets.ts). */
+  ownKind?: OwnKind;
+  /** A receipt's payment and Mobile Money operator: the pocket it comes from. */
+  paidWith?: ReceiptPayment;
+  operator?: MobileMoneyOperator;
   /** A withdrawal's or transfer's fees: the key of its receipt (left out once that receipt counts whole). */
   feesOf?: string;
   /** A receipt scanned again (same reference): the key of the first scan's line, the only one counted. */
@@ -429,6 +476,8 @@ export function sourceItems({ bills = [], lists = [], parcels = [], vehicles = [
     const first = cleaned ? firstByReference.get(cleaned) : undefined;
     if (cleaned && !first) firstByReference.set(cleaned, key);
     const again = first ? { sameAs: first } : {};
+    // Where the money came from, for the pockets (lib/wallets.ts).
+    const pocket = { ...(receipt.payment && { paidWith: receipt.payment }), ...(receipt.operator && { operator: receipt.operator }) };
     // Between one's own pockets: only the fees are spent.
     if (own && receipt.fees && receipt.fees > 0)
       items.push({
@@ -441,14 +490,17 @@ export function sourceItems({ bills = [], lists = [], parcels = [], vehicles = [
         scanId: scan.id,
         feesOf: key,
         scannedAt: scan.createdAt,
+        ...pocket,
         ...(first && { sameAs: `${first}:fees` }),
       });
     items.push({
       ...again,
+      ...pocket,
       scannedAt: scan.createdAt,
       key,
       ...(incoming && { flow: "income" as const }),
       ...(own && { own: true as const }),
+      ...(own && receipt.ownKind && { ownKind: receipt.ownKind }),
       origin: receipt.payment === "mobile_money" || receipt.operator ? "mobile_money" : "receipt",
       at,
       amountMga: Math.round(receipt.total),
@@ -527,6 +579,13 @@ export function monthExpenses(records: ExpenseRecord[], sources: Computed[], key
     .filter((record) => inMonth(record.at, key))
     .map((record) => ({ key: `manual:${record.id}`, origin: "manual", at: record.at, amountMga: record.amountMga, category: record.category, label: record.note, excluded: false, record }));
 
+  // A transfer's fees between one's own pockets: spent, from the first pocket.
+  for (const transfer of byKind(records, "transfer")) {
+    const itemKey = transferFeesKey(transfer.id);
+    if (!transfer.feesMga || transfer.feesMga <= 0 || !inMonth(transfer.at, key) || linked.has(itemKey)) continue;
+    items.push({ key: itemKey, origin: "fees", at: transfer.at, amountMga: transfer.feesMga, category: "phone", excluded: marks.has(itemKey), wallet: transfer.from, enteredAt: transfer.createdAt });
+  }
+
   for (const recurring of byKind(records, "recurring")) {
     if (recurring.flow !== "expense" || recurring.skipped.includes(key)) continue;
     const at = occurrenceIn(recurring, key);
@@ -570,6 +629,10 @@ export type IncomeItem = {
   /** A parcel sold: the profit (negative: a loss) and what the client still owes. */
   profitMga?: number;
   unpaidMga?: number;
+  /** Mobile Money received: when it was scanned, and its operator (the pocket it came into). */
+  scannedAt?: number;
+  paidWith?: ReceiptPayment;
+  operator?: MobileMoneyOperator;
   record?: Income;
   recurring?: Recurring;
 };
@@ -608,6 +671,9 @@ export function monthIncomes(records: ExpenseRecord[], key: string, sources: Com
       href: source.href,
       profitMga: source.profitMga,
       unpaidMga: source.unpaidMga,
+      ...(source.scannedAt !== undefined && { scannedAt: source.scannedAt }),
+      ...(source.paidWith && { paidWith: source.paidWith }),
+      ...(source.operator && { operator: source.operator }),
     });
   }
   return items.sort((a, b) => b.at - a.at || a.key.localeCompare(b.key));
