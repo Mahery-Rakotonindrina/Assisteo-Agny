@@ -1,0 +1,482 @@
+@use "../../styles/mixins" as *;
+
+// "Prêts": the page, the list by person, a person's loans and the sheets.
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 720px;
+
+  &[data-split] {
+    max-width: 1120px;
+  }
+}
+
+.header {
+  padding-top: 1.25rem;
+
+  @include desktop {
+    padding-top: 0;
+  }
+
+  h1 {
+    @include display(2.6rem);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    svg {
+      color: var(--cat-document);
+    }
+  }
+
+  p {
+    margin-top: 0.3rem;
+    color: var(--text-muted);
+  }
+}
+
+.hint {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.error {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--danger);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-width: 0;
+
+  // Long labels in very large text: the button grows to the full width and its text wraps.
+  > button,
+  > a {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    height: auto;
+    min-height: 2.75rem;
+    padding-block: 0.45rem;
+    white-space: normal;
+    text-align: center;
+  }
+}
+
+// ---- Computer: the list and the person side by side -----------------------------
+
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+// ---- The top card -----------------------------------------------------------------
+
+.summary {
+  @include card;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 1rem 1.1rem;
+  border-radius: var(--radius-lg, 20px);
+
+  > span {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+
+  strong {
+    @include display(2.2rem);
+    white-space: nowrap;
+  }
+
+  small {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+
+  em {
+    font-style: normal;
+    font-weight: 700;
+    color: var(--danger);
+  }
+}
+
+// ---- The list ---------------------------------------------------------------------
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 2.75rem;
+  padding: 0 0.8rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+
+  input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    background: none;
+    color: var(--text);
+    font: inherit;
+    outline: none;
+  }
+}
+
+.people,
+.loans {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.person {
+  @include card;
+  @include pressable;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.7rem 0.85rem;
+  border-radius: var(--radius-md);
+  text-align: left;
+
+  &[data-active] {
+    border-color: var(--accent-mark);
+  }
+
+  &[data-repaid] {
+    opacity: 0.75;
+  }
+}
+
+.avatar {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--cat-document) 16%, transparent);
+  color: var(--cat-document);
+  font-weight: 700;
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+
+  strong,
+  h2 {
+    overflow-wrap: anywhere;
+  }
+
+  h2 {
+    @include display(1.7rem);
+  }
+
+  small {
+    font-size: 0.84rem;
+    color: var(--text-muted);
+  }
+}
+
+.amount {
+  flex-shrink: 0;
+  white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.lateBadge,
+.repaidBadge {
+  display: inline-flex;
+  padding: 0.12rem 0.5rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.lateBadge {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.repaidBadge {
+  background: var(--surface-strong);
+  color: var(--text-muted);
+}
+
+.chevron {
+  flex-shrink: 0;
+  color: var(--text-subtle);
+}
+
+.repaid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-top: 0.5rem;
+}
+
+.fold {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.2rem;
+  color: var(--text-muted);
+  font-weight: 600;
+
+  svg {
+    transition: transform 0.2s ease;
+  }
+
+  svg[data-open] {
+    transform: rotate(180deg);
+  }
+}
+
+// ---- A person's loans ---------------------------------------------------------------
+
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  min-width: 0;
+}
+
+.detailTop {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.back,
+.close,
+.iconButton {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--surface-strong);
+  color: var(--text-muted);
+}
+
+.back,
+.close {
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+.iconButton {
+  width: 1.6rem;
+  height: 1.6rem;
+  margin-left: auto;
+}
+
+.loan {
+  @include card;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: var(--radius-md);
+
+  &[data-status="late"] {
+    border-color: color-mix(in srgb, var(--danger) 40%, transparent);
+  }
+
+  &[data-status="repaid"] {
+    opacity: 0.8;
+  }
+
+  > small {
+    font-size: 0.84rem;
+    color: var(--text-muted);
+  }
+}
+
+.loanHead {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  strong {
+    font-size: 1.15rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+}
+
+.note {
+  font-size: 0.9rem;
+}
+
+.repayments {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.86rem;
+  color: var(--text-muted);
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+}
+
+.left {
+  font-weight: 700;
+}
+
+// ---- The sheets ---------------------------------------------------------------------
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+
+  @include desktop {
+    align-items: center;
+  }
+}
+
+.sheet {
+  width: 100%;
+  max-width: 520px;
+  max-height: 92vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1rem 1.25rem calc(1.5rem + var(--safe-bottom));
+  border-radius: 28px 28px 0 0;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  overscroll-behavior: contain;
+
+  @include desktop {
+    border-radius: 28px;
+  }
+}
+
+.sheetTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+
+  h2 {
+    @include display(1.6rem);
+  }
+}
+
+.sheetForm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+
+  > span {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+
+  input {
+    width: 100%;
+    min-width: 0;
+    height: 2.75rem;
+    padding: 0 0.8rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+    font-size: 0.95rem;
+    outline: none;
+
+    &:focus {
+      border-color: var(--accent-mark);
+    }
+  }
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+
+  input {
+    flex: 1;
+    min-width: 9rem;
+  }
+}
+
+.chip {
+  padding: 0.5rem 0.85rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  font-weight: 600;
+
+  &[data-on] {
+    border-color: var(--accent-mark);
+    background: color-mix(in srgb, var(--accent-mark) 14%, transparent);
+    color: var(--text);
+  }
+}
+
+.sheetActions {
+  position: sticky;
+  bottom: calc(-1.5rem - var(--safe-bottom));
+  margin: 0.2rem -1.25rem calc(-1.5rem - var(--safe-bottom));
+  padding: 0.85rem 1.25rem calc(1rem + var(--safe-bottom));
+  background: linear-gradient(to top, var(--bg-elevated) 70%, transparent);
+}

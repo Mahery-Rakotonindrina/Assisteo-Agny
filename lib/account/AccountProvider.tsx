@@ -9,6 +9,8 @@ import { aiKeyStore } from "@/services/aiKeyStore";
 import { accountKeyApi } from "@/services/accountKeyApi";
 import { cancelAllNotifications } from "@/services/notifications";
 import { listStore } from "@/services/listStore";
+import { loanStore } from "@/services/loanStore";
+import { startLoanSync, syncLoans } from "@/services/loanSync";
 import { startListSync, syncLists } from "@/services/listSync";
 import { vehicleStore } from "@/services/vehicleStore";
 import { startVehicleSync, syncVehicles } from "@/services/vehicleSync";
@@ -96,6 +98,12 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!userId) return;
     return startVehicleSync(userId);
+  }, [userId]);
+
+  // "Prêts".
+  useEffect(() => {
+    if (!userId) return;
+    return startLoanSync(userId);
   }, [userId]);
 
   // "Mes dépenses".
@@ -190,12 +198,14 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         syncParcels(userId).catch(() => undefined),
         syncLists(userId).catch(() => undefined),
         syncVehicles(userId).catch(() => undefined),
+        syncLoans(userId).catch(() => undefined),
         syncExpenses(userId).catch(() => undefined),
         householdId ? syncHouseholdExpenses(userId, householdId).catch(() => undefined) : undefined,
       ]);
     await parcelStore.wipe();
     await listStore.wipe();
     await vehicleStore.wipe();
+    await loanStore.wipe();
     await expenseStore.wipe();
     await householdExpenseStore.wipe();
     await householdStore.wipe();
@@ -218,6 +228,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await parcelStore.wipe();
     await listStore.wipe();
     await vehicleStore.wipe();
+    await loanStore.wipe();
     await expenseStore.wipe();
     await householdExpenseStore.wipe();
     await householdStore.wipe();
