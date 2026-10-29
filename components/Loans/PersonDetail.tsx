@@ -5,7 +5,7 @@ import { useToast } from "@/components/Toast";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDate } from "@/lib/format";
 import { loanMoney, loanPaid, loanRemaining, loanStatus, whatsappLink, type Loan, type PersonLoans } from "@/lib/loans";
-import { haptics } from "@/services/device";
+import { copyText, haptics } from "@/services/device";
 import { loanStore } from "@/services/loanStore";
 import styles from "./Loans.module.scss";
 
@@ -34,13 +34,11 @@ export function PersonDetail({ person, now, readOnly, onBack, onAdd, onEdit, onR
   const canRemind = !readOnly && direction === "lent" && person.remaining > 0;
 
   const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(message);
+    // copyText falls back on older WebViews (installed APKs).
+    if (await copyText(message)) {
       haptics.success();
       toast(t("loans.detail.copied"));
-    } catch {
-      toast(t("loans.detail.copyFailed"), "error");
-    }
+    } else toast(t("loans.detail.copyFailed"), "error");
   };
 
   return (

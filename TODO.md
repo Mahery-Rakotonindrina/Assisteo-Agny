@@ -255,7 +255,7 @@ L’argent prêté ou emprunté, par personne. Ni dépense ni revenu : rien n’
 - [x] Fiche d’une personne — chaque prêt avec ses remboursements et son reste ; « Il m’a rendu… » ou « J’ai rendu… » (prérempli avec le reste, jamais plus que le reste) ; « Marquer comme remboursé » ; modifier, supprimer avec confirmation
 - [x] « Relancer sur WhatsApp » — message poli prérempli, numéro malgache 03x xx xxx xx reconnu ; « Copier le message » sans téléphone
 - [x] Remboursés repliés en bas (« Remboursés (12) ») ; sur ordinateur, la liste à gauche et la fiche à droite
-- [x] Gardé sur l’appareil, synchronisé avec le compte (table `loans`, toujours perso) — la table est à créer dans Supabase (supabase/migrations/0010_loans.sql)
+- [x] Gardé sur l’appareil, synchronisé avec le compte (table `loans`, toujours perso) — table créée en production le 2026-10-29 (supabase/migrations/0010_loans.sql)
 - [ ] Lien avec « Mes poches » et « Mes dépenses » : prêter sort d’une poche, un remboursement y rentre, sans compter ni en dépense ni en revenu ; un « Vous avez reçu » MVola reconnu comme remboursement
 - [ ] Rappel la veille de l’échéance (notification)
 - [ ] Relance WhatsApp ou SMS programmée (« relancer dans 3 jours »)
