@@ -91,6 +91,37 @@ test.describe("scan", () => {
     await expect(page.getByTestId("expenses-total")).toHaveText(/^15\s000 Ar$/);
   });
 
+  test("a scanned withdrawal moves the money from MVola to cash in My pockets, its fees spent once", async ({ page }) => {
+    await prepare(page);
+    await pretendPlan(page, "unlimited");
+    // Dated today: a pocket counts what happens after its starting balance.
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    await page.route("**/api/analyze", async (route) => {
+      const response = await route.fetch();
+      const analysis = mockReceipt("fr", "own");
+      analysis.document!.receipt!.date = today;
+      await route.fulfill({ response, json: { ...(await response.json()), analysis } });
+    });
+    await page.goto("/expenses");
+    await page.getByRole("button", { name: /Où est ton argent \?/ }).click();
+    const setup = page.getByRole("dialog", { name: "Où est ton argent ?" });
+    await setup.getByLabel(/^Espèces : combien/).fill("10000");
+    await setup.getByRole("checkbox", { name: "MVola" }).check();
+    await setup.getByLabel(/^MVola : combien/).fill("300000");
+    await setup.getByRole("button", { name: "Enregistrer" }).click();
+    await expect(page.getByTestId("pockets")).toHaveText(/^Espèces 10\s000 Ar · MVola 300\s000 Ar$/);
+
+    await page.goto("/");
+    await page.locator('input[type="file"]').setInputFiles("tests/e2e/fixtures/apple.jpg");
+    await expect(page).toHaveURL(/\/result\?id=/, { timeout: 20_000 });
+    await page.goto("/expenses");
+    // 200 000 Ar moved, 2 600 Ar of fees from MVola: spent once, never the withdrawal itself.
+    await expect(page.getByTestId("pockets")).toHaveText(/^Espèces 210\s000 Ar · MVola 97\s400 Ar$/);
+    await expect(page.getByTestId("pockets-total")).toHaveText(/^307\s400 Ar$/);
+    await expect(page.getByTestId("expenses-total")).toHaveText(/^2\s600 Ar$/);
+  });
+
   test("a withdrawal is not an expense: only its fees count, until it is called an expense", async ({ page }) => {
     await prepare(page);
     await pretendPlan(page, "unlimited");

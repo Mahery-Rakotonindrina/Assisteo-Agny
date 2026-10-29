@@ -9,6 +9,10 @@ import {
   type Income,
   type ManualExpense,
   type Recurring,
+  type Transfer,
+  type Wallet,
+  type WalletPick,
+  walletPickId,
 } from "@/lib/expenses";
 import { createId } from "./historyStore";
 
@@ -83,6 +87,7 @@ export const expenseStore = {
       sourceKey: draft.sourceKey || undefined,
       reference: cleanText(draft.reference, 80),
       scanId: draft.scanId || undefined,
+      wallet: draft.wallet || undefined,
       ...cleanConverted(draft),
     });
   },
@@ -90,7 +95,7 @@ export const expenseStore = {
   async saveIncome(draft: Draft<Income>) {
     const amountMga = cleanAmount(draft.amountMga);
     if (amountMga === undefined) return null;
-    return save<Income>("income", draft.id, { at: draft.at, amountMga, income: draft.income, from: draft.from, note: cleanText(draft.note, 200), sourceKey: draft.sourceKey || undefined });
+    return save<Income>("income", draft.id, { at: draft.at, amountMga, income: draft.income, from: draft.from, note: cleanText(draft.note, 200), sourceKey: draft.sourceKey || undefined, wallet: draft.wallet || undefined });
   },
 
   async saveRecurring(draft: Draft<Recurring>) {
@@ -129,6 +134,59 @@ export const expenseStore = {
     const name = cleanText(draft.name, 40);
     if (!name) return null;
     return save<CustomCategory>("category", draft.id, { name, color: draft.color, icon: draft.icon });
+  },
+
+  // ---- Pockets (lib/wallets.ts) -----------------------------------------------------
+
+  /** A pocket, new or changed: its name, type and starting balance (0 or more). */
+  async saveWallet(draft: Draft<Wallet>) {
+    const name = cleanText(draft.name, 40);
+    if (!name) return null;
+    const startMga = Number.isFinite(draft.startMga) ? Math.max(0, Math.round(draft.startMga)) : 0;
+    return save<Wallet>("wallet", draft.id, { name, type: draft.type, startMga, startAt: draft.startAt, archived: draft.archived || undefined, primary: draft.primary || undefined });
+  },
+
+  /** The pocket used when nothing says otherwise (the others lose the mark). */
+  async setPrimaryWallet(id: string) {
+    for (const record of await expenseStore.list()) {
+      if (record.kind !== "wallet") continue;
+      const primary = record.id === id;
+      if (Boolean(record.primary) !== primary) await write({ ...record, primary: primary || undefined, ...(primary && { archived: undefined }) });
+    }
+  },
+
+  async setWalletArchived(id: string, archived: boolean) {
+    const wallet = await current<Wallet>(id);
+    if (wallet) await write({ ...wallet, archived: archived || undefined, ...(archived && { primary: undefined }) });
+  },
+
+  /** Money moved by hand between two pockets (its fees are an expense, from the first one). */
+  async saveTransfer(draft: Draft<Transfer>) {
+    const amountMga = cleanAmount(draft.amountMga);
+    if (amountMga === undefined || !draft.from || !draft.to || draft.from === draft.to) return null;
+    return save<Transfer>("transfer", draft.id, {
+      from: draft.from,
+      to: draft.to,
+      at: draft.at,
+      amountMga,
+      feesMga: cleanAmount(draft.feesMga),
+      note: cleanText(draft.note, 200),
+      scanId: draft.scanId || undefined,
+    });
+  },
+
+  /** "My balance is really…": the difference, now (nothing when there is none). */
+  async correctWallet(wallet: string, difference: number) {
+    const amountMga = Math.round(difference);
+    if (!wallet || !Number.isFinite(amountMga) || amountMga === 0) return null;
+    return save("correction", undefined, { wallet, at: Date.now(), amountMga });
+  },
+
+  /** The pocket of a computed line (a bill, a receipt…), or back to the one it gets on its own. */
+  async setWalletPick(sourceKey: string, wallet: string | null) {
+    const id = walletPickId(sourceKey);
+    if (wallet) await save<WalletPick>("walletPick", id, { sourceKey, wallet });
+    else await expenseStore.remove(id);
   },
 
   /** Takes back an expense as it was (one shared with a household the user left). */
