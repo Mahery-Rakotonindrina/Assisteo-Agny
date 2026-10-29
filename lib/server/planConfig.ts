@@ -29,6 +29,20 @@ export const FeatureSettingsSchema = z.object({
   featureStatus: z.object(Object.fromEntries(planFeatures.map((feature) => [feature, Status])) as Record<(typeof planFeatures)[number], typeof Status>),
 });
 
+/** A subscription's own features, as a difference from its plan (Admin → Subscriptions). */
+export const FeatureDiffSchema = z.object({
+  add: z.array(Feature).max(planFeatures.length),
+  remove: z.array(Feature).max(planFeatures.length),
+});
+
+/** A subscription's own limits: only those set replace the plan's (0 = no limit). */
+export const QuotasSchema = z.object({
+  scans: Offer.shape.scans.optional(),
+  questionsPerDay: Offer.shape.questionsPerDay.optional(),
+  parcels: Offer.shape.parcels.optional(),
+  deepPerMonth: Offer.shape.deepPerMonth.optional(),
+});
+
 /** Prices, limits and payment; the features are saved apart (FeatureSettingsSchema). */
 export const PlansConfigSchema = z.object({
   offers: z.object(Object.fromEntries(soldPlans.map((plan) => [plan, Offer])) as Record<(typeof soldPlans)[number], typeof Offer>),

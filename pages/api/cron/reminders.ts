@@ -5,6 +5,7 @@ import { sendError } from "@/lib/server/http";
 import { getPlansConfig } from "@/lib/server/planConfig";
 import { collectPending, nextReminderAt, paidReminderUsers, planPushes, type DueRow, type PushDevice, type PushLocale } from "@/lib/server/reminderPush";
 import { reportError } from "@/lib/server/reportError";
+import { currentGrantsForEmails } from "@/lib/server/featureGrants";
 import { subscriptionRowsForEmails } from "@/lib/server/subscriptions";
 import { accountsEnabled, supabaseAdmin } from "@/lib/server/supabaseAdmin";
 
@@ -44,8 +45,8 @@ async function paidUsers(db: ReturnType<typeof supabaseAdmin>, userIds: string[]
   }
   const users = userIds.map((id) => ({ id, email: emails.get(id) ?? null }));
   const known = users.map((user) => user.email).filter((email): email is string => Boolean(email));
-  const [rows, config] = await Promise.all([subscriptionRowsForEmails(known), getPlansConfig()]);
-  return paidReminderUsers(users, rows, now, config);
+  const [rows, config, grants] = await Promise.all([subscriptionRowsForEmails(known), getPlansConfig(), currentGrantsForEmails(known, now).catch(() => [])]);
+  return paidReminderUsers(users, rows, now, config, grants);
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

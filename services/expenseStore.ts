@@ -1,5 +1,7 @@
 import { clear, createStore, del, get, set, values } from "idb-keyval";
 import {
+  ACTIVITY_ID,
+  type ActivitySetting,
   BUDGET_ID,
   exclusionId,
   type Budget,
@@ -9,6 +11,10 @@ import {
   type Income,
   type ManualExpense,
   type Recurring,
+  type SavingsDeposit,
+  type SavingsGoal,
+  type Tontine,
+  tontineFrequencies,
   type Transfer,
   type Wallet,
   type WalletPick,
@@ -72,7 +78,11 @@ export const expenseStore = {
   },
 
   async list(): Promise<ExpenseRecord[]> {
-    return (await values<ExpenseRecord>(db())).filter((record) => !record.deletedAt).map((record) => (record.kind === "recurring" ? { ...record, skipped: record.skipped ?? [] } : record));
+    return (await values<ExpenseRecord>(db()))
+      .filter((record) => !record.deletedAt)
+      .map((record) =>
+        record.kind === "recurring" ? { ...record, skipped: record.skipped ?? [] } : record.kind === "savingsGoal" || record.kind === "tontine" ? { ...record, deposits: record.deposits ?? [] } : record,
+      );
   },
 
   async saveExpense(draft: Draft<ManualExpense>) {
@@ -128,6 +138,11 @@ export const expenseStore = {
   async setBudget(total: number | undefined, categories: Record<string, number | undefined>) {
     const kept = Object.fromEntries(Object.entries(categories).flatMap(([key, value]) => (cleanAmount(value) ? [[key, cleanAmount(value)!]] : [])));
     await save<Budget>("budget", BUDGET_ID, { total: cleanAmount(total), categories: kept });
+  },
+
+  /** Resellers: keep the reselling apart from the household's budget, or not. */
+  async setActivitySeparate(separate: boolean) {
+    await save<ActivitySetting>("activity", ACTIVITY_ID, { separate });
   },
 
   async saveCategory(draft: Draft<CustomCategory>) {
@@ -187,6 +202,58 @@ export const expenseStore = {
     const id = walletPickId(sourceKey);
     if (wallet) await save<WalletPick>("walletPick", id, { sourceKey, wallet });
     else await expenseStore.remove(id);
+  },
+
+  /** A savings goal, new or changed (its deposits kept). */
+  async saveGoal(draft: Omit<Draft<SavingsGoal>, "deposits">) {
+    const name = cleanText(draft.name, 60);
+    const targetMga = cleanAmount(draft.targetMga);
+    if (!name || targetMga === undefined) return null;
+    const existing = draft.id ? await current<SavingsGoal>(draft.id) : undefined;
+    return save<SavingsGoal>("savingsGoal", draft.id, { name, targetMga, dueAt: draft.dueAt || undefined, deposits: existing?.deposits ?? [] });
+  },
+
+  /** A tontine, new or changed (its payments and pot kept). */
+  async saveTontine(draft: Omit<Draft<Tontine>, "deposits" | "received">) {
+    const name = cleanText(draft.name, 60);
+    const amountMga = cleanAmount(draft.amountMga);
+    const members = Math.round(draft.members);
+    if (!name || amountMga === undefined || !Number.isFinite(members) || members < 2 || members > 100) return null;
+    const existing = draft.id ? await current<Tontine>(draft.id) : undefined;
+    return save<Tontine>("tontine", draft.id, {
+      name,
+      amountMga,
+      frequency: tontineFrequencies.includes(draft.frequency) ? draft.frequency : "monthly",
+      members,
+      startAt: draft.startAt,
+      myTurn: Math.min(members, Math.max(1, Math.round(draft.myTurn) || 1)),
+      remind: draft.remind,
+      deposits: existing?.deposits ?? [],
+      received: existing?.received,
+    });
+  },
+
+  /** Money put aside (taken back when negative), from or to a pocket, now. */
+  async addDeposit(id: string, amountMga: number, wallet: string | undefined) {
+    const record = await current<SavingsGoal | Tontine>(id);
+    const amount = Math.round(amountMga);
+    if (!record || (record.kind !== "savingsGoal" && record.kind !== "tontine") || !Number.isFinite(amount) || amount === 0) return null;
+    const deposit: SavingsDeposit = { id: createId(), at: Date.now(), amountMga: amount, ...(wallet && { wallet }) };
+    await write({ ...record, deposits: [...(record.deposits ?? []), deposit] });
+    return deposit;
+  },
+
+  async removeDeposit(id: string, depositId: string) {
+    const record = await current<SavingsGoal | Tontine>(id);
+    if (record && (record.kind === "savingsGoal" || record.kind === "tontine")) await write({ ...record, deposits: (record.deposits ?? []).filter((deposit) => deposit.id !== depositId) });
+  },
+
+  /** The tontine's pot, received now into a pocket (or not received after all). */
+  async setPotReceived(id: string, received: { amountMga: number; wallet?: string } | null) {
+    const tontine = await current<Tontine>(id);
+    if (!tontine || tontine.kind !== "tontine") return;
+    const amountMga = received ? cleanAmount(received.amountMga) : undefined;
+    await write({ ...tontine, received: received && amountMga ? { at: Date.now(), amountMga, ...(received.wallet && { wallet: received.wallet }) } : undefined });
   },
 
   /** Takes back an expense as it was (one shared with a household the user left). */

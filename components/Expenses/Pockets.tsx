@@ -109,6 +109,8 @@ function SetupForm({ onDone }: { onDone: () => void }) {
   const [amounts, setAmounts] = useState<Record<string, string>>({});
   const chosen = commonWalletTypes.filter((type) => ticked[type]);
   const valid = chosen.length > 0 && chosen.every((type) => parseBalance(amounts[type] ?? "") !== undefined);
+  // Cash when ticked, else the first one ticked.
+  const defaultType = chosen.includes("cash") ? "cash" : chosen[0];
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -150,7 +152,7 @@ function SetupForm({ onDone }: { onDone: () => void }) {
           );
         })}
       </ul>
-      <p className={styles.hint}>{t("expenses.pockets.defaultHint")}</p>
+      {defaultType && <DefaultHint type={defaultType} />}
       <div className={styles.row}>
         <Button type="submit" icon={<Check />} disabled={!valid}>
           {t("expenses.save")}
@@ -161,6 +163,13 @@ function SetupForm({ onDone }: { onDone: () => void }) {
       </div>
     </form>
   );
+}
+
+/** Which pocket will be the default one: the one really ticked. */
+function DefaultHint({ type }: { type: WalletType }) {
+  const { t } = useTranslation();
+  const typeName = useWalletTypeName();
+  return <p className={styles.hint}>{t("expenses.pockets.defaultHint", { name: typeName(type) })}</p>;
 }
 
 type ListProps = { book: WalletBook; records: ExpenseRecord[]; pending: PocketMove[]; onTransfer: () => void; onAdd: () => void; onCorrect: (wallet: Wallet) => void };
@@ -179,6 +188,7 @@ function PocketList({ book, records, pending, onTransfer, onAdd, onCorrect }: Li
 
   const describe = (movement: Movement) => {
     if (movement.type === "correction") return t("expenses.pockets.correction");
+    if (movement.type === "saved" || movement.type === "unsaved" || movement.type === "pot") return [t(`expenses.savings.movement.${movement.type}`), movement.label].filter(Boolean).join(" · ");
     if (movement.type === "move_in" || movement.type === "move_out") return [t("expenses.pockets.move"), movement.label].filter(Boolean).join(" · ");
     if (movement.origin === "fees") return t("expenses.feesLabel");
     if (movement.type === "income") return movement.label || t("expenses.pockets.income");
@@ -250,6 +260,12 @@ function PocketList({ book, records, pending, onTransfer, onAdd, onCorrect }: Li
       <p className={styles.pocketsTotal}>
         {t("expenses.pockets.inPockets")} <strong>{money(book.total)}</strong>
       </p>
+      {/* Nothing looks lost: what was set aside left the pockets. */}
+      {book.saved > 0 && (
+        <p className={styles.hint} data-testid="pockets-saved">
+          {t("expenses.savings.inPockets", { amount: money(book.saved) })}
+        </p>
+      )}
 
       {pending.length > 0 && (
         <section aria-labelledby="pockets-pending" className={styles.pending}>

@@ -59,6 +59,12 @@ export type Parcel = {
    * the parcel was added stands for it, so the sale never changes month.
    */
   soldAt?: number;
+  /**
+   * Resellers: "for me" (false) or "to resell" (true), picked by hand.
+   * Missing: a parcel with a client or a sale price is to resell (isForResale).
+   * An older app keeps it as it is (it spreads the parcel when saving).
+   */
+  forResale?: boolean;
   /** Sync bookkeeping, like the history. */
   deletedAt?: number;
   dirty?: boolean;
@@ -207,6 +213,13 @@ export const parcelStore = {
     const current = await get<Parcel>(id, db());
     if (!current) return;
     await write({ ...current, salePriceMga: sale.salePriceMga, paidMga: sale.paidMga, soldAt: saleDate(current, sale.salePriceMga) });
+  },
+
+  /** "For me" or "to resell", picked by hand (resellers). */
+  async setForResale(id: string, forResale: boolean) {
+    const current = await get<Parcel>(id, db());
+    if (!current) return;
+    await write({ ...current, forResale });
   },
 
   /** Saves the price and fees in ariary. */

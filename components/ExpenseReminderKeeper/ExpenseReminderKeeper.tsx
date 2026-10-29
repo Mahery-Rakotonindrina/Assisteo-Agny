@@ -2,17 +2,19 @@ import { useEffect, useRef } from "react";
 import { useExpenseLabels } from "@/hooks/useExpenseLabels";
 import { useExpenseReminderTexts } from "@/hooks/useExpenseReminderTexts";
 import { useExpenses } from "@/hooks/useExpenses";
-import { useExpenseSources } from "@/hooks/useExpenseSources";
+import { useBudgetSources, useExpenseSources } from "@/hooks/useExpenseSources";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { BUDGET_ID, budgetLines, monthExpenses, monthKey, monthTotals, type Budget } from "@/lib/expenses";
 import { useSettings } from "@/lib/settings/SettingsProvider";
+import { reconcileEvenings, useEveningSetting } from "@/services/eveningReminder";
 import { notifyBudgetAlerts, reconcileExpenseReminders } from "@/services/expenseReminders";
 
 /**
  * Keeps the "Mes dépenses" notifications in line with the recurring expenses
  * and the plan: due dates (the day before or the day itself), and the budget
- * alerts. Without the plan, the due dates are cancelled, and come back with it.
+ * alerts, the tontines' payments and the evening reminder. Without the plan,
+ * the due dates and evenings are cancelled, and come back with it.
  */
 export function ExpenseReminderKeeper() {
   const { ready } = useSettings();
@@ -29,6 +31,14 @@ export function ExpenseReminderKeeper() {
     return () => clearTimeout(timer);
   }, [ready, known, enabled, records, texts]);
 
+  // The next 7 evenings, again at each change (an expense noted skips its evening).
+  const evening = useEveningSetting();
+  useEffect(() => {
+    if (!ready || !known) return;
+    const timer = setTimeout(() => void reconcileEvenings(records, evening, texts.evening, enabled), 1500);
+    return () => clearTimeout(timer);
+  }, [ready, known, enabled, records, evening, texts]);
+
   // The sources (history, lists, parcels, garage) are only read with the plan.
   return ready && enabled ? <BudgetAlerts /> : null;
 }
@@ -36,7 +46,8 @@ export function ExpenseReminderKeeper() {
 /** Notifies once a month each cap reaching 80 %, then going over (whatever the expense came from). */
 function BudgetAlerts() {
   const { records, isLoading } = useExpenses();
-  const sources = useExpenseSources();
+  // What the budget counts: the reselling apart, when the user keeps it so.
+  const sources = useBudgetSources(records, useExpenseSources());
   const texts = useExpenseReminderTexts();
   const { t } = useTranslation();
   const { categoryName } = useExpenseLabels(records);

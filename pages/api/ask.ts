@@ -50,7 +50,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   const override = readOverride(req.headers);
   if (override === "invalid") return sendError(res, 400, "invalid_request", "Invalid AI provider, model or key.");
 
-  const { account, current, features } = await resolvePlan(req);
+  const { account, current, features, quotas } = await resolvePlan(req);
   if (override && !features.has("ownKey")) {
     return sendError(res, 403, "plan_required", "Your own AI key needs a subscription.");
   }
@@ -68,7 +68,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   let planUser: string | null = null;
   let usage: { used: number; limit: number } | undefined;
   if (!override && current.plan !== "free" && account) {
-    const { questionsPerDay } = await limitsFor(current.plan);
+    const { questionsPerDay } = await limitsFor(current.plan, undefined, quotas, features);
     const booked = await reservePlanAsk(account.id, questionsPerDay);
     if (!booked) return sendError(res, 403, "ask_limit", "Today's questions of your plan are used up.");
     await countServerCall();

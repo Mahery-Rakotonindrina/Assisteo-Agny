@@ -162,19 +162,19 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Plusieurs administrateurs avec leur propre accès, journal des actions — l’offre Admin donne l’accès avec son propre compte, retiré dès que l’offre s’arrête ; réservé au propriétaire (jeton) : nommer ou retirer un admin, double authentification, journal (500 dernières actions : qui, quoi, quand)
 - [x] Tableau des fonctionnalités : toutes les fonctions de l'app, avec à côté les offres qui les activent (Gratuit, Lite, Premium, Pro, Admin) — Admin → « Fonctionnalités par offre »
 - [x] Fonctionnalités réglables par offre : dans « Offres », cocher ou décocher chaque fonctionnalité pour chaque offre ; les réglages actuels sont proposés par défaut
-- [ ] Fonctionnalités réglables par abonné : à l'ajout ou au renouvellement d'un abonné, les fonctionnalités de son offre sont cochées par défaut, et on peut en ajouter ou en retirer pour lui seul
+- [x] Fonctionnalités réglables par abonné : à l'ajout ou au renouvellement d'un abonné, les fonctionnalités de son offre sont cochées par défaut, et on peut en ajouter ou en retirer pour lui seul — gardé comme la différence avec l'offre, bouton « Revenir à l'offre » ; migration 0011 à coller
 - [x] L'app de chaque utilisateur suit ces réglages (menus, boutons, étiquettes « à partir de… », refus côté serveur), tout de suite et sans nouvel APK — le serveur et le site tout de suite ; sur Android, à partir du prochain APK, puis sans nouvelle version
 - [x] Chaque changement de fonctionnalités noté dans le journal des actions admin
 - [ ] Créer une nouvelle offre depuis l'Admin (nom, couleur, prix, quotas, fonctionnalités)
-- [ ] Avant d'enregistrer un changement d'offre : nombre d'abonnés concernés, et choix « tous » ou « seulement les nouveaux abonnements et renouvellements » — le résumé et le nombre d'abonnés actifs sont faits ; le choix vient avec les réglages par abonné
+- [x] Avant d'enregistrer un changement d'offre : nombre d'abonnés concernés, et choix « tous » ou « seulement les nouveaux abonnements et renouvellements » — « seulement les nouveaux » : chaque abonné actif garde ses droits jusqu'à son renouvellement, noté au journal
 - [x] Règle commune quand une fonctionnalité est retirée : données gardées, écran en lecture seule, rappels coupés, tout revient si elle est réactivée — complétée pour les coûts des colis et « Mes dépenses »
 - [x] Dépendances entre fonctionnalités (rappels du garage → rappels ; budget en famille → « Mes dépenses ») : avertissement, et les fonctions qui en dépendent sont décochées avec — outils revendeur → coûts des colis
 - [ ] Page « Les offres », liste des avantages et page Découvrir mises à jour automatiquement selon les réglages — « Les offres » et les avantages suivent ; reste la page Découvrir (texte fixe)
 - [x] Fonctionnalité « en test » pour une liste de comptes testeurs choisis, sans nouvelle version — refus serveur tout de suite ; menus sur Android dès le prochain APK
 - [x] Interrupteur d'urgence : couper une fonctionnalité pour tout le monde en un clic (IA trop chère, bug)
-- [ ] Accès temporaire à une fonctionnalité pour un abonné (ex. le garage offert 7 jours), arrêté tout seul à la date prévue
-- [ ] Quotas réglables par abonné (scans, questions, colis suivis…), pas seulement par offre
-- [ ] Fiche d'un abonné : ses fonctionnalités et leur origine (son offre, ajout à la main, accès temporaire jusqu'au…)
+- [x] Accès temporaire à une fonctionnalité pour un abonné (ex. le garage offert 7 jours), arrêté tout seul à la date prévue — depuis la fiche, gratuit compris : 7 jours, 30 jours ou une date, « Arrêter maintenant », affiché dans « Mon offre »
+- [x] Quotas réglables par abonné (scans, questions, colis suivis…), pas seulement par offre — préremplis avec ceux de l'offre ; analyse approfondie refusée sans nombre par mois
+- [x] Fiche d'un abonné : ses fonctionnalités et leur origine (son offre, ajout à la main, accès temporaire jusqu'au…) — bouton « Fiche » dans Abonnements et Comptes, avec ses quotas
 
 ## 13. Réglages
 
@@ -237,11 +237,11 @@ Budget du mois du foyer. Réservé à l'offre Admin pendant le test, ouvert aux 
 - [x] Soldes réels par poche : espèces, MVola, Orange Money, Airtel Money, banque (« Espèces 45 000 · MVola 230 000 ») — sous « Il te reste » ; solde de départ, chaque ligne a sa poche (les reçus prennent celle de leur opérateur), « Corriger le solde », virements entre poches à la main ou depuis un retrait ou dépôt scanné (`ownKind`), frais comptés une fois ; jamais dans le foyer
 - [ ] Prêts et dettes : argent prêté ou emprunté, crédit chez l’épicier ; qui me doit, à qui je dois, remboursements comptés tout seuls — écran à part (§17) ; lien avec les poches plus tard
 - [ ] Import d’un relevé MVola ou bancaire (captures ou PDF de plusieurs pages) : toutes les opérations d’un coup, sans doublon
-- [ ] Rappel du soir « Tu as dépensé quelque chose aujourd’hui ? », avec ajout rapide depuis la notification ou l’accueil
-- [ ] Prévision de fin de mois : « À ce rythme, il te restera 45 000 Ar le 30 », dépenses fixes à venir comprises
-- [ ] Objectifs d’épargne (« Rentrée scolaire : 120 000 / 300 000 Ar ») et suivi d’une tontine ou de cotisations
-- [ ] Recherche dans toutes les dépenses et tous les revenus (ex. tout ce qui a été payé à la JIRAMA cette année)
-- [ ] Revendeurs : l’activité séparée de la maison (achats de colis à revendre et ventes à part, bénéfice du mois), pour ne pas gonfler le budget de la maison
+- [x] Rappel du soir « Tu as dépensé quelque chose aujourd’hui ? », avec ajout rapide depuis la notification ou l’accueil — app Android, réglage dans l’onglet Fixes (20 h par défaut), 7 soirs programmés sans ceux où une dépense est notée, la notification ouvre la feuille d’ajout (`?add=expense`) ; pas encore depuis l’accueil
+- [x] Prévision de fin de mois : « À ce rythme, il te restera 45 000 Ar le 30 », dépenses fixes à venir comprises — dans « Il te reste », mois en cours dès le 3e jour, grosses dépenses rares écartées du rythme, « Comment c’est calculé ? »
+- [x] Objectifs d’épargne (« Rentrée scolaire : 120 000 / 300 000 Ar ») et suivi d’une tontine ou de cotisations — « Mis de côté » sous les poches : ni dépense ni revenu, l’argent sort de sa poche ; tontine avec mon tour, prochain versement et rappel la veille
+- [x] Recherche dans toutes les dépenses et tous les revenus (ex. tout ce qui a été payé à la JIRAMA cette année) — loupe de l’en-tête, tous les mois, sans accents ni majuscules, montant compris ; un résultat ouvre son mois et sa ligne
+- [x] Revendeurs : l’activité séparée de la maison (achats de colis à revendre et ventes à part, bénéfice du mois), pour ne pas gonfler le budget de la maison — réglage dans la feuille « Mon activité » (sous « Il te reste », outils revendeur), désactivé par défaut ; activé, une seule ligne « Bénéfice de mon activité » par mois, poches inchangées ; bascule « Pour moi / Pour revendre » sur le colis ; confirmation avant de supprimer un objectif ou une tontine
 - [ ] Ouvrir « Mes dépenses » à d’autres offres que l’Admin — une case à cocher dans Admin → Offres ; reste à choisir les offres
 
 ## 17. Prêts (offre Admin, en test)

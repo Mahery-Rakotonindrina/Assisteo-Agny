@@ -442,6 +442,50 @@
     "useOwnKey": "Utiliser ma clé IA"
   },
   "admin": {
+    "migrationNeeded": "Colle d’abord la migration 0011 dans Supabase (SQL Editor) : sans elle, ce réglage ne peut pas être gardé.",
+    "card": {
+      "quotaFallback": "Plafond de secours (aucun nombre réglé)",
+      "open": "Fiche",
+      "features": "Ses fonctions",
+      "quotas": "Ses quotas",
+      "origins": {
+        "plan": "Offre {plan}",
+        "added": "Ajouté à la main",
+        "removed": "Retiré à la main",
+        "grant": "Offert jusqu’au {date}",
+        "test": "En test",
+        "testOut": "En test, pas pour ce compte",
+        "off": "Coupé pour tout le monde",
+        "missing": "Manque : {list}",
+        "notInPlan": "Pas dans l’offre {plan}"
+      },
+      "quotaPlan": "Offre {plan}",
+      "quotaOwn": "Réglé à la main",
+      "unlimited": "Sans limite",
+      "freePlan": "Sans abonnement : seules les fonctions offertes s’ajoutent à l’offre Gratuit.",
+      "needsMigration": "Pour offrir une fonction ou régler un abonné à part, colle d’abord la migration 0011 dans Supabase.",
+      "offer": "Offrir une fonction",
+      "feature": "La fonction",
+      "duration": "Pour combien de temps",
+      "durations": {
+        "week": "7 jours",
+        "month": "30 jours",
+        "date": "Jusqu’au…"
+      },
+      "lastDay": "Dernier jour",
+      "note": "Note",
+      "notePlaceholder": "Ex. Essai demandé sur WhatsApp",
+      "give": "Offrir",
+      "given": "Fonction offerte.",
+      "deepNeedsLimit": "Ce compte n’a pas de nombre d’analyses approfondies par mois : règle-le d’abord sur son abonnement (jamais sur Gratuit).",
+      "offers": "Fonctions offertes",
+      "none": "Aucune pour l’instant.",
+      "running": "En cours, jusqu’au {date}",
+      "ended": "Fini le {date}",
+      "givenOn": "Offert le {date}",
+      "stop": "Arrêter maintenant",
+      "stopped": "Offre arrêtée."
+    },
     "title": "Administration",
     "subtitle": "Réglages du serveur, appliqués immédiatement à toutes les apps.",
     "token": "Jeton d’administration",
@@ -487,6 +531,15 @@
       "noFeedback": "Pas encore d’avis."
     },
     "subs": {
+      "own": {
+        "title": "Fonctionnalités et quotas",
+        "hint": "Cochées : celles de l’offre. Change-les pour cet abonné seulement ; le reste suit l’offre, même si elle change.",
+        "byHand": "à la main",
+        "quotas": "Quotas",
+        "quotasHint": "Préremplis avec ceux de l’offre. 0 = sans limite.",
+        "reset": "Revenir à l’offre",
+        "deepNeedsLimit": "L’analyse approfondie a besoin d’un nombre par mois ici (0 voudrait dire sans limite, avec l’IA la plus chère)."
+      },
       "title": "Abonnés",
       "subtitle": "Le paiement se fait hors de l’app : note ici qui a payé quelle offre, et pour combien de temps.",
       "disabled": "Les comptes ne sont pas configurés sur le serveur.",
@@ -699,6 +752,9 @@
       "github": "GitHub (nouvel APK)",
       "more": "Voir {count} de plus",
       "actions": {
+        "feature_keep": "Offre changée pour les nouveaux seulement",
+        "feature_grant": "Fonction offerte",
+        "feature_grant_stop": "Fonction offerte arrêtée",
         "login": "Connexion",
         "subscription_add": "Abonnement ajouté",
         "subscription_edit": "Abonnement modifié",
@@ -790,6 +846,12 @@
       "deleted": "Code supprimé"
     },
     "features": {
+      "applyTitle": "À qui ça s’applique",
+      "applyAll": "Tous les abonnés actifs",
+      "applyAllHint": "Comme avant : chacun suit son offre.",
+      "applyNew": "Seulement les nouveaux abonnements et renouvellements",
+      "applyNewHint": "Les abonnés actifs touchés ({count}) gardent leurs droits actuels jusqu’à leur renouvellement.",
+      "kept": "{count} abonnés actifs gardent leurs droits actuels.",
       "title": "Fonctionnalités par offre",
       "subtitle": "Coche ce que chaque offre comprend. Les apps suivent sans nouvelle version, sauf l’APK déjà installé (voir plus bas). Les réglages de départ sont ceux d’aujourd’hui.",
       "apkHint": "L’APK Android déjà installé garde l’ancienne échelle pour ses menus et ses étiquettes jusqu’à sa prochaine version. Le serveur, lui, applique tout de suite tes réglages.",
@@ -1275,7 +1337,10 @@
       "profit": "Bénéfice : {amount}",
       "loss": "Perte : {amount}",
       "locked": "Prix de vente, paiement du client et bénéfice : avec l’offre {plan}.",
-      "dueShort": "Reste {amount}"
+      "dueShort": "Reste {amount}",
+      "forLabel": "Ce colis est",
+      "forMe": "Pour moi",
+      "forResale": "Pour revendre"
     },
     "expected": "Livraison prévue : {date}",
     "expectedToday": "Arrive aujourd'hui",
@@ -1283,6 +1348,7 @@
     "costsReadOnly": "Coût total gardé : {amount}. Ton offre ne comprend plus les coûts des colis : tu ne peux plus les modifier."
   },
   "plans": {
+    "offered": "{name} offert jusqu’au {date}",
     "names": {
       "free": "Gratuit",
       "lite": "Lite",
@@ -2174,7 +2240,8 @@
       "mobile_money": "Mobile Money",
       "plan": "Abonnement",
       "sale": "Vente",
-      "fees": "Frais Mobile Money"
+      "fees": "Frais Mobile Money",
+      "activity": "Activité"
     },
     "form": {
       "title": "Dépense",
@@ -2501,7 +2568,8 @@
       "expense": "Compté dans Mes dépenses",
       "income": "Compté dans tes revenus",
       "off": "Pas compté dans Mes dépenses",
-      "garage": "Pleins, entretien et frais comptés dans Mes dépenses"
+      "garage": "Pleins, entretien et frais comptés dans Mes dépenses",
+      "activity": "Compté dans Mon activité"
     },
     "feesLabel": "Frais de retrait ou de transfert",
     "pockets": {
@@ -2514,7 +2582,7 @@
       "setupHint": "Coche là où tu gardes ton argent, et dis combien il y a aujourd’hui. Tu pourras corriger plus tard.",
       "howMuch": "Combien il y a aujourd’hui ?",
       "howMuchOf": "{name} : combien il y a aujourd’hui ?",
-      "defaultHint": "Les Espèces sont ta poche par défaut : une dépense sans poche y est comptée. Tu peux changer ça dans Mes poches.",
+      "defaultHint": "{name} est ta poche par défaut : une dépense sans poche y est comptée. Tu peux changer ça dans Mes poches.",
       "saved": "Tes poches sont prêtes",
       "default": "Par défaut",
       "since": "{amount} le {date}",
@@ -2559,6 +2627,123 @@
         "bank": "Banque",
         "other": "Autre"
       }
+    },
+    "forecast": {
+      "left": "À ce rythme, il te restera environ {amount} le {day}.",
+      "missing": "À ce rythme, il te manquera environ {amount} le {day}.",
+      "how": "Comment c’est calculé ?",
+      "now": "Aujourd’hui, il te reste {amount}.",
+      "upcoming": "Encore à venir ce mois-ci : {out} de dépenses fixes, {in} de revenus.",
+      "pace": "Tes dépenses de tous les jours : environ {daily} par jour, pendant encore {days} jour(s). Les grosses dépenses rares ne comptent pas."
+    },
+    "search": {
+      "open": "Chercher",
+      "title": "Chercher",
+      "field": "Chercher une dépense ou un revenu",
+      "placeholder": "JIRAMA, loyer, 12000…",
+      "hint": "Dans tous les mois : le nom, la note, le magasin ou la personne, la catégorie ou le montant.",
+      "count": "{count} résultat(s) · {amount}",
+      "none": "Rien trouvé pour « {query} ».",
+      "income": "Revenu"
+    },
+    "evening": {
+      "title": "Tu as dépensé quelque chose aujourd’hui ?",
+      "body": "Note-le en 3 secondes.",
+      "label": "Me rappeler chaque soir de noter mes dépenses",
+      "time": "À quelle heure ?",
+      "hint": "Pas de rappel les soirs où tu as déjà noté une dépense.",
+      "appOnly": "Le rappel du soir marche dans l’application Android seulement.",
+      "denied": "Autorise les notifications de l’app dans les réglages de ton téléphone.",
+      "on": "Rappel du soir à {time}"
+    },
+    "savings": {
+      "line": "Mis de côté :",
+      "empty": "Mettre de l’argent de côté (épargne, tontine)",
+      "title": "Épargne et tontines",
+      "hint": "C’est ton argent mis de côté : ni une dépense, ni un revenu. Il sort de ta poche, et il y revient quand tu le reprends.",
+      "total": "Mis de côté : {amount}",
+      "goals": "Mes objectifs",
+      "tontines": "Mes tontines",
+      "addGoal": "Objectif",
+      "addTontine": "Tontine",
+      "noGoal": "Pas encore d’objectif. Par exemple : la rentrée scolaire.",
+      "noTontine": "Pas encore de tontine.",
+      "goalTitle": "Objectif d’épargne",
+      "tontineTitle": "Tontine",
+      "name": "Nom",
+      "goalPlaceholder": "Rentrée scolaire",
+      "tontinePlaceholder": "Tontine du quartier",
+      "target": "Montant visé",
+      "dueAt": "Pour quand ? (si tu veux)",
+      "perMonth": "{amount} par mois pour y arriver",
+      "reached": "Objectif atteint !",
+      "putAside": "Mettre de côté",
+      "takeBack": "Reprendre",
+      "fromPocket": "De quelle poche ?",
+      "toPocket": "Dans quelle poche ?",
+      "amount": "Montant",
+      "putAsideDone": "{amount} mis de côté",
+      "takenBack": "{amount} repris",
+      "tooMuch": "Il n’y a que {amount} dans cet objectif.",
+      "amountEach": "Montant de chaque versement",
+      "frequency": "Fréquence",
+      "frequencies": {
+        "weekly": "Chaque semaine",
+        "monthly": "Chaque mois"
+      },
+      "members": "Nombre de membres",
+      "startAt": "Premier versement",
+      "myTurn": "Mon tour (n°)",
+      "turnHint": "Tu recevras la cagnotte de {amount} le {date}.",
+      "remind": "Me rappeler la veille de chaque versement",
+      "paid": "Tu as versé {amount}",
+      "willGet": "Tu recevras {amount} le {date}",
+      "got": "Tu as reçu {amount} le {date}",
+      "next": "Prochain versement : {amount} le {date}",
+      "stillToPay": "Cagnotte reçue, encore à verser : {amount} le {date}",
+      "late": "Versement en retard : {amount} depuis le {date}",
+      "allPaid": "Tous tes versements sont faits.",
+      "rounds": "{done} versement(s) sur {total}",
+      "pay": "Noter un versement",
+      "payTitle": "Versement de la tontine",
+      "paidDone": "Versement noté : {amount}",
+      "potReceived": "J’ai reçu la cagnotte",
+      "potTitle": "Cagnotte reçue",
+      "undoPot": "Je ne l’ai pas encore reçue",
+      "edit": "Modifier",
+      "remove": "Supprimer",
+      "reminderTitle": "{name} : versement demain",
+      "inPockets": "+ {amount} mis de côté",
+      "movement": {
+        "saved": "Mis de côté",
+        "unsaved": "Repris de l’épargne",
+        "pot": "Cagnotte reçue"
+      },
+      "removeHeld": "Supprimer « {name} » ? Les {amount} mis de côté reviendront dans tes poches.",
+      "removePot": "Supprimer « {name} » ? Tes versements et la cagnotte reçue seront retirés de tes poches.",
+      "removeEmpty": "Supprimer « {name} » ?",
+      "removeConfirm": "Oui, supprimer"
+    },
+    "activity": {
+      "line": "Mon activité : bénéfice du mois",
+      "title": "Mon activité · {month}",
+      "income": "Bénéfice de mon activité",
+      "bought": "Achats du mois",
+      "sales": "Ventes du mois",
+      "profit": "Bénéfice",
+      "profitHint": "Ventes moins ce qu’ont coûté les colis vendus",
+      "toCollect": "À encaisser (toutes ventes)",
+      "toCollectHint": "Ce que tes clients doivent encore",
+      "stock": "Stock pas encore vendu",
+      "parcels": "{count} colis",
+      "topClients": "Meilleurs clients du mois",
+      "clientDetail": "{count} colis · bénéfice {profit}",
+      "separate": "Séparer mon activité de revente du budget de la maison",
+      "separateOff": "Désactivé : le prix d’achat de tes colis compte dans tes dépenses, et le prix de vente dans tes revenus.",
+      "separateOn": "Activé : tes colis à revendre ne comptent plus dans le budget de la maison. Seul le bénéfice du mois entre dans tes revenus. Tes poches ne changent pas.",
+      "parcelsLink": "Voir mes colis",
+      "lines": "Achats et ventes du mois",
+      "purchase": "Achat : {title}"
     }
   }
 }

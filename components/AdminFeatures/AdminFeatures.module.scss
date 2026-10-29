@@ -221,3 +221,51 @@
   flex-wrap: wrap;
   gap: 0.5rem;
 }
+
+// Who a change of a plan applies to: every active subscriber, or only new subscriptions.
+.apply {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0;
+  border: 0;
+
+  legend {
+    margin-bottom: 0.3rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+
+  label {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+    padding: 0.55rem 0.7rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+
+    &:has(input:checked) {
+      border-color: var(--accent-mark);
+      background: var(--accent-soft);
+    }
+  }
+
+  input {
+    margin-top: 0.2rem;
+    accent-color: var(--accent-mark);
+  }
+
+  span {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    font-size: 0.88rem;
+  }
+
+  small {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+}

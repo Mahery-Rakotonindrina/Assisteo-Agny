@@ -19,6 +19,11 @@ export type AdminAction =
   | "feature_plans"
   /** A feature on, in test or switched off. */
   | "feature_status"
+  /** A plan's features changed for new subscriptions only: the running ones keep theirs. */
+  | "feature_keep"
+  /** A feature offered to an account for a while, or that offer stopped. */
+  | "feature_grant"
+  | "feature_grant_stop"
   | "trial_save"
   | "promo_create"
   | "promo_enable"

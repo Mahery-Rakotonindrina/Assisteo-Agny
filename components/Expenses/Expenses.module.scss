@@ -473,6 +473,15 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
+
+  > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  > :is(a, button) {
+    white-space: normal;
+  }
 }
 
 // ---- Shared with the household ----------------------------------------------------------
@@ -578,6 +587,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.55rem;
+  min-width: 0;
+  overflow-wrap: break-word;
   padding: 1rem 1.1rem;
   border-color: var(--accent-mark);
 
@@ -596,9 +607,13 @@
   justify-content: space-between;
   gap: 0.5rem;
 
+  // Very large text (200 % zoom on 360 px): the title wraps between words (hyphenated if a word is still too long), the close button stays inside.
   h2 {
+    flex: 1;
+    min-width: 0;
     font-size: 1.1rem;
     font-weight: 700;
+    hyphens: auto;
   }
 }
 
@@ -654,6 +669,13 @@
 
   > * {
     flex: 1 1 12rem;
+  }
+
+  // Very large text: a button narrower than its label wraps it instead of widening the page.
+  > :is(a, button) {
+    min-width: 0;
+    max-width: 100%;
+    white-space: normal;
   }
 
   @include desktop {
@@ -1101,4 +1123,134 @@
 
 .amount[data-tone="bad"] {
   color: var(--danger);
+}
+
+// ---- Search, forecast, evening reminder, savings ----------------------------------
+
+.headerRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+
+  > div {
+    flex: 1;
+    min-width: 0;
+  }
+
+  > button {
+    flex: none;
+    margin-top: 0.4rem;
+  }
+}
+
+.searchField {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--text-muted);
+
+  input {
+    flex: 1;
+    min-width: 0;
+    min-height: 2.9rem;
+    border: none;
+    background: transparent;
+    color: var(--text);
+    font-size: 1rem;
+    outline: none;
+  }
+
+  &:focus-within {
+    border-color: var(--accent);
+  }
+}
+
+.forecast {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  margin-top: 0.2rem;
+  font-size: 0.92rem;
+
+  > p {
+    margin: 0;
+    overflow-wrap: anywhere;
+
+    &[data-tone="bad"] {
+      color: var(--danger);
+      font-weight: 600;
+    }
+  }
+}
+
+.forecastHow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin: 0.1rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.evening {
+  @include card;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.9rem 1rem;
+
+  strong {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+  }
+}
+
+.eveningTime {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+
+  input {
+    min-height: 2.75rem;
+    padding: 0 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 1rem;
+  }
+}
+
+.savingsGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.savingsItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+  overflow-wrap: anywhere;
+
+  > span:not(.track) {
+    font-size: 0.92rem;
+  }
+
+  > small[data-tone="bad"] {
+    color: var(--danger);
+  }
 }

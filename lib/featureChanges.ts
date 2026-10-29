@@ -1,4 +1,22 @@
-import { activePlan, featureDependents, featureNeeds, paidPlans, planFeatures, planIds, type FeatureMode, type FeatureSettings, type PaidPlanId, type PlanFeature, type PlanId, type Subscription } from "./plans";
+import {
+  activePlan,
+  activeSubscription,
+  diffFor,
+  featureDependents,
+  featureNeeds,
+  keptDiff,
+  paidPlans,
+  planFeatures,
+  planIds,
+  subscriptionFeatureList,
+  type FeatureDiff,
+  type FeatureMode,
+  type FeatureSettings,
+  type PaidPlanId,
+  type PlanFeature,
+  type PlanId,
+  type Subscription,
+} from "./plans";
 
 // Admin → Offers, the features table: what a save changes (shown before it,
 // and written to the admin log), and who it touches.
@@ -75,4 +93,64 @@ export function activeSubscriberCounts(rows: Array<Pick<Subscription, "email" | 
     if (plan !== "free") counts[plan] += 1;
   }
   return counts;
+}
+
+/** How a change of a plan's features applies: to everyone on it (the default), or only to the subscriptions recorded from now on. */
+export const applyModes = ["all", "new"] as const;
+export type ApplyMode = (typeof applyModes)[number];
+
+/**
+ * "Only new subscriptions and renewals": for each e-mail with a subscription
+ * running now on a plan whose features change, the own difference that keeps
+ * what it has. Only the subscriptions whose difference changes are listed.
+ */
+export function keepRunningRights(
+  before: FeatureSettings["features"],
+  after: FeatureSettings["features"],
+  rows: Array<Pick<Subscription, "id" | "email" | "plan" | "startsAt" | "endsAt" | "features">>,
+  now: number,
+): Array<{ id: string; email: string; plan: PaidPlanId; features: FeatureDiff | null }> {
+  const byEmail = new Map<string, typeof rows>();
+  for (const row of rows) {
+    const email = row.email.toLowerCase();
+    byEmail.set(email, [...(byEmail.get(email) ?? []), row]);
+  }
+  const updates: ReturnType<typeof keepRunningRights> = [];
+  for (const [email, own] of byEmail) {
+    const running = activeSubscription(own, now);
+    if (!running) continue;
+    const was = before[running.plan];
+    const will = after[running.plan];
+    if (was.length === will.length && was.every((feature) => will.includes(feature))) continue;
+    const features = keptDiff(was, will, running.features);
+    if (JSON.stringify(features) !== JSON.stringify(running.features ?? null)) updates.push({ id: running.id, email, plan: running.plan, features });
+  }
+  return updates;
+}
+
+/** One line of the admin log for a subscription's own settings: "+garage -pdfExport · scans 100". */
+export function describeOwn(features: FeatureDiff | null | undefined, quotas: Partial<Record<string, number>> | null | undefined): string {
+  const parts = [...(features?.add ?? []).map((feature) => `+${feature}`), ...(features?.remove ?? []).map((feature) => `-${feature}`)];
+  const limits = Object.entries(quotas ?? {}).map(([key, value]) => `${key} ${value}`);
+  return [parts.join(" "), limits.join(", ")].filter(Boolean).join(" · ");
+}
+
+/** Ticking a feature ticks what it needs; unticking one unticks what needs it. */
+export function toggleOwnFeature(planList: readonly PlanFeature[], diff: FeatureDiff | null, feature: PlanFeature, on: boolean): FeatureDiff | null {
+  const wanted = new Set(subscriptionFeatureList(planList, diff));
+  const visit = (current: PlanFeature) => {
+    for (const need of featureNeeds[current] ?? []) {
+      if (!wanted.has(need)) {
+        wanted.add(need);
+        visit(need);
+      }
+    }
+  };
+  if (on) {
+    wanted.add(feature);
+    visit(feature);
+  } else {
+    for (const other of [feature, ...featureDependents(feature)]) wanted.delete(other);
+  }
+  return diffFor(planList, [...wanted]);
 }
