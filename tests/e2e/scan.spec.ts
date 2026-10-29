@@ -10,18 +10,6 @@ async function pretendPlan(page: import("@playwright/test").Page, plan: string) 
   });
 }
 
-/**
- * Waits for the scan page's file input to be hydrated: a file set on the
- * server's input, before React listens to it, is lost (the second scan in a
- * row went straight after goto and was flaky).
- */
-async function fileInputReady(page: import("@playwright/test").Page) {
-  await page.waitForFunction(() => {
-    const input = document.querySelector('input[type="file"]');
-    return Boolean(input && Object.keys(input).some((key) => key.startsWith("__reactProps")));
-  });
-}
-
 /** Any photo comes back as the demo MVola receipt (money paid, or received). */
 async function serveReceipt(page: import("@playwright/test").Page, direction: "out" | "in" | "own" = "out") {
   await page.route("**/api/analyze", async (route) => {
@@ -151,6 +139,7 @@ test.describe("scan", () => {
     await expect(page.getByText("Frais de retrait ou de transfert")).toHaveCount(0);
     await page.goto(result);
     await page.getByRole("button", { name: "C’est un mouvement entre mes comptes" }).click();
+    await expect(page.getByTestId("receipt-status")).toContainText("pas compté dans tes dépenses");
     await page.goto("/expenses");
     await expect(page.getByTestId("expenses-total")).toHaveText(/^2\s600 Ar$/);
     await expect(page.getByText("Frais de retrait ou de transfert")).toBeVisible();
@@ -170,7 +159,6 @@ test.describe("scan", () => {
     });
     for (let i = 0; i < 2; i++) {
       await page.goto("/");
-      await fileInputReady(page);
       await page.locator('input[type="file"]').setInputFiles("tests/e2e/fixtures/apple.jpg");
       await expect(page).toHaveURL(/\/result\?id=/, { timeout: 20_000 });
       await expect(page.getByTestId("receipt-status")).toBeVisible();
@@ -195,6 +183,7 @@ test.describe("scan", () => {
     await expect(page.getByTestId("expenses-total")).toHaveText(/^15\s000 Ar$/);
     await page.goBack();
     await page.getByRole("button", { name: "Compter quand même" }).click();
+    await expect(page.getByRole("button", { name: "Compter quand même" })).toHaveCount(0);
     await page.goto("/expenses");
     await expect(page.getByTestId("expenses-total")).toHaveText(/^30\s000 Ar$/);
   });
