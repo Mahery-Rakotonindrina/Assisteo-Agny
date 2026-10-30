@@ -33,6 +33,7 @@ import {
   Share2,
   SlidersHorizontal,
   Sparkles,
+  Sprout,
   Trash2,
   TriangleAlert,
   Utensils,
@@ -49,6 +50,7 @@ import { ObjectAdControls } from "@/components/ObjectAd";
 import { PlanBadge } from "@/components/PlanBadge";
 import { PlanLock } from "@/components/PlanLock";
 import { PhotoViewer } from "@/components/PhotoViewer";
+import { PlantControls } from "@/components/Plants";
 import { ReminderSheet } from "@/components/ReminderSheet";
 import { ReminderSnooze } from "@/components/ReminderSnooze";
 import { ScanChat } from "@/components/ScanChat";
@@ -756,6 +758,13 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
             {analysis.suggestions.length > 0 && (
               <Section title={t("result.suggestions")} icon={<Sparkles />}>
                 <SuggestionList suggestions={analysis.suggestions} />
+              </Section>
+            )}
+
+            {/* A plant: keep it in "Mes plantes", with its watering. */}
+            {!example && analysis.category === "plant" && (
+              <Section title={t("plants.title")} icon={<Sprout />}>
+                <PlantControls entry={entry} />
               </Section>
             )}
 

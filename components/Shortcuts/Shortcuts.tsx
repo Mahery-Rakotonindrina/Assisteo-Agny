@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpen, Car, FolderLock, HandCoins, Receipt, Wallet } from "lucide-react";
+import { BookOpen, Car, FolderLock, HandCoins, Receipt, Sprout, Wallet } from "lucide-react";
 import { PlanBadge } from "@/components/PlanBadge";
 import { useKeptExpenses } from "@/hooks/useExpenses";
 import { useInHousehold } from "@/hooks/useHousehold";
@@ -8,12 +8,14 @@ import { useNow } from "@/hooks/useNow";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useVehicles } from "@/hooks/useVehicles";
+import { usePlants } from "@/hooks/usePlants";
 import { journalDay, totalIntake } from "@/lib/food";
 import { billTotals, listBills } from "@/lib/bills";
 import { formatAriary, formatNumber } from "@/lib/format";
 import { dueReminders } from "@/lib/garage";
 import { loanMoney, loansByPerson, loanTotals } from "@/lib/loans";
 import { listPapers } from "@/lib/papers";
+import { needsWater } from "@/lib/plants";
 import type { HistoryEntry } from "@/types/history";
 import styles from "./Shortcuts.module.scss";
 
@@ -34,6 +36,8 @@ export function Shortcuts({ entries }: { entries: HistoryEntry[] }) {
   const keptLoans = useKeptLoans(!has("loans"));
   const { loans } = useLoans();
   const owed = loanTotals(loansByPerson(loans, "lent", now));
+  const { plants } = usePlants();
+  const toWater = plants.filter((plant) => needsWater(plant, now)).length;
   const garageDue = vehicles.reduce((count, vehicle) => count + dueReminders(vehicle, now).length, 0);
 
   return (
@@ -80,6 +84,23 @@ export function Shortcuts({ entries }: { entries: HistoryEntry[] }) {
               t("garage.count", { count: vehicles.length })
             ) : (
               t("shortcuts.garageHint")
+            )}
+          </small>
+        </span>
+      </Link>
+      <Link href="/plants" className={styles.shortcut} style={{ "--tone": "var(--cat-plant)" } as React.CSSProperties}>
+        <Sprout size={18} />
+        <span>
+          <strong>{t("plants.title")}</strong>
+          <small data-urgent={(has("plants") && toWater > 0) || undefined}>
+            {!has("plants") ? (
+              <PlanBadge plan={planFor("plants")} />
+            ) : toWater > 0 ? (
+              t("plants.shortcutDue", { count: toWater })
+            ) : plants.length > 0 ? (
+              t("plants.count", { count: plants.length })
+            ) : (
+              t("shortcuts.plantsHint")
             )}
           </small>
         </span>

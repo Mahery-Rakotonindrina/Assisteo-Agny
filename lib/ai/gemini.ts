@@ -10,6 +10,8 @@ import {
   buildSummaryPrompt,
   buildUserPrompt,
   firstAskText,
+  buildPlantDiagnosisPrompt,
+  PLANT_DIAGNOSIS_SYSTEM_PROMPT,
   isReadTask,
   LOAN_SCAN_SYSTEM_PROMPT,
   OBJECT_AD_SYSTEM_PROMPT,
@@ -20,6 +22,9 @@ import {
 import {
   AnalysisSchema,
   ExpenseSummarySchema,
+  PlantDiagnosisSchema,
+  type PlantDiagnosis,
+  type PlantDiagnosisRequest,
   imagesOf,
   LoanReadingSchema,
   ObjectAdSchema,
@@ -66,6 +71,7 @@ function canFallBack(error: unknown, signal?: AbortSignal) {
 const responseJsonSchema = { ...z.toJSONSchema(AnalysisSchema), $schema: undefined };
 const summaryJsonSchema = { ...z.toJSONSchema(ExpenseSummarySchema), $schema: undefined };
 const loanJsonSchema = { ...z.toJSONSchema(LoanReadingSchema), $schema: undefined };
+const plantJsonSchema = { ...z.toJSONSchema(PlantDiagnosisSchema), $schema: undefined };
 const statementJsonSchema = { ...z.toJSONSchema(StatementSchema), $schema: undefined };
 const adJsonSchema = { ...z.toJSONSchema(ObjectAdSchema), $schema: undefined };
 
@@ -270,6 +276,40 @@ export async function readStatementWithGemini(input: StatementRequest, signal?: 
       const parsed = StatementSchema.safeParse(safeJson(response.text));
       if (!parsed.success) throw new AnalysisError("upstream_error", 502, `Unusable Gemini statement (finishReason: ${finish}).`);
       return { statement: parsed.data, model: response.modelVersion ?? candidate, usage: geminiUsage(response.usageMetadata) };
+    } catch (error) {
+      lastError = error;
+      if (!canFallBack(error, signal)) break;
+    }
+  }
+  throw toAnalysisError(lastError);
+}
+
+/** "Mes plantes": what is wrong with a plant, from its photo, on Flash first (looks closely), then Flash-Lite. */
+export async function diagnosePlantWithGemini(input: PlantDiagnosisRequest, signal?: AbortSignal): Promise<{ diagnosis: PlantDiagnosis; model: string; usage?: AiUsage }> {
+  const client = getClient();
+  const chain = [...new Set([GEMINI_MODEL, FALLBACK_MODEL])];
+  let lastError: unknown;
+  for (const candidate of chain) {
+    try {
+      const response = await client.models.generateContent({
+        model: candidate,
+        contents: [createPartFromBase64(input.image, input.mediaType), buildPlantDiagnosisPrompt(input)],
+        config: {
+          systemInstruction: PLANT_DIAGNOSIS_SYSTEM_PROMPT,
+          responseMimeType: "application/json",
+          responseJsonSchema: plantJsonSchema,
+          abortSignal: signal,
+          httpOptions: { timeout: ATTEMPT_TIMEOUT_MS },
+          thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+        },
+      });
+      const finish = response.candidates?.[0]?.finishReason;
+      if (response.promptFeedback?.blockReason || blockedReasons.has(finish)) {
+        throw new AnalysisError("refused", 422, "Gemini blocked this photo.");
+      }
+      const parsed = PlantDiagnosisSchema.safeParse(safeJson(response.text));
+      if (!parsed.success) throw new AnalysisError("upstream_error", 502, `Unusable Gemini diagnosis (finishReason: ${finish}).`);
+      return { diagnosis: parsed.data, model: response.modelVersion ?? candidate, usage: geminiUsage(response.usageMetadata) };
     } catch (error) {
       lastError = error;
       if (!canFallBack(error, signal)) break;

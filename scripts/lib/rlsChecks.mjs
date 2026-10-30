@@ -1,7 +1,7 @@
 // The Row Level Security of the shared budget (migration 0009_households.sql)
-// of the loans (0010_loans.sql), of the features offered for a while (0011) and
-// of the loan links and household loans (0012), with the plans created from
-// the Admin a subscription may hold (0015),
+// of the loans (0010_loans.sql), of the features offered for a while (0011),
+// of the loan links and household loans (0012) and of the plants (0013),
+// with the plans created from the Admin a subscription may hold (0015),
 // tested as Supabase runs it: each query as the "authenticated" role with a
 // user id, or as the server ("service_role"). `client.query(text, params)`
 // must return { rows }. Returns the problems found (empty: all good).
@@ -237,6 +237,21 @@ export async function runRlsChecks(client) {
   await check("a visitor reads no loans", async () => {
     try {
       return (await tryVisitor("select 1 from public.loans")).length ? "loans visible" : null;
+    } catch (error) {
+      return /permission denied/.test(error.message) ? null : error.message;
+    }
+  });
+  // ---- Plants (migration 0013_plants.sql): always personal -------------------------
+  await user(anna, "insert into public.plants (id, data, updated_at) values ('plant-1', '{\"name\": \"Monstera\"}', now())");
+  await check("each one reads only their own plants", async () => {
+    const seen = [await count(anna, "select 1 from public.plants"), await count(ben, "select 1 from public.plants")];
+    return seen.join("/") === "1/0" ? null : `saw ${seen.join("/")} rows`;
+  });
+  await check("nobody changes someone else's plant", async () => ((await user(ben, "update public.plants set data = '{}' where id = 'plant-1' returning id")).length ? "changed" : null));
+  await refused("nobody writes a plant in someone else's name", () => tryUser(ben, "insert into public.plants (user_id, id, data, updated_at) values ($1, 'plant-2', '{}', now())", [anna]), /row-level security/);
+  await check("a visitor reads no plants", async () => {
+    try {
+      return (await tryVisitor("select 1 from public.plants")).length ? "plants visible" : null;
     } catch (error) {
       return /permission denied/.test(error.message) ? null : error.message;
     }
