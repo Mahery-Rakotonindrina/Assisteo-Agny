@@ -60,7 +60,7 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Identification et caractéristiques
 - [x] Conseils, actions, mises en garde, idées
 - [ ] « Mes plantes » : rappels d'arrosage, diagnostic de maladie
-- [ ] Objets : prix de revente estimé, texte d'annonce prêt à publier
+- [x] Objets : prix de revente estimé, texte d'annonce prêt à publier — « Je veux le vendre » sur un objet : état, lieu, annonce de l’IA (prix conseillé en ariary et fourchette, mots-clés, malgache en option), copier, WhatsApp, Facebook, partager avec la photo ; compte comme une question du jour ; gardée dans l’historique
 - [ ] Inventaire de la maison (garanties, factures liées)
 
 ## 6. Questions sur un scan

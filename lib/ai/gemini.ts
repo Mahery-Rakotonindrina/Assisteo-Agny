@@ -5,12 +5,14 @@ import { AnalysisError } from "./errors";
 import {
   askSystemPrompt,
   buildLoanScanPrompt,
+  buildObjectAdPrompt,
   buildStatementPrompt,
   buildSummaryPrompt,
   buildUserPrompt,
   firstAskText,
   isReadTask,
   LOAN_SCAN_SYSTEM_PROMPT,
+  OBJECT_AD_SYSTEM_PROMPT,
   STATEMENT_SYSTEM_PROMPT,
   SUMMARY_SYSTEM_PROMPT,
   SYSTEM_PROMPT,
@@ -20,6 +22,7 @@ import {
   ExpenseSummarySchema,
   imagesOf,
   LoanReadingSchema,
+  ObjectAdSchema,
   StatementSchema,
   type Analysis,
   type AnalyzeRequest,
@@ -28,6 +31,8 @@ import {
   type ExpenseSummaryRequest,
   type LoanReading,
   type LoanScanRequest,
+  type ObjectAd,
+  type ObjectAdRequest,
   type Statement,
   type StatementRequest,
 } from "./schema";
@@ -62,6 +67,7 @@ const responseJsonSchema = { ...z.toJSONSchema(AnalysisSchema), $schema: undefin
 const summaryJsonSchema = { ...z.toJSONSchema(ExpenseSummarySchema), $schema: undefined };
 const loanJsonSchema = { ...z.toJSONSchema(LoanReadingSchema), $schema: undefined };
 const statementJsonSchema = { ...z.toJSONSchema(StatementSchema), $schema: undefined };
+const adJsonSchema = { ...z.toJSONSchema(ObjectAdSchema), $schema: undefined };
 
 const blockedReasons = new Set<FinishReason | undefined>([
   FinishReason.SAFETY,
@@ -298,6 +304,40 @@ export async function readLoanWithGemini(input: LoanScanRequest, signal?: AbortS
       const parsed = LoanReadingSchema.safeParse(safeJson(response.text));
       if (!parsed.success) throw new AnalysisError("upstream_error", 502, `Unusable Gemini reading (finishReason: ${finish}).`);
       return { reading: parsed.data, model: response.modelVersion ?? candidate, usage: geminiUsage(response.usageMetadata) };
+    } catch (error) {
+      lastError = error;
+      if (!canFallBack(error, signal)) break;
+    }
+  }
+  throw toAnalysisError(lastError);
+}
+
+/** Selling an object: the classified ad from its photo and analysis, on Flash first (looks at the photo), then Flash-Lite. */
+export async function writeAdWithGemini(input: ObjectAdRequest & { analysis: Analysis }, signal?: AbortSignal): Promise<{ ad: ObjectAd; model: string; usage?: AiUsage }> {
+  const client = getClient();
+  const chain = [...new Set([GEMINI_MODEL, FALLBACK_MODEL])];
+  let lastError: unknown;
+  for (const candidate of chain) {
+    try {
+      const response = await client.models.generateContent({
+        model: candidate,
+        contents: [createPartFromBase64(input.image, input.mediaType), buildObjectAdPrompt(input, input.analysis)],
+        config: {
+          systemInstruction: OBJECT_AD_SYSTEM_PROMPT,
+          responseMimeType: "application/json",
+          responseJsonSchema: adJsonSchema,
+          abortSignal: signal,
+          httpOptions: { timeout: ATTEMPT_TIMEOUT_MS },
+          thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+        },
+      });
+      const finish = response.candidates?.[0]?.finishReason;
+      if (response.promptFeedback?.blockReason || blockedReasons.has(finish)) {
+        throw new AnalysisError("refused", 422, "Gemini blocked this ad.");
+      }
+      const parsed = ObjectAdSchema.safeParse(safeJson(response.text));
+      if (!parsed.success) throw new AnalysisError("upstream_error", 502, `Unusable Gemini ad (finishReason: ${finish}).`);
+      return { ad: parsed.data, model: response.modelVersion ?? candidate, usage: geminiUsage(response.usageMetadata) };
     } catch (error) {
       lastError = error;
       if (!canFallBack(error, signal)) break;

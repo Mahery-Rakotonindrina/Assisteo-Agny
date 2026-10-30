@@ -663,7 +663,8 @@
         "question": "Question",
         "summary": "Expenses review",
         "statement": "Imported statement",
-        "loan": "Debt acknowledgment"
+        "loan": "Debt acknowledgment",
+        "ad": "Object ad"
       },
       "perCall": "per call · {calls} call(s), {total} in all",
       "noCalls": "no call",
@@ -3257,6 +3258,47 @@
         "parcels": "Parcels"
       }
     }
+  },
+  "objectAd": {
+    "section": "Sell this object",
+    "hint": "The AI writes you an honest ad, with a suggested price in ariary.",
+    "sell": "I want to sell it",
+    "saved": "Ad ready: {title}, {price}",
+    "open": "See the ad",
+    "sheetTitle": "Sell this object",
+    "close": "Close",
+    "condition": "Condition",
+    "conditions": {
+      "new": "New",
+      "veryGood": "Very good",
+      "good": "Good",
+      "worn": "Worn",
+      "toRepair": "To repair"
+    },
+    "conditionHint": "Suggested from the photo: change it if needed.",
+    "place": "Place (town), optional",
+    "placePlaceholder": "Antananarivo",
+    "malagasy": "In Malagasy too",
+    "write": "Write the ad",
+    "regenerate": "Write the ad again",
+    "writing": "The AI is writing your ad…",
+    "countsAsQuestion": "Counts as one of today’s questions.",
+    "demo": "Sample ad (demo mode).",
+    "price": "Suggested price",
+    "priceRange": "Between {low} and {high}",
+    "priceNote": "It is an estimate: look at the ads near you too.",
+    "priceLabel": "Price:",
+    "title": "Title",
+    "text": "Ad text",
+    "textMg": "Text in Malagasy",
+    "keywords": "Keywords",
+    "copy": "Copy",
+    "copied": "Ad copied.",
+    "whatsapp": "WhatsApp",
+    "facebook": "Facebook",
+    "facebookHint": "Ad copied: paste it in your Facebook post.",
+    "share": "Share",
+    "again": "Change the condition or write again"
   },
   "loanShare": {
     "metaTitle": "What is left to pay back",
