@@ -663,7 +663,8 @@
         "question": "Question",
         "summary": "Bilan des dépenses",
         "statement": "Relevé importé",
-        "loan": "Reconnaissance de dette"
+        "loan": "Reconnaissance de dette",
+        "ad": "Annonce d’objet"
       },
       "perCall": "par appel · {calls} appel(s), {total} en tout",
       "noCalls": "aucun appel",
@@ -3109,5 +3110,46 @@
         "parcels": "Colis"
       }
     }
+  },
+  "objectAd": {
+    "section": "Vendre cet objet",
+    "hint": "L’IA t’écrit une annonce honnête, avec un prix conseillé en ariary.",
+    "sell": "Je veux le vendre",
+    "saved": "Annonce prête : {title}, {price}",
+    "open": "Voir l’annonce",
+    "sheetTitle": "Vendre cet objet",
+    "close": "Fermer",
+    "condition": "État",
+    "conditions": {
+      "new": "Neuf",
+      "veryGood": "Très bon",
+      "good": "Bon",
+      "worn": "Usé",
+      "toRepair": "À réparer"
+    },
+    "conditionHint": "Proposé d’après la photo : change-le si besoin.",
+    "place": "Lieu (ville), facultatif",
+    "placePlaceholder": "Antananarivo",
+    "malagasy": "En malgache aussi",
+    "write": "Écrire l’annonce",
+    "regenerate": "Régénérer l’annonce",
+    "writing": "L’IA écrit ton annonce…",
+    "countsAsQuestion": "Compte comme une question du jour.",
+    "demo": "Annonce d’exemple (mode démo).",
+    "price": "Prix conseillé",
+    "priceRange": "Entre {low} et {high}",
+    "priceNote": "C’est une estimation : regarde aussi les annonces près de chez toi.",
+    "priceLabel": "Prix :",
+    "title": "Titre",
+    "text": "Texte de l’annonce",
+    "textMg": "Texte en malgache",
+    "keywords": "Mots-clés",
+    "copy": "Copier",
+    "copied": "Annonce copiée.",
+    "whatsapp": "WhatsApp",
+    "facebook": "Facebook",
+    "facebookHint": "Annonce copiée : colle-la dans ta publication Facebook.",
+    "share": "Partager",
+    "again": "Changer l’état ou régénérer"
   }
 }
