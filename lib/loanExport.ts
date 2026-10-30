@@ -1,11 +1,13 @@
 import { ARIARY, DAY, excelDay, loadExcel, sheetHeading, sum, type ExportHeading, type TableColumn } from "./excel";
+import { personLedger, type LedgerLine } from "./loanLedger";
 import { loanSides } from "./loanReport";
 import type { Loan } from "./loans";
 
 // "Prêts": the loans as an Excel workbook, like the parcels (lib/parcelExport.ts).
 // Each way ("On me doit", "Je dois") has its own two sheets, so a totals row
 // never adds what is owed to the user to what they owe: one row per loan,
-// then a recap per person. Ways without any loan are left out.
+// then a recap per person. Ways without any loan are left out. One person's
+// account ("Compte avec Rakoto") adds its statement, with "Reste" after each line.
 
 type Translate = (key: string, params?: Record<string, string | number>) => string;
 
@@ -24,8 +26,15 @@ const loanColumns = [
   { key: "note", width: 28 },
 ] as const;
 
-/** The workbook's bytes (.xlsx). */
-export async function loansWorkbook(loans: Loan[], now: number, t: Translate, heading: ExportHeading): Promise<ArrayBuffer> {
+/** What a statement's line is called in the exports: what it was for, and its kind. */
+export function ledgerLabels(line: LedgerLine, t: Translate) {
+  const kind =
+    line.kind === "loan" ? t(`loans.line.loan.${line.loan.direction}`) : line.kind === "interest" ? t("loans.line.interest") : t(`loans.line.repayment.${line.loan.direction}`, { name: line.loan.person.trim() });
+  return { kind, what: line.kind === "loan" ? line.loan.note?.trim() || kind : kind };
+}
+
+/** The workbook's bytes (.xlsx); `account`: one person's loans, with their statement. */
+export async function loansWorkbook(loans: Loan[], now: number, t: Translate, heading: ExportHeading, { account = false }: { account?: boolean } = {}): Promise<ArrayBuffer> {
   const Excel = await loadExcel();
   const workbook = new Excel.Workbook();
   workbook.creator = "Assisteo Agny";
@@ -98,6 +107,29 @@ export async function loansWorkbook(loans: Loan[], now: number, t: Translate, he
         cell.numFmt = ARIARY;
         if (line === TOP + people.length + 1) cell.font = { bold: true };
       }
+    }
+
+    // ---- One person: the statement, "Reste" after each line ----------------------------
+    if (!account) continue;
+    const lines = personLedger(loans.filter((loan) => loan.direction === direction));
+    const statement = workbook.addWorksheet(t(`loans.export.sheetAccountBy.${direction}`), { views: [{ state: "frozen", ySplit: TOP }] });
+    sheetHeading(statement, heading);
+    statement.addTable({
+      name: `Compte${suffix}`,
+      ref: `A${TOP}`,
+      headerRow: true,
+      style: { theme: "TableStyleMedium2", showRowStripes: true },
+      columns: ["at", "what", "kind", "addedMga", "repaidMga", "balanceMga"].map((key) => ({ name: label(key), filterButton: true })),
+      rows: lines.map((line) => {
+        const { kind, what } = ledgerLabels(line, t);
+        return [excelDay(line.at) ?? "", what, kind, line.kind === "repayment" ? null : line.amountMga, line.kind === "repayment" ? line.amountMga : null, line.balanceMga];
+      }),
+    });
+    [13, 28, 18, 16, 16, 16].forEach((width, index) => (statement.getColumn(index + 1).width = width));
+    for (let line = TOP + 1; line <= TOP + lines.length; line += 1) {
+      statement.getCell(line, 1).numFmt = DAY;
+      for (const column of [4, 5, 6]) statement.getCell(line, column).numFmt = ARIARY;
+      statement.getCell(line, 6).font = { bold: true };
     }
   }
 
