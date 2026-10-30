@@ -1,17 +1,32 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { AnalysisError } from "./errors";
-import { askSystemPrompt, buildStatementPrompt, buildSummaryPrompt, buildUserPrompt, firstAskText, isReadTask, STATEMENT_SYSTEM_PROMPT, SUMMARY_SYSTEM_PROMPT, SYSTEM_PROMPT } from "./prompt";
+import {
+  askSystemPrompt,
+  buildLoanScanPrompt,
+  buildStatementPrompt,
+  buildSummaryPrompt,
+  buildUserPrompt,
+  firstAskText,
+  isReadTask,
+  LOAN_SCAN_SYSTEM_PROMPT,
+  STATEMENT_SYSTEM_PROMPT,
+  SUMMARY_SYSTEM_PROMPT,
+  SYSTEM_PROMPT,
+} from "./prompt";
 import {
   AnalysisSchema,
   ExpenseSummarySchema,
   imagesOf,
+  LoanReadingSchema,
   StatementSchema,
   type Analysis,
   type AnalyzeRequest,
   type AskRequest,
   type ExpenseSummary,
   type ExpenseSummaryRequest,
+  type LoanReading,
+  type LoanScanRequest,
   type PageImage,
   type Statement,
   type StatementRequest,
@@ -158,6 +173,37 @@ export async function readStatementWithClaude(input: StatementRequest, signal?: 
     throw new AnalysisError("upstream_error", 502, `Unusable model output (stop_reason: ${response.stop_reason}).`);
   }
   return { statement: response.parsed_output, model: response.model, usage: claudeUsage(response.usage) };
+}
+
+/** "Prêts": a debt acknowledgment read from its photo (low effort: a reading task). */
+export async function readLoanWithClaude(input: LoanScanRequest, signal?: AbortSignal): Promise<{ reading: LoanReading; model: string; usage?: AiUsage }> {
+  const model = CLAUDE_MODEL;
+  let response;
+  try {
+    response = await getClient().beta.messages.parse(
+      {
+        model,
+        max_tokens: 4000,
+        ...(supportsFallbacks(model) && { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const }),
+        output_config: {
+          ...(supportsEffort(model) && { effort: "low" as const }),
+          format: betaZodOutputFormat(LoanReadingSchema),
+        },
+        system: [{ type: "text", text: LOAN_SCAN_SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
+        messages: [{ role: "user", content: [imageBlock(input), { type: "text", text: buildLoanScanPrompt(input.locale) }] }],
+      },
+      { signal },
+    );
+  } catch (error) {
+    throw toAnalysisError(error, model);
+  }
+  if (response.stop_reason === "refusal") {
+    throw new AnalysisError("refused", 422, response.stop_details?.explanation ?? "The model declined this document.");
+  }
+  if (response.stop_reason === "max_tokens" || !response.parsed_output) {
+    throw new AnalysisError("upstream_error", 502, `Unusable model output (stop_reason: ${response.stop_reason}).`);
+  }
+  return { reading: response.parsed_output, model: response.model, usage: claudeUsage(response.usage) };
 }
 
 /** Cheapest call that proves a key works and its account has credit. */

@@ -506,6 +506,7 @@ function StorageRows({ entries }: { entries: number }) {
         { key: "analyses", bytes: usage.analysesBytes, label: t("settings.storageParts.analyses") },
         { key: "parcels", bytes: usage.parcelsBytes, label: t("settings.storageParts.parcels") },
         { key: "lists", bytes: usage.listsBytes, label: t("settings.storageParts.lists") },
+        { key: "proofs", bytes: usage.proofsBytes, label: t("settings.storageParts.proofs", { count: usage.proofs }) },
         { key: "queue", bytes: usage.queueBytes, label: t("settings.storageParts.queue", { count: usage.queued }) },
       ]
     : [];

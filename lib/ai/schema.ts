@@ -507,6 +507,46 @@ export type Statement = z.infer<typeof StatementSchema>;
 
 export type StatementResponse = { statement: Statement; model: string; demo: boolean; pages: number };
 
+// ---- "Prêts": a debt acknowledgment read by the AI ----------------------------
+// The photo is read and forgotten: nothing is kept on the server.
+
+export const LoanScanRequestSchema = z.strictObject({
+  image: z.string().min(1).max(MAX_IMAGE_BASE64_LENGTH),
+  mediaType: z.enum(imageMediaTypes),
+  locale: z.enum(["fr", "en"]),
+});
+export type LoanScanRequest = z.infer<typeof LoanScanRequestSchema>;
+
+const day = z.string().describe("YYYY-MM-DD");
+
+export const LoanReadingSchema = z.object({
+  isAcknowledgment: z.boolean().describe("True when the photo is a debt acknowledgment, an IOU or a written loan agreement."),
+  lender: z.string().nullable().describe("The name of who lends the money (the creditor), exactly as written; null if not legible."),
+  borrower: z.string().nullable().describe("The name of who borrows and owes the money (the debtor), exactly as written; null if not legible."),
+  amountFigures: z.number().nullable().describe("The amount written in figures, in ariary (Malagasy francs, FMG, divided by 5); null if absent."),
+  amountWords: z.string().nullable().describe("The amount written in words, copied as written; null if absent."),
+  amountWordsValue: z.number().nullable().describe("The value of the amount in words, in ariary; null if absent."),
+  date: day.nullable().describe("The day the money was lent, YYYY-MM-DD; null if absent."),
+  dueDate: day.nullable().describe("The day it must be paid back by, YYYY-MM-DD; null if absent."),
+  installments: z
+    .array(z.object({ dueDate: day, amount: z.number().describe("In ariary.") }))
+    .describe("The repayment schedule when it is paid back in several times, oldest first; empty otherwise."),
+  interest: z
+    .object({ kind: z.enum(["fixed", "percent"]), value: z.number().describe("In ariary when fixed, a percentage of the amount otherwise.") })
+    .nullable()
+    .describe("Interest or fees agreed on top of the amount; null without."),
+  place: z.string().nullable().describe("The place where it was signed (\"Fait à …\"); null if absent."),
+});
+export type LoanReading = z.infer<typeof LoanReadingSchema>;
+
+export type LoanScanResponse = {
+  reading: LoanReading;
+  model: string;
+  demo: boolean;
+  /** Scans used this month against the plan's (server's key). */
+  quota?: TrialState;
+};
+
 export type AiProvider = "claude" | "gemini" | "demo";
 
 // ---- Bring your own key ---------------------------------------------------

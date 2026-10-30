@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 import { motion } from "motion/react";
 import { useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, Download, HandCoins, Plus, Search } from "lucide-react";
+import { ChevronDown, ChevronRight, Download, HandCoins, Paperclip, Plus, Search } from "lucide-react";
 import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
 import { AckSheet, ExportSheet, LoanSheet, PersonDetail, RepaySheet } from "@/components/Loans";
@@ -14,6 +14,7 @@ import { useNow } from "@/hooks/useNow";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDate } from "@/lib/format";
+import { hasProofs } from "@/lib/loanProof";
 import { loanStats, personLoans } from "@/lib/loanReport";
 import { loanMoney, loansByPerson, loanTotal, loanTotals, personKey, repaidAt, repaidLoans, searchPeople, type Loan, type LoanDirection } from "@/lib/loans";
 import { rise, stagger } from "@/lib/motion";
@@ -179,6 +180,7 @@ function Loans({ loans, readOnly, direction }: { loans: Loan[]; readOnly: boolea
                     <strong>{money(person.remaining)}</strong>
                     {person.late && <span className={styles.lateBadge}>{t("loans.late")}</span>}
                   </span>
+                  {person.loans.some(hasProofs) && <Paperclip size={15} className={styles.proofIcon} aria-label={t("loans.proofs.has")} data-testid="loan-has-proofs" />}
                   <ChevronRight size={18} className={styles.chevron} />
                 </button>
               </li>

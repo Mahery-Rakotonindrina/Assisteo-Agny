@@ -288,7 +288,8 @@
       "parcels": "Colis",
       "lists": "Listes",
       "queue": "{count} scan(s) en attente de réseau",
-      "other": "Autres (fichiers de l’app, cache)"
+      "other": "Autres (fichiers de l’app, cache)",
+      "proofs": "Preuves des prêts ({count})"
     },
     "storageHint": "Pour gagner de la place, seules les {count} analyses les plus récentes gardent leur photo en grand ; les plus anciennes gardent une photo réduite.",
     "storageLighten": "Alléger les photos",
@@ -661,7 +662,8 @@
         "deep": "Analyse approfondie",
         "question": "Question",
         "summary": "Bilan des dépenses",
-        "statement": "Relevé importé"
+        "statement": "Relevé importé",
+        "loan": "Reconnaissance de dette"
       },
       "perCall": "par appel · {calls} appel(s), {total} en tout",
       "noCalls": "aucun appel",
@@ -2101,7 +2103,10 @@
       "place": "Lieu (facultatif)",
       "placePlaceholder": "Antananarivo",
       "hint": "Imprime-le ou envoie-le, puis signez-le tous les deux.",
-      "make": "Créer le PDF"
+      "make": "Créer le PDF",
+      "withProof": "Joindre la preuve en annexe",
+      "withProofs": "Joindre les {count} preuves en annexe",
+      "annex": "Annexe {number} : preuve jointe"
     },
     "export": {
       "button": "Exporter (Excel, PDF)",
@@ -2176,6 +2181,50 @@
         "borrowed": "Là où tu es le plus en retard"
       },
       "empty": "Aucun prêt cette année."
+    },
+    "scan": {
+      "button": "Scanner une reconnaissance de dette",
+      "again": "Scanner un autre papier",
+      "camera": "Prendre une photo",
+      "gallery": "Choisir une image",
+      "reading": "Je lis le document…",
+      "filled": "J’ai rempli ce que j’ai pu lire : vérifie avant d’enregistrer. La photo sera gardée comme preuve.",
+      "whichSide": "Qui es-tu sur ce papier ?",
+      "sideLent": "{name} : on me doit",
+      "sideBorrowed": "{name} : je dois",
+      "lender": "Le prêteur",
+      "borrower": "L’emprunteur",
+      "amountsDiffer": "Attention : le montant en chiffres ({figures}) et en lettres (« {words} ») ne sont pas les mêmes. Vérifie le montant.",
+      "placeNote": "Signé à {place}",
+      "notAck": "Ce papier ne ressemble pas à une reconnaissance de dette.",
+      "errors": {
+        "failed": "Je n’ai pas pu lire le document. Réessaie avec une photo bien nette.",
+        "limit": "Tes scans du mois sont épuisés.",
+        "signIn": "Connecte-toi pour scanner une reconnaissance de dette.",
+        "offline": "Pas de connexion : réessaie quand tu as du réseau.",
+        "plan": "Le scan des prêts ne fait pas partie de ton offre."
+      }
+    },
+    "proofs": {
+      "title": "Preuves",
+      "has": "Avec preuve",
+      "open": "Voir la preuve {number}",
+      "add": "Ajouter une preuve",
+      "hint": "Une photo de la reconnaissance de dette, une capture du transfert MVola…",
+      "camera": "Prendre une photo",
+      "gallery": "Choisir une image",
+      "fromScans": "Depuis mes scans",
+      "noScans": "Pas encore de scan dans ton historique.",
+      "full": "{max} preuves au plus par prêt.",
+      "added": "Preuve ajoutée.",
+      "failed": "Je n’ai pas pu ajouter cette image.",
+      "viewTitle": "Preuve",
+      "gone": "Ce scan a été supprimé de ton historique.",
+      "fromScan": "Un scan de ton historique",
+      "addedOn": "Ajoutée le {date}",
+      "remove": "Supprimer la preuve",
+      "confirmRemove": "Oui, supprimer la preuve",
+      "removed": "Preuve supprimée."
     }
   },
   "garage": {

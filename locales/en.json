@@ -288,7 +288,8 @@
       "parcels": "Parcels",
       "lists": "Lists",
       "queue": "{count} scan(s) waiting for the network",
-      "other": "Other (app files, cache)"
+      "other": "Other (app files, cache)",
+      "proofs": "Loan proofs ({count})"
     },
     "storageHint": "To save space, only the {count} most recent analyses keep their full-size photo; older ones keep a smaller one.",
     "storageLighten": "Make photos lighter",
@@ -661,7 +662,8 @@
         "deep": "Deep analysis",
         "question": "Question",
         "summary": "Expenses review",
-        "statement": "Imported statement"
+        "statement": "Imported statement",
+        "loan": "Debt acknowledgment"
       },
       "perCall": "per call · {calls} call(s), {total} in all",
       "noCalls": "no call",
@@ -2101,7 +2103,10 @@
       "place": "Place (optional)",
       "placePlaceholder": "Antananarivo",
       "hint": "Print it or send it, then both of you sign it.",
-      "make": "Create the PDF"
+      "make": "Create the PDF",
+      "withProof": "Attach the proof in annex",
+      "withProofs": "Attach the {count} proofs in annex",
+      "annex": "Annex {number}: attached proof"
     },
     "export": {
       "button": "Export (Excel, PDF)",
@@ -2176,6 +2181,50 @@
         "borrowed": "Where you are the latest"
       },
       "empty": "No loans this year."
+    },
+    "scan": {
+      "button": "Scan a debt acknowledgment",
+      "again": "Scan another paper",
+      "camera": "Take a photo",
+      "gallery": "Choose an image",
+      "reading": "Reading the document…",
+      "filled": "I filled in what I could read: check it before saving. The photo will be kept as proof.",
+      "whichSide": "Who are you on this paper?",
+      "sideLent": "{name}: I am owed",
+      "sideBorrowed": "{name}: I owe",
+      "lender": "The lender",
+      "borrower": "The borrower",
+      "amountsDiffer": "Careful: the amount in figures ({figures}) and in words (“{words}”) are not the same. Check the amount.",
+      "placeNote": "Signed in {place}",
+      "notAck": "This paper doesn’t look like a debt acknowledgment.",
+      "errors": {
+        "failed": "I couldn’t read the document. Try again with a sharp photo.",
+        "limit": "Your scans for the month are used up.",
+        "signIn": "Sign in to scan a debt acknowledgment.",
+        "offline": "No connection: try again when you have network.",
+        "plan": "Scanning loans is not part of your plan."
+      }
+    },
+    "proofs": {
+      "title": "Proofs",
+      "has": "With proof",
+      "open": "See proof {number}",
+      "add": "Add a proof",
+      "hint": "A photo of the debt acknowledgment, a screenshot of the MVola transfer…",
+      "camera": "Take a photo",
+      "gallery": "Choose an image",
+      "fromScans": "From my scans",
+      "noScans": "No scan in your history yet.",
+      "full": "{max} proofs at most per loan.",
+      "added": "Proof added.",
+      "failed": "I couldn’t add this image.",
+      "viewTitle": "Proof",
+      "gone": "This scan was removed from your history.",
+      "fromScan": "A scan from your history",
+      "addedOn": "Added on {date}",
+      "remove": "Remove the proof",
+      "confirmRemove": "Yes, remove the proof",
+      "removed": "Proof removed."
     }
   },
   "garage": {

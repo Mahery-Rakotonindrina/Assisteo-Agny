@@ -1,6 +1,9 @@
 import { clear, createStore, del, get, set, values } from "idb-keyval";
-import { cappedRepayment, loanRemaining, MAX_INSTALLMENTS, type Installment, type Loan, type LoanDirection, type LoanInterest, type Repayment } from "@/lib/loans";
+import { encodeImage } from "@/lib/image";
+import { loanProofs, remoteFiles, withoutProof, withProof } from "@/lib/loanProof";
+import { cappedRepayment, loanRemaining, MAX_INSTALLMENTS, type Installment, type Loan, type LoanDirection, type LoanInterest, type LoanProof, type Repayment } from "@/lib/loans";
 import { createId } from "./historyStore";
+import { loanProofStore } from "./loanProofStore";
 
 // "Prêts": what the user lent or borrowed, and the repayments. Local-first
 // like the garage; synced with the account (services/loanSync.ts). Always
@@ -144,9 +147,54 @@ export const loanStore = {
     return left > 0 ? loanStore.addRepayment(id, { amountMga: left, at }) : null;
   },
 
+  // ---- Proofs (lib/loanProof.ts): the images apart, in services/loanProofStore.ts ----
+
+  /** A photo taken or chosen for the loan, compressed like a scan. Null when the loan has 5 proofs already. */
+  async addPhotoProof(id: string, src: string) {
+    const current = await loanStore.get(id);
+    if (!current) return null;
+    const proof: LoanProof = { id: createId(), kind: "photo", addedAt: Date.now() };
+    if (!withProof(current.proofs, proof)) return null;
+    // The same sizes as a scan's preview and thumbnail (lib/image.ts).
+    const [preview, thumbnail] = await Promise.all([encodeImage(src, 960, 0.8), encodeImage(src, 320, 0.72)]);
+    await loanProofStore.put({ id: proof.id, loanId: id, preview: preview.dataUrl, thumbnail: thumbnail.dataUrl, addedAt: proof.addedAt });
+    await change(id, (loan) => ({ ...loan, proofs: withProof(loan.proofs, proof) ?? loan.proofs }));
+    return proof;
+  },
+
+  /** A scan of the history ("Depuis mes scans"), not copied. Null when full, or attached already. */
+  async addScanProof(id: string, scanId: string) {
+    const current = await loanStore.get(id);
+    if (!current) return null;
+    const proof: LoanProof = { id: createId(), kind: "scan", scanId, addedAt: Date.now() };
+    if (!withProof(current.proofs, proof)) return null;
+    await change(id, (loan) => ({ ...loan, proofs: withProof(loan.proofs, proof) ?? loan.proofs }));
+    return proof;
+  },
+
+  /** Removes a proof, its image on this device and, at the next sync, in the account. */
+  async removeProof(id: string, proofId: string) {
+    const current = await loanStore.get(id);
+    const proof = current && loanProofs(current).find((item) => item.id === proofId);
+    if (!proof) return;
+    await loanProofStore.queueRemoval(remoteFiles([proof]));
+    await change(id, (loan) => ({ ...loan, proofs: withoutProof(loan.proofs, proofId) }));
+    if (proof.kind === "photo") await loanProofStore.remove(proof.id);
+  },
+
+  /** The sync engine stored a photo in the account. */
+  setProofRemote: (id: string, proofId: string, remote: string) =>
+    change(id, (loan) => ({ ...loan, proofs: loanProofs(loan).map((item) => (item.id === proofId ? { ...item, remote } : item)) })),
+
   async remove(id: string) {
     const current = await get<Loan>(id, db());
     if (!current) return;
+    // Its proofs go with it: the images here now, the account's at the next sync.
+    const proofs = loanProofs(current);
+    if (proofs.length > 0) {
+      await loanProofStore.queueRemoval(remoteFiles(proofs));
+      await Promise.all(proofs.filter((proof) => proof.kind === "photo").map((proof) => loanProofStore.remove(proof.id)));
+    }
     if (keepTombstones) await write({ ...current, deletedAt: Date.now() });
     else {
       await del(id, db());
@@ -170,7 +218,7 @@ export const loanStore = {
   notify,
   /** Signing out or deleting the account. */
   async wipe() {
-    await clear(db());
+    await Promise.all([clear(db()), loanProofStore.wipe()]);
     notify();
   },
 };
