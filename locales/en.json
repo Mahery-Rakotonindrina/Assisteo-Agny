@@ -2286,6 +2286,38 @@
         "lent": "Extra from {name}",
         "borrowed": "Extra to {name}"
       }
+    },
+    "share": {
+      "button": "Share what is left to pay back",
+      "intro": "{name} will see, without an account: the amounts, the schedule, their repayments and what is left. Never your number, your notes or your proofs.",
+      "lender": "Your name, as they will see it",
+      "create": "Create the link",
+      "missingName": "Write your name.",
+      "live": "Link active: {name} sees what is left to pay back, updated with every change.",
+      "elsewhere": "This link was created on another device. To send it from here, create a new link (the old one will stop working).",
+      "newLink": "New link",
+      "whatsapp": "Send on WhatsApp",
+      "copy": "Copy the link",
+      "copied": "Link copied: paste it in WhatsApp or a text message.",
+      "copyFailed": "Couldn’t copy the link.",
+      "stop": "Stop sharing",
+      "stopped": "Sharing stopped: the link no longer works.",
+      "soon": "The link to share is coming soon.",
+      "signIn": "Sign in to your account to send a link.",
+      "failed": "Not possible right now. Try again later.",
+      "message": "Hello {name}, here is what is left to pay back, updated with every repayment: {link}"
+    },
+    "household": {
+      "scopeLabel": "My loans or the household’s",
+      "scopes": {
+        "personal": "Me",
+        "household": "Household"
+      },
+      "hint": "The household’s loans are seen by all its members. Anyone can note a repayment. They don’t touch your pockets and have no reminders.",
+      "soon": "The household’s loans are coming soon.",
+      "option": "Household loan",
+      "optionHint": "Seen by every member of the household, without touching your pockets.",
+      "by": "Noted by {name}"
     }
   },
   "garage": {
@@ -3109,5 +3141,31 @@
         "parcels": "Parcels"
       }
     }
+  },
+  "loanShare": {
+    "metaTitle": "What is left to pay back",
+    "loading": "Loading…",
+    "missing": {
+      "title": "This link is incomplete",
+      "body": "Part of the link is missing. Ask the person to send it again."
+    },
+    "gone": {
+      "title": "This link is no longer active",
+      "body": "The person who sent it stopped sharing, or the link is not the right one."
+    },
+    "error": {
+      "title": "Couldn’t show the summary",
+      "body": "Check your connection, then try again in a moment."
+    },
+    "title": "What is left to pay back",
+    "from": "{lender} lent you money. Here is where you stand, {name}.",
+    "left": "Left to pay back",
+    "next": "Next payment: {amount} on {date}",
+    "updated": "Updated on {date}",
+    "lentOn": "Lent on {date}",
+    "noRepayment": "No repayment noted yet.",
+    "readOnly": "This summary is read only: only the person who lent you the money can change it.",
+    "sentWith": "Sent with Assisteo Agny",
+    "discover": "Discover the app"
   }
 }

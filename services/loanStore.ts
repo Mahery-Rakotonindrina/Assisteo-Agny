@@ -69,7 +69,8 @@ function cleanInterest(interest: LoanInterest | undefined): LoanInterest | undef
   return { kind: "fixed", value: Math.round(interest.value) };
 }
 
-function cleanFields(fields: LoanFields) {
+/** The form's fields, trimmed and checked; null when the person or the amount is missing. Shared with the household's loans. */
+export function cleanLoanFields(fields: LoanFields) {
   const person = cleanText(fields.person, 60);
   const amountMga = cleanAmount(fields.amountMga);
   if (!person || amountMga === undefined) return null;
@@ -115,7 +116,7 @@ export const loanStore = {
 
   /** A loan written in the app; null when the person or the amount is missing. */
   async create(fields: LoanFields) {
-    const cleaned = cleanFields(fields);
+    const cleaned = cleanLoanFields(fields);
     if (!cleaned) return null;
     const loan: Loan = { id: createId(), ...cleaned, repayments: [], updatedAt: Date.now() };
     await write(loan);
@@ -124,7 +125,7 @@ export const loanStore = {
 
   /** Corrects a loan; the repayments stay (capped to the new amount when shown). */
   async edit(id: string, fields: LoanFields) {
-    const cleaned = cleanFields(fields);
+    const cleaned = cleanLoanFields(fields);
     if (!cleaned) return;
     await change(id, (loan) => ({ ...loan, ...cleaned }));
   },
@@ -227,6 +228,11 @@ export const loanStore = {
       await del(id, db());
       notify();
     }
+  },
+
+  /** A household loan taken back (leaving the household): kept with its id, pushed at the next sync. */
+  async adopt(loan: Loan) {
+    await write(normalize(loan));
   },
 
   // ---- For the sync engine -----------------------------------------------------

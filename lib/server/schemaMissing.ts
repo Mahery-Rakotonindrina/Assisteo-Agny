@@ -34,12 +34,12 @@ export function knownMissing(kind: string, now = Date.now()) {
   return since !== undefined && now - since < RETRY_MS;
 }
 
-/** Notes `kind` as missing; reported once per instance. */
-export async function noteMissing(kind: string, error: unknown, now = Date.now()) {
+/** Notes `kind` as missing; reported once per instance (tagged with migration 0011 unless `tags` say otherwise). */
+export async function noteMissing(kind: string, error: unknown, now = Date.now(), tags?: Record<string, string>) {
   missingSince.set(kind, now);
   if (reported.has(kind)) return;
   reported.add(kind);
-  await reportError(error, { route: "plan", kind: `migration_0011_${kind}` });
+  await reportError(error, tags ?? { route: "plan", kind: `migration_0011_${kind}` });
 }
 
 /** Found again (the migration was applied): asked normally from now on. */

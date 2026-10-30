@@ -1,5 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import type { HouseholdLoan } from "@/lib/householdLoans";
+import { householdLoanStore } from "@/services/householdLoanStore";
+import { loanSharing, type SharingState } from "@/services/loanSharing";
 import { loanStore, type Loan } from "@/services/loanStore";
+
+const unknownSharing: SharingState = { kind: "unknown" };
 
 /** "Prêts", kept up to date. */
 export function useLoans() {
@@ -49,4 +54,30 @@ export function useKeptLoans(enabled: boolean) {
   }, [enabled]);
 
   return enabled && kept;
+}
+
+/** The household's loans ("Foyer"), kept up to date. */
+export function useHouseholdLoans() {
+  const [loans, setLoans] = useState<HouseholdLoan[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = () =>
+      void householdLoanStore.list().then((all) => {
+        if (!cancelled) setLoans(all);
+      });
+    load();
+    const unsubscribe = householdLoanStore.subscribe(load);
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, []);
+
+  return loans;
+}
+
+/** Sharing a loan (the link to the borrower, the household's loans): "unknown" on the server and at hydration. */
+export function useLoanSharing() {
+  return useSyncExternalStore(loanSharing.subscribe, loanSharing.get, () => unknownSharing);
 }

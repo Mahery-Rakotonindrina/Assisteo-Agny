@@ -1,8 +1,8 @@
 name: Database backup
 
 # Weekly encrypted backup of the account data (history, settings, keys,
-# parcels, lists, vehicles, expenses, loans, households and their members, codes and
-# shared expenses, subscriptions and features offered for a while), then a restore test: the file is restored
+# parcels, lists, vehicles, expenses, loans and the links shared to borrowers, households
+# and their members, codes, shared expenses and loans, subscriptions and features offered for a while), then a restore test: the file is restored
 # into a throwaway Postgres and every row must read back identical. If the
 # test fails, an issue mentions the owner.
 # Needs the repository secrets POSTGRES_URL_NON_POOLING and BACKUP_PASSPHRASE

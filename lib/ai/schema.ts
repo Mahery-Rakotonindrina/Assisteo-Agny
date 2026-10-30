@@ -682,6 +682,8 @@ export type ApiErrorCode =
   | "household_full"
   /** Admin: a setting that needs a database migration not applied yet (supabase/migrations). */
   | "migration_needed"
+  /** A shared loan link that doesn't exist or was stopped (the same answer for both). */
+  | "not_found"
   | "method_not_allowed";
 
 export type ApiErrorBody = {

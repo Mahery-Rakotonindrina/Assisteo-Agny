@@ -97,7 +97,7 @@ export const householdExpenseStore = {
 const sharedSync = (uid: string, householdId: string) =>
   createRowSync<HouseholdExpense>("household_expenses", householdExpenseStore, {
     match: { household_id: householdId },
-    withAuthor: (record, userId) => ({ ...record, userId }),
+    withAuthor: (record, userId) => (userId ? { ...record, userId } : record),
     canPush: (record) => isMine(record, uid),
     accept: acceptSharedExpense,
   });
