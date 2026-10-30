@@ -40,6 +40,31 @@
   }
 }
 
+// iOS WebKit only (Safari, and every browser on iPhone/iPad). Chrome, Android
+// and desktop Safari never match, so they keep their current look.
+@mixin ios {
+  @supports (-webkit-touch-callout: none) {
+    @content;
+  }
+}
+
+// Text size of a form field. iOS zooms into any focused field under 16 px and
+// never zooms back out: there the size never drops below 16 px. Without a size,
+// the field inherits its parent's (like `font: inherit`), floored the same way.
+@mixin field-font($size: null) {
+  @if $size {
+    font-size: $size;
+  }
+
+  @include ios {
+    @if $size {
+      font-size: max(16px, #{$size});
+    } @else {
+      font-size: max(16px, 1em);
+    }
+  }
+}
+
 $desktop-min: 1024px;
 
 // Desktop browsers only. Native apps keep the mobile UI, even on tablets:

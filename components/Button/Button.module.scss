@@ -11,6 +11,19 @@
   font-weight: 600;
   font-size: 0.95rem;
   white-space: nowrap;
+  -webkit-appearance: none;
+  appearance: none;
+
+  // Large text sizes: a long label wraps and the button grows, instead of
+  // being cut at the screen edge.
+  :global(html[data-text-size="large"]) &,
+  :global(html[data-text-size="xlarge"]) & {
+    max-width: 100%;
+    padding-block: 0.4rem;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.25;
+  }
 
   &:disabled {
     opacity: 0.5;
@@ -19,12 +32,12 @@
 }
 
 .md {
-  height: 2.75rem;
+  min-height: 2.75rem;
   padding: 0 1.15rem;
 }
 
 .lg {
-  height: 3.4rem;
+  min-height: 3.4rem;
   padding: 0 1.5rem;
   font-size: 1rem;
 }

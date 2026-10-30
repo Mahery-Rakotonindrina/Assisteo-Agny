@@ -208,6 +208,7 @@
     color: var(--text);
     font: inherit;
     outline: none;
+    @include field-font;
 
     &:focus {
       border-color: var(--accent-mark);
@@ -273,7 +274,7 @@
     background: var(--surface);
     color: var(--text);
     font: inherit;
-    font-size: 0.82rem;
+    @include field-font(0.82rem);
   }
 }
 

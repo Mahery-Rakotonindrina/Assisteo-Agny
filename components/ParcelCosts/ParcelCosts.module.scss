@@ -1,3 +1,5 @@
+@use "../../styles/mixins" as *;
+
 .costs {
   display: flex;
   flex-direction: column;
@@ -34,8 +36,8 @@
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text);
-  font-size: 0.92rem;
   outline: none;
+  @include field-font(0.92rem);
 
   &:focus {
     border-color: var(--accent-mark);
@@ -65,10 +67,10 @@
     outline: none;
     background: none;
     color: var(--text);
-    font-size: 0.95rem;
     font-weight: 600;
     text-align: right;
     font-variant-numeric: tabular-nums;
+    @include field-font(0.95rem);
   }
 
   span {
@@ -186,6 +188,7 @@
     font: inherit;
     text-align: right;
     outline: none;
+    @include field-font;
 
     &:focus {
       border-color: var(--accent-mark);
