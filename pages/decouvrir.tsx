@@ -30,6 +30,7 @@ const extraIcons: Record<DiscoverFeature, LucideIcon> = {
   deepAnalysis: ScanSearch,
   garage: Car,
   inventory: House,
+  plants: Sprout,
   reseller: Briefcase,
   expenses: Wallet,
   loans: HandCoins,

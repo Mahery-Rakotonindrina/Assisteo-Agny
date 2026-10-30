@@ -1,7 +1,7 @@
 import { planFor, type PlanFeature, type PlanId, type PlanResponse } from "./plans";
 
 /** The plan features the discover page presents, in its order (the own AI key is left to the offers page). */
-export const discoverFeatures = ["reminders", "pdfExport", "parcelCosts", "multiPage", "deepAnalysis", "garage", "inventory", "reseller", "expenses", "loans"] as const satisfies readonly PlanFeature[];
+export const discoverFeatures = ["reminders", "pdfExport", "parcelCosts", "multiPage", "deepAnalysis", "garage", "inventory", "plants", "reseller", "expenses", "loans"] as const satisfies readonly PlanFeature[];
 export type DiscoverFeature = (typeof discoverFeatures)[number];
 
 /** A card: the feature, and the lowest plan with it for the "from…" label (null: no label yet). */

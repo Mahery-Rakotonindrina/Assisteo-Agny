@@ -22,7 +22,8 @@
     "garage": "Garage",
     "loans": "Loans",
     "expenses": "Expenses",
-    "inventory": "Home"
+    "inventory": "Home",
+    "plants": "Plants"
   },
   "scan": {
     "greeting": {
@@ -665,7 +666,8 @@
         "summary": "Expenses review",
         "statement": "Imported statement",
         "loan": "Debt acknowledgment",
-        "ad": "Object ad"
+        "ad": "Object ad",
+        "plant": "Plant diagnosis"
       },
       "perCall": "per call · {calls} call(s), {total} in all",
       "noCalls": "no call",
@@ -901,7 +903,8 @@
         "reseller": "Reseller tools",
         "loans": "Loans",
         "expenses": "My expenses",
-        "inventory": "My home"
+        "inventory": "My home",
+        "plants": "My plants"
       },
       "descriptions": {
         "reminders": "Reminders on scans (repeat, snooze), insurance and parcel arrivals.",
@@ -914,7 +917,8 @@
         "reseller": "A client per parcel, what they owe, totals per client, export and statements.",
         "loans": "Who owes me, whom I owe: repayments, overdue loans, WhatsApp reminders. Nothing counts in the expenses.",
         "expenses": "The month’s budget, alone or as a household, and the AI’s month review.",
-        "inventory": "The home inventory: items, warranties and their reminder, linked invoices, export for the insurer."
+        "inventory": "The home inventory: items, warranties and their reminder, linked invoices, export for the insurer.",
+        "plants": "Plants, their watering suggested by the AI, the morning reminder and the diagnosis of a sick plant (one of the month's scans)."
       },
       "deepNeedsLimit": "Can’t save: {list} has no deep analysis quota (0 = no limit). First set a number per month above, in the plans’ prices and quotas. Free has no quota: no deep analysis."
     }
@@ -1408,7 +1412,8 @@
       "reminders": "Reminders: on your scans (with repeat and snooze), insurance, parcel arrivals",
       "loans": "Loans: who owes you, whom you owe, WhatsApp reminders",
       "expenses": "My expenses: the month’s budget, alone or as a household",
-      "inventory": "My home: your items, their warranty and invoices, export for the insurer"
+      "inventory": "My home: your items, their warranty and invoices, export for the insurer",
+      "plants": "My plants: watering, morning reminder, diagnosis of a sick plant"
     },
     "how": "How to subscribe",
     "step1": "Sign in",
@@ -1653,7 +1658,8 @@
     "garageHint": "Service, fuel, reminders",
     "loansHint": "Who owes you, whom you owe",
     "expensesHint": "Monthly budget, what is left",
-    "inventoryHint": "Items, warranties, invoices"
+    "inventoryHint": "Items, warranties, invoices",
+    "plantsHint": "Watering and reminders"
   },
   "food": {
     "title": "Food journal",
@@ -1955,6 +1961,10 @@
       "garage": {
         "title": "My garage",
         "body": "Your vehicles, their service, insurance and oil change reminders, fuel and expenses."
+      },
+      "plants": {
+        "title": "My plants",
+        "body": "When to water each plant, a morning reminder, and help when a plant is sick."
       },
       "reseller": {
         "title": "Reseller tools",
@@ -3457,6 +3467,92 @@
         "serial": "Serial no.",
         "papers": "Papers",
         "note": "Note"
+      }
+    }
+  },
+  "plants": {
+    "title": "My plants",
+    "subtitle": "When to water, a morning reminder, and what to do when a plant is unwell.",
+    "count": "{count} plant(s)",
+    "shortcutDue": "{count} to water today",
+    "defaultName": "My plant",
+    "emptyTitle": "No plants yet",
+    "emptyBody": "Take a photo of a plant: the AI recognises it and suggests when to water it. You can also add one by hand.",
+    "scan": "Photograph a plant",
+    "add": "Add a plant",
+    "addTitle": "New plant",
+    "editTitle": "Edit the plant",
+    "save": "Save",
+    "edit": "Edit",
+    "remove": "Delete",
+    "removeConfirm": "Delete this plant",
+    "toWaterToday": "To water today",
+    "later": "Later",
+    "today": "To water today",
+    "late": "To water, {count} day(s) late",
+    "inDays": "To water in {count} day(s)",
+    "wateredToday": "Watered today",
+    "water": "Watered today",
+    "waterShort": "Watered",
+    "waterName": "{name} watered today",
+    "watered": "{name}: watered today.",
+    "watering": "Watering",
+    "every": "Every {count} day(s)",
+    "lastWatered": "last watered on {date}",
+    "openScan": "See the plant's scan",
+    "places": {
+      "indoor": "Indoors",
+      "outdoor": "Outdoors"
+    },
+    "fields": {
+      "name": "Name",
+      "namePlaceholder": "Living room Monstera",
+      "place": "Place",
+      "every": "Water every (days)",
+      "everyHint": "Suggested by the AI from the species and the season: change it if your plant needs less or more.",
+      "lastWatered": "Last watered",
+      "notes": "Notes",
+      "notesPlaceholder": "Fertiliser, repotting, where it stands…"
+    },
+    "addFromScan": "Add to my plants",
+    "addHint": "Keep it in My plants: the watering is suggested, with a morning reminder.",
+    "saved": "Plant added to My plants.",
+    "inPlants": "In My plants: {name}.",
+    "open": "See",
+    "locked": "My plants is included from {plan}.",
+    "lockedScan": "Adding this plant to My plants is included from {plan}.",
+    "readOnly": "Your plan no longer includes My plants: your plants stay visible, but you can't change anything and the reminder is paused. Go back to {plan} to get it all back.",
+    "pitch": {
+      "watering": "Watering suggested by the AI from the species and the season in Madagascar",
+      "reminder": "A reminder on the morning of watering days",
+      "check": "\"My plant has a problem\": the likely cause and what to do"
+    },
+    "reminder": {
+      "title": "My plants",
+      "one": "{name} needs watering today.",
+      "many": "{count} plants to water today: {names}."
+    },
+    "check": {
+      "title": "My plant has a problem",
+      "hint": "Take a photo of a leaf or of the plant: the AI tells you the likely cause and what to do. Counts as one of the month's scans.",
+      "camera": "Take a photo",
+      "gallery": "From the gallery",
+      "reading": "The AI is looking at your plant…",
+      "demo": "Sample diagnosis (demo mode).",
+      "notPlant": "This is not a plant: try with a photo of a leaf or of the plant.",
+      "healthy": "Nothing worrying",
+      "remove": "Delete this diagnosis",
+      "urgency": {
+        "low": "Can wait",
+        "medium": "This week",
+        "high": "Urgent"
+      },
+      "errors": {
+        "failed": "The AI could not look at the photo. Try again.",
+        "limit": "This month's scans are used up.",
+        "signIn": "Sign in to check a plant.",
+        "offline": "No connection: try again when the network is back.",
+        "plan": "Your plan doesn't include My plants."
       }
     }
   }

@@ -110,6 +110,16 @@ function sampleBackup() {
         },
         { user_id: ben, id: "loan-2", data: { direction: "borrowed", person: "Tante Lalao", amountMga: 30000, at: 1759900000000, repayments: [] }, updated_at: at(6), deleted_at: at(7) },
       ],
+      plants: [
+        {
+          user_id: anna,
+          id: "plant-1",
+          data: { name: "Monstera du salon", species: "Monstera deliciosa", place: "indoor", waterEveryDays: 7, lastWateredAt: 1759900000000, scanIds: ["scan-1"], checks: [{ id: "c1", at: 1760000000000, isPlant: true, healthy: false, problem: "Trop d'eau", cause: "Terre humide", treatment: ["Laisser sécher"], urgency: "medium", note: null }] },
+          updated_at: at(6),
+          deleted_at: null,
+        },
+        { user_id: ben, id: "plant-2", data: { name: "Basilic", place: "outdoor", waterEveryDays: 2, scanIds: [], checks: [] }, updated_at: at(6), deleted_at: at(7) },
+      ],
       loan_shares: [
         {
           token_hash: "a".repeat(64),
