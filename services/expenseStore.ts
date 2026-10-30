@@ -13,6 +13,7 @@ import {
   type Recurring,
   type SavingsDeposit,
   type SavingsGoal,
+  type StatementTag,
   type Tontine,
   tontineFrequencies,
   type Transfer,
@@ -52,6 +53,9 @@ const cleanText = (text: string | undefined, max = 120) => text?.trim().slice(0,
 
 /** A whole, positive number of ariary, else none. */
 export const cleanAmount = (value: number | undefined) => (value !== undefined && Number.isFinite(value) && value > 0 ? Math.round(value) : undefined);
+
+/** A statement's tag, kept as it came (lib/statement.ts). */
+const cleanTag = (tag: StatementTag | undefined): StatementTag | undefined => (tag?.name ? { name: tag.name.slice(0, 40), from: tag.from, to: tag.to } : undefined);
 
 function cleanConverted({ currency, originalAmount, rate }: Converted): Converted {
   if (!currency || !originalAmount || !rate || originalAmount <= 0 || rate <= 0) return {};
@@ -98,6 +102,7 @@ export const expenseStore = {
       reference: cleanText(draft.reference, 80),
       scanId: draft.scanId || undefined,
       wallet: draft.wallet || undefined,
+      statement: cleanTag(draft.statement),
       ...cleanConverted(draft),
     });
   },
@@ -105,7 +110,7 @@ export const expenseStore = {
   async saveIncome(draft: Draft<Income>) {
     const amountMga = cleanAmount(draft.amountMga);
     if (amountMga === undefined) return null;
-    return save<Income>("income", draft.id, { at: draft.at, amountMga, income: draft.income, from: draft.from, note: cleanText(draft.note, 200), sourceKey: draft.sourceKey || undefined, wallet: draft.wallet || undefined });
+    return save<Income>("income", draft.id, { at: draft.at, amountMga, income: draft.income, from: draft.from, note: cleanText(draft.note, 200), sourceKey: draft.sourceKey || undefined, wallet: draft.wallet || undefined, statement: cleanTag(draft.statement), reference: cleanText(draft.reference, 80) });
   },
 
   async saveRecurring(draft: Draft<Recurring>) {
@@ -187,6 +192,9 @@ export const expenseStore = {
       feesMga: cleanAmount(draft.feesMga),
       note: cleanText(draft.note, 200),
       scanId: draft.scanId || undefined,
+      sourceKey: draft.sourceKey || undefined,
+      statement: cleanTag(draft.statement),
+      reference: cleanText(draft.reference, 80),
     });
   },
 

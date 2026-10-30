@@ -10,25 +10,27 @@ import { accountsEnabled, supabaseAdmin, verifyUser } from "@/lib/server/supabas
 const BUCKET = "scans";
 const PAGE = 1000;
 
-/** Every object path under "<userId>/", one scan folder at a time. */
-async function listUserFiles(userId: string) {
+/** Folders below "<userId>/" (scans: <entry>/, loan proofs: loans/<loan>/). */
+const MAX_DEPTH = 5;
+
+/** Every object path under "<userId>/", at any level (down to MAX_DEPTH folders), page by page. */
+export async function listUserFiles(userId: string) {
   const storage = supabaseAdmin().storage.from(BUCKET);
   const paths: string[] = [];
-  for (let offset = 0; ; offset += PAGE) {
-    const { data: folders, error } = await storage.list(userId, { limit: PAGE, offset });
-    if (error) throw error;
-    for (const folder of folders) {
-      // Folders have no id; a stray file directly under the user folder does.
-      if (folder.id) {
-        paths.push(`${userId}/${folder.name}`);
-        continue;
+  const walk = async (folder: string, depth: number) => {
+    for (let offset = 0; ; offset += PAGE) {
+      const { data: items, error } = await storage.list(folder, { limit: PAGE, offset });
+      if (error) throw error;
+      for (const item of items) {
+        // Folders have no id; files do.
+        if (item.id) paths.push(`${folder}/${item.name}`);
+        else if (depth < MAX_DEPTH) await walk(`${folder}/${item.name}`, depth + 1);
       }
-      const { data: files, error: filesError } = await storage.list(`${userId}/${folder.name}`, { limit: PAGE });
-      if (filesError) throw filesError;
-      paths.push(...files.map((file) => `${userId}/${folder.name}/${file.name}`));
+      if (items.length < PAGE) return;
     }
-    if (folders.length < PAGE) return paths;
-  }
+  };
+  await walk(userId, 1);
+  return paths;
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

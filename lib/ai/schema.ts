@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { expenseCategories } from "@/lib/expenses";
+import { expenseCategories, incomeKinds } from "@/lib/expenses";
 
 // No eval-based fast paths: the web CSP forbids eval, and Zod's probe for it
 // would otherwise log a violation on every page.
@@ -290,6 +290,14 @@ export const AnalysisSchema = z.object({
     })
     .nullable()
     .describe("Only for lists (shopping lists, to-do lists, checklists), null otherwise."),
+  plant: z
+    .object({
+      place: z.enum(["indoor", "outdoor"]).nullable().describe("indoor for a houseplant or a pot inside, outdoor for a garden, balcony or field plant; null if unclear."),
+      waterEveryDaysRainy: z.number().describe("Days between waterings in Madagascar's rainy season (November to April), for this species where it stands."),
+      waterEveryDaysDry: z.number().describe("Days between waterings in Madagascar's dry season (May to October), for this species where it stands."),
+    })
+    .nullable()
+    .describe("Only for plants, null otherwise."),
   reminder: z
     .object({
       title: z.string(),
@@ -316,6 +324,7 @@ export function normalizeStoredAnalysis(raw: unknown): unknown {
     diet: null,
     vehicle: null,
     list: null,
+    plant: null,
     ...analysis,
     document: document
       ? {
@@ -425,6 +434,14 @@ export const ExpenseSummaryRequestSchema = z.strictObject({
   averageTotal: amount,
   income: amount.nullable(),
   budget: amount.nullable(),
+  // Optional, never a name (older apps don't send them): what is in the pockets at the
+  // start and the end of the month, the net put aside in goals, the tontine payments and
+  // the reselling's profit. Pockets, savings and profit can go below 0.
+  pocketsStart: z.number().int().min(-1_000_000_000_000).max(1_000_000_000_000).optional(),
+  pocketsEnd: z.number().int().min(-1_000_000_000_000).max(1_000_000_000_000).optional(),
+  savedThisMonth: z.number().int().min(-1_000_000_000_000).max(1_000_000_000_000).optional(),
+  tontinePaid: amount.optional(),
+  activityProfit: z.number().int().min(-1_000_000_000_000).max(1_000_000_000_000).optional(),
   categories: z
     .array(
       z.strictObject({
@@ -446,6 +463,181 @@ export const ExpenseSummarySchema = z.object({
 export type ExpenseSummary = z.infer<typeof ExpenseSummarySchema>;
 
 export type ExpenseSummaryResponse = { summary: ExpenseSummary; model: string; demo: boolean };
+
+// ---- "Mes dépenses": a Mobile Money or bank statement ------------------------
+// Screenshots of the history or the statement's PDF, read once: the images are
+// neither kept on the server nor in the scans' history.
+
+/** Screenshots of one statement sent at once (each counts as a scan). */
+export const MAX_STATEMENT_PAGES = 10;
+/** A statement's PDF: about 3 MB, so the request stays under the host's 4.5 MB. */
+export const MAX_STATEMENT_PDF_BASE64_LENGTH = Math.floor((3 * 1024 * 1024 * 4) / 3);
+
+export const StatementRequestSchema = z
+  .strictObject({
+    locale: z.enum(["fr", "en"]),
+    pages: z.array(PageSchema).min(1).max(MAX_STATEMENT_PAGES).optional(),
+    pdf: z.string().min(1).max(MAX_STATEMENT_PDF_BASE64_LENGTH).optional(),
+    /** The user's day (YYYY-MM-DD), for the "Aujourd'hui" and "Hier" of the histories. */
+    today: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/).optional(),
+  })
+  .refine((input) => Boolean(input.pages) !== Boolean(input.pdf), "Send either screenshots or one PDF.");
+export type StatementRequest = z.infer<typeof StatementRequestSchema>;
+
+export const statementKinds = ["mobile_money", "bank"] as const;
+/** Which way an operation moved this account's money. */
+export const statementSides = ["debit", "credit"] as const;
+
+export const StatementOperationSchema = z.object({
+  date: z.string().nullable().describe("The day of the operation, as YYYY-MM-DD; null if not shown."),
+  amount: z.number().describe("The amount moved, fees apart, as a positive plain number in the statement's currency."),
+  direction: z
+    .enum(receiptDirections)
+    .describe(
+      "out when the user paid or sent money to someone else (a payment, a transfer sent, phone credit, a bill); in when the user received money from someone else; own when the money only moved between the user's own pockets: cash withdrawn (\"Retrait\"), cash deposited on their own account (\"Dépôt\"), a transfer between their own accounts.",
+    ),
+  side: z.enum(statementSides).describe("debit when the money left this account (a payment, a transfer sent, a withdrawal), credit when it came into it (money received, a deposit)."),
+  ownKind: z.enum(ownKinds).nullable().describe("Only when direction is own: withdrawal, deposit or transfer; null otherwise."),
+  counterparty: z.string().nullable().describe("The other side's name (merchant, person, bank): never a phone number or an account number; null if none."),
+  reference: z.string().nullable().describe("The transaction reference or ID exactly as printed; null if none."),
+  fees: z.number().nullable().describe("The fees of this operation shown apart, as a plain number; null if none."),
+  category: z
+    .enum(expenseCategories)
+    .nullable()
+    .describe("For out: the best budget category (market, jirama, rent, transport, phone, school, health, family, online, car, leisure, savings, other); null otherwise."),
+  incomeKind: z.enum(incomeKinds).nullable().describe("For in: salary, sales (a client paid), family (help from relatives) or other; null otherwise."),
+  balanceAfter: z.number().nullable().describe("The balance shown right after this operation, as a plain number; null if not shown."),
+});
+export type StatementOperation = z.infer<typeof StatementOperationSchema>;
+
+export const StatementSchema = z.object({
+  institution: z.string().nullable().describe("The operator or bank as named on the statement (\"MVola\", \"Orange Money\", \"BNI Madagascar\"…); null if unclear."),
+  kind: z.enum(statementKinds).nullable().describe("mobile_money for MVola, Orange Money or Airtel Money; bank for a bank; null if unclear."),
+  operator: z.enum(mobileMoneyOperators).nullable().describe("The Mobile Money operator: mvola, orange_money or airtel_money; null for a bank."),
+  currency: z.string().nullable().describe("ISO code of the amounts: MGA for ariary (Ar), EUR, USD…; null if not shown."),
+  periodStart: z.string().nullable().describe("The first day the statement covers, as YYYY-MM-DD; null if not shown."),
+  periodEnd: z.string().nullable().describe("The last day the statement covers, as YYYY-MM-DD; null if not shown."),
+  closingBalance: z.number().nullable().describe("The balance at the end of the statement (the most recent one shown); null if not shown."),
+  operations: z.array(StatementOperationSchema).describe("Every operation shown, each once, in the order printed."),
+});
+export type Statement = z.infer<typeof StatementSchema>;
+
+export type StatementResponse = { statement: Statement; model: string; demo: boolean; pages: number };
+
+// ---- "Mes plantes": what is wrong with a plant, from a photo -------------------
+// The photo is read and forgotten: the app keeps the answer with the plant.
+
+export const PlantDiagnosisRequestSchema = z.strictObject({
+  image: z.string().min(1).max(MAX_IMAGE_BASE64_LENGTH),
+  mediaType: z.enum(imageMediaTypes),
+  locale: z.enum(["fr", "en"]),
+  /** The plant's name or species, when known. */
+  plant: z.string().trim().max(80).optional(),
+  /** Indoor or outdoor, when known. */
+  place: z.enum(["indoor", "outdoor"]).optional(),
+});
+export type PlantDiagnosisRequest = z.infer<typeof PlantDiagnosisRequestSchema>;
+
+export const plantUrgencies = ["low", "medium", "high"] as const;
+
+export const PlantDiagnosisSchema = z.object({
+  isPlant: z.boolean().describe("True when the photo shows a plant, a leaf, a stem or roots."),
+  healthy: z.boolean().describe("True when nothing seems wrong."),
+  problem: z.string().describe("The likely problem in a few words (or 'Rien d'inquiétant' / 'Nothing worrying')."),
+  cause: z.string().describe("The probable cause in one or two plain sentences, saying how sure it is."),
+  treatment: z.array(z.string()).describe("1 to 4 simple steps the user can do at home with what is found in Madagascar."),
+  urgency: z.enum(plantUrgencies).describe("low: can wait; medium: act this week; high: act today or the plant may die or contaminate others."),
+  note: z.string().nullable().describe("When to ask a nursery or an agricultural technician, or what to watch next; null if nothing to add."),
+});
+export type PlantDiagnosis = z.infer<typeof PlantDiagnosisSchema>;
+
+export type PlantDiagnosisResponse = {
+  diagnosis: PlantDiagnosis;
+  model: string;
+  demo: boolean;
+  /** Scans used this month against the plan's. */
+  quota?: TrialState;
+};
+
+// ---- "Prêts": a debt acknowledgment read by the AI ----------------------------
+// The photo is read and forgotten: nothing is kept on the server.
+
+export const LoanScanRequestSchema = z.strictObject({
+  image: z.string().min(1).max(MAX_IMAGE_BASE64_LENGTH),
+  mediaType: z.enum(imageMediaTypes),
+  locale: z.enum(["fr", "en"]),
+});
+export type LoanScanRequest = z.infer<typeof LoanScanRequestSchema>;
+
+const day = z.string().describe("YYYY-MM-DD");
+
+export const LoanReadingSchema = z.object({
+  isAcknowledgment: z.boolean().describe("True when the photo is a debt acknowledgment, an IOU or a written loan agreement."),
+  lender: z.string().nullable().describe("The name of who lends the money (the creditor), exactly as written; null if not legible."),
+  borrower: z.string().nullable().describe("The name of who borrows and owes the money (the debtor), exactly as written; null if not legible."),
+  amountFigures: z.number().nullable().describe("The amount written in figures, in ariary (Malagasy francs, FMG, divided by 5); null if absent."),
+  amountWords: z.string().nullable().describe("The amount written in words, copied as written; null if absent."),
+  amountWordsValue: z.number().nullable().describe("The value of the amount in words, in ariary; null if absent."),
+  date: day.nullable().describe("The day the money was lent, YYYY-MM-DD; null if absent."),
+  dueDate: day.nullable().describe("The day it must be paid back by, YYYY-MM-DD; null if absent."),
+  installments: z
+    .array(z.object({ dueDate: day, amount: z.number().describe("In ariary.") }))
+    .describe("The repayment schedule when it is paid back in several times, oldest first; empty otherwise."),
+  interest: z
+    .object({ kind: z.enum(["fixed", "percent"]), value: z.number().describe("In ariary when fixed, a percentage of the amount otherwise.") })
+    .nullable()
+    .describe("Interest or fees agreed on top of the amount; null without."),
+  place: z.string().nullable().describe("The place where it was signed (\"Fait à …\"); null if absent."),
+});
+export type LoanReading = z.infer<typeof LoanReadingSchema>;
+
+export type LoanScanResponse = {
+  reading: LoanReading;
+  model: string;
+  demo: boolean;
+  /** Scans used this month against the plan's (server's key). */
+  quota?: TrialState;
+};
+
+// ---- Selling an object: the classified ad written by the AI -------------------
+
+/** The condition the seller picks, worst last. */
+export const objectConditions = ["new", "veryGood", "good", "worn", "toRepair"] as const;
+export type ObjectCondition = (typeof objectConditions)[number];
+
+export const ObjectAdRequestSchema = z.strictObject({
+  /** The scan's photo, sent again so the model can look at it. */
+  image: z.string().min(1).max(MAX_IMAGE_BASE64_LENGTH),
+  mediaType: z.enum(imageMediaTypes),
+  /** The scan's analysis, as context (validated against AnalysisSchema server-side). */
+  analysis: z.unknown(),
+  condition: z.enum(objectConditions),
+  /** The town where it is sold, when the seller gives it. */
+  place: z.string().trim().max(60).optional(),
+  locale: z.enum(["fr", "en"]),
+  /** The text in Malagasy too. */
+  malagasy: z.boolean().optional(),
+});
+export type ObjectAdRequest = z.infer<typeof ObjectAdRequestSchema>;
+
+export const ObjectAdSchema = z.object({
+  title: z.string().describe("The ad's title, under 70 characters: what it is, brand and model when visible, the condition."),
+  text: z.string().describe("3 to 6 short, honest sentences: what it is, its strong points, its visible defects, the place, an invitation to get in touch."),
+  price: z.number().describe("The suggested asking price in ariary (MGA), as a plain number."),
+  priceLow: z.number().describe("The low end of the fair price range in ariary."),
+  priceHigh: z.number().describe("The high end of the fair price range in ariary."),
+  keywords: z.array(z.string()).describe("3 to 5 lowercase search words buyers would type, without #."),
+  textMg: z.string().nullable().describe("The same text in Malagasy when asked, null otherwise."),
+});
+export type ObjectAd = z.infer<typeof ObjectAdSchema>;
+
+export type ObjectAdResponse = {
+  ad: ObjectAd;
+  model: string;
+  demo: boolean;
+  /** Questions asked today against the daily allowance (the ad counts as one). */
+  usage?: TrialState;
+};
 
 export type AiProvider = "claude" | "gemini" | "demo";
 
@@ -574,6 +766,8 @@ export type ApiErrorCode =
   | "household_full"
   /** Admin: a setting that needs a database migration not applied yet (supabase/migrations). */
   | "migration_needed"
+  /** A shared loan link that doesn't exist or was stopped (the same answer for both). */
+  | "not_found"
   | "method_not_allowed";
 
 export type ApiErrorBody = {

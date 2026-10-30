@@ -1,5 +1,5 @@
 import { formatAriary } from "@/lib/format";
-import type { Analysis, ExpenseSummary, ExpenseSummaryRequest, ScanMode } from "./schema";
+import type { Analysis, ExpenseSummary, ExpenseSummaryRequest, ScanMode, Statement } from "./schema";
 
 // Demo-mode analyses, used when no Claude API key is configured so the whole
 // flow (camera → analysis → history → reminders) can be tried end to end.
@@ -70,6 +70,7 @@ const food: Record<Locale, Analysis> = {
     vehicle: null,
     parcel: null,
     list: null,
+    plant: null,
     reminder: { title: "Salade au frigo", body: "Pense à finir ta salade avant demain soir.", delayHours: 24 },
   },
   en: {
@@ -135,6 +136,7 @@ const food: Record<Locale, Analysis> = {
     vehicle: null,
     parcel: null,
     list: null,
+    plant: null,
     reminder: { title: "Salad in the fridge", body: "Remember to finish your salad before tomorrow night.", delayHours: 24 },
   },
 };
@@ -175,6 +177,7 @@ const documentScan: Record<Locale, Analysis> = {
     vehicle: null,
     parcel: null,
     list: null,
+    plant: null,
     reminder: { title: "Facture d'électricité", body: "Le prélèvement de 84,20 € arrive bientôt.", delayHours: 72 },
   },
   en: {
@@ -212,6 +215,7 @@ const documentScan: Record<Locale, Analysis> = {
     vehicle: null,
     parcel: null,
     list: null,
+    plant: null,
     reminder: { title: "Electricity bill", body: "The €84.20 direct debit is coming up.", delayHours: 72 },
   },
 };
@@ -242,6 +246,7 @@ const objectScan: Record<Locale, Analysis> = {
     vehicle: null,
     parcel: null,
     list: null,
+    plant: { place: "indoor", waterEveryDaysRainy: 7, waterEveryDaysDry: 10 },
     reminder: { title: "Arroser le Monstera", body: "Vérifie la terre et arrose si elle est sèche.", delayHours: 168 },
   },
   en: {
@@ -269,6 +274,7 @@ const objectScan: Record<Locale, Analysis> = {
     vehicle: null,
     parcel: null,
     list: null,
+    plant: { place: "indoor", waterEveryDaysRainy: 7, waterEveryDaysDry: 10 },
     reminder: { title: "Water the Monstera", body: "Check the soil and water if it is dry.", delayHours: 168 },
   },
 };
@@ -327,6 +333,7 @@ const vehicleScan: Record<Locale, Analysis> = {
     },
     parcel: null,
     list: null,
+    plant: null,
     reminder: { title: "Révision de la Corolla", body: "Pense à vérifier la date de ta prochaine révision.", delayHours: 720 },
   },
   en: {
@@ -382,6 +389,7 @@ const vehicleScan: Record<Locale, Analysis> = {
     },
     parcel: null,
     list: null,
+    plant: null,
     reminder: { title: "Corolla service", body: "Remember to check when your next service is due.", delayHours: 720 },
   },
 };
@@ -437,6 +445,7 @@ const parcelScan: Record<Locale, Analysis> = {
       shippingMode: "sea",
     },
     list: null,
+    plant: null,
     reminder: null,
   },
   en: {
@@ -478,6 +487,7 @@ const parcelScan: Record<Locale, Analysis> = {
       shippingMode: "sea",
     },
     list: null,
+    plant: null,
     reminder: null,
   },
 };
@@ -511,6 +521,7 @@ const listScan: Record<Locale, Analysis> = {
         { text: "Savon", quantity: "x3", done: false },
       ],
     },
+    plant: null,
     reminder: null,
   },
   en: {
@@ -540,6 +551,7 @@ const listScan: Record<Locale, Analysis> = {
         { text: "Soap", quantity: "x3", done: false },
       ],
     },
+    plant: null,
     reminder: null,
   },
 };
@@ -588,6 +600,7 @@ const registrationScan: Record<Locale, Analysis> = {
     vehicle: null,
     parcel: null,
     list: null,
+    plant: null,
     reminder: null,
   },
   en: {
@@ -632,6 +645,7 @@ const registrationScan: Record<Locale, Analysis> = {
     vehicle: null,
     parcel: null,
     list: null,
+    plant: null,
     reminder: null,
   },
 };
@@ -684,6 +698,7 @@ const mobileMoneyScan: Record<Locale, Analysis> = {
     vehicle: null,
     parcel: null,
     list: null,
+    plant: null,
     reminder: null,
   },
   en: {
@@ -732,6 +747,7 @@ const mobileMoneyScan: Record<Locale, Analysis> = {
     vehicle: null,
     parcel: null,
     list: null,
+    plant: null,
     reminder: null,
   },
 };
@@ -784,6 +800,7 @@ const tillReceiptScan: Record<Locale, Analysis> = {
     vehicle: null,
     parcel: null,
     list: null,
+    plant: null,
     reminder: null,
   },
   en: {
@@ -832,6 +849,7 @@ const tillReceiptScan: Record<Locale, Analysis> = {
     vehicle: null,
     parcel: null,
     list: null,
+    plant: null,
     reminder: null,
   },
 };
@@ -884,6 +902,7 @@ const received = (locale: Locale): Analysis => {
     vehicle: null,
     parcel: null,
     list: null,
+    plant: null,
     reminder: null,
   };
 };
@@ -936,6 +955,7 @@ const withdrawal = (locale: Locale): Analysis => {
     vehicle: null,
     parcel: null,
     list: null,
+    plant: null,
     reminder: null,
   };
 };
@@ -952,6 +972,40 @@ export function mockAnalysis(mode: ScanMode, locale: Locale): Analysis {
   const pick = pool[autoCursor % pool.length];
   autoCursor += 1;
   return pick[locale];
+}
+
+/** The demo receipt's reference: the sample statement has it too (one line "already there" once it is scanned or typed in). */
+export const DEMO_RECEIPT_REFERENCE = "MP261020.1432.A51234";
+
+/**
+ * A sample MVola history of the last 12 days (names and references made up),
+ * dated from `now` so it always falls in the current weeks: a salary, the
+ * demo receipt's taxi ride, a withdrawal with its fees, a JIRAMA bill, phone
+ * credit and help from the family.
+ */
+export function mockStatement(now: number): Statement {
+  const day = (back: number) => {
+    const date = new Date(now - back * 86_400_000);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  };
+  const none = { ownKind: null, fees: null, category: null, incomeKind: null };
+  return {
+    institution: "MVola",
+    kind: "mobile_money",
+    operator: "mvola",
+    currency: "MGA",
+    periodStart: day(12),
+    periodEnd: day(1),
+    closingBalance: 306_300,
+    operations: [
+      { ...none, date: day(12), amount: 250_000, direction: "in", side: "credit", counterparty: "SARL Vanille Export", reference: "MP-DEMO-0001", incomeKind: "salary", balanceAfter: 370_000 },
+      { ...none, date: day(10), amount: 15_000, direction: "out", side: "debit", counterparty: "Taxi Be Express", reference: DEMO_RECEIPT_REFERENCE, category: "transport", balanceAfter: 355_000 },
+      { ...none, date: day(8), amount: 50_000, direction: "own", side: "debit", ownKind: "withdrawal", counterparty: "Agent MVola Analakely", reference: "MP-DEMO-0003", fees: 1_200, balanceAfter: 303_800 },
+      { ...none, date: day(6), amount: 32_500, direction: "out", side: "debit", counterparty: "JIRAMA", reference: "MP-DEMO-0004", category: "jirama", balanceAfter: 271_300 },
+      { ...none, date: day(4), amount: 5_000, direction: "out", side: "debit", counterparty: "Telma", reference: "MP-DEMO-0005", category: "phone", balanceAfter: 266_300 },
+      { ...none, date: day(1), amount: 40_000, direction: "in", side: "credit", counterparty: "Rakoto Jean", reference: "MP-DEMO-0006", incomeKind: "family", balanceAfter: 306_300 },
+    ],
+  };
 }
 
 /** A sample review of the month, built from the totals sent (demo mode). */

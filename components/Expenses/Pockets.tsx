@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { Archive, ArchiveRestore, ArrowLeftRight, Check, ChevronRight, Plus, Scale, Star, Wallet as WalletIcon } from "lucide-react";
 import { Button } from "@/components/Button";
@@ -188,6 +189,7 @@ function PocketList({ book, records, pending, onTransfer, onAdd, onCorrect }: Li
 
   const describe = (movement: Movement) => {
     if (movement.type === "correction") return t("expenses.pockets.correction");
+    if (movement.loan) return t(`expenses.pockets.loan.${movement.loan.type}`, { name: movement.label ?? "" });
     if (movement.type === "saved" || movement.type === "unsaved" || movement.type === "pot") return [t(`expenses.savings.movement.${movement.type}`), movement.label].filter(Boolean).join(" · ");
     if (movement.type === "move_in" || movement.type === "move_out") return [t("expenses.pockets.move"), movement.label].filter(Boolean).join(" · ");
     if (movement.origin === "fees") return t("expenses.feesLabel");
@@ -224,7 +226,14 @@ function PocketList({ book, records, pending, onTransfer, onAdd, onCorrect }: Li
                 {movements.slice(0, RECENT).map((movement) => (
                   <li key={`${movement.key}:${movement.type}`}>
                     <span>
-                      {describe(movement)}
+                      {movement.loan ? (
+                        // A loan's move opens that person's page in "Prêts".
+                        <Link href={{ pathname: "/loans", query: { ...(movement.loan.direction === "borrowed" && { dir: "borrowed" }), person: movement.loan.personKey } }} data-testid="pocket-loan">
+                          {describe(movement)}
+                        </Link>
+                      ) : (
+                        describe(movement)
+                      )}
                       <small>
                         {formatDate(movement.at, locale)}
                         {movement.pending && ` · ${t("expenses.pockets.toChoose")}`}

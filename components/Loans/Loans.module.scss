@@ -42,6 +42,16 @@
   color: var(--text-muted);
 }
 
+// Opened from the "Le relancer ?" notification.
+.nudge {
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radius-md);
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
 .error {
   font-size: 0.88rem;
   font-weight: 600;
@@ -86,26 +96,55 @@
 
 // ---- The top card -----------------------------------------------------------------
 
+// "On te doit" and "Tu dois", side by side once there is room; a touch filters the list.
 .summary {
   @include card;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: var(--radius-lg, 20px);
+}
+
+.summarySide {
+  @include pressable;
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 0.15rem;
-  padding: 1rem 1.1rem;
-  border-radius: var(--radius-lg, 20px);
+  min-width: 0;
+  min-height: 2.75rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: var(--radius-md);
+  border: 2px solid transparent;
+  text-align: left;
+
+  &[data-direction="lent"] {
+    background: color-mix(in srgb, var(--cat-plant) 12%, transparent);
+  }
+
+  &[data-direction="borrowed"] {
+    background: color-mix(in srgb, var(--cat-food) 12%, transparent);
+  }
+
+  &[aria-pressed="true"] {
+    border-color: var(--accent-mark);
+  }
 
   > span {
     font-size: 0.9rem;
+    font-weight: 600;
     color: var(--text-muted);
   }
 
   strong {
-    @include display(2.2rem);
-    white-space: nowrap;
+    @include display(2.1rem);
+    max-width: 100%;
+    overflow-wrap: anywhere;
   }
 
   small {
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     color: var(--text-muted);
   }
 
@@ -118,11 +157,38 @@
 
 // ---- The list ---------------------------------------------------------------------
 
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filterChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2.75rem;
+  padding: 0 1rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-weight: 600;
+
+  &[aria-pressed="true"] {
+    border-color: var(--accent-mark);
+    background: color-mix(in srgb, var(--accent-mark) 14%, transparent);
+    color: var(--text);
+  }
+}
+
 .search {
+  flex: 1 1 12rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  height: 2.75rem;
+  min-height: 2.75rem;
   padding: 0 0.8rem;
   border-radius: var(--radius-pill);
   border: 1px solid var(--border);
@@ -136,6 +202,8 @@
     background: none;
     color: var(--text);
     font: inherit;
+    // Less than 16px makes iOS zoom in on the field.
+    font-size: max(16px, 1rem);
     outline: none;
   }
 }
@@ -177,9 +245,10 @@
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 50%;
-  background: color-mix(in srgb, var(--cat-document) 16%, transparent);
-  color: var(--cat-document);
+  background: color-mix(in srgb, var(--tone, var(--cat-document)) 18%, transparent);
+  color: var(--tone, var(--cat-document));
   font-weight: 700;
+  font-size: 1.1rem;
 }
 
 .text {
@@ -212,6 +281,38 @@
   align-items: flex-end;
   gap: 0.2rem;
   font-variant-numeric: tabular-nums;
+
+  strong {
+    font-size: 1.2rem;
+  }
+}
+
+// The person's state: "En retard de 12 j", "Échéance le 5 déc.", "À jour", "Remboursé".
+.badge {
+  align-self: flex-start;
+  display: inline-flex;
+  margin-top: 0.15rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.78rem;
+  font-weight: 700;
+  background: var(--surface-strong);
+  color: var(--text-muted);
+
+  &[data-kind="late"] {
+    background: var(--danger-soft);
+    color: var(--danger);
+  }
+
+  &[data-kind="due"] {
+    background: color-mix(in srgb, var(--cat-food) 18%, transparent);
+    color: var(--text);
+  }
+
+  &[data-kind="upToDate"] {
+    background: color-mix(in srgb, var(--cat-plant) 18%, transparent);
+    color: var(--text);
+  }
 }
 
 .lateBadge,
@@ -290,14 +391,23 @@
 
 .back,
 .close {
-  width: 2.25rem;
-  height: 2.25rem;
+  // 44 px: a finger-sized target.
+  width: 2.75rem;
+  height: 2.75rem;
 }
 
 .iconButton {
+  position: relative;
   width: 1.6rem;
   height: 1.6rem;
   margin-left: auto;
+
+  // Small to look at, 44 px to touch.
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -0.6rem;
+  }
 }
 
 .loan {
@@ -369,7 +479,10 @@
   display: flex;
   align-items: flex-end;
   justify-content: center;
+  // Lifted above the on-screen keyboard (LoanSheet.tsx).
+  padding-bottom: var(--keyboard, 0px);
   background: rgba(0, 0, 0, 0.55);
+  -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
 
   @include desktop {
@@ -380,8 +493,10 @@
 .sheet {
   width: 100%;
   max-width: 520px;
-  max-height: 92vh;
+  max-height: calc(92vh - var(--keyboard, 0px));
+  max-height: calc(92dvh - var(--keyboard, 0px));
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
@@ -420,10 +535,11 @@
   gap: 0.35rem;
   min-width: 0;
 
-  > span {
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: var(--text-muted);
+  > span,
+  > label:not(.toggle) {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text);
   }
 
   input {
@@ -436,13 +552,22 @@
     background: var(--surface);
     color: var(--text);
     font: inherit;
-    font-size: 0.95rem;
+    // Less than 16px makes iOS zoom in on the field.
+    font-size: max(16px, 1rem);
     outline: none;
 
     &:focus {
       border-color: var(--accent-mark);
     }
   }
+}
+
+// "Combien ?": the amount, in big.
+.field input.bigInput {
+  height: 3.25rem;
+  font-size: max(16px, 1.5rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 .chips {
@@ -458,7 +583,8 @@
 }
 
 .chip {
-  padding: 0.5rem 0.85rem;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.95rem;
   border-radius: var(--radius-pill);
   border: 1px solid var(--border);
   background: var(--surface);
@@ -479,4 +605,638 @@
   margin: 0.2rem -1.25rem calc(-1.5rem - var(--safe-bottom));
   padding: 0.85rem 1.25rem calc(1rem + var(--safe-bottom));
   background: linear-gradient(to top, var(--bg-elevated) 70%, transparent);
+}
+
+// ---- Schedule, interest, exports, figures --------------------------------------------
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 2.75rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+
+  input {
+    flex-shrink: 0;
+    width: 1.3rem;
+    height: 1.3rem;
+    accent-color: var(--accent-mark);
+  }
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.8rem 0.9rem;
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--border);
+}
+
+.installments {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  li > span {
+    flex: 0 0 7.5rem;
+    font-size: 0.86rem;
+    color: var(--text-muted);
+  }
+
+  input {
+    flex: 1;
+    height: 2.75rem;
+  }
+}
+
+.schedule {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.86rem;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  li > span:first-child {
+    flex: 1;
+    min-width: 0;
+  }
+
+  small {
+    color: var(--text-muted);
+  }
+}
+
+.state {
+  flex-shrink: 0;
+  padding: 0.1rem 0.5rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.74rem;
+  font-weight: 700;
+  background: var(--surface-strong);
+  color: var(--text-muted);
+
+  &[data-status="paid"] {
+    color: var(--text);
+  }
+
+  &[data-status="late"] {
+    color: var(--danger);
+    background: color-mix(in srgb, var(--danger) 14%, transparent);
+  }
+}
+
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+
+  small {
+    display: block;
+    margin-top: -0.3rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+}
+
+.stats {
+  @include card;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem 1rem;
+  padding: 0.9rem 1rem;
+  border-radius: var(--radius-md);
+
+  div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+  }
+
+  span {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  strong {
+    font-variant-numeric: tabular-nums;
+  }
+
+  ol {
+    grid-column: 1 / -1;
+    margin: 0;
+    padding-left: 1.2rem;
+    font-size: 0.9rem;
+  }
+}
+
+.statsWide {
+  grid-column: 1 / -1;
+}
+
+// ---- Proofs, and the scan of a debt acknowledgment ---------------------------------
+
+.proofs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+
+  > small {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+}
+
+.proofList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.proofThumb {
+  display: grid;
+  place-items: center;
+  width: 3.4rem;
+  height: 3.4rem;
+  overflow: hidden;
+  border-radius: var(--radius-sm, 0.6rem);
+  border: 1px solid var(--border);
+  background: var(--surface-strong);
+  color: var(--text-subtle);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.proofImage {
+  width: 100%;
+  max-height: 60vh;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+}
+
+.proofIcon {
+  flex-shrink: 0;
+  color: var(--text-subtle);
+}
+
+.scanChoices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 55vh;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scanChoice {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  padding: 0.45rem;
+  border-radius: var(--radius-md);
+  text-align: left;
+
+  &:hover {
+    background: var(--surface-strong);
+  }
+
+  img {
+    flex-shrink: 0;
+    width: 2.8rem;
+    height: 2.8rem;
+    object-fit: cover;
+    border-radius: var(--radius-sm, 0.6rem);
+  }
+
+  span {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  strong {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  small {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+}
+
+.scanBox {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.8rem 0.9rem;
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--border);
+}
+
+// ---- "+ Nouveau", and "Plus d'options" ------------------------------------------------
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: 0.6rem;
+}
+
+.tile {
+  @include card;
+  @include pressable;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
+  min-height: 7rem;
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  text-align: left;
+
+  svg {
+    color: var(--cat-plant);
+  }
+
+  &[data-direction="borrowed"] svg {
+    color: var(--cat-food);
+  }
+
+  strong {
+    font-size: 1.1rem;
+  }
+
+  small {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+  }
+}
+
+.moreButton {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 2.75rem;
+  padding: 0.55rem 0.9rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  text-align: left;
+
+  > span {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  small {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    overflow-wrap: anywhere;
+  }
+
+  svg {
+    flex-shrink: 0;
+    color: var(--text-muted);
+    transition: transform 0.2s ease;
+  }
+
+  svg[data-open] {
+    transform: rotate(180deg);
+  }
+}
+
+.moreOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+// ---- "Compte avec Rakoto" ---------------------------------------------------------------
+
+.balance {
+  @include card;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1rem 1.1rem;
+  border-radius: var(--radius-lg, 20px);
+
+  &[data-direction="lent"] {
+    background: color-mix(in srgb, var(--cat-plant) 10%, var(--card));
+  }
+
+  &[data-direction="borrowed"] {
+    background: color-mix(in srgb, var(--cat-food) 10%, var(--card));
+  }
+
+  > p {
+    @include display(1.7rem);
+    overflow-wrap: anywhere;
+  }
+}
+
+.balanceMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.6rem;
+
+  .badge {
+    margin-top: 0;
+  }
+
+  small {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+  }
+}
+
+.lateText {
+  color: var(--danger) !important;
+  font-weight: 700;
+}
+
+// The three big buttons: another sum, a repayment, a reminder.
+.actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+  gap: 0.5rem;
+
+  > button {
+    min-width: 0;
+    height: auto;
+    min-height: 3rem;
+    padding-block: 0.5rem;
+    white-space: normal;
+  }
+}
+
+.otherWay {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-align: left;
+}
+
+// The statement: date, what for, amount, and "Reste" after each line.
+.ledger {
+  container: ledger / inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+
+  h3 {
+    @include display(1.35rem);
+  }
+}
+
+.ledgerHead,
+.ledgerRow {
+  display: grid;
+  grid-template-columns: 3.6rem minmax(0, 1fr) auto 6.8rem;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.ledgerHead {
+  padding: 0 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+
+  span:first-child {
+    grid-column: 2;
+  }
+
+  span:not(:first-child) {
+    text-align: right;
+  }
+}
+
+.ledgerMonth {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+
+  h4 {
+    margin-top: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: capitalize;
+  }
+
+  ul {
+    @include card;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+
+  li + li {
+    border-top: 1px solid var(--border);
+  }
+}
+
+.ledgerRow {
+  @include pressable;
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+
+  &[data-kind="repayment"] .ledgerAmount {
+    color: var(--cat-plant);
+  }
+
+  &[data-kind="interest"] {
+    background: color-mix(in srgb, var(--surface-strong) 50%, transparent);
+  }
+}
+
+.ledgerDay {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.ledgerWhat {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+
+  strong {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.3rem;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+
+  small {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    overflow-wrap: anywhere;
+  }
+}
+
+.ledgerIcons {
+  display: inline-flex;
+  gap: 0.2rem;
+  color: var(--text-subtle);
+}
+
+.ledgerAmount,
+.ledgerLeft {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.ledgerAmount {
+  font-weight: 700;
+}
+
+.ledgerLeft {
+  font-weight: 700;
+
+  small {
+    // The column has its title on a wide screen; on a narrow one, each line says it.
+    display: none;
+    font-weight: 400;
+    color: var(--text-muted);
+  }
+}
+
+// Narrow (a phone, very large text): the amount and "Reste" stack on the right.
+@container ledger (max-width: 30rem) {
+  .ledgerHead {
+    display: none;
+  }
+
+  .ledgerRow {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "day amount"
+      "what left";
+    row-gap: 0.1rem;
+  }
+
+  .ledgerDay {
+    grid-area: day;
+    font-size: 0.78rem;
+  }
+
+  .ledgerWhat {
+    grid-area: what;
+  }
+
+  .ledgerAmount {
+    grid-area: amount;
+  }
+
+  .ledgerLeft {
+    grid-area: left;
+    font-size: 0.85rem;
+
+    small {
+      display: inline;
+    }
+  }
+}
+
+.tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  > button {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    height: auto;
+    min-height: 2.75rem;
+    padding-block: 0.45rem;
+    white-space: normal;
+  }
+}
+
+.choiceList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.choiceRow {
+  @include card;
+  @include pressable;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.6rem 0.85rem;
+  border-radius: var(--radius-md);
+  text-align: left;
+
+  span {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  small {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
 }

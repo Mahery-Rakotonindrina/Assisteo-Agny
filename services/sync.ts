@@ -36,7 +36,7 @@ type Row = {
  * What the user adds to a scan (meals eaten, paper kind…) travels in the meta column with
  * the analysis's own meta: no schema change needed for each new field.
  */
-const userFields = ["meals", "paper", "expiresOn", "expense", "favorite", "folder", "reminderRepeat"] as const satisfies ReadonlyArray<keyof HistoryEntry>;
+const userFields = ["meals", "paper", "expiresOn", "expense", "favorite", "folder", "reminderRepeat", "ad"] as const satisfies ReadonlyArray<keyof HistoryEntry>;
 type UserFields = Pick<HistoryEntry, (typeof userFields)[number]>;
 type RowMeta = HistoryEntry["meta"] & Partial<UserFields>;
 
@@ -67,8 +67,17 @@ function setStatus(next: SyncStatus) {
 const cursorKey = (uid: string) => `sync.cursor.${uid}`;
 const time = (iso: string | null) => (iso ? new Date(iso).getTime() : undefined);
 
+/** A data URL as a Blob, decoded here: on the web, the CSP keeps fetch() off data: URLs. */
 async function dataUrlToBlob(dataUrl: string) {
-  return (await fetch(dataUrl)).blob();
+  const comma = dataUrl.indexOf(",");
+  const head = dataUrl.slice(0, comma);
+  const type = /^data:([^;,]+)/.exec(head)?.[1] ?? "application/octet-stream";
+  const data = dataUrl.slice(comma + 1);
+  if (!head.includes(";base64")) return new Blob([decodeURIComponent(data)], { type });
+  const binary = atob(data);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+  return new Blob([bytes], { type });
 }
 
 async function blobToDataUrl(blob: Blob) {

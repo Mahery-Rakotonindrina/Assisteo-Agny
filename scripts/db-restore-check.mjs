@@ -100,6 +100,28 @@ function sampleBackup() {
         },
         { user_id: ben, id: "loan-2", data: { direction: "borrowed", person: "Tante Lalao", amountMga: 30000, at: 1759900000000, repayments: [] }, updated_at: at(6), deleted_at: at(7) },
       ],
+      plants: [
+        {
+          user_id: anna,
+          id: "plant-1",
+          data: { name: "Monstera du salon", species: "Monstera deliciosa", place: "indoor", waterEveryDays: 7, lastWateredAt: 1759900000000, scanIds: ["scan-1"], checks: [{ id: "c1", at: 1760000000000, isPlant: true, healthy: false, problem: "Trop d'eau", cause: "Terre humide", treatment: ["Laisser sécher"], urgency: "medium", note: null }] },
+          updated_at: at(6),
+          deleted_at: null,
+        },
+        { user_id: ben, id: "plant-2", data: { name: "Basilic", place: "outdoor", waterEveryDays: 2, scanIds: [], checks: [] }, updated_at: at(6), deleted_at: at(7) },
+      ],
+      loan_shares: [
+        {
+          token_hash: "a".repeat(64),
+          user_id: anna,
+          person: "rakoto",
+          snapshot: { v: 1, lender: "Anna", borrower: "Rakoto", updatedAt: 1760000000000, loans: [{ amountMga: 200000, interestMga: 0, at: 1759900000000, dueAt: 1760500000000, repayments: [{ at: 1760000000000, amountMga: 50000 }] }] },
+          created_at: at(6),
+          updated_at: at(6),
+          revoked_at: null,
+        },
+        { token_hash: "b".repeat(64), user_id: anna, person: "rakoto", snapshot: { v: 1 }, created_at: at(5), updated_at: at(5), revoked_at: at(6) },
+      ],
       households: [{ id: household, owner_id: anna, data: { name: "Famille Rabe", budget: { total: 900000, categories: { market: 300000 } } }, updated_at: at(5) }],
       household_members: [
         { household_id: household, user_id: anna, role: "owner", joined_at: at(5) },
@@ -112,6 +134,12 @@ function sampleBackup() {
       household_expenses: [
         { household_id: household, id: "shared-1", user_id: ben, data: { kind: "expense", at: 1759900000000, amountMga: 45000, category: "jirama", note: "Facture d'octobre" }, updated_at: at(6), deleted_at: null },
         { household_id: household, id: "shared-2", user_id: anna, data: { kind: "expense", at: 1759900000000, amountMga: 8000, category: "market" }, updated_at: at(6), deleted_at: at(7) },
+      ],
+      household_loans: [
+        { household_id: household, id: "hloan-1", user_id: anna, data: { kind: "loan", direction: "lent", person: "Voisin Be", amountMga: 60000, at: 1759900000000, createdAt: 1759900000000 }, updated_at: at(6), deleted_at: null },
+        { household_id: household, id: "hrep-1", user_id: ben, data: { kind: "repayment", loanId: "hloan-1", at: 1760000000000, amountMga: 20000, authorName: "Ben" }, updated_at: at(6), deleted_at: null },
+        // Noted by an account deleted since: kept, without its author.
+        { household_id: household, id: "hrep-2", user_id: null, data: { kind: "repayment", loanId: "hloan-1", at: 1760100000000, amountMga: 5000, authorName: "Rasoa" }, updated_at: at(7), deleted_at: null },
       ],
       subscriptions: [
         { id: randomUUID(), email: "anna@example.com", plan: "premium", starts_at: at(1), ends_at: at(31), amount_mga: 15000, payment_method: "mvola", payment_ref: "REF-1", note: "Payé en avance", created_at: at(1), updated_at: at(1), features: { add: ["reseller", "parcelCosts"], remove: ["multiPage"] }, quotas: { scans: 500, deepPerMonth: 10 } },

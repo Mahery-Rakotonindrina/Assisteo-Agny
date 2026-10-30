@@ -93,6 +93,18 @@ test("the discover page shows its title and opens a question", async ({ page }) 
   }).toPass();
 });
 
+test("the discover page labels each plan feature with its lowest plan, after the settings arrive", async ({ page }) => {
+  await prepare(page);
+  await page.goto("/decouvrir");
+  const garage = page.locator("li[data-feature=garage]");
+  await expect(garage.getByRole("heading", { name: "Mon garage" })).toBeVisible();
+  // The default settings: My garage from Premium; the Admin-only features are not announced.
+  await expect(garage).toContainText("À partir de");
+  await expect(garage.locator("[data-plan=premium]")).toBeVisible();
+  await expect(page.locator("li[data-feature=loans]")).toHaveCount(0);
+  await expect(page.locator("li[data-feature=expenses]")).toHaveCount(0);
+});
+
 test("a newcomer finds the discover page from the home screen", async ({ page }) => {
   await prepare(page);
   await page.goto("/");
@@ -401,6 +413,61 @@ test("a reseller keeps the activity apart from the home budget and sees the mont
   await page.getByRole("radio", { name: "Revenus" }).click();
   await expect(page.getByText("Bénéfice de mon activité")).toBeVisible();
   await expect(page.getByText("Ajouté tout seul · Activité")).toBeVisible();
+
+  // A parcel's "Counted in My activity →" opens the month's activity sheet.
+  const now = new Date();
+  await page.goto(`/expenses?month=${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}&activity=open`);
+  await expect(page.getByTestId("activity-sheet")).toBeVisible();
+});
+
+test("a statement imported once: the demo receipt already there, nothing added the second time", async ({ page }) => {
+  await prepare(page);
+  await page.route("**/api/plan", async (route) => {
+    const response = await route.fetch();
+    await route.fulfill({ response, json: { ...(await response.json()), plan: "unlimited", features: undefined } });
+  });
+  await page.goto("/");
+  // The demo MVola receipt, typed in already (its reference is in the demo statement).
+  await page.evaluate(async () => {
+    const now = Date.now();
+    const taxi = { id: "taxi", kind: "expense", at: now, amountMga: 15000, category: "transport", reference: "MP261020.1432.A51234", createdAt: now, updatedAt: now };
+    await new Promise<void>((resolve, reject) => {
+      const request = indexedDB.open("assisteo-expenses");
+      request.onupgradeneeded = () => request.result.createObjectStore("expenses");
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        const tx = request.result.transaction("expenses", "readwrite");
+        tx.objectStore("expenses").put(taxi, taxi.id);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      };
+    });
+  });
+  await page.goto("/expenses");
+  // Two pockets: the withdrawal goes from MVola to cash.
+  await page.getByRole("button", { name: /Où est ton argent \?/ }).click();
+  const setup = page.getByRole("dialog", { name: "Où est ton argent ?" });
+  await setup.getByLabel(/^Espèces : combien/).fill("45000");
+  await setup.getByRole("checkbox", { name: "MVola" }).check();
+  await setup.getByLabel(/^MVola : combien/).fill("230000");
+  await setup.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(page.getByTestId("pockets-total")).toHaveText(/^275\s000 Ar$/);
+
+  await page.getByRole("button", { name: "Importer un relevé" }).click();
+  const sheet = page.getByRole("dialog", { name: "Importer un relevé" });
+  await sheet.getByTestId("statement-input").setInputFiles(["tests/e2e/fixtures/apple.jpg", "tests/e2e/fixtures/apple.jpg"]);
+  await expect(sheet.getByTestId("statement-line")).toHaveCount(6, { timeout: 15_000 });
+  await expect(sheet.getByTestId("statement-totals")).toContainText(/^5 opération\(s\) · sorties 88\s700 Ar · entrées 290\s000 Ar/);
+  await expect(sheet.getByText("1 déjà là, décochée(s)")).toBeVisible();
+  await expect(sheet.getByRole("radio", { name: "MVola" })).toBeChecked();
+  await sheet.getByRole("button", { name: "Importer 5 opération(s)" }).click();
+  await expect(sheet.getByTestId("statement-result")).toHaveText("5 opération(s) ajoutée(s), 1 déjà là");
+  await sheet.getByRole("button", { name: "C’est fait" }).click();
+
+  // The same statement again: everything is there already.
+  await page.getByRole("button", { name: "Importer un relevé" }).click();
+  await sheet.getByTestId("statement-input").setInputFiles("tests/e2e/fixtures/apple.jpg");
+  await expect(sheet.getByTestId("statement-result")).toHaveText("0 opération(s) ajoutée(s), 6 déjà là", { timeout: 15_000 });
 });
 
 test("an Admin account gets the month's review (demo)", async ({ page }) => {

@@ -19,6 +19,7 @@ import {
   ListChecks,
   ListPlus,
   Lock,
+  Megaphone,
   Maximize2,
   MessageCircle,
   Package,
@@ -32,6 +33,7 @@ import {
   Share2,
   SlidersHorizontal,
   Sparkles,
+  Sprout,
   Trash2,
   TriangleAlert,
   Utensils,
@@ -44,9 +46,11 @@ import { DocumentText } from "@/components/DocumentText";
 import { FolderPicker } from "@/components/FolderPicker";
 import { ReceiptControls } from "@/components/Expenses";
 import { GarageControls } from "@/components/Garage";
+import { ObjectAdControls } from "@/components/ObjectAd";
 import { PlanBadge } from "@/components/PlanBadge";
 import { PlanLock } from "@/components/PlanLock";
 import { PhotoViewer } from "@/components/PhotoViewer";
+import { PlantControls } from "@/components/Plants";
 import { ReminderSheet } from "@/components/ReminderSheet";
 import { ReminderSnooze } from "@/components/ReminderSnooze";
 import { ScanChat } from "@/components/ScanChat";
@@ -737,6 +741,13 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
               </Section>
             )}
 
+            {/* An object: write its classified ad, to sell it. */}
+            {!example && analysis.category === "object" && (
+              <Section title={t("objectAd.section")} icon={<Megaphone />}>
+                <ObjectAdControls entry={entry} />
+              </Section>
+            )}
+
             {/* A till receipt or a Mobile Money confirmation: add it to "Mes dépenses" (Admin only). */}
             {!example && canAddExpense && analysis.document?.receipt && (
               <Section title={t("expenses.receipt.title")} icon={<Receipt />}>
@@ -747,6 +758,13 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
             {analysis.suggestions.length > 0 && (
               <Section title={t("result.suggestions")} icon={<Sparkles />}>
                 <SuggestionList suggestions={analysis.suggestions} />
+              </Section>
+            )}
+
+            {/* A plant: keep it in "Mes plantes", with its watering. */}
+            {!example && analysis.category === "plant" && (
+              <Section title={t("plants.title")} icon={<Sprout />}>
+                <PlantControls entry={entry} />
               </Section>
             )}
 

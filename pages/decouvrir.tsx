@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import type { CSSProperties } from "react";
-import { Apple, ArrowRight, Camera, Car, ChevronDown, Download, FileText, ListChecks, MessageCircle, Package, Sparkles, Sprout } from "lucide-react";
+import { Apple, ArrowRight, BellRing, Briefcase, Camera, Car, ChevronDown, Coins, Download, FileDown, Files, FileText, HandCoins, ListChecks, MessageCircle, Package, ScanSearch, Sparkles, Sprout, Wallet, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/Button";
+import { PlanBadge } from "@/components/PlanBadge";
 import { Seo } from "@/components/Seo";
 import { useAndroidDownload } from "@/hooks/useAndroidDownload";
+import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
+import { discoverCards, type DiscoverFeature } from "@/lib/discoverFeatures";
 import { exampleIds, exampleImage } from "@/lib/examples";
 import { rise, stagger } from "@/lib/motion";
 import styles from "@/styles/Discover.module.scss";
@@ -19,6 +22,18 @@ const features = [
   { id: "object", icon: Sprout },
   { id: "list", icon: ListChecks },
 ] as const;
+const extraIcons: Record<DiscoverFeature, LucideIcon> = {
+  reminders: BellRing,
+  pdfExport: FileDown,
+  parcelCosts: Coins,
+  multiPage: Files,
+  deepAnalysis: ScanSearch,
+  garage: Car,
+  plants: Sprout,
+  reseller: Briefcase,
+  expenses: Wallet,
+  loans: HandCoins,
+};
 const steps = [
   { id: "photo", icon: Camera },
   { id: "analysis", icon: Sparkles },
@@ -30,6 +45,10 @@ const questions = ["free", "account", "photos", "devices", "network", "mistakes"
 export default function DiscoverPage() {
   const { t } = useTranslation();
   const android = useAndroidDownload();
+  // Null in the static HTML and on the first render: the built-in cards, unlabelled.
+  // Then the offers' settings: their labels, without what no sold plan has now.
+  const { plan } = usePlan();
+  const extras = discoverCards(plan ? (plan.featureFrom ?? {}) : null);
 
   const tryButton = (
     <Button href="/" size="lg" icon={<Sparkles />}>
@@ -70,6 +89,36 @@ export default function DiscoverPage() {
                 <p>{t(`discover.features.${id}.body`)}</p>
               </li>
             ))}
+          </ul>
+        </motion.section>
+
+        <motion.section variants={rise} className={styles.section}>
+          <h2>{t("discover.extrasTitle")}</h2>
+          <p className={styles.hint}>{t("discover.extrasHint")}</p>
+          <ul className={styles.features}>
+            {extras.map(({ feature, from }) => {
+              const Icon = extraIcons[feature];
+              return (
+                <li key={feature} className={styles.feature} data-feature={feature} style={{ "--tint": "var(--accent)" } as CSSProperties}>
+                  <span className={styles.featureIcon}>
+                    <Icon size={20} />
+                  </span>
+                  <h3>{t(`discover.extras.${feature}.title`)}</h3>
+                  <p>{t(`discover.extras.${feature}.body`)}</p>
+                  {from && (
+                    <span className={styles.from}>
+                      {from === "free" ? (
+                        t("discover.extrasFree")
+                      ) : (
+                        <>
+                          {t("discover.extrasFrom")} <PlanBadge plan={from} />
+                        </>
+                      )}
+                    </span>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </motion.section>
 

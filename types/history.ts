@@ -1,4 +1,4 @@
-import type { Analysis, ChatMessage, PaperKind, ScanMode, TranslateLanguage } from "@/lib/ai/schema";
+import type { Analysis, ChatMessage, ObjectAd, ObjectCondition, PaperKind, ScanMode, TranslateLanguage } from "@/lib/ai/schema";
 import type { ScannedCode } from "@/lib/codes";
 import type { MealLog } from "@/lib/food";
 import type { ReminderRepeat } from "@/lib/reminderRepeat";
@@ -7,6 +7,9 @@ export type ChatEntry = ChatMessage & { at: number };
 
 /** Why an answer was wrong (see pages/api/feedback.ts). */
 export type FeedbackReason = "wrong_subject" | "wrong_info" | "other";
+
+/** Selling an object: the ad written for it, as last edited, with what it was written for. */
+export type SavedAd = ObjectAd & { condition: ObjectCondition; place?: string; at: number };
 
 export type HistoryEntry = {
   id: string;
@@ -53,6 +56,8 @@ export type HistoryEntry = {
   expense?: { amountMga?: number; paidAt?: number; hidden?: boolean };
   /** Food journal: each time this food was eaten. */
   meals?: MealLog[];
+  /** Selling an object: its classified ad (synced). */
+  ad?: SavedAd;
   /** The user's "was this right?" vote, kept on this device. */
   feedback?: { vote: "up" | "down"; reason?: FeedbackReason; at: number };
 

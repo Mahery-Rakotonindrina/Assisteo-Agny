@@ -59,8 +59,8 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 
 - [x] Identification et caractéristiques
 - [x] Conseils, actions, mises en garde, idées
-- [ ] « Mes plantes » : rappels d'arrosage, diagnostic de maladie
-- [ ] Objets : prix de revente estimé, texte d'annonce prêt à publier
+- [x] « Mes plantes » : rappels d'arrosage, diagnostic de maladie — à partir de Lite : écran /plants, « Ajouter à mes plantes » depuis un scan, arrosage proposé par l’IA selon la saison, « Arrosée aujourd’hui », rappel le matin, « Ma plante a un problème » (un scan du mois) ; table plants (0013), appliquée en production
+- [x] Objets : prix de revente estimé, texte d'annonce prêt à publier — « Je veux le vendre » sur un objet : état, lieu, annonce de l’IA (prix conseillé en ariary et fourchette, mots-clés, malgache en option), copier, WhatsApp, Facebook, partager avec la photo ; compte comme une question du jour ; gardée dans l’historique
 - [ ] Inventaire de la maison (garanties, factures liées)
 
 ## 6. Questions sur un scan
@@ -169,7 +169,7 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Avant d'enregistrer un changement d'offre : nombre d'abonnés concernés, et choix « tous » ou « seulement les nouveaux abonnements et renouvellements » — « seulement les nouveaux » : chaque abonné actif garde ses droits jusqu'à son renouvellement, noté au journal
 - [x] Règle commune quand une fonctionnalité est retirée : données gardées, écran en lecture seule, rappels coupés, tout revient si elle est réactivée — complétée pour les coûts des colis et « Mes dépenses »
 - [x] Dépendances entre fonctionnalités (rappels du garage → rappels ; budget en famille → « Mes dépenses ») : avertissement, et les fonctions qui en dépendent sont décochées avec — outils revendeur → coûts des colis
-- [ ] Page « Les offres », liste des avantages et page Découvrir mises à jour automatiquement selon les réglages — « Les offres » et les avantages suivent ; reste la page Découvrir (texte fixe)
+- [x] Page « Les offres », liste des avantages et page Découvrir mises à jour automatiquement selon les réglages — « Les offres » et les avantages suivent ; Découvrir montre « Pour aller plus loin » avec « à partir de … » après le chargement, sans ce qui est coupé, en test ou réservé à l’Admin (texte de base gardé pour Google)
 - [x] Fonctionnalité « en test » pour une liste de comptes testeurs choisis, sans nouvelle version — refus serveur tout de suite ; menus sur Android dès le prochain APK
 - [x] Interrupteur d'urgence : couper une fonctionnalité pour tout le monde en un clic (IA trop chère, bug)
 - [x] Accès temporaire à une fonctionnalité pour un abonné (ex. le garage offert 7 jours), arrêté tout seul à la date prévue — depuis la fiche, gratuit compris : 7 jours, 30 jours ou une date, « Arrêter maintenant », affiché dans « Mon offre »
@@ -235,8 +235,9 @@ Budget du mois du foyer. Réservé à l'offre Admin pendant le test, ouvert aux 
 - [x] Toutes les entrées et sorties d’argent comptées et reliées — tickets et reçus Mobile Money comptés tout seuls (sans double compte, « déjà compté ? »), Mobile Money reçu en revenu, revenu « chaque mois », abonnement Assisteo payé ; « Compté dans Mes dépenses → » sur la facture, le ticket, la liste, le colis et le garage
 - [x] Mouvements entre ses propres poches (retrait MVola en espèces, dépôt en banque, envoi vers son propre compte) reconnus par l’IA : ni dépense ni revenu, sinon un retrait scanné compte la même somme deux fois — `direction: "own"` ; seuls les frais (`fees`) comptent ; « C’est une dépense » sous le résultat si l’IA se trompe
 - [x] Soldes réels par poche : espèces, MVola, Orange Money, Airtel Money, banque (« Espèces 45 000 · MVola 230 000 ») — sous « Il te reste » ; solde de départ, chaque ligne a sa poche (les reçus prennent celle de leur opérateur), « Corriger le solde », virements entre poches à la main ou depuis un retrait ou dépôt scanné (`ownKind`), frais comptés une fois ; jamais dans le foyer
-- [ ] Prêts et dettes : argent prêté ou emprunté, crédit chez l’épicier ; qui me doit, à qui je dois, remboursements comptés tout seuls — écran à part (§17) ; lien avec les poches plus tard
-- [ ] Import d’un relevé MVola ou bancaire (captures ou PDF de plusieurs pages) : toutes les opérations d’un coup, sans doublon
+- [x] Poches, épargne, tontines et activité dans l’export et le bilan IA — Excel : feuilles « Mes poches » (début, entrées, sorties, virements, fin du mois), « Épargne et tontines », « Mon activité » (revendeurs, activité séparée), colonne « Poche » ; même chose en PDF ; le bilan reçoit les totaux seulement, sans aucun nom, et un ancien APK marche toujours
+- [x] Prêts et dettes : argent prêté ou emprunté, crédit chez l’épicier ; qui me doit, à qui je dois, remboursements comptés tout seuls — écran « Prêts » à part (§17) ; lien avec les poches (PR #85)
+- [x] Import d’un relevé MVola ou bancaire (captures ou PDF de plusieurs pages) : toutes les opérations d’un coup, sans doublon — jusqu’à 10 captures ou un PDF, une case par opération, « déjà là » décoché, chaque page compte comme un scan
 - [x] Rappel du soir « Tu as dépensé quelque chose aujourd’hui ? », avec ajout rapide depuis la notification ou l’accueil — app Android, réglage dans l’onglet Fixes (20 h par défaut), 7 soirs programmés sans ceux où une dépense est notée, la notification ouvre la feuille d’ajout (`?add=expense`) ; pas encore depuis l’accueil
 - [x] Prévision de fin de mois : « À ce rythme, il te restera 45 000 Ar le 30 », dépenses fixes à venir comprises — dans « Il te reste », mois en cours dès le 3e jour, grosses dépenses rares écartées du rythme, « Comment c’est calculé ? »
 - [x] Objectifs d’épargne (« Rentrée scolaire : 120 000 / 300 000 Ar ») et suivi d’une tontine ou de cotisations — « Mis de côté » sous les poches : ni dépense ni revenu, l’argent sort de sa poche ; tontine avec mon tour, prochain versement et rappel la veille
@@ -256,16 +257,17 @@ L’argent prêté ou emprunté, par personne. Ni dépense ni revenu : rien n’
 - [x] « Relancer sur WhatsApp » — message poli prérempli, numéro malgache 03x xx xxx xx reconnu ; « Copier le message » sans téléphone
 - [x] Remboursés repliés en bas (« Remboursés (12) ») ; sur ordinateur, la liste à gauche et la fiche à droite
 - [x] Gardé sur l’appareil, synchronisé avec le compte (table `loans`, toujours perso) — table créée en production le 2026-10-29 (supabase/migrations/0010_loans.sql)
-- [ ] Lien avec « Mes poches » et « Mes dépenses » : prêter sort d’une poche, un remboursement y rentre, sans compter ni en dépense ni en revenu ; un « Vous avez reçu » MVola reconnu comme remboursement
-- [ ] Rappel la veille de l’échéance (notification)
-- [ ] Relance WhatsApp ou SMS programmée (« relancer dans 3 jours »)
-- [ ] Preuve jointe : photo d’une reconnaissance de dette, capture du transfert MVola
-- [ ] Scanner une reconnaissance de dette : la fiche se remplit toute seule
-- [ ] Remboursement en plusieurs fois prévu d’avance (échéancier), intérêts ou frais convenus
-- [ ] Reconnaissance de dette en PDF, à faire signer ou à envoyer
-- [ ] Export Excel ou PDF du récapitulatif par personne
+- [x] Lien avec « Mes poches » et « Mes dépenses » : prêter sort d’une poche, un remboursement y rentre, sans compter ni en dépense ni en revenu ; un « Vous avez reçu » MVola reconnu comme remboursement — avec « Prêts » et « Mes dépenses » : poche choisie sur le prêt et le remboursement, lignes « Prêt à Rakoto » dans l’historique des poches et dans l’export ; « C’est un remboursement de Rakoto ? » sous le reçu, sur la ligne des revenus et dans l’import d’un relevé (case décochée), dans les deux sens ; « Annuler » ; intérêts hors revenus pour l’instant
+- [x] Rappel la veille de l’échéance (notification) — app Android, la veille à 9 h, sur la prochaine échéance de l’échéancier ; réglage « Me rappeler les échéances » dans « Prêts », activé par défaut ; pas de rappel côté serveur
+- [x] Relance WhatsApp ou SMS programmée (« relancer dans 3 jours ») — notification pour relancer le jour de l’échéance à 17 h (« On me doit »), qui ouvre la fiche avec « Relancer sur WhatsApp » en avant ; envoi manuel sur WhatsApp, pas de SMS ni de « dans 3 jours »
+- [x] Preuve jointe : photo d’une reconnaissance de dette, capture du transfert MVola — jusqu’à 5 par prêt (photo, image ou scan de l’historique), synchronisées dans le bucket `scans` (`<user id>/loans/…`, sans migration), jointes en annexe de la reconnaissance de dette en PDF
+- [x] Scanner une reconnaissance de dette : la fiche se remplit toute seule — l’IA lit prêteur, emprunteur, montant en chiffres et en lettres (écart signalé), dates, échéancier, intérêts et lieu ; le sens est deviné avec le nom du compte, sinon demandé ; compte 1 scan du mois, rendu si la lecture échoue
+- [x] Remboursement en plusieurs fois prévu d’avance (échéancier), intérêts ou frais convenus — parts égales modifiables, chaque semaine ou chaque mois ; prochaine échéance et retard calculés sur l’échéancier ; intérêts fixes ou en %, le total à rendre est suivi
+- [x] Reconnaissance de dette en PDF, à faire signer ou à envoyer — montant en chiffres et en lettres (fr, en), échéancier et intérêts, deux cases de signature
+- [x] Export Excel ou PDF du récapitulatif par personne — tout l’écran ou une seule personne ; une feuille par sens (« On me doit », « Je dois ») et son « Par personne », chacune avec son total ; le PDF a une section par sens
 - [ ] Choisir la personne dans les contacts du téléphone
-- [ ] Partager à l’emprunteur un lien qui montre ce qu’il doit encore
-- [ ] Statistiques : total prêté sur l’année, qui rembourse en retard
-- [ ] Prêts partagés en famille (foyer)
+- [x] Partager à l’emprunteur un lien qui montre ce qu’il doit encore — « On me doit », compte connecté : page publique `/pret?t=…` sans compte (noindex), copie figée mise à jour à chaque changement (montants, échéancier, remboursements, reste ; jamais téléphone, note ni preuve), envoi WhatsApp ou copie, « Arrêter le partage » ; seul le hachage du jeton est gardé (migration 0012)
+- [x] Statistiques : total prêté sur l’année, qui rembourse en retard — section repliable « En chiffres », pour « On me doit » et « Je dois »
+- [x] Prêts partagés en famille (foyer) — bascule « Moi / Foyer » pour un membre avec « Prêts », option « Prêt du foyer » sur un nouveau prêt ; chaque membre note un remboursement, seul l’auteur modifie le prêt ; hors des poches, sans rappel ; rendus en perso à qui quitte le foyer (migration 0012)
+- [x] Écran Prêts plus simple, et le compte avec chaque personne (relevé avec le reste après chaque ligne) — carte « On te doit · Tu dois » qui filtre la liste, un seul « + Nouveau » (prêté, emprunté, scanner), cartes par personne avec pastille d’état, « Foyer » en pastille ; l’ajout en 4 gestes (« Pour quoi ? » en pastilles, le reste dans « Plus d’options ») ; « Compte avec … » : « + Il me doit encore… », « Il m’a rendu… » (réparti sur ses prêts), « Relancer », relevé par mois avec la colonne « Reste », aussi dans l’export PDF et Excel de la personne
 - [ ] Ouvrir « Prêts » à d’autres offres que l’Admin — une case à cocher dans Admin → Offres ; reste à choisir les offres

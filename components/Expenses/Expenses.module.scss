@@ -1254,3 +1254,93 @@
     color: var(--danger);
   }
 }
+
+// ---- Importing a statement ------------------------------------------------------------
+
+.statementStatus {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-weight: 600;
+}
+
+.spin {
+  flex: none;
+  animation: statement-spin 0.9s linear infinite;
+}
+
+@keyframes statement-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.statementError {
+  margin: 0;
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, #d64560 14%, transparent);
+  font-size: 0.88rem;
+}
+
+.statementHead,
+.statementTotals {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin: 0;
+
+  small {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+}
+
+.statementTotals {
+  font-weight: 600;
+}
+
+.statementLines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.statementLine {
+  @include card;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: var(--radius-md);
+
+  &[data-off] .statementCheck {
+    opacity: 0.6;
+  }
+}
+
+.statementCheck {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 2.5rem;
+  cursor: pointer;
+
+  input {
+    flex: none;
+    width: 1.2rem;
+    height: 1.2rem;
+    accent-color: var(--accent);
+  }
+}
+
+.statementSelect {
+  align-self: flex-start;
+  max-width: 100%;
+  margin-left: 1.8rem;
+  font-size: 0.85rem;
+}

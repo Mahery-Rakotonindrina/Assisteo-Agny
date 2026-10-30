@@ -1,6 +1,6 @@
 import type { IncomingHttpHeaders } from "node:http";
-import { analyzeWithClaude, askWithClaude, CLAUDE_MODEL, listClaudeModels, summarizeWithClaude, verifyClaudeKey, type AiUsage, type EngineOptions } from "./claude";
-import { analyzeWithGemini, askWithGemini, GEMINI_DEEP_MODEL, GEMINI_MODEL, listGeminiModels, summarizeWithGemini, verifyGeminiKey } from "./gemini";
+import { analyzeWithClaude, askWithClaude, CLAUDE_MODEL, diagnosePlantWithClaude, listClaudeModels, readLoanWithClaude, readStatementWithClaude, summarizeWithClaude, verifyClaudeKey, writeAdWithClaude, type AiUsage, type EngineOptions } from "./claude";
+import { analyzeWithGemini, askWithGemini, diagnosePlantWithGemini, GEMINI_DEEP_MODEL, GEMINI_MODEL, listGeminiModels, readLoanWithGemini, readStatementWithGemini, summarizeWithGemini, verifyGeminiKey, writeAdWithGemini } from "./gemini";
 import { analyzeWithOpenAICompatible, askWithOpenAICompatible, listOpenAICompatibleModels, verifyOpenAICompatibleKey } from "./openaiCompatible";
 import {
   AiOverrideSchema,
@@ -12,6 +12,10 @@ import {
   type AskRequest,
   type ExpenseSummaryRequest,
   type ListModelsRequest,
+  type PlantDiagnosisRequest,
+  type LoanScanRequest,
+  type ObjectAdRequest,
+  type StatementRequest,
 } from "./schema";
 
 type Engine = (input: AnalyzeRequest, signal?: AbortSignal, options?: EngineOptions) => Promise<{ analysis: Analysis; model: string; usage?: AiUsage }>;
@@ -108,6 +112,34 @@ export function summarizeExpenses(input: ExpenseSummaryRequest, signal?: AbortSi
   if (activeProvider === "claude") return summarizeWithClaude(input, signal);
   if (activeProvider === "gemini") return summarizeWithGemini(input, signal);
   throw new Error("summarizeExpenses called in demo mode.");
+}
+
+/** "Mes dépenses": a statement's operations, always on the server's engine (never an own key). */
+export function readStatement(input: StatementRequest, signal?: AbortSignal) {
+  if (activeProvider === "claude") return readStatementWithClaude(input, signal);
+  if (activeProvider === "gemini") return readStatementWithGemini(input, signal);
+  throw new Error("readStatement called in demo mode.");
+}
+
+/** "Mes plantes": a plant's problem from its photo, always on the server's engine (never an own key). */
+export function diagnosePlant(input: PlantDiagnosisRequest, signal?: AbortSignal) {
+  if (activeProvider === "claude") return diagnosePlantWithClaude(input, signal);
+  if (activeProvider === "gemini") return diagnosePlantWithGemini(input, signal);
+  throw new Error("diagnosePlant called in demo mode.");
+}
+
+/** "Prêts": a debt acknowledgment read, always on the server's engine (never an own key). */
+export function readLoanDocument(input: LoanScanRequest, signal?: AbortSignal) {
+  if (activeProvider === "claude") return readLoanWithClaude(input, signal);
+  if (activeProvider === "gemini") return readLoanWithGemini(input, signal);
+  throw new Error("readLoanDocument called in demo mode.");
+}
+
+/** Selling an object: the classified ad, always on the server's engine (never an own key). */
+export function writeObjectAd(input: ObjectAdRequest & { analysis: Analysis }, signal?: AbortSignal) {
+  if (activeProvider === "claude") return writeAdWithClaude(input, signal);
+  if (activeProvider === "gemini") return writeAdWithGemini(input, signal);
+  throw new Error("writeObjectAd called in demo mode.");
 }
 
 export function verifyKey(override: AiOverride) {

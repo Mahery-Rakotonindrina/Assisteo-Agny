@@ -4,7 +4,7 @@ import { useExpenses } from "@/hooks/useExpenses";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { byKind, monthKey } from "@/lib/expenses";
-import { activityKey, separatesActivity } from "@/lib/resale";
+import { separatesActivity } from "@/lib/resale";
 import styles from "./Expenses.module.scss";
 
 type Props = {
@@ -35,11 +35,11 @@ function Counted({ sourceKey, at, flow, label, resaleAt }: Props) {
   const { t } = useTranslation();
   const { records, isLoading } = useExpenses();
   if (isLoading) return null;
-  // Kept apart: the parcel counts in the month's "profit from my activity", not in the budget on its own.
+  // Kept apart: the parcel counts in "Mon activité" of its month (bought, or sold), not in the budget on its own.
+  // Its sheet opens there: the month's profit line may not exist (nothing sold yet).
   if (resaleAt !== undefined && separatesActivity(records)) {
-    const month = monthKey(resaleAt);
     return (
-      <Link className={styles.counted} href={{ pathname: "/expenses", query: { month, tab: "income", focus: activityKey(month) } }}>
+      <Link className={styles.counted} href={{ pathname: "/expenses", query: { month: monthKey(resaleAt), activity: "open" } }}>
         <span>{t("expenses.counted.activity")}</span>
         <ArrowRight size={15} aria-hidden />
       </Link>

@@ -2,16 +2,20 @@ import Link from "next/link";
 import { useState } from "react";
 import { ArrowLeftRight, Check, EyeOff, Pencil, Receipt, RotateCcw } from "lucide-react";
 import { Button } from "@/components/Button";
+import { RepaymentPrompt, useLinkedLoans } from "@/components/Loans/RepaymentPrompt";
 import { useToast } from "@/components/Toast";
 import { useExpenses } from "@/hooks/useExpenses";
 import { useExpenseSources } from "@/hooks/useExpenseSources";
 import { useHousehold, useHouseholdExpenses } from "@/hooks/useHousehold";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
-import { receiptDraft, receiptDuplicate } from "@/lib/expenseAi";
-import { byKind, keepKey, monthExpenses, monthIncomes, monthKey, receiptKey } from "@/lib/expenses";
+import { receiptDraft, receiptDuplicate, receiptIncomeDuplicate } from "@/lib/expenseAi";
+import { byKind, keepKey, monthExpenses, monthIncomes, monthKey, moveKeepKey, ownReceiptState, receiptKey } from "@/lib/expenses";
 import { isMine } from "@/lib/household";
+import { isStatementKey } from "@/lib/statement";
 import { formatAriary } from "@/lib/format";
+import { linkedRepayment } from "@/lib/loanLink";
+import { lineWallet, walletContext } from "@/lib/wallets";
 import { haptics } from "@/services/device";
 import { expenseStore } from "@/services/expenseStore";
 import type { HistoryEntry } from "@/types/history";
@@ -34,6 +38,7 @@ export function ReceiptControls({ entry }: { entry: HistoryEntry }) {
   const snapshot = useHousehold();
   const { expenses: shared, isLoading: sharedLoading } = useHouseholdExpenses();
   const [open, setOpen] = useState(false);
+  const loans = useLinkedLoans();
 
   const draft = receiptDraft(entry);
   if (!has("expenses") || !draft) return null;
@@ -56,6 +61,20 @@ export function ReceiptControls({ entry }: { entry: HistoryEntry }) {
   // The same transaction typed in already, personal or moved to the household.
   const mineShared = shared.filter((expense) => isMine(expense, snapshot?.userId ?? null));
   const duplicate = receiptDuplicate([...records, ...mineShared], entry);
+  // Imported from a statement already (same reference): only that line counts, like a second scan.
+  const imported = duplicate && isStatementKey(duplicate.sourceKey) ? duplicate : receiptIncomeDuplicate(records, entry);
+  if (imported)
+    return (
+      <p className={styles.receiptStatus} data-testid="receipt-status">
+        <Receipt size={15} />
+        <span>
+          {t("expenses.receipt.alreadyImported")} ·{" "}
+          <Link href={{ pathname: "/expenses", query: { month: monthKey(imported.at), tab: imported.kind === "income" ? "income" : "month", focus: `manual:${imported.id}` } }}>
+            {t("expenses.receipt.view")}
+          </Link>
+        </span>
+      </p>
+    );
   if (duplicate) {
     const sharedDuplicate = mineShared.some((expense) => expense.id === duplicate.id);
     return (
@@ -116,6 +135,31 @@ export function ReceiptControls({ entry }: { entry: HistoryEntry }) {
     </p>
   );
   const kept = byKind(records, "exclusion").some((record) => record.sourceKey === keepKey(key));
+  // A withdrawal or transfer imported from a statement already: only that move counts.
+  const moved = source.own && !kept ? ownReceiptState(source, records, fees?.amountMga ?? 0) : undefined;
+  if (moved === "imported")
+    return (
+      <p className={styles.receiptStatus} data-testid="receipt-status">
+        <ArrowLeftRight size={15} />
+        <span>
+          {t("expenses.receipt.alreadyImported")} · <Link href={{ pathname: "/expenses", query: { month } }}>{t("expenses.receipt.view")}</Link>
+        </span>
+      </p>
+    );
+  if (moved === "doubt")
+    return (
+      <div className={styles.panel}>
+        <p className={styles.receiptStatus} data-testid="receipt-status">
+          <ArrowLeftRight size={15} />
+          <span>{t("expenses.receipt.doubt")}</span>
+        </p>
+        <div className={styles.row}>
+          <Button variant="secondary" icon={<Check />} onClick={() => void expenseStore.setExcluded(moveKeepKey(key), true)}>
+            {t("expenses.keepAnyway")}
+          </Button>
+        </div>
+      </div>
+    );
   if (source.own && !kept)
     return (
       <div className={styles.panel}>
@@ -131,6 +175,9 @@ export function ReceiptControls({ entry }: { entry: HistoryEntry }) {
         </div>
       </div>
     );
+  // Counted as a repayment of a loan ("Prêts"): only that, with "Annuler".
+  const repayment = { key: source.key, at: source.at, amountMga: source.amountMga, label: source.label, flow: source.flow, scanId: source.scanId };
+  if (source.key === key && linkedRepayment(loans, key)) return <RepaymentPrompt source={repayment} />;
   const incoming = source.flow === "income";
   const line = incoming ? monthIncomes(records, month, sources).find((item) => item.key === source.key) : monthExpenses(records, sources, month).find((item) => item.key === source.key);
   const doubt = Boolean(line?.doubt);
@@ -175,6 +222,7 @@ export function ReceiptControls({ entry }: { entry: HistoryEntry }) {
           </Button>
         )}
       </div>
+      {source.key === key && !doubt && <RepaymentPrompt source={repayment} wallet={lineWallet(walletContext(records), source)} />}
     </div>
   );
 }

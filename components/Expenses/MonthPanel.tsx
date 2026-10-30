@@ -31,7 +31,9 @@ import { EmptyNote } from "./EmptyNote";
 import { ExpenseForm, type LinkChoice, type ShareChoice } from "./ExpenseForm";
 import { ExpenseSheet } from "./ExpenseSheet";
 import styles from "./Expenses.module.scss";
+import { ImportedBadge, StatementImport } from "./StatementImport";
 import { WalletChips, type PocketChoice } from "./WalletChips";
+import type { ActivityMonth } from "@/lib/resale";
 
 type Props = {
   month: string;
@@ -54,12 +56,14 @@ type Props = {
   /** The pockets: the one each line is taken from, and the ones a form offers. */
   book?: WalletBook;
   pockets?: PocketChoice;
+  /** "Mon activité" for the export: with the reseller tools and the activity kept apart only. */
+  activity?: ActivityMonth | null;
 };
 
 const DAY = 86_400_000;
 
 /** The month: where the money goes, every line by day, and the export. */
-export function MonthPanel({ month, records, items, incomes, budget, budgetLines, previousTotal, initialEditing, adding, onEdited, share, focus, book, pockets }: Props) {
+export function MonthPanel({ month, records, items, incomes, budget, budgetLines, previousTotal, initialEditing, adding, onEdited, share, focus, book, pockets, activity }: Props) {
   const { t, locale } = useTranslation();
   const toast = useToast();
   const now = useNow(60_000);
@@ -92,7 +96,7 @@ export function MonthPanel({ month, records, items, incomes, budget, budgetLines
   const exportMonth = async (kind: "xlsx" | "pdf") => {
     if (exporting) return;
     setExporting(true);
-    const data = { month, items, incomes, budget: budgetLines, categoryName };
+    const data = { month, items, incomes, budget: budgetLines, categoryName, book, records, activity };
     const heading = {
       title: `${t("expenses.title")} · ${formatMonthYear(monthStart(month), locale)}`,
       subtitle: t("expenses.export.exportedOn", { date: formatDate(Date.now(), locale) }),
@@ -128,6 +132,7 @@ export function MonthPanel({ month, records, items, incomes, budget, budgetLines
         <Button size="lg" variant="secondary" icon={<Camera />} href="/?mode=document">
           {t("expenses.receiptPhoto")}
         </Button>
+        <StatementImport records={records} book={book} />
       </div>
 
       {items.length === 0 ? (
@@ -207,6 +212,7 @@ export function MonthPanel({ month, records, items, incomes, budget, budgetLines
                             <small>
                               {computed && <span className={styles.badge}>{t("expenses.auto", { origin: t(`expenses.origins.${item.origin}`) })}</span>}
                               {item.doubt && <span className={styles.badge} data-tone="warning">{t("expenses.doubt")}</span>}
+                              <ImportedBadge record={item.record} />
                               {[item.label && categoryName(item.category), item.record?.payment && t(`expenses.payments.${item.record.payment}`), item.excluded && !item.doubt && t("expenses.excluded")]
                                 .filter(Boolean)
                                 .join(" · ")}

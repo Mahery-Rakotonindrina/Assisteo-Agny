@@ -6,14 +6,23 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { summaryRequest } from "@/lib/expenseAi";
 import type { ExpenseRecord, monthExpenses } from "@/lib/expenses";
 import { formatDateTime } from "@/lib/format";
+import type { ActivityMonth } from "@/lib/resale";
+import type { WalletBook } from "@/lib/wallets";
 import { requestReview, savedReview, type SavedReview } from "@/services/expenseReview";
 import { ApiError } from "@/types/api";
 import styles from "./Expenses.module.scss";
 
-type Props = { month: string; records: ExpenseRecord[]; sources: Parameters<typeof monthExpenses>[1] };
+type Props = {
+  month: string;
+  records: ExpenseRecord[];
+  sources: Parameters<typeof monthExpenses>[1];
+  /** The pockets and the activity: sent as totals only, never a name. */
+  book?: WalletBook;
+  activity?: ActivityMonth | null;
+};
 
 /** "Bilan du mois": the AI's short review of the month, from its totals only. */
-export function MonthReview({ month, records, sources }: Props) {
+export function MonthReview({ month, records, sources, book, activity }: Props) {
   const { t, locale } = useTranslation();
   const { categoryName } = useExpenseLabels(records);
   const [review, setReview] = useState<SavedReview | null>(null);
@@ -36,7 +45,7 @@ export function MonthReview({ month, records, sources }: Props) {
     setBusy(true);
     setError(null);
     try {
-      setReview(await requestReview(summaryRequest(records, sources, month, { locale, now: Date.now(), categoryName })));
+      setReview(await requestReview(summaryRequest(records, sources, month, { locale, now: Date.now(), categoryName }, { book, activity })));
     } catch (failure) {
       const code = failure instanceof ApiError ? failure.code : "unknown";
       setError(t(code === "network" ? "expenses.review.offline" : code === "rate_limited" ? "expenses.review.limit" : "expenses.review.failed"));

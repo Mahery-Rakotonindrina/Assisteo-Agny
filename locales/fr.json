@@ -21,7 +21,8 @@
     "papers": "Papiers",
     "garage": "Garage",
     "loans": "Prêts",
-    "expenses": "Dépenses"
+    "expenses": "Dépenses",
+    "plants": "Plantes"
   },
   "scan": {
     "greeting": {
@@ -288,7 +289,8 @@
       "parcels": "Colis",
       "lists": "Listes",
       "queue": "{count} scan(s) en attente de réseau",
-      "other": "Autres (fichiers de l’app, cache)"
+      "other": "Autres (fichiers de l’app, cache)",
+      "proofs": "Preuves des prêts ({count})"
     },
     "storageHint": "Pour gagner de la place, seules les {count} analyses les plus récentes gardent leur photo en grand ; les plus anciennes gardent une photo réduite.",
     "storageLighten": "Alléger les photos",
@@ -660,7 +662,11 @@
         "scan": "Scan",
         "deep": "Analyse approfondie",
         "question": "Question",
-        "summary": "Bilan des dépenses"
+        "summary": "Bilan des dépenses",
+        "statement": "Relevé importé",
+        "loan": "Reconnaissance de dette",
+        "ad": "Annonce d’objet",
+        "plant": "Diagnostic de plante"
       },
       "perCall": "par appel · {calls} appel(s), {total} en tout",
       "noCalls": "aucun appel",
@@ -895,7 +901,8 @@
         "garage": "Mon garage",
         "reseller": "Outils revendeur",
         "loans": "Prêts",
-        "expenses": "Mes dépenses"
+        "expenses": "Mes dépenses",
+        "plants": "Mes plantes"
       },
       "descriptions": {
         "reminders": "Rappels sur les scans (répétition, report), l’assurance et l’arrivée des colis.",
@@ -907,7 +914,8 @@
         "garage": "Véhicules, entretien, rappels de vidange et d’assurance, pleins et dépenses.",
         "reseller": "Un client par colis, ce qu’il doit, totaux par client, export et relevés.",
         "loans": "Qui me doit, à qui je dois : remboursements, retards, relance WhatsApp. Rien n’est compté dans les dépenses.",
-        "expenses": "Le budget du mois, seul ou en foyer, et le bilan du mois par l’IA."
+        "expenses": "Le budget du mois, seul ou en foyer, et le bilan du mois par l’IA.",
+        "plants": "Les plantes, leur arrosage proposé par l’IA, le rappel du matin et le diagnostic d’une plante malade (un scan du mois)."
       },
       "deepNeedsLimit": "Impossible d’enregistrer : {list} n’a pas de quota d’analyses approfondies (0 = sans limite). Mets d’abord un nombre par mois plus haut, dans les prix et quotas des offres. Gratuit n’a pas de quota : pas d’analyse approfondie."
     }
@@ -1400,7 +1408,8 @@
       "garage": "Mon garage : entretien, rappels d’assurance et de vidange, pleins et dépenses",
       "reminders": "Rappels : sur tes scans (avec répétition et report), assurance, arrivée des colis",
       "loans": "Prêts : qui te doit, à qui tu dois, relance WhatsApp",
-      "expenses": "Mes dépenses : le budget du mois, seul ou en foyer"
+      "expenses": "Mes dépenses : le budget du mois, seul ou en foyer",
+      "plants": "Mes plantes : arrosage, rappel le matin, diagnostic d’une plante malade"
     },
     "how": "Comment s’abonner",
     "step1": "Connecte-toi",
@@ -1644,7 +1653,8 @@
     "papersHint": "CNI, assurances, garanties",
     "garageHint": "Entretien, pleins, rappels",
     "loansHint": "Qui te doit, à qui tu dois",
-    "expensesHint": "Budget du mois, ce qu’il reste"
+    "expensesHint": "Budget du mois, ce qu’il reste",
+    "plantsHint": "Arrosage et rappels"
   },
   "food": {
     "title": "Journal alimentaire",
@@ -1917,48 +1927,84 @@
       }
     },
     "finalTitle": "Prêt à essayer ?",
-    "finalBody": "Une première photo suffit pour voir ce que l’IA peut faire pour toi."
+    "finalBody": "Une première photo suffit pour voir ce que l’IA peut faire pour toi.",
+    "extrasTitle": "Pour aller plus loin",
+    "extrasHint": "Avec une offre, l’app en fait encore plus. Chaque carte te dit à partir de quelle offre c’est inclus.",
+    "extrasFrom": "À partir de",
+    "extrasFree": "Inclus gratuitement",
+    "extras": {
+      "reminders": {
+        "title": "Rappels",
+        "body": "Un rappel au bon moment : avant l’échéance d’une facture, la fin d’une assurance ou l’arrivée d’un colis. Tu peux le répéter ou le reporter."
+      },
+      "pdfExport": {
+        "title": "Export PDF",
+        "body": "Un PDF propre d’un document, ou de plusieurs scans de ton historique, à envoyer ou à imprimer."
+      },
+      "parcelCosts": {
+        "title": "Coûts des colis",
+        "body": "Le prix et les frais de chaque colis en ariary, pour savoir ce qu’il t’a vraiment coûté."
+      },
+      "multiPage": {
+        "title": "Plusieurs pages",
+        "body": "Un contrat ou une longue facture en plusieurs photos, analysé comme un seul document."
+      },
+      "deepAnalysis": {
+        "title": "Analyse approfondie",
+        "body": "Relance l’analyse d’un scan avec l’IA la plus précise, quand le sujet compte vraiment."
+      },
+      "garage": {
+        "title": "Mon garage",
+        "body": "Tes véhicules, leur entretien, les rappels d’assurance et de vidange, les pleins et les dépenses."
+      },
+      "plants": {
+        "title": "Mes plantes",
+        "body": "Quand arroser chaque plante, un rappel le matin, et de l’aide quand une plante est malade."
+      },
+      "reseller": {
+        "title": "Outils de revendeur",
+        "body": "Un client par colis, les totaux par client, le récap du mois et un relevé PDF à envoyer."
+      },
+      "expenses": {
+        "title": "Mes dépenses",
+        "body": "Le budget du mois, seul ou en foyer : ce qui sort, ce qui reste."
+      },
+      "loans": {
+        "title": "Prêts",
+        "body": "Qui te doit, à qui tu dois, et une relance par WhatsApp quand il faut."
+      }
+    }
   },
   "loans": {
     "title": "Prêts",
     "subtitle": "L’argent que tu as prêté, et celui que tu dois. Rien n’est compté dans tes dépenses.",
     "unavailable": "Prêts n’est pas encore ouvert à ton offre.",
     "readOnly": "Prêts n’est plus dans ton offre : tes prêts restent visibles, sans modification.",
-    "directionLabel": "On me doit ou je dois",
     "directions": {
       "lent": "On me doit",
       "borrowed": "Je dois"
     },
     "summary": {
-      "lent": "On te doit en tout",
-      "borrowed": "Tu dois en tout",
+      "lent": "On te doit",
+      "borrowed": "Tu dois",
       "people": "{count} personnes",
       "peopleOne": "1 personne",
-      "late": "dont {amount} en retard"
-    },
-    "add": {
-      "lent": "J’ai prêté de l’argent",
-      "borrowed": "J’ai emprunté"
-    },
-    "empty": {
-      "lent": {
-        "title": "Personne ne te doit d’argent",
-        "body": "Note ici l’argent que tu as prêté : tu sauras toujours qui te doit quoi."
-      },
-      "borrowed": {
-        "title": "Tu ne dois rien à personne",
-        "body": "Note ici l’argent que tu as emprunté : tu sauras toujours ce qu’il te reste à rendre."
+      "late": "dont {amount} en retard",
+      "nobody": {
+        "lent": "Personne",
+        "borrowed": "À personne"
       }
     },
-    "allRepaid": {
-      "lent": "Tout le monde t’a remboursé.",
-      "borrowed": "Tu as tout rendu."
+    "empty": {
+      "title": "Aucun prêt pour l’instant",
+      "body": "Note ici l’argent que tu prêtes ou que tu empruntes : tu sauras toujours qui te doit quoi.",
+      "lent": "Personne ne te doit d’argent.",
+      "borrowed": "Tu ne dois rien à personne."
     },
+    "allRepaid": "Tout est remboursé, des deux côtés.",
     "search": "Chercher une personne",
     "noMatch": "Personne ne porte ce nom.",
     "late": "En retard",
-    "open": "{count} prêts en cours",
-    "openOne": "1 prêt en cours",
     "dueOn": "à rendre le {date}",
     "repaidSection": "Remboursés ({count})",
     "repaidOn": "Remboursé le {date}",
@@ -1976,8 +2022,8 @@
         "borrowed": "Qui t’a prêté ?"
       },
       "personPlaceholder": "Rakoto, Tante Lalao…",
-      "amount": "Montant (Ar)",
-      "date": "Date",
+      "amount": "Combien ? (Ar)",
+      "date": "Quand ?",
       "today": "Aujourd’hui",
       "due": "À rendre pour (facultatif)",
       "dueDay": "Date à laquelle rendre",
@@ -1988,10 +2034,49 @@
         "pick": "Choisir"
       },
       "phone": "Téléphone (facultatif)",
-      "note": "Note (facultatif)",
-      "notePlaceholder": "pour l’écolage",
       "save": "Enregistrer",
-      "missing": "Écris le nom de la personne et le montant."
+      "missing": "Écris le nom de la personne et le montant.",
+      "split": "Rembourser en plusieurs fois",
+      "times": "Combien de fois ?",
+      "frequency": "Fréquence",
+      "frequencies": {
+        "week": "Chaque semaine",
+        "month": "Chaque mois"
+      },
+      "firstDue": "1re échéance",
+      "installments": "Les échéances (tu peux changer les montants)",
+      "installmentLabel": "Montant de l’échéance du {date}",
+      "scheduleMismatch": "Les échéances font {sum}, mais il faut rendre {total}.",
+      "interest": "Intérêts ou frais convenus",
+      "interestKinds": {
+        "fixed": "En Ar",
+        "percent": "En %"
+      },
+      "interestFixed": "Intérêts ou frais (Ar)",
+      "interestPercent": "Intérêts (% du montant)",
+      "totalDue": "À rendre en tout : {amount}",
+      "wallet": {
+        "lent": "De quelle poche sort l’argent ?",
+        "borrowed": "Dans quelle poche arrive l’argent ?"
+      },
+      "titleMore": {
+        "lent": "{name} me doit encore…",
+        "borrowed": "Je dois encore à {name}…"
+      },
+      "purpose": "Pour quoi ?",
+      "purposePlaceholder": "Ou écris-le : réparation de la moto…",
+      "purposes": {
+        "school": "Écolage",
+        "health": "Santé",
+        "transport": "Transport",
+        "shopping": "Courses",
+        "rent": "Loyer",
+        "family": "Famille",
+        "other": "Autre"
+      },
+      "more": "Plus d’options",
+      "moreHint": "Date pour rendre, en plusieurs fois, intérêts, téléphone…",
+      "proofsLater": "Une photo comme preuve ? Tu pourras l’ajouter une fois le prêt enregistré."
     },
     "saved": {
       "lent": "C’est noté : {person} te doit {amount}.",
@@ -2000,18 +2085,14 @@
     },
     "detail": {
       "back": "Retour à la liste",
-      "left": {
-        "lent": "Te doit encore {amount}",
-        "borrowed": "Tu lui dois encore {amount}"
-      },
       "settled": "Tout est remboursé",
       "on": {
         "lent": "Prêté le {date}",
         "borrowed": "Emprunté le {date}"
       },
       "another": {
-        "lent": "Nouveau prêt",
-        "borrowed": "Nouvel emprunt"
+        "lent": "{name} me doit encore…",
+        "borrowed": "Je dois encore à {name}…"
       },
       "repayments": "Remboursements",
       "repaymentLine": "{amount} rendus le {date}",
@@ -2023,10 +2104,39 @@
       "remove": "Supprimer",
       "confirmRemove": "Supprimer pour de bon",
       "removed": "Prêt supprimé.",
-      "whatsapp": "Relancer sur WhatsApp",
-      "copy": "Copier le message",
       "copied": "Message copié : colle-le dans WhatsApp ou un SMS.",
-      "copyFailed": "Impossible de copier le message."
+      "copyFailed": "Impossible de copier le message.",
+      "principal": {
+        "lent": "Prêté {amount}",
+        "borrowed": "Emprunté {amount}"
+      },
+      "interest": "Intérêts {amount}",
+      "total": "À rendre {amount}",
+      "schedule": "Échéancier",
+      "installment": "{amount} le {date}",
+      "installmentLeft": "reste {amount}",
+      "installmentStatus": {
+        "paid": "Payée",
+        "partial": "En partie",
+        "upcoming": "À venir",
+        "late": "En retard"
+      },
+      "ack": "Reconnaissance de dette (PDF)",
+      "export": "Exporter le compte (PDF, Excel)",
+      "nudge": "{name} devait te rendre de l’argent aujourd’hui : tu peux envoyer une relance sur WhatsApp.",
+      "receipt": "Voir le reçu",
+      "title": "Compte avec {name}",
+      "owes": {
+        "lent": "{name} te doit {amount}",
+        "borrowed": "Tu dois {amount} à {name}"
+      },
+      "remind": "Relancer",
+      "remindCopy": "Relancer (copier le message)",
+      "alsoOwes": {
+        "lent": "{name} te doit aussi {amount}",
+        "borrowed": "Tu dois aussi {amount} à {name}"
+      },
+      "ackShort": "Reconnaissance de dette"
     },
     "repay": {
       "title": {
@@ -2036,11 +2146,305 @@
       "left": "Il reste {amount} à rendre.",
       "capped": "C’est plus que le reste : seuls {amount} seront notés.",
       "saved": "{amount} noté. Reste {left}.",
-      "savedAll": "Tout est remboursé."
+      "savedAll": "Tout est remboursé.",
+      "wallet": {
+        "lent": "Dans quelle poche arrive l’argent ?",
+        "borrowed": "De quelle poche sort l’argent ?"
+      },
+      "amount": "Combien ? (Ar)",
+      "spread": "Réparti sur {count} sommes, en commençant par la plus urgente.",
+      "titleNamed": {
+        "lent": "{name} m’a rendu…",
+        "borrowed": "J’ai rendu à {name}…"
+      }
     },
     "reminder": {
       "message": "Bonjour {name}, petit rappel pour les {amount} que je t’ai prêtés. Dis-moi quand tu peux me les rendre. Merci !",
       "messageDue": "Bonjour {name}, petit rappel pour les {amount} que je t’ai prêtés, à rendre le {date}. Dis-moi quand tu peux me les rendre. Merci !"
+    },
+    "nextDue": "Prochaine échéance : {amount} le {date}",
+    "ack": {
+      "title": "Reconnaissance de dette",
+      "owe": "Je soussigné(e) {debtor}, reconnais devoir à {creditor} la somme de {words} ({amount}).",
+      "withInterest": "Cette somme comprend {amount} prêtés le {date}, et {interest} d’intérêts ou de frais convenus.",
+      "lentOn": "Cette somme m’a été prêtée le {date}.",
+      "schedule": "Je m’engage à la rembourser en {count} fois, aux dates suivantes :",
+      "dueOn": "Je m’engage à la rembourser au plus tard le {date}.",
+      "noDue": "Je m’engage à la rembourser.",
+      "alreadyPaid": "À ce jour, {paid} ont déjà été remboursés ; il reste {left} à rembourser.",
+      "installment": "{amount} au plus tard le {date}",
+      "signedAt": "Fait à {place}, le {date}.",
+      "signDebtor": "Signature de {name}, précédée de « Lu et approuvé »",
+      "signCreditor": "Signature de {name}",
+      "file": "reconnaissance-de-dette",
+      "me": {
+        "lent": "Ton nom (celui qui prête)",
+        "borrowed": "Ton nom (celui qui emprunte)"
+      },
+      "place": "Lieu (facultatif)",
+      "placePlaceholder": "Antananarivo",
+      "hint": "Imprime-le ou envoie-le, puis signez-le tous les deux.",
+      "make": "Créer le PDF",
+      "withProof": "Joindre la preuve en annexe",
+      "withProofs": "Joindre les {count} preuves en annexe",
+      "annex": "Annexe {number} : preuve jointe",
+      "choose": "Pour quelle somme ?"
+    },
+    "export": {
+      "button": "Exporter (Excel, PDF)",
+      "sheetTitle": "Exporter mes prêts",
+      "sheetTitlePerson": "Exporter le compte avec {name}",
+      "excel": "Excel",
+      "excelHint": "Un tableau : chaque prêt, un résumé par personne, et pour une personne son relevé.",
+      "pdf": "PDF",
+      "pdfHint": "Un récapitulatif par personne, facile à envoyer.",
+      "working": "Création du fichier…",
+      "downloaded": "Fichier téléchargé",
+      "failed": "Le fichier n’a pas pu être créé. Réessaie.",
+      "title": "Mes prêts",
+      "titlePerson": "Compte avec {name}",
+      "exportedOn": "Exporté le {date}",
+      "file": "prets",
+      "line": "{date} · {total} · reste {left} · {status}",
+      "columns": {
+        "person": "Personne",
+        "direction": "Sens",
+        "at": "Date",
+        "amountMga": "Montant",
+        "interestMga": "Intérêts",
+        "totalMga": "Total à rendre",
+        "paidMga": "Remboursé",
+        "remainingMga": "Reste",
+        "dueAt": "Échéance",
+        "status": "État",
+        "note": "Note",
+        "loans": "Prêts",
+        "lateMga": "En retard",
+        "what": "Pour quoi",
+        "kind": "Ligne",
+        "addedMga": "Dû",
+        "repaidMga": "Rendu",
+        "balanceMga": "Reste"
+      },
+      "status": {
+        "open": "En cours",
+        "late": "En retard",
+        "repaid": "Remboursé"
+      },
+      "sheetLoansBy": {
+        "lent": "On me doit",
+        "borrowed": "Je dois"
+      },
+      "sheetPeopleBy": {
+        "lent": "Par personne (on me doit)",
+        "borrowed": "Par personne (je dois)"
+      },
+      "totalBy": {
+        "lent": "Total on me doit",
+        "borrowed": "Total je dois"
+      },
+      "sheetAccountBy": {
+        "lent": "Compte (on me doit)",
+        "borrowed": "Compte (je dois)"
+      },
+      "accountLine": "{amount} · reste {left}"
+    },
+    "stats": {
+      "title": "En chiffres ({year})",
+      "total": {
+        "lent": "Prêté",
+        "borrowed": "Emprunté"
+      },
+      "paid": {
+        "lent": "On t’a rendu",
+        "borrowed": "Tu as rendu"
+      },
+      "remaining": {
+        "lent": "Encore dû",
+        "borrowed": "Reste à rendre"
+      },
+      "count": "Nombre de prêts",
+      "averageDays": "Délai moyen de remboursement",
+      "days": "{count} jours",
+      "dayOne": "1 jour",
+      "noneYet": "Pas encore",
+      "late": {
+        "lent": "Les plus en retard",
+        "borrowed": "Là où tu es le plus en retard"
+      },
+      "empty": "Aucun prêt cette année."
+    },
+    "scan": {
+      "button": "Scanner une reconnaissance de dette",
+      "again": "Scanner un autre papier",
+      "camera": "Prendre une photo",
+      "gallery": "Choisir une image",
+      "reading": "Je lis le document…",
+      "filled": "J’ai rempli ce que j’ai pu lire : vérifie avant d’enregistrer. La photo sera gardée comme preuve.",
+      "whichSide": "Qui es-tu sur ce papier ?",
+      "sideLent": "{name} : on me doit",
+      "sideBorrowed": "{name} : je dois",
+      "lender": "Le prêteur",
+      "borrower": "L’emprunteur",
+      "amountsDiffer": "Attention : le montant en chiffres ({figures}) et en lettres (« {words} ») ne sont pas les mêmes. Vérifie le montant.",
+      "placeNote": "Signé à {place}",
+      "notAck": "Ce papier ne ressemble pas à une reconnaissance de dette.",
+      "errors": {
+        "failed": "Je n’ai pas pu lire le document. Réessaie avec une photo bien nette.",
+        "limit": "Tes scans du mois sont épuisés.",
+        "signIn": "Connecte-toi pour scanner une reconnaissance de dette.",
+        "offline": "Pas de connexion : réessaie quand tu as du réseau.",
+        "plan": "Le scan des prêts ne fait pas partie de ton offre."
+      }
+    },
+    "proofs": {
+      "title": "Preuves",
+      "has": "Avec preuve",
+      "open": "Voir la preuve {number}",
+      "add": "Ajouter une preuve",
+      "hint": "Une photo de la reconnaissance de dette, une capture du transfert MVola…",
+      "camera": "Prendre une photo",
+      "gallery": "Choisir une image",
+      "fromScans": "Depuis mes scans",
+      "noScans": "Pas encore de scan dans ton historique.",
+      "full": "{max} preuves au plus par prêt.",
+      "added": "Preuve ajoutée.",
+      "failed": "Je n’ai pas pu ajouter cette image.",
+      "viewTitle": "Preuve",
+      "gone": "Ce scan a été supprimé de ton historique.",
+      "fromScan": "Un scan de ton historique",
+      "addedOn": "Ajoutée le {date}",
+      "remove": "Supprimer la preuve",
+      "confirmRemove": "Oui, supprimer la preuve",
+      "removed": "Preuve supprimée."
+    },
+    "reminders": {
+      "label": "Me rappeler les échéances",
+      "hint": "La veille à 9 h, et le jour même pour relancer quelqu’un qui te doit de l’argent.",
+      "appOnly": "Les rappels d’échéance marchent dans l’application Android seulement.",
+      "allow": "Autoriser les notifications",
+      "denied": "Autorise les notifications de l’app dans les réglages de ton téléphone.",
+      "titleEve": "Échéance demain",
+      "titleDay": "Échéance aujourd’hui",
+      "eve": {
+        "lent": "{name} doit te rendre {amount} demain.",
+        "borrowed": "Tu dois rendre {amount} à {name} demain."
+      },
+      "day": "{name} devait te rendre {amount} aujourd’hui. Le relancer ?"
+    },
+    "link": {
+      "ask": {
+        "lent": "C’est un remboursement de {name} ?",
+        "borrowed": "C’est un remboursement à {name} ?"
+      },
+      "left": "(reste {amount})",
+      "yes": "Oui, c’est un remboursement",
+      "same": {
+        "lent": "Un remboursement de {amount} de {name} est déjà noté le {date} : c’est le même ?",
+        "borrowed": "Un remboursement de {amount} à {name} est déjà noté le {date} : c’est le même ?"
+      },
+      "sameYes": "Oui, c’est le même",
+      "another": "Non, c’en est un autre",
+      "counted": {
+        "lent": "Compté comme remboursement de {name} ({amount})",
+        "borrowed": "Compté comme remboursement à {name} ({amount})"
+      },
+      "open": "Voir le prêt",
+      "undo": "Annuler",
+      "saved": {
+        "lent": "Remboursement noté. {name} te doit encore {amount}.",
+        "borrowed": "Remboursement noté. Tu dois encore {amount} à {name}."
+      },
+      "badge": "Remboursement",
+      "statement": {
+        "lent": "Remboursement de {name}",
+        "borrowed": "Remboursement à {name}"
+      },
+      "split": {
+        "lent": "{amount} de remboursement, {surplus} comptés en revenu.",
+        "borrowed": "{amount} de remboursement, {surplus} comptés en dépense."
+      },
+      "surplusNote": {
+        "lent": "Surplus de {name}",
+        "borrowed": "Surplus à {name}"
+      }
+    },
+    "share": {
+      "button": "Partager ce qu’il reste à rendre",
+      "intro": "{name} verra, sans compte : les montants, l’échéancier, ses remboursements et ce qu’il reste. Jamais ton numéro, tes notes ni tes preuves.",
+      "lender": "Ton nom, tel qu’il s’affichera",
+      "create": "Créer le lien",
+      "missingName": "Écris ton nom.",
+      "live": "Lien actif : {name} voit ce qu’il reste à rendre, mis à jour à chaque changement.",
+      "elsewhere": "Ce lien a été créé sur un autre appareil. Pour l’envoyer d’ici, crée un nouveau lien (l’ancien ne marchera plus).",
+      "newLink": "Nouveau lien",
+      "whatsapp": "Envoyer sur WhatsApp",
+      "copy": "Copier le lien",
+      "copied": "Lien copié : colle-le dans WhatsApp ou un SMS.",
+      "copyFailed": "Impossible de copier le lien.",
+      "stop": "Arrêter le partage",
+      "stopped": "Partage arrêté : le lien ne marche plus.",
+      "soon": "Le lien à partager arrive bientôt.",
+      "signIn": "Connecte-toi à ton compte pour envoyer un lien à partager.",
+      "failed": "Impossible pour l’instant. Réessaie plus tard.",
+      "message": "Bonjour {name}, voici ce qu’il reste à rendre, mis à jour à chaque remboursement : {link}"
+    },
+    "household": {
+      "hint": "Les prêts du foyer sont vus par tous ses membres. Chacun peut noter un remboursement. Ils ne touchent pas tes poches et n’ont pas de rappel.",
+      "soon": "Les prêts du foyer arrivent bientôt.",
+      "option": "Prêt du foyer",
+      "optionHint": "Vu par tous les membres du foyer, sans toucher tes poches.",
+      "by": "Noté par {name}",
+      "chip": "Foyer"
+    },
+    "new": {
+      "button": "Nouveau",
+      "title": "Qu’est-ce que tu notes ?",
+      "lent": "J’ai prêté de l’argent",
+      "lentHint": "Quelqu’un te doit de l’argent : tu sauras toujours combien.",
+      "borrowed": "J’ai emprunté de l’argent",
+      "borrowedHint": "Tu dois de l’argent à quelqu’un : tu sauras ce qu’il te reste à rendre."
+    },
+    "filter": {
+      "lent": "On te doit",
+      "borrowed": "Tu dois",
+      "clear": "Tout afficher"
+    },
+    "card": {
+      "lent": "te doit",
+      "borrowed": "tu dois"
+    },
+    "badge": {
+      "late": "En retard de {count} j",
+      "lateOne": "En retard d’1 j",
+      "due": "Échéance le {date}",
+      "upToDate": "À jour",
+      "repaid": "Remboursé"
+    },
+    "ledger": {
+      "title": "Le relevé",
+      "what": "Pour quoi",
+      "amount": "Montant",
+      "left": "Reste"
+    },
+    "line": {
+      "title": {
+        "lent": "Prêt du {date}",
+        "borrowed": "Emprunt du {date}"
+      },
+      "loan": {
+        "lent": "Prêt",
+        "borrowed": "Emprunt"
+      },
+      "interest": "Intérêts",
+      "interestOf": {
+        "lent": "du prêt du {date}",
+        "borrowed": "de l’emprunt du {date}"
+      },
+      "repayment": {
+        "lent": "{name} m’a rendu",
+        "borrowed": "J’ai rendu"
+      }
     }
   },
   "garage": {
@@ -2433,7 +2837,8 @@
       "isExpense": "C’est une dépense",
       "isOwn": "C’est un mouvement entre mes comptes",
       "feesCounted": "Frais comptés dans tes dépenses : {amount}",
-      "alreadyCounted": "Déjà compté (scanné une première fois)"
+      "alreadyCounted": "Déjà compté (scanné une première fois)",
+      "alreadyImported": "Déjà compté (importé d’un relevé)"
     },
     "review": {
       "title": "Ce que l’IA pense de ton mois",
@@ -2626,6 +3031,12 @@
         "airtel_money": "Airtel Money",
         "bank": "Banque",
         "other": "Autre"
+      },
+      "loan": {
+        "lent": "Prêt à {name}",
+        "borrowed": "Emprunt à {name}",
+        "repaid_in": "Remboursement de {name}",
+        "repaid_out": "Remboursement à {name}"
       }
     },
     "forecast": {
@@ -2744,6 +3155,271 @@
       "parcelsLink": "Voir mes colis",
       "lines": "Achats et ventes du mois",
       "purchase": "Achat : {title}"
+    },
+    "statement": {
+      "open": "Importer un relevé",
+      "title": "Importer un relevé",
+      "intro": "Ajoute les captures de ton historique MVola, Orange Money, Airtel Money ou de ta banque (jusqu’à 10), ou le PDF du relevé.",
+      "privacy": "Les captures sont lues une fois, puis oubliées : seules les opérations que tu importes restent. Chaque page compte comme un scan du mois.",
+      "choose": "Choisir les captures ou le PDF",
+      "reading": "Je lis toutes les opérations…",
+      "heading": "Relevé {name} du {from} au {to}",
+      "demo": "Relevé d’exemple : en mode démo, l’IA n’a pas lu tes captures.",
+      "wallet": "Dans quelle poche ?",
+      "noWallet": "Sans poche : les retraits et les virements entre tes comptes ne sont pas importés.",
+      "totals": "{count} opération(s) · sorties {out} · entrées {in}",
+      "alreadyCount": "{count} déjà là, décochée(s)",
+      "already": "déjà là",
+      "fees": "frais {amount}",
+      "kinds": {
+        "out": "Paiement",
+        "in": "Argent reçu",
+        "withdrawal": "Retrait",
+        "deposit": "Dépôt",
+        "transfer": "Virement entre tes comptes"
+      },
+      "to": "Vers quelle poche ?",
+      "from": "Depuis quelle poche ?",
+      "toWallet": "Vers {name}",
+      "fromWallet": "Depuis {name}",
+      "ownNeedsWallets": "Crée une deuxième poche (espèces, banque…) pour compter ce mouvement.",
+      "import": "Importer {count} opération(s)",
+      "result": "{added} opération(s) ajoutée(s), {already} déjà là",
+      "balance": "Le relevé finit avec {amount}, ta poche {name} en avait {held}.",
+      "balanceYes": "Mettre ta poche {name} à {amount}",
+      "balanceDone": "Poche {name} corrigée.",
+      "close": "C’est fait",
+      "defaultName": "Relevé",
+      "feesNote": "Frais {name}",
+      "imported": "Importé",
+      "tag": "Importé · Relevé {name} du {from} au {to}",
+      "tagNoPeriod": "Importé · Relevé {name}",
+      "errors": {
+        "tooMany": "10 captures au plus : importe le reste une seconde fois.",
+        "pdfAlone": "Un PDF se lit seul : choisis-le sans captures.",
+        "pdfTooBig": "Ce PDF est trop lourd (3 Mo au plus) : fais plutôt des captures.",
+        "unsupported": "Choisis des images ou un PDF.",
+        "currency": "Ce relevé n’est pas en ariary : il ne peut pas être importé.",
+        "empty": "Je n’ai trouvé aucune opération. Essaie avec des captures plus nettes.",
+        "network": "Pas de connexion. Réessaie quand tu as du réseau.",
+        "plan_limit": "Tes scans du mois sont épuisés : chaque page en compte un.",
+        "plan_required": "L’import d’un relevé n’est pas dans ton offre.",
+        "rate_limited": "Trop de relevés pour aujourd’hui. Réessaie plus tard.",
+        "sign_in_required": "Connecte-toi pour importer un relevé.",
+        "invalid_request": "Ces fichiers ne peuvent pas être lus (10 pages au plus).",
+        "refused": "L’IA n’a pas pu lire ce relevé.",
+        "failed": "La lecture a échoué. Réessaie dans un moment.",
+        "save": "L’import s’est arrêté. Réessaie : rien ne sera ajouté deux fois."
+      }
+    },
+    "exportMore": {
+      "wallet": "Poche",
+      "sheetPockets": "Mes poches",
+      "pocketColumns": {
+        "name": "Poche",
+        "start": "Début du mois",
+        "incomes": "Entrées",
+        "expenses": "Sorties",
+        "moves": "Virements",
+        "end": "Fin du mois"
+      },
+      "inPockets": "Dans tes poches",
+      "pocketLine": "{name} · début {start} · entrées {incomes} · sorties {expenses} · virements {moves} · fin {end}",
+      "sheetSavings": "Épargne et tontines",
+      "goalColumns": {
+        "name": "Objectif",
+        "target": "Visé",
+        "saved": "Mis de côté",
+        "left": "Reste",
+        "month": "Ce mois-ci"
+      },
+      "tontineColumns": {
+        "name": "Tontine",
+        "paid": "Versé",
+        "pot": "Cagnotte",
+        "potStatus": "Reçue ?",
+        "potDay": "Le",
+        "month": "Versé ce mois-ci"
+      },
+      "received": "Reçue",
+      "upcoming": "À venir",
+      "moves": "Mouvements du mois",
+      "moveColumns": {
+        "date": "Date",
+        "name": "Pour",
+        "type": "Mouvement",
+        "wallet": "Poche",
+        "amountMga": "Montant"
+      },
+      "moveTypes": {
+        "saved": "Mis de côté",
+        "unsaved": "Repris",
+        "paid": "Versement",
+        "pot": "Cagnotte reçue"
+      },
+      "goalLine": "{name} · {saved} mis de côté sur {target} · reste {left}",
+      "tontineLine": "{name} · versé {paid} · cagnotte {pot} · {status}",
+      "potReceived": "reçue le {date}",
+      "potUpcoming": "à venir le {date}",
+      "sheetActivity": "Mon activité",
+      "activityColumns": {
+        "line": "Ligne",
+        "amountMga": "Montant",
+        "parcels": "Colis"
+      }
+    }
+  },
+  "objectAd": {
+    "section": "Vendre cet objet",
+    "hint": "L’IA t’écrit une annonce honnête, avec un prix conseillé en ariary.",
+    "sell": "Je veux le vendre",
+    "saved": "Annonce prête : {title}, {price}",
+    "open": "Voir l’annonce",
+    "sheetTitle": "Vendre cet objet",
+    "close": "Fermer",
+    "condition": "État",
+    "conditions": {
+      "new": "Neuf",
+      "veryGood": "Très bon",
+      "good": "Bon",
+      "worn": "Usé",
+      "toRepair": "À réparer"
+    },
+    "conditionHint": "Proposé d’après la photo : change-le si besoin.",
+    "place": "Lieu (ville), facultatif",
+    "placePlaceholder": "Antananarivo",
+    "malagasy": "En malgache aussi",
+    "write": "Écrire l’annonce",
+    "regenerate": "Régénérer l’annonce",
+    "writing": "L’IA écrit ton annonce…",
+    "countsAsQuestion": "Compte comme une question du jour.",
+    "demo": "Annonce d’exemple (mode démo).",
+    "price": "Prix conseillé",
+    "priceRange": "Entre {low} et {high}",
+    "priceNote": "C’est une estimation : regarde aussi les annonces près de chez toi.",
+    "priceLabel": "Prix :",
+    "title": "Titre",
+    "text": "Texte de l’annonce",
+    "textMg": "Texte en malgache",
+    "keywords": "Mots-clés",
+    "copy": "Copier",
+    "copied": "Annonce copiée.",
+    "whatsapp": "WhatsApp",
+    "facebook": "Facebook",
+    "facebookHint": "Annonce copiée : colle-la dans ta publication Facebook.",
+    "share": "Partager",
+    "again": "Changer l’état ou régénérer"
+  },
+  "loanShare": {
+    "metaTitle": "Ce qu’il reste à rendre",
+    "loading": "Chargement…",
+    "missing": {
+      "title": "Ce lien est incomplet",
+      "body": "Il manque une partie du lien. Demande à la personne de te le renvoyer."
+    },
+    "gone": {
+      "title": "Ce lien n’est plus actif",
+      "body": "La personne qui te l’a envoyé a arrêté le partage, ou le lien n’est pas le bon."
+    },
+    "error": {
+      "title": "Impossible d’afficher le récapitulatif",
+      "body": "Vérifie ta connexion, puis réessaie dans un moment."
+    },
+    "title": "Ce qu’il reste à rendre",
+    "from": "{lender} t’a prêté de l’argent. Voici où tu en es, {name}.",
+    "left": "Il reste à rendre",
+    "next": "Prochaine échéance : {amount} le {date}",
+    "updated": "Mis à jour le {date}",
+    "lentOn": "Prêté le {date}",
+    "noRepayment": "Aucun remboursement noté pour l’instant.",
+    "readOnly": "Ce récapitulatif est en lecture seule : seule la personne qui t’a prêté peut le changer.",
+    "sentWith": "Envoyé avec Assisteo Agny",
+    "discover": "Découvrir l’app"
+  },
+  "plants": {
+    "title": "Mes plantes",
+    "subtitle": "Quand arroser, un rappel le matin, et quoi faire quand une plante va mal.",
+    "count": "{count} plante(s)",
+    "shortcutDue": "{count} à arroser aujourd’hui",
+    "defaultName": "Ma plante",
+    "emptyTitle": "Aucune plante pour l’instant",
+    "emptyBody": "Photographie une plante : l’IA la reconnaît et te propose quand l’arroser. Tu peux aussi l’ajouter à la main.",
+    "scan": "Photographier une plante",
+    "add": "Ajouter une plante",
+    "addTitle": "Nouvelle plante",
+    "editTitle": "Modifier la plante",
+    "save": "Enregistrer",
+    "edit": "Modifier",
+    "remove": "Supprimer",
+    "removeConfirm": "Supprimer cette plante",
+    "toWaterToday": "À arroser aujourd’hui",
+    "later": "Plus tard",
+    "today": "À arroser aujourd’hui",
+    "late": "À arroser, en retard de {count} jour(s)",
+    "inDays": "À arroser dans {count} jour(s)",
+    "wateredToday": "Arrosée aujourd’hui",
+    "water": "Arrosée aujourd’hui",
+    "waterShort": "Arrosée",
+    "waterName": "{name} arrosée aujourd’hui",
+    "watered": "{name} : arrosée aujourd’hui.",
+    "watering": "Arrosage",
+    "every": "Tous les {count} jour(s)",
+    "lastWatered": "dernier arrosage le {date}",
+    "openScan": "Voir le scan de la plante",
+    "places": {
+      "indoor": "Dedans",
+      "outdoor": "Dehors"
+    },
+    "fields": {
+      "name": "Nom",
+      "namePlaceholder": "Monstera du salon",
+      "place": "Lieu",
+      "every": "Arroser tous les (jours)",
+      "everyHint": "Proposé par l’IA selon l’espèce et la saison : change-le si ta plante en demande moins ou plus.",
+      "lastWatered": "Dernier arrosage",
+      "notes": "Notes",
+      "notesPlaceholder": "Engrais, rempotage, où elle est…"
+    },
+    "addFromScan": "Ajouter à mes plantes",
+    "addHint": "Garde-la dans Mes plantes : l’arrosage est proposé, avec un rappel le matin.",
+    "saved": "Plante ajoutée à Mes plantes.",
+    "inPlants": "Dans Mes plantes : {name}.",
+    "open": "Voir",
+    "locked": "Mes plantes est inclus à partir de {plan}.",
+    "lockedScan": "Ajouter cette plante à Mes plantes est inclus à partir de {plan}.",
+    "readOnly": "Ton offre ne comprend plus Mes plantes : tes plantes restent consultables, mais tu ne peux plus rien modifier et le rappel est en pause. Repasse à {plan} pour tout retrouver.",
+    "pitch": {
+      "watering": "L’arrosage proposé par l’IA selon l’espèce et la saison à Madagascar",
+      "reminder": "Un rappel le matin des jours d’arrosage",
+      "check": "« Ma plante a un problème » : la cause probable et quoi faire"
+    },
+    "reminder": {
+      "title": "Mes plantes",
+      "one": "{name} est à arroser aujourd’hui.",
+      "many": "{count} plantes à arroser aujourd’hui : {names}."
+    },
+    "check": {
+      "title": "Ma plante a un problème",
+      "hint": "Photographie une feuille ou la plante : l’IA te dit la cause probable et quoi faire. Compte comme un scan du mois.",
+      "camera": "Prendre une photo",
+      "gallery": "Depuis la galerie",
+      "reading": "L’IA regarde ta plante…",
+      "demo": "Diagnostic d’exemple (mode démo).",
+      "notPlant": "Ce n’est pas une plante : essaie avec une photo d’une feuille ou de la plante.",
+      "healthy": "Rien d’inquiétant",
+      "remove": "Supprimer ce diagnostic",
+      "urgency": {
+        "low": "Peut attendre",
+        "medium": "Cette semaine",
+        "high": "Urgent"
+      },
+      "errors": {
+        "failed": "L’IA n’a pas pu regarder la photo. Réessaie.",
+        "limit": "Tes scans du mois sont épuisés.",
+        "signIn": "Connecte-toi pour vérifier une plante.",
+        "offline": "Pas de connexion : réessaie quand le réseau revient.",
+        "plan": "Ton offre ne comprend pas Mes plantes."
+      }
     }
   }
 }

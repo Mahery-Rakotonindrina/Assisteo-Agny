@@ -12,13 +12,17 @@ import {
   shiftMonth,
   type Budget,
   type ExpenseRecord,
+  type Income,
   type ManualExpense,
   type PaymentMethod,
   receiptKey,
   sameReference,
 } from "@/lib/expenses";
+import { pocketTotals, savingsMonth } from "@/lib/expenseExport";
 import { currencySymbols, type ForeignCurrency } from "@/lib/money";
 import { parseDay } from "@/lib/papers";
+import type { ActivityMonth } from "@/lib/resale";
+import type { WalletBook } from "@/lib/wallets";
 
 // "Mes dépenses" and the AI: a scanned receipt turned into an expense, and the
 // month's totals sent for a review. Pure, so it can be tested.
@@ -64,6 +68,12 @@ export function receiptDuplicate(records: ExpenseRecord[], scan: Scan): ManualEx
   return byKind(records, "expense").find((record) => record.scanId === scan.id || sameReference(record.reference, reference));
 }
 
+/** The income imported from a statement with this receipt's reference (money received). */
+export function receiptIncomeDuplicate(records: ExpenseRecord[], scan: Scan): Income | undefined {
+  const reference = scan.analysis.document?.receipt?.reference ?? undefined;
+  return byKind(records, "income").find((record) => sameReference(record.reference, reference));
+}
+
 // ---- The month's review ------------------------------------------------------------------
 
 const MAX_CATEGORIES = 20;
@@ -72,13 +82,15 @@ const AVERAGE_MONTHS = 6;
 /**
  * What the month's review sends: totals for the month, the one before and
  * the average of the 6 before, overall and per category (named as the user
- * sees them). No note, shop, reference or single expense ever leaves.
+ * sees them), with the pockets, savings and activity as totals when given.
+ * No note, shop, reference, single expense or pocket name ever leaves.
  */
 export function summaryRequest(
   records: ExpenseRecord[],
   sources: Parameters<typeof monthExpenses>[1],
   month: string,
   { locale, now, categoryName }: { locale: ExpenseSummaryRequest["locale"]; now: number; categoryName: (category: string) => string },
+  more: { book?: WalletBook; activity?: ActivityMonth | null } = {},
 ): ExpenseSummaryRequest {
   const totalsOf = (key: string) => monthTotals(monthExpenses(records, sources, key));
   const current = totalsOf(month);
@@ -119,6 +131,24 @@ export function summaryRequest(
     income: income > 0 ? income : null,
     budget: budget?.total || null,
     categories,
+    ...reviewExtras(records, more.book, month, more.activity),
+  };
+}
+
+/**
+ * The review's optional totals, never a name: the pockets at the start and
+ * the end of the month, the net put aside in goals, the tontine payments
+ * and the activity's profit, each only when there is one.
+ */
+export function reviewExtras(records: ExpenseRecord[], book: WalletBook | undefined, month: string, activity?: ActivityMonth | null) {
+  const pockets = pocketTotals(book, month);
+  const { goals, tontines } = savingsMonth(records, month);
+  const sum = (values: number[]) => values.reduce((total, value) => total + value, 0);
+  return {
+    ...(pockets && { pocketsStart: pockets.start, pocketsEnd: pockets.end }),
+    ...(goals.length > 0 && { savedThisMonth: sum(goals.map((goal) => goal.month)) }),
+    ...(tontines.length > 0 && { tontinePaid: Math.max(0, sum(tontines.map((tontine) => tontine.month))) }),
+    ...(activity?.active && { activityProfit: activity.profitMga }),
   };
 }
 

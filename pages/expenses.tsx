@@ -16,7 +16,9 @@ import { useExpenseLabels } from "@/hooks/useExpenseLabels";
 import { useExpenses } from "@/hooks/useExpenses";
 import { useBudgetSources, useExpenseSources } from "@/hooks/useExpenseSources";
 import { useHousehold } from "@/hooks/useHousehold";
+import { useLoans } from "@/hooks/useLoans";
 import { useNow } from "@/hooks/useNow";
+import { useParcels } from "@/hooks/useParcels";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { overallCap } from "@/lib/expenseExport";
@@ -42,6 +44,7 @@ import {
 } from "@/lib/expenses";
 import type { SearchHit } from "@/lib/expenseSearch";
 import { formatAriary, formatMonthYear } from "@/lib/format";
+import { activityMonth, excludedKeys, separatesActivity } from "@/lib/resale";
 import { activeWallets, lastUsedWallet, walletBook, type WalletBook } from "@/lib/wallets";
 import { rise, stagger } from "@/lib/motion";
 
@@ -69,7 +72,7 @@ export default function ExpensesPage() {
   return (
     <>
       <Seo title={`${allowed ? t("expenses.title") : t("expenses.household.title")} · ${t("meta.title")}`} noindex />
-      {!known ? null : allowed ? <Expenses canRemind={has("reminders")} reseller={has("reseller")} joinCode={joinCode} /> : <HouseholdOnly joinCode={joinCode} />}
+      {!known ? null : allowed ? <Expenses canRemind={has("reminders")} reseller={has("reseller")} withLoans={has("loans")} joinCode={joinCode} /> : <HouseholdOnly joinCode={joinCode} />}
     </>
   );
 }
@@ -121,7 +124,7 @@ function MonthPicker({ month, onPick }: { month: string; onPick: (month: string)
   );
 }
 
-function Expenses({ canRemind, reseller, joinCode }: { canRemind: boolean; reseller: boolean; joinCode?: string }) {
+function Expenses({ canRemind, reseller, withLoans, joinCode }: { canRemind: boolean; reseller: boolean; withLoans: boolean; joinCode?: string }) {
   const { t } = useTranslation();
   const now = useNow(60_000);
   const { records } = useExpenses();
@@ -181,11 +184,16 @@ function Expenses({ canRemind, reseller, joinCode }: { canRemind: boolean; resel
     };
   }, [records, sources, month]);
   // Where the money really is: the pockets, always personal (never the household's).
-  const book = useMemo(() => walletBook(records, allSources, now), [records, allSources, now]);
+  // With "Prêts" too: lending and repayments move the pockets (lib/loanLink.ts).
+  const { loans } = useLoans();
+  const book = useMemo(() => walletBook(records, allSources, now, withLoans ? loans : []), [records, allSources, now, withLoans, loans]);
   const pockets = useMemo<PocketChoice>(
     () => ({ wallets: activeWallets(book.context.wallets), lastUsed: lastUsedWallet(records, book.context), primary: book.context.primary?.id }),
     [book, records],
   );
+  // "Mon activité" of the month, with the reseller tools only (its profit goes in the month's review).
+  const { parcels } = useParcels();
+  const activity = useMemo(() => (reseller ? activityMonth(parcels, month, excludedKeys(records)) : null), [reseller, parcels, month, records]);
   const pickView = (value: View) => {
     closeOpened();
     setView(value);
@@ -280,6 +288,7 @@ function Expenses({ canRemind, reseller, joinCode }: { canRemind: boolean; resel
               <div className={styles.panel}>
                 <MonthPanel
                   key={`${month}:${opened?.id ?? ""}:${focus ?? ""}:${adding ? "add" : ""}`}
+                  activity={activity && separatesActivity(records) ? activity : null}
                   share={share}
                   month={month}
                   initialEditing={opened}
@@ -296,7 +305,7 @@ function Expenses({ canRemind, reseller, joinCode }: { canRemind: boolean; resel
                   pockets={pockets}
                 />
                 {/* Keyed by month: a review asked for another month never shows under this one. */}
-                <MonthReview key={month} month={month} records={records} sources={sources} />
+                <MonthReview key={month} month={month} records={records} sources={sources} book={book} activity={activity} />
               </div>
             ) : tab === "income" ? (
               <IncomePanel key={`${month}:${focus ?? ""}`} month={month} incomes={figures.incomes} defaultAt={defaultAt} focus={focus} book={book} pockets={pockets} />
