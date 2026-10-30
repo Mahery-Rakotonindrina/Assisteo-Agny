@@ -19,7 +19,8 @@ const permissionIcons: Record<PermissionKind, ReactNode> = {
   notifications: <BellRing size={40} strokeWidth={1.8} />,
 };
 
-const legalRoutes = new Set(["/privacy", "/terms"]);
+// Also the page a borrower opens from a shared loan: they may not use the app at all.
+const legalRoutes = new Set(["/privacy", "/terms", "/pret"]);
 
 /**
  * First-run walkthrough on phones: explains each device permission and asks

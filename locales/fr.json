@@ -1921,7 +1921,49 @@
       }
     },
     "finalTitle": "Prêt à essayer ?",
-    "finalBody": "Une première photo suffit pour voir ce que l’IA peut faire pour toi."
+    "finalBody": "Une première photo suffit pour voir ce que l’IA peut faire pour toi.",
+    "extrasTitle": "Pour aller plus loin",
+    "extrasHint": "Avec une offre, l’app en fait encore plus. Chaque carte te dit à partir de quelle offre c’est inclus.",
+    "extrasFrom": "À partir de",
+    "extrasFree": "Inclus gratuitement",
+    "extras": {
+      "reminders": {
+        "title": "Rappels",
+        "body": "Un rappel au bon moment : avant l’échéance d’une facture, la fin d’une assurance ou l’arrivée d’un colis. Tu peux le répéter ou le reporter."
+      },
+      "pdfExport": {
+        "title": "Export PDF",
+        "body": "Un PDF propre d’un document, ou de plusieurs scans de ton historique, à envoyer ou à imprimer."
+      },
+      "parcelCosts": {
+        "title": "Coûts des colis",
+        "body": "Le prix et les frais de chaque colis en ariary, pour savoir ce qu’il t’a vraiment coûté."
+      },
+      "multiPage": {
+        "title": "Plusieurs pages",
+        "body": "Un contrat ou une longue facture en plusieurs photos, analysé comme un seul document."
+      },
+      "deepAnalysis": {
+        "title": "Analyse approfondie",
+        "body": "Relance l’analyse d’un scan avec l’IA la plus précise, quand le sujet compte vraiment."
+      },
+      "garage": {
+        "title": "Mon garage",
+        "body": "Tes véhicules, leur entretien, les rappels d’assurance et de vidange, les pleins et les dépenses."
+      },
+      "reseller": {
+        "title": "Outils de revendeur",
+        "body": "Un client par colis, les totaux par client, le récap du mois et un relevé PDF à envoyer."
+      },
+      "expenses": {
+        "title": "Mes dépenses",
+        "body": "Le budget du mois, seul ou en foyer : ce qui sort, ce qui reste."
+      },
+      "loans": {
+        "title": "Prêts",
+        "body": "Qui te doit, à qui tu dois, et une relance par WhatsApp quand il faut."
+      }
+    }
   },
   "loans": {
     "title": "Prêts",
@@ -2287,6 +2329,38 @@
         "lent": "Surplus de {name}",
         "borrowed": "Surplus à {name}"
       }
+    },
+    "share": {
+      "button": "Partager ce qu’il reste à rendre",
+      "intro": "{name} verra, sans compte : les montants, l’échéancier, ses remboursements et ce qu’il reste. Jamais ton numéro, tes notes ni tes preuves.",
+      "lender": "Ton nom, tel qu’il le verra",
+      "create": "Créer le lien",
+      "missingName": "Écris ton nom.",
+      "live": "Lien actif : {name} voit ce qu’il reste à rendre, mis à jour à chaque changement.",
+      "elsewhere": "Ce lien a été créé sur un autre appareil. Pour l’envoyer d’ici, crée un nouveau lien (l’ancien ne marchera plus).",
+      "newLink": "Nouveau lien",
+      "whatsapp": "Envoyer sur WhatsApp",
+      "copy": "Copier le lien",
+      "copied": "Lien copié : colle-le dans WhatsApp ou un SMS.",
+      "copyFailed": "Impossible de copier le lien.",
+      "stop": "Arrêter le partage",
+      "stopped": "Partage arrêté : le lien ne marche plus.",
+      "soon": "Le lien à partager arrive bientôt.",
+      "signIn": "Connecte-toi à ton compte pour envoyer un lien à partager.",
+      "failed": "Impossible pour l’instant. Réessaie plus tard.",
+      "message": "Bonjour {name}, voici ce qu’il reste à rendre, mis à jour à chaque remboursement : {link}"
+    },
+    "household": {
+      "scopeLabel": "Mes prêts ou ceux du foyer",
+      "scopes": {
+        "personal": "Moi",
+        "household": "Foyer"
+      },
+      "hint": "Les prêts du foyer sont vus par tous ses membres. Chacun peut noter un remboursement. Ils ne touchent pas tes poches et n’ont pas de rappel.",
+      "soon": "Les prêts du foyer arrivent bientôt.",
+      "option": "Prêt du foyer",
+      "optionHint": "Vu par tous les membres du foyer, sans toucher tes poches.",
+      "by": "Noté par {name}"
     }
   },
   "garage": {
@@ -3151,5 +3225,31 @@
     "facebookHint": "Annonce copiée : colle-la dans ta publication Facebook.",
     "share": "Partager",
     "again": "Changer l’état ou régénérer"
+  },
+  "loanShare": {
+    "metaTitle": "Ce qu’il reste à rendre",
+    "loading": "Chargement…",
+    "missing": {
+      "title": "Ce lien est incomplet",
+      "body": "Il manque une partie du lien. Demande à la personne de te le renvoyer."
+    },
+    "gone": {
+      "title": "Ce lien n’est plus actif",
+      "body": "La personne qui te l’a envoyé a arrêté le partage, ou le lien n’est pas le bon."
+    },
+    "error": {
+      "title": "Impossible d’afficher le récapitulatif",
+      "body": "Vérifie ta connexion, puis réessaie dans un moment."
+    },
+    "title": "Ce qu’il reste à rendre",
+    "from": "{lender} t’a prêté de l’argent. Voici où tu en es, {name}.",
+    "left": "Il reste à rendre",
+    "next": "Prochaine échéance : {amount} le {date}",
+    "updated": "Mis à jour le {date}",
+    "lentOn": "Prêté le {date}",
+    "noRepayment": "Aucun remboursement noté pour l’instant.",
+    "readOnly": "Ce récapitulatif est en lecture seule : seule la personne qui t’a prêté peut le changer.",
+    "sentWith": "Envoyé avec Assisteo Agny",
+    "discover": "Découvrir l’app"
   }
 }
