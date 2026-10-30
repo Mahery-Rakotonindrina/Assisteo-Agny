@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import { motion } from "motion/react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, Download, HandCoins, Paperclip, Plus, Search } from "lucide-react";
 import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
@@ -9,20 +9,33 @@ import { LoanReminderSetting } from "@/components/Loans/LoanReminderSetting";
 import styles from "@/components/Loans/Loans.module.scss";
 import { SegmentedControl } from "@/components/SegmentedControl";
 import { Seo } from "@/components/Seo";
+import { useHousehold } from "@/hooks/useHousehold";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import { useLoanPockets } from "@/hooks/useLoanPockets";
-import { useLoans } from "@/hooks/useLoans";
+import { useHouseholdLoans, useLoanSharing, useLoans } from "@/hooks/useLoans";
 import { useNow } from "@/hooks/useNow";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDate } from "@/lib/format";
 import { hasProofs } from "@/lib/loanProof";
 import { loanStats, personLoans } from "@/lib/loanReport";
-import { loanMoney, loansByPerson, loanTotal, loanTotals, personKey, repaidAt, repaidLoans, searchPeople, type Loan, type LoanDirection } from "@/lib/loans";
+import { loanMoney, loansByPerson, loanTotal, loanTotals, personKey, repaidAt, repaidLoans, searchPeople, type Loan, type LoanDirection, type Repayment } from "@/lib/loans";
 import { rise, stagger } from "@/lib/motion";
+import { householdStore } from "@/services/household";
+import { householdBook, personalBook, type LoanBook } from "@/services/loanBook";
 
 /** The search shows once the list is longer than this. */
 const SEARCH_FROM = 5;
+
+type Scope = "personal" | "household";
+
+/** The household's side of the screen, for a member with "Prêts". */
+type HouseholdSide = {
+  /** Null before migration 0012: "bientôt disponible". */
+  book: LoanBook | null;
+  /** Who wrote a loan or a repayment: the member's name, else the one kept on it (an account deleted since). */
+  authorOf: (row: Loan | Repayment) => string | undefined;
+};
 
 type Editing = { kind: "add"; person?: string; phone?: string } | { kind: "edit"; loan: Loan } | null;
 
@@ -41,12 +54,44 @@ export default function LoansPage() {
   const { loans, isLoading } = useLoans();
   const allowed = has("loans");
   const canRemind = has("reminders");
+  // "Moi / Foyer": a member of a household, with "Prêts" (lib/householdLoans.ts).
+  const info = useHousehold();
+  const sharing = useLoanSharing();
+  const householdLoans = useHouseholdLoans();
+  const members = info?.household?.members;
+  const me = info?.userId ?? null;
+  const householdReady = (sharing.kind === "ready" || sharing.kind === "soon") && sharing.household;
+  const side = useMemo<HouseholdSide | undefined>(() => {
+    if (!members) return undefined;
+    return {
+      book: householdReady ? householdBook(me, members.find((member) => member.userId === me)?.label) : null,
+      authorOf: (row) => {
+        const { userId, authorName } = row as { userId?: string; authorName?: string };
+        return members.find((member) => member.userId === (userId ?? me))?.label ?? authorName;
+      },
+    };
+  }, [members, me, householdReady]);
+  const household = allowed ? side : undefined;
+
+  // Fresh when opened, like the household's budget (a member may have left…).
+  useEffect(() => {
+    if (allowed) void householdStore.refresh();
+  }, [allowed]);
+  const scope: Scope = household && router.query.scope === "household" ? "household" : "personal";
 
   return (
     <>
       <Seo title={`${t("loans.title")} · ${t("meta.title")}`} noindex />
       {!known || isLoading ? null : allowed || loans.length > 0 ? (
-        <Loans loans={loans} readOnly={!allowed} canRemind={canRemind} direction={router.query.dir === "borrowed" ? "borrowed" : "lent"} />
+        <Loans
+          loans={scope === "household" ? householdLoans : loans}
+          personalLoans={loans}
+          readOnly={!allowed || (scope === "household" && !household?.book)}
+          canRemind={canRemind}
+          direction={router.query.dir === "borrowed" ? "borrowed" : "lent"}
+          scope={scope}
+          household={household}
+        />
       ) : (
         <motion.div className={styles.page} variants={stagger} initial="hidden" animate="show">
           <motion.header variants={rise} className={styles.header}>
@@ -59,11 +104,17 @@ export default function LoansPage() {
   );
 }
 
-function Loans({ loans, readOnly, canRemind, direction }: { loans: Loan[]; readOnly: boolean; canRemind: boolean; direction: LoanDirection }) {
+type LoansProps = { loans: Loan[]; personalLoans: Loan[]; readOnly: boolean; canRemind: boolean; direction: LoanDirection; scope: Scope; household?: HouseholdSide };
+
+function Loans({ loans, personalLoans, readOnly, canRemind, direction, scope, household }: LoansProps) {
   const { t, locale } = useTranslation();
   const router = useRouter();
   // With "Mes dépenses" too: the pocket the money leaves, or comes into.
-  const pockets = useLoanPockets();
+  const allPockets = useLoanPockets();
+  // The household's loans never move the personal pockets.
+  const pockets = scope === "personal" ? allPockets : undefined;
+  const book = scope === "household" ? (household?.book ?? personalBook) : personalBook;
+  const authorOf = scope === "household" ? household?.authorOf : undefined;
   const isDesktop = useIsDesktop();
   const now = useNow(60_000);
   const [search, setSearch] = useState("");
@@ -92,14 +143,37 @@ function Loans({ loans, readOnly, canRemind, direction }: { loans: Loan[]; readO
   const stats = useMemo(() => loanStats(loans, direction, now), [loans, direction, now]);
   const year = new Date(now).getFullYear();
 
-  const go = (query: { dir?: LoanDirection; person?: string | null }) => {
+  const go = (query: { dir?: LoanDirection; person?: string | null; scope?: Scope }) => {
     const dir = query.dir ?? direction;
     const person = query.person === undefined ? openKey : query.person;
-    void router.replace({ pathname: router.pathname, query: { ...(dir === "borrowed" && { dir }), ...(person && { person }) } }, undefined, { shallow: true, scroll: !isDesktop });
+    const side = query.scope ?? scope;
+    void router.replace({ pathname: router.pathname, query: { ...(side === "household" && { scope: side }), ...(dir === "borrowed" && { dir }), ...(person && { person }) } }, undefined, { shallow: true, scroll: !isDesktop });
   };
 
   const list = (
     <>
+      {household && (
+        <motion.div variants={rise}>
+          <SegmentedControl
+            ariaLabel={t("loans.household.scopeLabel")}
+            value={scope}
+            onChange={(next) => {
+              setSearch("");
+              go({ scope: next, person: null });
+            }}
+            options={[
+              { value: "personal", label: t("loans.household.scopes.personal") },
+              { value: "household", label: t("loans.household.scopes.household") },
+            ]}
+          />
+        </motion.div>
+      )}
+      {scope === "household" && (
+        <motion.p variants={rise} className={styles.hint} data-testid="loans-household-hint">
+          {household?.book ? t("loans.household.hint") : t("loans.household.soon")}
+        </motion.p>
+      )}
+
       <motion.div variants={rise}>
         <SegmentedControl
           ariaLabel={t("loans.directionLabel")}
@@ -115,7 +189,7 @@ function Loans({ loans, readOnly, canRemind, direction }: { loans: Loan[]; readO
         />
       </motion.div>
 
-      {readOnly && (
+      {readOnly && scope === "personal" && (
         <motion.p variants={rise} className={styles.hint}>
           {t("loans.readOnly")}
         </motion.p>
@@ -274,7 +348,7 @@ function Loans({ loans, readOnly, canRemind, direction }: { loans: Loan[]; readO
         </motion.div>
       )}
 
-      {!readOnly && canRemind && (
+      {!readOnly && canRemind && scope === "personal" && (
         <motion.div variants={rise}>
           <LoanReminderSetting />
         </motion.div>
@@ -284,7 +358,7 @@ function Loans({ loans, readOnly, canRemind, direction }: { loans: Loan[]; readO
 
   const detail = opened && (
     <PersonDetail
-      key={`${direction}-${opened.key}`}
+      key={`${scope}-${direction}-${opened.key}`}
       person={opened}
       now={now}
       readOnly={readOnly}
@@ -295,6 +369,8 @@ function Loans({ loans, readOnly, canRemind, direction }: { loans: Loan[]; readO
       onExport={() => setExporting({ person: opened.name })}
       onAck={setAcknowledging}
       nudge={nudge}
+      book={book}
+      authorOf={authorOf}
     />
   );
 
@@ -326,10 +402,12 @@ function Loans({ loans, readOnly, canRemind, direction }: { loans: Loan[]; readO
         onClose={() => setEditing(null)}
         draft={{ direction, person: editing?.kind === "add" ? editing.person : undefined, phone: editing?.kind === "add" ? editing.phone : undefined }}
         loan={editing?.kind === "edit" ? editing.loan : undefined}
-        loans={loans}
-        pockets={pockets}
+        loans={scope === "household" ? loans : personalLoans}
+        pockets={allPockets}
+        book={book}
+        household={household && { book: household.book }}
       />
-      <RepaySheet open={repayLoan !== null} onClose={() => setRepaying(null)} loan={repayLoan} pockets={pockets} />
+      <RepaySheet open={repayLoan !== null} onClose={() => setRepaying(null)} loan={repayLoan} pockets={pockets} book={book} />
       <AckSheet open={ackLoan !== null} onClose={() => setAcknowledging(null)} loan={ackLoan} />
       <ExportSheet open={exporting !== null} onClose={() => setExporting(null)} loans={exported} person={exporting?.person} />
     </motion.div>

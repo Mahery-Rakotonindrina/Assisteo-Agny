@@ -29,6 +29,7 @@ import { parseNumber } from "@/lib/money";
 import { spring } from "@/lib/motion";
 import { CaptureCancelledError, capturePhoto, type PhotoSource } from "@/services/camera";
 import { haptics } from "@/services/device";
+import { personalBook, type LoanBook } from "@/services/loanBook";
 import { loanStore } from "@/services/loanStore";
 import { ApiError } from "@/types/api";
 import styles from "./Loans.module.scss";
@@ -93,6 +94,8 @@ export function LoanSheet({
   loans,
   pockets,
   onSaved,
+  book = personalBook,
+  household,
 }: {
   open: boolean;
   onClose: () => void;
@@ -102,6 +105,10 @@ export function LoanSheet({
   /** The pockets of "Mes dépenses" (with both features): the money leaves one, or comes into it. */
   pockets?: PocketChoice;
   onSaved?: (loan: Loan) => void;
+  /** Where the loan is (or, new, starts): the user's own, or the household's. */
+  book?: LoanBook;
+  /** A member of a household: "Prêt du foyer" on a new loan; `book` null: not available yet. */
+  household?: { book: LoanBook | null };
 }) {
   const { t } = useTranslation();
   // A scanned debt acknowledgment can turn "J'ai prêté" into "J'ai emprunté" (or back).
@@ -125,6 +132,8 @@ export function LoanSheet({
           pockets={pockets}
           onClose={close}
           onSaved={onSaved}
+          book={book}
+          household={household}
         />
       )}
     </Sheet>
@@ -141,9 +150,11 @@ function LoanFields({
   draft,
   loan,
   loans,
-  pockets,
+  pockets: allPockets,
   onClose,
   onSaved,
+  book,
+  household,
 }: {
   direction: LoanDirection;
   onDirection?: (direction: LoanDirection) => void;
@@ -153,11 +164,17 @@ function LoanFields({
   pockets?: PocketChoice;
   onClose: () => void;
   onSaved?: (loan: Loan) => void;
+  book: LoanBook;
+  household?: { book: LoanBook | null };
 }) {
   const { t, locale } = useTranslation();
   const toast = useToast();
   const now = useNow(60_000);
   const accountName = useAccountName();
+  // "Prêt du foyer": a new loan of the household (no pocket, no proof); a loan corrected stays where it is.
+  const [shared, setShared] = useState(book.scope === "household");
+  const target = loan ? book : household ? (shared && household.book ? household.book : personalBook) : book;
+  const pockets = target.scope === "personal" ? allPockets : undefined;
   const [person, setPerson] = useState(loan?.person ?? draft.person ?? "");
   const [amount, setAmount] = useState(loan ? String(loan.amountMga) : "");
   const [day, setDay] = useState(toDateInput(loan?.at ?? now));
@@ -311,14 +328,14 @@ function LoanFields({
     };
     try {
       if (loan) {
-        await loanStore.edit(loan.id, fields);
+        await target.edit(loan.id, fields);
         toast(t("loans.saved.edited"));
         onSaved?.(loan);
       } else {
-        const created = await loanStore.create(fields);
+        const created = await target.create(fields);
         if (created) {
           // The scanned acknowledgment is the loan's first proof.
-          if (scanned) await loanStore.addPhotoProof(created.id, scanned.src).catch(() => null);
+          if (scanned && target.scope === "personal") await loanStore.addPhotoProof(created.id, scanned.src).catch(() => null);
           haptics.success();
           const params = { person: created.person, amount: loanMoney(created.amountMga, locale) };
           toast(t(`loans.saved.${direction}`, params));
@@ -333,7 +350,16 @@ function LoanFields({
 
   return (
     <form className={styles.sheetForm} onSubmit={(event) => void save(event)}>
-      {!loan && (
+      {!loan && household && (
+        <div className={styles.field}>
+          <label className={styles.toggle}>
+            <input type="checkbox" checked={shared} disabled={!household.book} onChange={(event) => setShared(event.target.checked)} data-testid="loan-household" />
+            {t("loans.household.option")}
+          </label>
+          <small className={styles.hint}>{household.book ? t("loans.household.optionHint") : t("loans.household.soon")}</small>
+        </div>
+      )}
+      {!loan && target.scope === "personal" && (
         <div className={styles.scanBox} data-testid="loan-scan">
           {scanStep === "reading" ? (
             <p className={styles.hint} role="status">
@@ -593,16 +619,16 @@ function LoanFields({
 }
 
 /** "Il m'a rendu…" / "J'ai rendu…": prefilled with what is left, capped to it. */
-export function RepaySheet({ open, onClose, loan, pockets }: { open: boolean; onClose: () => void; loan: Loan | null; pockets?: PocketChoice }) {
+export function RepaySheet({ open, onClose, loan, pockets, book = personalBook }: { open: boolean; onClose: () => void; loan: Loan | null; pockets?: PocketChoice; book?: LoanBook }) {
   const { t } = useTranslation();
   return (
     <Sheet open={open && loan !== null} onClose={onClose} title={loan ? t(`loans.repay.title.${loan.direction}`) : ""}>
-      {loan && <RepayFields key={loan.id} loan={loan} pockets={pockets} onClose={onClose} />}
+      {loan && <RepayFields key={loan.id} loan={loan} pockets={book.scope === "personal" ? pockets : undefined} book={book} onClose={onClose} />}
     </Sheet>
   );
 }
 
-function RepayFields({ loan, pockets, onClose }: { loan: Loan; pockets?: PocketChoice; onClose: () => void }) {
+function RepayFields({ loan, pockets, book, onClose }: { loan: Loan; pockets?: PocketChoice; book: LoanBook; onClose: () => void }) {
   const { t, locale } = useTranslation();
   const toast = useToast();
   const now = useNow(60_000);
@@ -619,7 +645,7 @@ function RepayFields({ loan, pockets, onClose }: { loan: Loan; pockets?: PocketC
   const save = async (event: FormEvent) => {
     event.preventDefault();
     if (capped === null) return;
-    const kept = await loanStore.addRepayment(loan.id, { amountMga: capped, at: pickedAt(day), wallet: (pockets && wallet) || undefined });
+    const kept = await book.addRepayment(loan.id, { amountMga: capped, at: pickedAt(day), wallet: (pockets && wallet) || undefined });
     if (kept === null) return;
     haptics.success();
     const rest = left - kept;

@@ -3,6 +3,7 @@ import type { HouseholdAction, HouseholdInfo, HouseholdResponse } from "@/lib/ho
 import { ApiError } from "@/types/api";
 import { authHeaders } from "./account";
 import { detachHousehold } from "./householdExpenseStore";
+import { detachHouseholdLoans } from "./householdLoanStore";
 import { httpClient } from "./httpClient";
 
 // The user's household ("Mes dépenses" shared), as the server last told it.
@@ -36,12 +37,15 @@ function publish(next: HouseholdSnapshot) {
 
 /**
  * Takes the server's answer. Out of the household (left, removed, deleted),
- * or in another one: the shared expenses here go, one's own back to the
- * personal ones (the server gives them back too, with the same ids).
+ * or in another one: the shared expenses and loans here go, one's own back to
+ * the personal ones (the server gives them back too, with the same ids).
  */
 async function apply(response: HouseholdResponse) {
   const id = response.household?.id ?? null;
-  if (!id || (householdOnDevice && householdOnDevice !== id)) await detachHousehold(response.userId);
+  if (!id || (householdOnDevice && householdOnDevice !== id)) {
+    await detachHousehold(response.userId);
+    await detachHouseholdLoans(response.userId);
+  }
   householdOnDevice = id;
   const next: HouseholdSnapshot = { signedOut: false, userId: response.userId, household: response.household, stale: false };
   await set(KEY, next, db()).catch(() => undefined);

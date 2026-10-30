@@ -9,6 +9,8 @@ import { easeOut } from "@/lib/motion";
 import styles from "./AppShell.module.scss";
 
 const tabRoutes = new Set(["/", "/history", "/parcels", "/lists", "/settings", "/admin"]);
+// Pages for people without the app (a loan shared with a borrower): no menu around them.
+const bareRoutes = new Set(["/pret"]);
 
 /**
  * Mobile (and native apps): one column with a floating tab bar.
@@ -18,6 +20,7 @@ const tabRoutes = new Set(["/", "/history", "/parcels", "/lists", "/settings", "
 export function AppShell({ children }: { children: ReactNode }) {
   const router = useRouter();
   const showTabBar = tabRoutes.has(router.pathname);
+  const bare = bareRoutes.has(router.pathname);
   // Only animate pages reached by navigation: animating the first paint
   // would keep the prerendered HTML invisible until hydration.
   const [hasNavigated, setHasNavigated] = useState(false);
@@ -29,14 +32,16 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, [router.events]);
 
   return (
-    <div className={styles.shell}>
+    <div className={styles.shell} data-bare={bare || undefined}>
       <div className={styles.aurora} aria-hidden>
         <span />
         <span />
       </div>
-      <div className={styles.sidebar}>
-        <Sidebar />
-      </div>
+      {!bare && (
+        <div className={styles.sidebar}>
+          <Sidebar />
+        </div>
+      )}
       {/* Enter-only page transition: exit animations would outlive the
           previous page's CSS module, which Next unloads on navigation. */}
       <motion.main

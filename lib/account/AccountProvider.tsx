@@ -19,6 +19,8 @@ import { expenseStore } from "@/services/expenseStore";
 import { startExpenseSync, syncExpenses } from "@/services/expenseSync";
 import { householdStore } from "@/services/household";
 import { householdExpenseStore, startHouseholdExpenseSync, syncHouseholdExpenses } from "@/services/householdExpenseStore";
+import { householdLoanStore, syncHouseholdLoans } from "@/services/householdLoanStore";
+import { loanSharing } from "@/services/loanSharing";
 import { parcelStore } from "@/services/parcelStore";
 import { startParcelSync, syncParcels } from "@/services/parcelSync";
 import { registerPush, unregisterPush } from "@/services/push";
@@ -201,6 +203,8 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         syncLoans(userId).catch(() => undefined),
         syncExpenses(userId).catch(() => undefined),
         householdId ? syncHouseholdExpenses(userId, householdId).catch(() => undefined) : undefined,
+        // Fails quietly before migration 0012.
+        householdId ? syncHouseholdLoans(userId, householdId).catch(() => undefined) : undefined,
       ]);
     await parcelStore.wipe();
     await listStore.wipe();
@@ -208,6 +212,8 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await loanStore.wipe();
     await expenseStore.wipe();
     await householdExpenseStore.wipe();
+    await householdLoanStore.wipe();
+    await loanSharing.wipe();
     await householdStore.wipe();
     await wipeReviews().catch(() => undefined);
     await aiKeyStore.clear({ fromSync: true });
@@ -231,6 +237,8 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await loanStore.wipe();
     await expenseStore.wipe();
     await householdExpenseStore.wipe();
+    await householdLoanStore.wipe();
+    await loanSharing.wipe();
     await householdStore.wipe();
     await wipeReviews().catch(() => undefined);
     await aiKeyStore.clear({ fromSync: true });

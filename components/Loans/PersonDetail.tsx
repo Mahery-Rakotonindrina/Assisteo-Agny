@@ -5,12 +5,13 @@ import { Button } from "@/components/Button";
 import { useToast } from "@/components/Toast";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDate } from "@/lib/format";
-import { loanInterest, loanMoney, loanNextDue, loanPaid, loanRemaining, loanStatus, loanTotal, scheduleState, whatsappLink, type Loan, type PersonLoans } from "@/lib/loans";
+import { loanInterest, loanMoney, loanNextDue, loanPaid, loanRemaining, loanStatus, loanTotal, scheduleState, whatsappLink, type Loan, type PersonLoans, type Repayment } from "@/lib/loans";
 import { copyText, haptics } from "@/services/device";
-import { removeRepayment } from "@/services/loanLink";
-import { loanStore } from "@/services/loanStore";
+import { personalBook, type LoanBook } from "@/services/loanBook";
+import { loanSharing } from "@/services/loanSharing";
 import { LoanProofs } from "./LoanProofs";
 import styles from "./Loans.module.scss";
+import { ShareLink } from "./ShareLink";
 
 type Props = {
   person: PersonLoans;
@@ -26,10 +27,14 @@ type Props = {
   onAck: (loan: Loan) => void;
   /** Opened from the "Le relancer ?" notification: "Relancer sur WhatsApp" stands out. */
   nudge?: boolean;
+  /** Where the loans are written: the user's own (default) or the household's. */
+  book?: LoanBook;
+  /** The household's loans: who wrote each one, and each repayment. */
+  authorOf?: (row: Loan | Repayment) => string | undefined;
 };
 
 /** One person's loans in one direction: each with its repayments, and what can be done. */
-export function PersonDetail({ person, now, readOnly, onBack, onAdd, onEdit, onRepay, onExport, onAck, nudge }: Props) {
+export function PersonDetail({ person, now, readOnly, onBack, onAdd, onEdit, onRepay, onExport, onAck, nudge, book = personalBook, authorOf }: Props) {
   const { t, locale } = useTranslation();
   const toast = useToast();
   const direction = person.loans[0]?.direction ?? "lent";
@@ -41,6 +46,11 @@ export function PersonDetail({ person, now, readOnly, onBack, onAdd, onEdit, onR
       : t("loans.reminder.message", { name: person.name, amount: money(person.remaining) });
   const whatsapp = whatsappLink(person.phone, message);
   const canRemind = !readOnly && direction === "lent" && person.remaining > 0;
+  const personal = book.scope === "personal";
+  // The last loan of the person removed: their link stops too.
+  const removed = (loan: Loan) => {
+    if (personal && loan.direction === "lent" && person.loans.every((item) => item.id === loan.id)) void loanSharing.stop(person.key).catch(() => undefined);
+  };
 
   const copy = async () => {
     // copyText falls back on older WebViews (installed APKs).
@@ -100,16 +110,32 @@ export function PersonDetail({ person, now, readOnly, onBack, onAdd, onEdit, onR
         </div>
       )}
 
+      {!readOnly && personal && direction === "lent" && person.loans.length > 0 && <ShareLink key={person.key} person={person} />}
+
       <ul className={styles.loans}>
         {person.loans.map((loan) => (
-          <LoanCard key={loan.id} loan={loan} now={now} readOnly={readOnly} onEdit={() => onEdit(loan)} onRepay={() => onRepay(loan)} onAck={() => onAck(loan)} />
+          <LoanCard
+            key={loan.id}
+            loan={loan}
+            now={now}
+            readOnly={readOnly}
+            book={book}
+            author={authorOf?.(loan)}
+            authorOf={authorOf}
+            onEdit={() => onEdit(loan)}
+            onRepay={() => onRepay(loan)}
+            onAck={() => onAck(loan)}
+            onRemoved={() => removed(loan)}
+          />
         ))}
       </ul>
     </section>
   );
 }
 
-function LoanCard({ loan, now, readOnly, onEdit, onRepay, onAck }: { loan: Loan; now: number; readOnly: boolean; onEdit: () => void; onRepay: () => void; onAck: () => void }) {
+type CardProps = { loan: Loan; now: number; readOnly: boolean; book: LoanBook; author?: string; authorOf?: Props["authorOf"]; onEdit: () => void; onRepay: () => void; onAck: () => void; onRemoved: () => void };
+
+function LoanCard({ loan, now, readOnly, book, author, authorOf, onEdit, onRepay, onAck, onRemoved }: CardProps) {
   const { t, locale } = useTranslation();
   const toast = useToast();
   const [confirmRemove, setConfirmRemove] = useState(false);
@@ -119,10 +145,12 @@ function LoanCard({ loan, now, readOnly, onEdit, onRepay, onAck }: { loan: Loan;
   const interest = loanInterest(loan);
   const next = loanNextDue(loan, now);
   const installments = scheduleState(loan, now);
+  // The household's: anyone writes a repayment, only the author corrects or removes the loan.
+  const canEdit = !readOnly && book.canEdit(loan);
 
   const markRepaid = async () => {
     haptics.tap();
-    const kept = await loanStore.markRepaid(loan.id);
+    const kept = await book.markRepaid(loan.id);
     if (kept !== null) {
       haptics.success();
       toast(t("loans.repay.savedAll"));
@@ -142,6 +170,7 @@ function LoanCard({ loan, now, readOnly, onEdit, onRepay, onAck }: { loan: Loan;
           ? ` · ${t("loans.nextDue", { amount: money(next.amountMga), date: formatDate(next.dueAt, locale) })}`
           : loan.dueAt !== undefined && ` · ${t("loans.dueOn", { date: formatDate(loan.dueAt, locale) })}`}
       </small>
+      {author && <small data-testid="loan-author">{t("loans.household.by", { name: author })}</small>}
       {interest > 0 && (
         <small data-testid="loan-interest">
           {[t(`loans.detail.principal.${loan.direction}`, { amount: money(loan.amountMga) }), t("loans.detail.interest", { amount: money(interest) }), t("loans.detail.total", { amount: money(loanTotal(loan)) })].join(" · ")}
@@ -163,7 +192,7 @@ function LoanCard({ loan, now, readOnly, onEdit, onRepay, onAck }: { loan: Loan;
         </ul>
       )}
       {loan.note && <p className={styles.note}>{loan.note}</p>}
-      <LoanProofs loan={loan} readOnly={readOnly} />
+      {book.scope === "personal" && <LoanProofs loan={loan} readOnly={readOnly} />}
 
       {loan.repayments.length > 0 && (
         <ul className={styles.repayments} aria-label={t("loans.detail.repayments")}>
@@ -172,6 +201,7 @@ function LoanCard({ loan, now, readOnly, onEdit, onRepay, onAck }: { loan: Loan;
               <Undo2 size={14} />
               <span>
                 {t("loans.detail.repaymentLine", { amount: money(repayment.amountMga), date: formatDate(repayment.at, locale) })}
+                {authorOf?.(repayment) && ` · ${t("loans.household.by", { name: authorOf(repayment)! })}`}
                 {repayment.scanId && (
                   <>
                     {" · "}
@@ -179,8 +209,8 @@ function LoanCard({ loan, now, readOnly, onEdit, onRepay, onAck }: { loan: Loan;
                   </>
                 )}
               </span>
-              {!readOnly && (
-                <button type="button" className={styles.iconButton} onClick={() => void removeRepayment(loan.id, repayment)} aria-label={t("loans.detail.removeRepayment")}>
+              {!readOnly && book.canRemoveRepayment(repayment) && (
+                <button type="button" className={styles.iconButton} onClick={() => void book.removeRepayment(loan, repayment)} aria-label={t("loans.detail.removeRepayment")}>
                   <X size={14} />
                 </button>
               )}
@@ -209,16 +239,21 @@ function LoanCard({ loan, now, readOnly, onEdit, onRepay, onAck }: { loan: Loan;
           <Button variant="ghost" icon={<FileText />} onClick={onAck}>
             {t("loans.detail.ack")}
           </Button>
-          <Button variant="ghost" icon={<Pencil />} onClick={onEdit}>
-            {t("loans.detail.edit")}
-          </Button>
-          {confirmRemove ? (
+          {canEdit && (
+            <Button variant="ghost" icon={<Pencil />} onClick={onEdit}>
+              {t("loans.detail.edit")}
+            </Button>
+          )}
+          {!canEdit ? null : confirmRemove ? (
             <Button
               variant="danger"
               icon={<Trash2 />}
               onClick={() => {
                 haptics.tap();
-                void loanStore.remove(loan.id).then(() => toast(t("loans.detail.removed")));
+                void book.remove(loan.id).then(() => {
+                  onRemoved();
+                  toast(t("loans.detail.removed"));
+                });
               }}
             >
               {t("loans.detail.confirmRemove")}

@@ -6,6 +6,7 @@ import { AppShell } from "@/components/AppShell";
 import { Onboarding } from "@/components/Onboarding";
 import { ExpenseReminderKeeper } from "@/components/ExpenseReminderKeeper";
 import { LoanReminderKeeper } from "@/components/LoanReminderKeeper";
+import { LoanSharingKeeper } from "@/components/LoanSharingKeeper";
 import { ParcelReminderKeeper } from "@/components/ParcelReminderKeeper";
 import { ReminderKeeper } from "@/components/ReminderKeeper";
 import { ScanQueueRunner } from "@/components/ScanQueueRunner";
@@ -68,6 +69,7 @@ export default function App({ Component, pageProps }: AppProps) {
               <VehicleReminderKeeper />
               <ExpenseReminderKeeper />
               <LoanReminderKeeper />
+              <LoanSharingKeeper />
               <ScanQueueRunner />
               <ShareReceiver />
               <UpdateGate />
