@@ -22,6 +22,7 @@
     "garage": "Garage",
     "loans": "Loans",
     "expenses": "Expenses",
+    "inventory": "Home",
     "plants": "Plants"
   },
   "scan": {
@@ -902,6 +903,7 @@
         "reseller": "Reseller tools",
         "loans": "Loans",
         "expenses": "My expenses",
+        "inventory": "My home",
         "plants": "My plants"
       },
       "descriptions": {
@@ -915,6 +917,7 @@
         "reseller": "A client per parcel, what they owe, totals per client, export and statements.",
         "loans": "Who owes me, whom I owe: repayments, overdue loans, WhatsApp reminders. Nothing counts in the expenses.",
         "expenses": "The month’s budget, alone or as a household, and the AI’s month review.",
+        "inventory": "The home inventory: items, warranties and their reminder, linked invoices, export for the insurer.",
         "plants": "Plants, their watering suggested by the AI, the morning reminder and the diagnosis of a sick plant (one of the month's scans)."
       },
       "deepNeedsLimit": "Can’t save: {list} has no deep analysis quota (0 = no limit). First set a number per month above, in the plans’ prices and quotas. Free has no quota: no deep analysis."
@@ -1409,6 +1412,7 @@
       "reminders": "Reminders: on your scans (with repeat and snooze), insurance, parcel arrivals",
       "loans": "Loans: who owes you, whom you owe, WhatsApp reminders",
       "expenses": "My expenses: the month’s budget, alone or as a household",
+      "inventory": "My home: your items, their warranty and invoices, export for the insurer",
       "plants": "My plants: watering, morning reminder, diagnosis of a sick plant"
     },
     "how": "How to subscribe",
@@ -1654,6 +1658,7 @@
     "garageHint": "Service, fuel, reminders",
     "loansHint": "Who owes you, whom you owe",
     "expensesHint": "Monthly budget, what is left",
+    "inventoryHint": "Items, warranties, invoices",
     "plantsHint": "Watering and reminders"
   },
   "food": {
@@ -1972,6 +1977,10 @@
       "loans": {
         "title": "Loans",
         "body": "Who owes you, whom you owe, and a WhatsApp reminder when needed."
+      },
+      "inventory": {
+        "title": "My home",
+        "body": "The things in your home with their invoice and warranty, a reminder before the end, and an export for the insurer."
       }
     }
   },
@@ -3335,6 +3344,131 @@
     "readOnly": "This summary is read only: only the person who lent you the money can change it.",
     "sentWith": "Sent with Assisteo Agny",
     "discover": "Discover the app"
+  },
+  "inventory": {
+    "title": "My home",
+    "subtitle": "The things in your home, their warranty and their invoices, ready to show your insurer after a theft, a fire or a flood.",
+    "count": "{count} item(s)",
+    "locked": "My home is included from {plan}.",
+    "lockedScan": "Adding this item to your home is included from {plan}.",
+    "lockedPaper": "Linking this paper to an item of your home is included from {plan}.",
+    "readOnly": "Your plan no longer includes My home: your items stay visible, but you can no longer change anything and the warranty reminders are paused. Go back to {plan} to get everything back.",
+    "pitch": {
+      "list": "Each item with its photo, room, price and shop",
+      "warranty": "“Under warranty” or “Warranty over”, and a reminder 30 days before the end",
+      "papers": "The invoice or receipt linked to the item, picked from your scans",
+      "export": "A PDF or an Excel file for the insurer, with the total value"
+    },
+    "emptyTitle": "Your home is empty",
+    "emptyBody": "Take a photo of an item (fridge, TV, sofa…) or add it by hand. Keep its invoices and warranty in one place.",
+    "scanObject": "Scan an item",
+    "add": "Add an item",
+    "addFromScan": "Add to my home",
+    "defaultName": "My item",
+    "saved": "It’s in your home",
+    "inHome": "In your home: {name}.",
+    "open": "Open",
+    "back": "My home",
+    "edit": "Edit",
+    "save": "Save",
+    "create": "Add",
+    "remove": "Delete",
+    "confirmRemove": "Yes, delete this item",
+    "removed": "Item deleted",
+    "takePhoto": "Take a photo",
+    "choosePhoto": "Choose an image",
+    "photoFailed": "Couldn’t read this photo. Try again.",
+    "reminderHint": "A reminder comes 30 days before the warranty ends.",
+    "reminderOff": "The warranty reminder needs a plan with reminders.",
+    "fields": {
+      "name": "Name",
+      "namePlaceholder": "Samsung fridge, living room TV…",
+      "room": "Room",
+      "category": "Category",
+      "boughtOn": "Bought on",
+      "price": "Price (Ar)",
+      "store": "Shop",
+      "warrantyUntil": "Warranty until",
+      "serial": "Serial number",
+      "note": "Note"
+    },
+    "rooms": {
+      "living": "Living room",
+      "kitchen": "Kitchen",
+      "bedroom": "Bedroom",
+      "bathroom": "Bathroom, laundry",
+      "office": "Office",
+      "outside": "Outside, garage",
+      "other": "Other"
+    },
+    "categories": {
+      "appliance": "Appliance",
+      "electronics": "Electronics",
+      "furniture": "Furniture",
+      "kitchenware": "Kitchenware",
+      "tools": "Tools",
+      "jewellery": "Jewellery, watches",
+      "other": "Other"
+    },
+    "warranty": {
+      "active": "Under warranty",
+      "ended": "Warranty over"
+    },
+    "reminder": {
+      "title": "Warranty: {name}",
+      "body": "The warranty of your {name} ends on {date}."
+    },
+    "papers": {
+      "title": "Papers",
+      "none": "No paper linked. Add the invoice or the receipt: they prove the purchase.",
+      "add": "Link a paper",
+      "scan": "Scan an invoice",
+      "noScans": "No document in your history. Scan the invoice or the receipt first.",
+      "gone": "Scan deleted",
+      "unlink": "Remove this paper",
+      "linked": "Paper linked",
+      "linkedTo": "Linked to {name}",
+      "linkedWith": "Linked to {name}.",
+      "full": "{max} papers at most per item.",
+      "noItems": "Your home is empty: add the item first, then link this paper to it.",
+      "choose": "Choose the item",
+      "linkTo": "Link to {name}",
+      "linkToItem": "Link to an item of my home"
+    },
+    "export": {
+      "heading": "For the insurer",
+      "hint": "After a theft, a fire or a flood: the list by room, with the photos and the total value.",
+      "pdf": "Export as PDF",
+      "xlsx": "Export for Excel",
+      "title": "My home · inventory",
+      "exportedOn": "Exported on {date}",
+      "downloaded": "File saved in your downloads",
+      "failed": "The export didn’t work. Try again.",
+      "count": "Items",
+      "total": "Total value",
+      "unpriced": "Items without a price",
+      "bought": "Bought: {what}",
+      "warrantyUntil": "until {date}",
+      "serial": "Serial no.: {serial}",
+      "papers": "{count} paper(s) in the app",
+      "disclaimer": "Values given by the owner, at the purchase price.",
+      "sheetItems": "Items",
+      "sheetRooms": "By room",
+      "columns": {
+        "photo": "Photo",
+        "name": "Item",
+        "room": "Room",
+        "category": "Category",
+        "boughtOn": "Bought on",
+        "priceMga": "Price",
+        "store": "Shop",
+        "warrantyUntil": "Warranty until",
+        "warranty": "Warranty",
+        "serial": "Serial no.",
+        "papers": "Papers",
+        "note": "Note"
+      }
+    }
   },
   "plants": {
     "title": "My plants",

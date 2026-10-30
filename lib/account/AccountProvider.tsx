@@ -16,6 +16,8 @@ import { vehicleStore } from "@/services/vehicleStore";
 import { plantStore } from "@/services/plantStore";
 import { startPlantSync, syncPlants } from "@/services/plantSync";
 import { startVehicleSync, syncVehicles } from "@/services/vehicleSync";
+import { homeItemStore } from "@/services/homeItemStore";
+import { startHomeItemSync, syncHomeItems } from "@/services/homeItemSync";
 import { wipeReviews } from "@/services/expenseReview";
 import { expenseStore } from "@/services/expenseStore";
 import { startExpenseSync, syncExpenses } from "@/services/expenseSync";
@@ -102,6 +104,12 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!userId) return;
     return startVehicleSync(userId);
+  }, [userId]);
+
+  // "Ma maison" (fails quietly before migration 0014).
+  useEffect(() => {
+    if (!userId) return;
+    return startHomeItemSync(userId);
   }, [userId]);
 
   // "Mes plantes".
@@ -208,6 +216,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         syncParcels(userId).catch(() => undefined),
         syncLists(userId).catch(() => undefined),
         syncVehicles(userId).catch(() => undefined),
+        syncHomeItems(userId).catch(() => undefined),
         syncPlants(userId).catch(() => undefined),
         syncLoans(userId).catch(() => undefined),
         syncExpenses(userId).catch(() => undefined),
@@ -218,6 +227,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await parcelStore.wipe();
     await listStore.wipe();
     await vehicleStore.wipe();
+    await homeItemStore.wipe();
     await plantStore.wipe();
     await loanStore.wipe();
     await expenseStore.wipe();
@@ -244,6 +254,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await parcelStore.wipe();
     await listStore.wipe();
     await vehicleStore.wipe();
+    await homeItemStore.wipe();
     await plantStore.wipe();
     await loanStore.wipe();
     await expenseStore.wipe();

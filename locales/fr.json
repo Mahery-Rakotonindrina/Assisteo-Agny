@@ -22,6 +22,7 @@
     "garage": "Garage",
     "loans": "Prêts",
     "expenses": "Dépenses",
+    "inventory": "Maison",
     "plants": "Plantes"
   },
   "scan": {
@@ -902,6 +903,7 @@
         "reseller": "Outils revendeur",
         "loans": "Prêts",
         "expenses": "Mes dépenses",
+        "inventory": "Ma maison",
         "plants": "Mes plantes"
       },
       "descriptions": {
@@ -915,6 +917,7 @@
         "reseller": "Un client par colis, ce qu’il doit, totaux par client, export et relevés.",
         "loans": "Qui me doit, à qui je dois : remboursements, retards, relance WhatsApp. Rien n’est compté dans les dépenses.",
         "expenses": "Le budget du mois, seul ou en foyer, et le bilan du mois par l’IA.",
+        "inventory": "L’inventaire de la maison : objets, garanties et leur rappel, factures liées, export pour l’assurance.",
         "plants": "Les plantes, leur arrosage proposé par l’IA, le rappel du matin et le diagnostic d’une plante malade (un scan du mois)."
       },
       "deepNeedsLimit": "Impossible d’enregistrer : {list} n’a pas de quota d’analyses approfondies (0 = sans limite). Mets d’abord un nombre par mois plus haut, dans les prix et quotas des offres. Gratuit n’a pas de quota : pas d’analyse approfondie."
@@ -1409,6 +1412,7 @@
       "reminders": "Rappels : sur tes scans (avec répétition et report), assurance, arrivée des colis",
       "loans": "Prêts : qui te doit, à qui tu dois, relance WhatsApp",
       "expenses": "Mes dépenses : le budget du mois, seul ou en foyer",
+      "inventory": "Ma maison : tes objets, leur garantie et leurs factures, export pour l’assurance",
       "plants": "Mes plantes : arrosage, rappel le matin, diagnostic d’une plante malade"
     },
     "how": "Comment s’abonner",
@@ -1654,6 +1658,7 @@
     "garageHint": "Entretien, pleins, rappels",
     "loansHint": "Qui te doit, à qui tu dois",
     "expensesHint": "Budget du mois, ce qu’il reste",
+    "inventoryHint": "Objets, garanties, factures",
     "plantsHint": "Arrosage et rappels"
   },
   "food": {
@@ -1972,6 +1977,10 @@
       "loans": {
         "title": "Prêts",
         "body": "Qui te doit, à qui tu dois, et une relance par WhatsApp quand il faut."
+      },
+      "inventory": {
+        "title": "Ma maison",
+        "body": "Les objets de ta maison avec leur facture et leur garantie, un rappel avant la fin, et un export pour l’assurance."
       }
     }
   },
@@ -3335,6 +3344,131 @@
     "readOnly": "Ce récapitulatif est en lecture seule : seule la personne qui t’a prêté peut le changer.",
     "sentWith": "Envoyé avec Assisteo Agny",
     "discover": "Découvrir l’app"
+  },
+  "inventory": {
+    "title": "Ma maison",
+    "subtitle": "Les objets de ta maison, leur garantie et leurs factures, prêts à montrer à l’assurance en cas de vol, d’incendie ou d’inondation.",
+    "count": "{count} objet(s)",
+    "locked": "Ma maison est inclus à partir de {plan}.",
+    "lockedScan": "Ajouter cet objet à ta maison est inclus à partir de {plan}.",
+    "lockedPaper": "Lier ce papier à un objet de ta maison est inclus à partir de {plan}.",
+    "readOnly": "Ton offre ne comprend plus Ma maison : tes objets restent visibles, mais tu ne peux plus rien modifier et les rappels de garantie sont en pause. Repasse à {plan} pour tout retrouver.",
+    "pitch": {
+      "list": "Chaque objet avec sa photo, sa pièce, son prix et son magasin",
+      "warranty": "« Sous garantie » ou « Garantie finie », et un rappel 30 jours avant la fin",
+      "papers": "La facture ou le ticket liés à l’objet, pris parmi tes scans",
+      "export": "Un PDF ou un fichier Excel pour l’assurance, avec la valeur totale"
+    },
+    "emptyTitle": "Ta maison est vide",
+    "emptyBody": "Photographie un objet (frigo, télé, canapé…) ou ajoute-le à la main. Garde ses factures et sa garantie au même endroit.",
+    "scanObject": "Scanner un objet",
+    "add": "Ajouter un objet",
+    "addFromScan": "Ajouter à ma maison",
+    "defaultName": "Mon objet",
+    "saved": "C’est dans ta maison",
+    "inHome": "Dans ta maison : {name}.",
+    "open": "Ouvrir",
+    "back": "Ma maison",
+    "edit": "Modifier",
+    "save": "Enregistrer",
+    "create": "Ajouter",
+    "remove": "Supprimer",
+    "confirmRemove": "Oui, supprimer cet objet",
+    "removed": "Objet supprimé",
+    "takePhoto": "Prendre une photo",
+    "choosePhoto": "Choisir une image",
+    "photoFailed": "Impossible de lire cette photo. Réessaie.",
+    "reminderHint": "Un rappel arrive 30 jours avant la fin de la garantie.",
+    "reminderOff": "Le rappel de garantie demande une offre avec les rappels.",
+    "fields": {
+      "name": "Nom",
+      "namePlaceholder": "Frigo Samsung, télé du salon…",
+      "room": "Pièce",
+      "category": "Catégorie",
+      "boughtOn": "Acheté le",
+      "price": "Prix (Ar)",
+      "store": "Magasin",
+      "warrantyUntil": "Garantie jusqu’au",
+      "serial": "Numéro de série",
+      "note": "Note"
+    },
+    "rooms": {
+      "living": "Salon",
+      "kitchen": "Cuisine",
+      "bedroom": "Chambre",
+      "bathroom": "Salle d’eau, buanderie",
+      "office": "Bureau",
+      "outside": "Dehors, garage",
+      "other": "Autre"
+    },
+    "categories": {
+      "appliance": "Électroménager",
+      "electronics": "Électronique",
+      "furniture": "Meuble",
+      "kitchenware": "Cuisine, vaisselle",
+      "tools": "Outils",
+      "jewellery": "Bijoux, montres",
+      "other": "Autre"
+    },
+    "warranty": {
+      "active": "Sous garantie",
+      "ended": "Garantie finie"
+    },
+    "reminder": {
+      "title": "Garantie : {name}",
+      "body": "La garantie de ton {name} finit le {date}."
+    },
+    "papers": {
+      "title": "Papiers",
+      "none": "Aucun papier lié. Ajoute la facture ou le ticket : ils prouvent l’achat.",
+      "add": "Lier un papier",
+      "scan": "Scanner une facture",
+      "noScans": "Aucun document dans ton historique. Scanne d’abord la facture ou le ticket.",
+      "gone": "Scan supprimé",
+      "unlink": "Retirer ce papier",
+      "linked": "Papier lié",
+      "linkedTo": "Lié à {name}",
+      "linkedWith": "Lié à {name}.",
+      "full": "{max} papiers au plus par objet.",
+      "noItems": "Ta maison est vide : ajoute d’abord l’objet, puis lie-lui ce papier.",
+      "choose": "Choisis l’objet",
+      "linkTo": "Lier à {name}",
+      "linkToItem": "Lier à un objet de ma maison"
+    },
+    "export": {
+      "heading": "Pour l’assurance",
+      "hint": "En cas de vol, d’incendie ou d’inondation : la liste par pièce, avec les photos et la valeur totale.",
+      "pdf": "Exporter en PDF",
+      "xlsx": "Exporter pour Excel",
+      "title": "Ma maison · inventaire",
+      "exportedOn": "Exporté le {date}",
+      "downloaded": "Fichier enregistré dans tes téléchargements",
+      "failed": "L’export n’a pas marché. Réessaie.",
+      "count": "Objets",
+      "total": "Valeur totale",
+      "unpriced": "Objets sans prix",
+      "bought": "Acheté : {what}",
+      "warrantyUntil": "jusqu’au {date}",
+      "serial": "N° de série : {serial}",
+      "papers": "{count} papier(s) dans l’app",
+      "disclaimer": "Valeurs données par le propriétaire, au prix d’achat.",
+      "sheetItems": "Objets",
+      "sheetRooms": "Par pièce",
+      "columns": {
+        "photo": "Photo",
+        "name": "Objet",
+        "room": "Pièce",
+        "category": "Catégorie",
+        "boughtOn": "Acheté le",
+        "priceMga": "Prix",
+        "store": "Magasin",
+        "warrantyUntil": "Garantie jusqu’au",
+        "warranty": "Garantie",
+        "serial": "N° de série",
+        "papers": "Papiers",
+        "note": "Note"
+      }
+    }
   },
   "plants": {
     "title": "Mes plantes",
