@@ -12,6 +12,14 @@
     grid-template-columns: 272px minmax(0, 1fr);
     justify-content: stretch;
   }
+
+  // No menu (pages/pret.tsx): one centred column on a computer too.
+  &[data-bare] {
+    @include desktop {
+      display: flex;
+      justify-content: center;
+    }
+  }
 }
 
 .sidebar {

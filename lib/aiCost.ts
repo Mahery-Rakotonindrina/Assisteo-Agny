@@ -4,7 +4,7 @@ import type { PlanOffer } from "./plans";
 // (lib/server/stats.ts, fields "ai:<kind>:<model>:calls|in|out"), priced per
 // million tokens. Prices are set in /admin: the defaults are indicative.
 
-export const aiKinds = ["scan", "deep", "question", "summary", "statement", "loan", "plant"] as const;
+export const aiKinds = ["scan", "deep", "question", "summary", "statement", "loan", "ad", "plant"] as const;
 export type AiKind = (typeof aiKinds)[number];
 
 /** US dollars per million tokens, for the models whose name contains `match`. */

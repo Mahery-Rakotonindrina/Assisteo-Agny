@@ -23,8 +23,8 @@ type Row<T> = { id: string; data: T; updated_at: string; deleted_at: string | nu
 export type RowSyncOptions<T> = {
   /** Columns that pick the rows (the household's id): read with them, written with them. */
   match?: Record<string, string>;
-  /** Reads who wrote each row (shared rows: the author's id). */
-  withAuthor?: (record: T, userId: string) => T;
+  /** Reads who wrote each row (shared rows: the author's id; null once their account is deleted). */
+  withAuthor?: (record: T, userId: string | null) => T;
   /** Only these local records are pushed (shared rows: one's own). */
   canPush?: (record: T, uid: string) => boolean;
   /** Checks a pulled record (shared rows: written by others); null skips it. */
@@ -66,7 +66,7 @@ export function createRowSync<T extends SyncedRecord>(table: string, store: Sync
           }
         } else if (!local || local.updatedAt !== remoteAt) {
           const pulled = { ...row.data, id: row.id, updatedAt: remoteAt, dirty: false };
-          const record = withAuthor && row.user_id ? withAuthor(pulled, row.user_id) : pulled;
+          const record = withAuthor ? withAuthor(pulled, row.user_id ?? null) : pulled;
           const accepted = accept ? accept(record) : record;
           if (!accepted) continue;
           await store.rawPut(accepted);

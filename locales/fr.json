@@ -665,6 +665,7 @@
         "summary": "Bilan des dépenses",
         "statement": "Relevé importé",
         "loan": "Reconnaissance de dette",
+        "ad": "Annonce d’objet",
         "plant": "Diagnostic de plante"
       },
       "perCall": "par appel · {calls} appel(s), {total} en tout",
@@ -1926,48 +1927,80 @@
       }
     },
     "finalTitle": "Prêt à essayer ?",
-    "finalBody": "Une première photo suffit pour voir ce que l’IA peut faire pour toi."
+    "finalBody": "Une première photo suffit pour voir ce que l’IA peut faire pour toi.",
+    "extrasTitle": "Pour aller plus loin",
+    "extrasHint": "Avec une offre, l’app en fait encore plus. Chaque carte te dit à partir de quelle offre c’est inclus.",
+    "extrasFrom": "À partir de",
+    "extrasFree": "Inclus gratuitement",
+    "extras": {
+      "reminders": {
+        "title": "Rappels",
+        "body": "Un rappel au bon moment : avant l’échéance d’une facture, la fin d’une assurance ou l’arrivée d’un colis. Tu peux le répéter ou le reporter."
+      },
+      "pdfExport": {
+        "title": "Export PDF",
+        "body": "Un PDF propre d’un document, ou de plusieurs scans de ton historique, à envoyer ou à imprimer."
+      },
+      "parcelCosts": {
+        "title": "Coûts des colis",
+        "body": "Le prix et les frais de chaque colis en ariary, pour savoir ce qu’il t’a vraiment coûté."
+      },
+      "multiPage": {
+        "title": "Plusieurs pages",
+        "body": "Un contrat ou une longue facture en plusieurs photos, analysé comme un seul document."
+      },
+      "deepAnalysis": {
+        "title": "Analyse approfondie",
+        "body": "Relance l’analyse d’un scan avec l’IA la plus précise, quand le sujet compte vraiment."
+      },
+      "garage": {
+        "title": "Mon garage",
+        "body": "Tes véhicules, leur entretien, les rappels d’assurance et de vidange, les pleins et les dépenses."
+      },
+      "reseller": {
+        "title": "Outils de revendeur",
+        "body": "Un client par colis, les totaux par client, le récap du mois et un relevé PDF à envoyer."
+      },
+      "expenses": {
+        "title": "Mes dépenses",
+        "body": "Le budget du mois, seul ou en foyer : ce qui sort, ce qui reste."
+      },
+      "loans": {
+        "title": "Prêts",
+        "body": "Qui te doit, à qui tu dois, et une relance par WhatsApp quand il faut."
+      }
+    }
   },
   "loans": {
     "title": "Prêts",
     "subtitle": "L’argent que tu as prêté, et celui que tu dois. Rien n’est compté dans tes dépenses.",
     "unavailable": "Prêts n’est pas encore ouvert à ton offre.",
     "readOnly": "Prêts n’est plus dans ton offre : tes prêts restent visibles, sans modification.",
-    "directionLabel": "On me doit ou je dois",
     "directions": {
       "lent": "On me doit",
       "borrowed": "Je dois"
     },
     "summary": {
-      "lent": "On te doit en tout",
-      "borrowed": "Tu dois en tout",
+      "lent": "On te doit",
+      "borrowed": "Tu dois",
       "people": "{count} personnes",
       "peopleOne": "1 personne",
-      "late": "dont {amount} en retard"
-    },
-    "add": {
-      "lent": "J’ai prêté de l’argent",
-      "borrowed": "J’ai emprunté"
-    },
-    "empty": {
-      "lent": {
-        "title": "Personne ne te doit d’argent",
-        "body": "Note ici l’argent que tu as prêté : tu sauras toujours qui te doit quoi."
-      },
-      "borrowed": {
-        "title": "Tu ne dois rien à personne",
-        "body": "Note ici l’argent que tu as emprunté : tu sauras toujours ce qu’il te reste à rendre."
+      "late": "dont {amount} en retard",
+      "nobody": {
+        "lent": "Personne",
+        "borrowed": "À personne"
       }
     },
-    "allRepaid": {
-      "lent": "Tout le monde t’a remboursé.",
-      "borrowed": "Tu as tout rendu."
+    "empty": {
+      "title": "Aucun prêt pour l’instant",
+      "body": "Note ici l’argent que tu prêtes ou que tu empruntes : tu sauras toujours qui te doit quoi.",
+      "lent": "Personne ne te doit d’argent.",
+      "borrowed": "Tu ne dois rien à personne."
     },
+    "allRepaid": "Tout est remboursé, des deux côtés.",
     "search": "Chercher une personne",
     "noMatch": "Personne ne porte ce nom.",
     "late": "En retard",
-    "open": "{count} prêts en cours",
-    "openOne": "1 prêt en cours",
     "dueOn": "à rendre le {date}",
     "repaidSection": "Remboursés ({count})",
     "repaidOn": "Remboursé le {date}",
@@ -1985,8 +2018,8 @@
         "borrowed": "Qui t’a prêté ?"
       },
       "personPlaceholder": "Rakoto, Tante Lalao…",
-      "amount": "Montant (Ar)",
-      "date": "Date",
+      "amount": "Combien ? (Ar)",
+      "date": "Quand ?",
       "today": "Aujourd’hui",
       "due": "À rendre pour (facultatif)",
       "dueDay": "Date à laquelle rendre",
@@ -1997,8 +2030,6 @@
         "pick": "Choisir"
       },
       "phone": "Téléphone (facultatif)",
-      "note": "Note (facultatif)",
-      "notePlaceholder": "pour l’écolage",
       "save": "Enregistrer",
       "missing": "Écris le nom de la personne et le montant.",
       "split": "Rembourser en plusieurs fois",
@@ -2023,7 +2054,25 @@
       "wallet": {
         "lent": "De quelle poche sort l’argent ?",
         "borrowed": "Dans quelle poche arrive l’argent ?"
-      }
+      },
+      "titleMore": {
+        "lent": "{name} me doit encore…",
+        "borrowed": "Je dois encore à {name}…"
+      },
+      "purpose": "Pour quoi ?",
+      "purposePlaceholder": "Ou écris-le : réparation de la moto…",
+      "purposes": {
+        "school": "Écolage",
+        "health": "Santé",
+        "transport": "Transport",
+        "shopping": "Courses",
+        "rent": "Loyer",
+        "family": "Famille",
+        "other": "Autre"
+      },
+      "more": "Plus d’options",
+      "moreHint": "Date pour rendre, en plusieurs fois, intérêts, téléphone…",
+      "proofsLater": "Une photo comme preuve ? Tu pourras l’ajouter une fois le prêt enregistré."
     },
     "saved": {
       "lent": "C’est noté : {person} te doit {amount}.",
@@ -2032,18 +2081,14 @@
     },
     "detail": {
       "back": "Retour à la liste",
-      "left": {
-        "lent": "Te doit encore {amount}",
-        "borrowed": "Tu lui dois encore {amount}"
-      },
       "settled": "Tout est remboursé",
       "on": {
         "lent": "Prêté le {date}",
         "borrowed": "Emprunté le {date}"
       },
       "another": {
-        "lent": "Nouveau prêt",
-        "borrowed": "Nouvel emprunt"
+        "lent": "{name} me doit encore…",
+        "borrowed": "Je dois encore à {name}…"
       },
       "repayments": "Remboursements",
       "repaymentLine": "{amount} rendus le {date}",
@@ -2055,8 +2100,6 @@
       "remove": "Supprimer",
       "confirmRemove": "Supprimer pour de bon",
       "removed": "Prêt supprimé.",
-      "whatsapp": "Relancer sur WhatsApp",
-      "copy": "Copier le message",
       "copied": "Message copié : colle-le dans WhatsApp ou un SMS.",
       "copyFailed": "Impossible de copier le message.",
       "principal": {
@@ -2075,9 +2118,21 @@
         "late": "En retard"
       },
       "ack": "Reconnaissance de dette (PDF)",
-      "export": "Exporter",
-      "nudge": "{name} devait te rendre de l’argent aujourd’hui. Tu peux le relancer sur WhatsApp.",
-      "receipt": "Voir le reçu"
+      "export": "Exporter le compte (PDF, Excel)",
+      "nudge": "{name} devait te rendre de l’argent aujourd’hui : tu peux envoyer une relance sur WhatsApp.",
+      "receipt": "Voir le reçu",
+      "title": "Compte avec {name}",
+      "owes": {
+        "lent": "{name} te doit {amount}",
+        "borrowed": "Tu dois {amount} à {name}"
+      },
+      "remind": "Relancer",
+      "remindCopy": "Relancer (copier le message)",
+      "alsoOwes": {
+        "lent": "{name} te doit aussi {amount}",
+        "borrowed": "Tu dois aussi {amount} à {name}"
+      },
+      "ackShort": "Reconnaissance de dette"
     },
     "repay": {
       "title": {
@@ -2091,6 +2146,12 @@
       "wallet": {
         "lent": "Dans quelle poche arrive l’argent ?",
         "borrowed": "De quelle poche sort l’argent ?"
+      },
+      "amount": "Combien ? (Ar)",
+      "spread": "Réparti sur {count} sommes, en commençant par la plus urgente.",
+      "titleNamed": {
+        "lent": "{name} m’a rendu…",
+        "borrowed": "J’ai rendu à {name}…"
       }
     },
     "reminder": {
@@ -2122,21 +2183,22 @@
       "make": "Créer le PDF",
       "withProof": "Joindre la preuve en annexe",
       "withProofs": "Joindre les {count} preuves en annexe",
-      "annex": "Annexe {number} : preuve jointe"
+      "annex": "Annexe {number} : preuve jointe",
+      "choose": "Pour quelle somme ?"
     },
     "export": {
       "button": "Exporter (Excel, PDF)",
       "sheetTitle": "Exporter mes prêts",
-      "sheetTitlePerson": "Exporter les prêts avec {name}",
+      "sheetTitlePerson": "Exporter le compte avec {name}",
       "excel": "Excel",
-      "excelHint": "Un tableau : chaque prêt, puis un résumé par personne.",
+      "excelHint": "Un tableau : chaque prêt, un résumé par personne, et pour une personne son relevé.",
       "pdf": "PDF",
       "pdfHint": "Un récapitulatif par personne, facile à envoyer.",
       "working": "Création du fichier…",
       "downloaded": "Fichier téléchargé",
       "failed": "Le fichier n’a pas pu être créé. Réessaie.",
       "title": "Mes prêts",
-      "titlePerson": "Prêts avec {name}",
+      "titlePerson": "Compte avec {name}",
       "exportedOn": "Exporté le {date}",
       "file": "prets",
       "line": "{date} · {total} · reste {left} · {status}",
@@ -2153,7 +2215,12 @@
         "status": "État",
         "note": "Note",
         "loans": "Prêts",
-        "lateMga": "En retard"
+        "lateMga": "En retard",
+        "what": "Pour quoi",
+        "kind": "Ligne",
+        "addedMga": "Dû",
+        "repaidMga": "Rendu",
+        "balanceMga": "Reste"
       },
       "status": {
         "open": "En cours",
@@ -2171,7 +2238,12 @@
       "totalBy": {
         "lent": "Total on me doit",
         "borrowed": "Total je dois"
-      }
+      },
+      "sheetAccountBy": {
+        "lent": "Compte (on me doit)",
+        "borrowed": "Compte (je dois)"
+      },
+      "accountLine": "{amount} · reste {left}"
     },
     "stats": {
       "title": "En chiffres ({year})",
@@ -2291,6 +2363,83 @@
       "surplusNote": {
         "lent": "Surplus de {name}",
         "borrowed": "Surplus à {name}"
+      }
+    },
+    "share": {
+      "button": "Partager ce qu’il reste à rendre",
+      "intro": "{name} verra, sans compte : les montants, l’échéancier, ses remboursements et ce qu’il reste. Jamais ton numéro, tes notes ni tes preuves.",
+      "lender": "Ton nom, tel qu’il s’affichera",
+      "create": "Créer le lien",
+      "missingName": "Écris ton nom.",
+      "live": "Lien actif : {name} voit ce qu’il reste à rendre, mis à jour à chaque changement.",
+      "elsewhere": "Ce lien a été créé sur un autre appareil. Pour l’envoyer d’ici, crée un nouveau lien (l’ancien ne marchera plus).",
+      "newLink": "Nouveau lien",
+      "whatsapp": "Envoyer sur WhatsApp",
+      "copy": "Copier le lien",
+      "copied": "Lien copié : colle-le dans WhatsApp ou un SMS.",
+      "copyFailed": "Impossible de copier le lien.",
+      "stop": "Arrêter le partage",
+      "stopped": "Partage arrêté : le lien ne marche plus.",
+      "soon": "Le lien à partager arrive bientôt.",
+      "signIn": "Connecte-toi à ton compte pour envoyer un lien à partager.",
+      "failed": "Impossible pour l’instant. Réessaie plus tard.",
+      "message": "Bonjour {name}, voici ce qu’il reste à rendre, mis à jour à chaque remboursement : {link}"
+    },
+    "household": {
+      "hint": "Les prêts du foyer sont vus par tous ses membres. Chacun peut noter un remboursement. Ils ne touchent pas tes poches et n’ont pas de rappel.",
+      "soon": "Les prêts du foyer arrivent bientôt.",
+      "option": "Prêt du foyer",
+      "optionHint": "Vu par tous les membres du foyer, sans toucher tes poches.",
+      "by": "Noté par {name}",
+      "chip": "Foyer"
+    },
+    "new": {
+      "button": "Nouveau",
+      "title": "Qu’est-ce que tu notes ?",
+      "lent": "J’ai prêté de l’argent",
+      "lentHint": "Quelqu’un te doit de l’argent : tu sauras toujours combien.",
+      "borrowed": "J’ai emprunté de l’argent",
+      "borrowedHint": "Tu dois de l’argent à quelqu’un : tu sauras ce qu’il te reste à rendre."
+    },
+    "filter": {
+      "lent": "On te doit",
+      "borrowed": "Tu dois",
+      "clear": "Tout afficher"
+    },
+    "card": {
+      "lent": "te doit",
+      "borrowed": "tu dois"
+    },
+    "badge": {
+      "late": "En retard de {count} j",
+      "lateOne": "En retard d’1 j",
+      "due": "Échéance le {date}",
+      "upToDate": "À jour",
+      "repaid": "Remboursé"
+    },
+    "ledger": {
+      "title": "Le relevé",
+      "what": "Pour quoi",
+      "amount": "Montant",
+      "left": "Reste"
+    },
+    "line": {
+      "title": {
+        "lent": "Prêt du {date}",
+        "borrowed": "Emprunt du {date}"
+      },
+      "loan": {
+        "lent": "Prêt",
+        "borrowed": "Emprunt"
+      },
+      "interest": "Intérêts",
+      "interestOf": {
+        "lent": "du prêt du {date}",
+        "borrowed": "de l’emprunt du {date}"
+      },
+      "repayment": {
+        "lent": "{name} m’a rendu",
+        "borrowed": "J’ai rendu"
       }
     }
   },
@@ -3115,6 +3264,73 @@
         "parcels": "Colis"
       }
     }
+  },
+  "objectAd": {
+    "section": "Vendre cet objet",
+    "hint": "L’IA t’écrit une annonce honnête, avec un prix conseillé en ariary.",
+    "sell": "Je veux le vendre",
+    "saved": "Annonce prête : {title}, {price}",
+    "open": "Voir l’annonce",
+    "sheetTitle": "Vendre cet objet",
+    "close": "Fermer",
+    "condition": "État",
+    "conditions": {
+      "new": "Neuf",
+      "veryGood": "Très bon",
+      "good": "Bon",
+      "worn": "Usé",
+      "toRepair": "À réparer"
+    },
+    "conditionHint": "Proposé d’après la photo : change-le si besoin.",
+    "place": "Lieu (ville), facultatif",
+    "placePlaceholder": "Antananarivo",
+    "malagasy": "En malgache aussi",
+    "write": "Écrire l’annonce",
+    "regenerate": "Régénérer l’annonce",
+    "writing": "L’IA écrit ton annonce…",
+    "countsAsQuestion": "Compte comme une question du jour.",
+    "demo": "Annonce d’exemple (mode démo).",
+    "price": "Prix conseillé",
+    "priceRange": "Entre {low} et {high}",
+    "priceNote": "C’est une estimation : regarde aussi les annonces près de chez toi.",
+    "priceLabel": "Prix :",
+    "title": "Titre",
+    "text": "Texte de l’annonce",
+    "textMg": "Texte en malgache",
+    "keywords": "Mots-clés",
+    "copy": "Copier",
+    "copied": "Annonce copiée.",
+    "whatsapp": "WhatsApp",
+    "facebook": "Facebook",
+    "facebookHint": "Annonce copiée : colle-la dans ta publication Facebook.",
+    "share": "Partager",
+    "again": "Changer l’état ou régénérer"
+  },
+  "loanShare": {
+    "metaTitle": "Ce qu’il reste à rendre",
+    "loading": "Chargement…",
+    "missing": {
+      "title": "Ce lien est incomplet",
+      "body": "Il manque une partie du lien. Demande à la personne de te le renvoyer."
+    },
+    "gone": {
+      "title": "Ce lien n’est plus actif",
+      "body": "La personne qui te l’a envoyé a arrêté le partage, ou le lien n’est pas le bon."
+    },
+    "error": {
+      "title": "Impossible d’afficher le récapitulatif",
+      "body": "Vérifie ta connexion, puis réessaie dans un moment."
+    },
+    "title": "Ce qu’il reste à rendre",
+    "from": "{lender} t’a prêté de l’argent. Voici où tu en es, {name}.",
+    "left": "Il reste à rendre",
+    "next": "Prochaine échéance : {amount} le {date}",
+    "updated": "Mis à jour le {date}",
+    "lentOn": "Prêté le {date}",
+    "noRepayment": "Aucun remboursement noté pour l’instant.",
+    "readOnly": "Ce récapitulatif est en lecture seule : seule la personne qui t’a prêté peut le changer.",
+    "sentWith": "Envoyé avec Assisteo Agny",
+    "discover": "Découvrir l’app"
   },
   "plants": {
     "title": "Mes plantes",

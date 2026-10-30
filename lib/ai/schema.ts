@@ -599,6 +599,46 @@ export type LoanScanResponse = {
   quota?: TrialState;
 };
 
+// ---- Selling an object: the classified ad written by the AI -------------------
+
+/** The condition the seller picks, worst last. */
+export const objectConditions = ["new", "veryGood", "good", "worn", "toRepair"] as const;
+export type ObjectCondition = (typeof objectConditions)[number];
+
+export const ObjectAdRequestSchema = z.strictObject({
+  /** The scan's photo, sent again so the model can look at it. */
+  image: z.string().min(1).max(MAX_IMAGE_BASE64_LENGTH),
+  mediaType: z.enum(imageMediaTypes),
+  /** The scan's analysis, as context (validated against AnalysisSchema server-side). */
+  analysis: z.unknown(),
+  condition: z.enum(objectConditions),
+  /** The town where it is sold, when the seller gives it. */
+  place: z.string().trim().max(60).optional(),
+  locale: z.enum(["fr", "en"]),
+  /** The text in Malagasy too. */
+  malagasy: z.boolean().optional(),
+});
+export type ObjectAdRequest = z.infer<typeof ObjectAdRequestSchema>;
+
+export const ObjectAdSchema = z.object({
+  title: z.string().describe("The ad's title, under 70 characters: what it is, brand and model when visible, the condition."),
+  text: z.string().describe("3 to 6 short, honest sentences: what it is, its strong points, its visible defects, the place, an invitation to get in touch."),
+  price: z.number().describe("The suggested asking price in ariary (MGA), as a plain number."),
+  priceLow: z.number().describe("The low end of the fair price range in ariary."),
+  priceHigh: z.number().describe("The high end of the fair price range in ariary."),
+  keywords: z.array(z.string()).describe("3 to 5 lowercase search words buyers would type, without #."),
+  textMg: z.string().nullable().describe("The same text in Malagasy when asked, null otherwise."),
+});
+export type ObjectAd = z.infer<typeof ObjectAdSchema>;
+
+export type ObjectAdResponse = {
+  ad: ObjectAd;
+  model: string;
+  demo: boolean;
+  /** Questions asked today against the daily allowance (the ad counts as one). */
+  usage?: TrialState;
+};
+
 export type AiProvider = "claude" | "gemini" | "demo";
 
 // ---- Bring your own key ---------------------------------------------------
@@ -726,6 +766,8 @@ export type ApiErrorCode =
   | "household_full"
   /** Admin: a setting that needs a database migration not applied yet (supabase/migrations). */
   | "migration_needed"
+  /** A shared loan link that doesn't exist or was stopped (the same answer for both). */
+  | "not_found"
   | "method_not_allowed";
 
 export type ApiErrorBody = {

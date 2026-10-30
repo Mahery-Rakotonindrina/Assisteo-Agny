@@ -13,65 +13,114 @@ async function asAdmin(page: Page) {
   });
 }
 
+/** "+ Nouveau", then "J'ai prêté de l'argent" or "J'ai emprunté de l'argent". */
+async function startNew(page: Page, direction: "lent" | "borrowed" = "lent") {
+  await page.getByTestId("loans-new").click();
+  await page.getByRole("button", { name: direction === "lent" ? /^J’ai prêté de l’argent/ : /^J’ai emprunté de l’argent/ }).click();
+}
+
 async function lend(page: Page, person: string, amount: string) {
-  await page.getByRole("button", { name: "J’ai prêté de l’argent" }).click();
+  await startNew(page);
   await page.getByLabel("À qui ?").fill(person);
-  await page.getByLabel("Montant (Ar)").fill(amount);
+  await page.getByLabel("Combien ? (Ar)").fill(amount);
   await page.getByRole("button", { name: "Enregistrer" }).click();
 }
 
-test("an Admin account starts from the empty screen, then lends money", async ({ page }) => {
+/** Opens the (oldest) loan of the statement: its sheet. */
+async function openLoan(page: Page) {
+  await page.locator('[data-testid="ledger-line"][data-kind="loan"]').last().click();
+  return page.getByRole("dialog");
+}
+
+test("an Admin account starts from the empty screen, then lends money in 4 taps", async ({ page }) => {
   await asAdmin(page);
   await page.goto("/");
   await expect(page.getByRole("link", { name: /Prêts/ }).first()).toBeVisible();
   await page.goto("/loans");
   await expect(page.getByRole("heading", { level: 1, name: "Prêts" })).toBeVisible();
-  await expect(page.getByText("Personne ne te doit d’argent")).toBeVisible();
+  await expect(page.getByText("Aucun prêt pour l’instant")).toBeVisible();
 
-  await lend(page, "Rakoto", "50000");
+  // "Nouveau", "J'ai prêté", the name, the amount, "Enregistrer".
+  await startNew(page);
+  await page.getByLabel("À qui ?").fill("Rakoto");
+  await page.getByLabel("Combien ? (Ar)").fill("50000");
+  await expect(page.getByRole("button", { name: "Enregistrer" })).toBeInViewport();
+  await page.getByRole("button", { name: "Enregistrer" }).click();
   await expect(page.getByText(/C’est noté : Rakoto te doit 50\s000\sAr\./)).toBeVisible();
-  await expect(page.getByTestId("loans-total")).toHaveText(/^50\s000\sAr$/);
-  await expect(page.getByTestId("loans-summary")).toContainText("1 personne");
-  await expect(page.getByRole("button", { name: /Rakoto/ })).toContainText("1 prêt en cours");
+  await expect(page.getByTestId("loans-total-lent")).toHaveText(/^50\s000\sAr$/);
+  await expect(page.getByTestId("loans-side-lent")).toContainText("1 personne");
+  await expect(page.getByRole("button", { name: /Rakoto/ })).toContainText("À jour");
 });
 
-test("a partial repayment, then « Marquer comme remboursé » folds the loan away", async ({ page }) => {
+test("« Rakoto me doit encore… » adds a sum to the same person, the statement says what is left", async ({ page }) => {
   await asAdmin(page);
   await page.goto("/loans");
   await lend(page, "Rakoto", "50000");
   await page.getByRole("button", { name: /Rakoto/ }).click();
-  await expect(page.getByRole("heading", { level: 2, name: "Rakoto" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Compte avec Rakoto" })).toBeVisible();
 
-  await page.getByRole("button", { name: "On m’a rendu…" }).click();
+  await page.getByRole("button", { name: "Rakoto me doit encore…" }).click();
+  const sheet = page.getByRole("dialog", { name: "Rakoto me doit encore…" });
+  await expect(sheet.getByLabel("À qui ?")).toHaveValue("Rakoto");
+  await sheet.getByLabel("Combien ? (Ar)").fill("30000");
+  await sheet.getByRole("button", { name: "Santé", exact: true }).click();
+  await sheet.getByRole("button", { name: "Enregistrer" }).click();
+
+  await expect(page.getByTestId("loan-balance")).toContainText(/Rakoto te doit 80\s000\sAr/);
+  await expect(page.getByTestId("ledger-line")).toHaveCount(2);
+  await expect(page.getByTestId("ledger-line").first()).toContainText("Santé");
+  await expect(page.getByTestId("ledger-left").first()).toContainText(/80\s000\sAr/);
+  await expect(page.getByTestId("ledger-left").last()).toContainText(/50\s000\sAr/);
+});
+
+test("a partial repayment shows in the statement, then « Marquer comme remboursé » folds the loan away", async ({ page }) => {
+  await asAdmin(page);
+  await page.goto("/loans");
+  await lend(page, "Rakoto", "50000");
+  await page.getByRole("button", { name: /Rakoto/ }).click();
+
+  await page.getByRole("button", { name: "Rakoto m’a rendu…" }).click();
   // Prefilled with what is left.
-  await expect(page.getByLabel("Montant (Ar)")).toHaveValue("50000");
-  await page.getByLabel("Montant (Ar)").fill("20000");
+  await expect(page.getByLabel("Combien ? (Ar)")).toHaveValue("50000");
+  await page.getByLabel("Combien ? (Ar)").fill("20000");
   await page.getByRole("button", { name: "Enregistrer" }).click();
-  await expect(page.getByTestId("loan-left")).toHaveText(/^Reste 30\s000\sAr$/);
+  await expect(page.getByTestId("loan-balance")).toContainText(/Rakoto te doit 30\s000\sAr/);
+  await expect(page.getByTestId("ledger-line").first()).toContainText(/Rakoto m’a rendu.*−20\s000\sAr/);
+  await expect(page.getByTestId("ledger-left").first()).toContainText(/30\s000\sAr/);
 
-  await page.getByRole("button", { name: "Marquer comme remboursé" }).click();
+  const sheet = await openLoan(page);
+  await expect(sheet.getByTestId("loan-left")).toHaveText(/^Reste 30\s000\sAr$/);
+  await sheet.getByRole("button", { name: "Marquer comme remboursé" }).click();
+  await expect(sheet.getByText("Remboursé", { exact: true }).first()).toBeVisible();
+  await sheet.getByRole("button", { name: "Fermer" }).click();
   await expect(page.getByText("Tout est remboursé").first()).toBeVisible();
   await page.getByRole("button", { name: "Retour à la liste" }).click();
-  await expect(page.getByText("Tout le monde t’a remboursé.")).toBeVisible();
+  await expect(page.getByText("Tout est remboursé, des deux côtés.")).toBeVisible();
   await page.getByRole("button", { name: "Remboursés (1)" }).click();
   await expect(page.getByRole("button", { name: /Rakoto/ })).toContainText(/50\s000\sAr/);
 });
 
-test("« Je dois » keeps the borrowed money apart", async ({ page }) => {
+test("the top card: « On te doit » and « Tu dois » filter the list", async ({ page }) => {
   await asAdmin(page);
   await page.goto("/loans");
   await lend(page, "Rakoto", "50000");
-  await page.getByRole("radio", { name: "Je dois" }).click();
-  await expect(page.getByText("Tu ne dois rien à personne")).toBeVisible();
-  await page.getByRole("button", { name: "J’ai emprunté" }).click();
+  await startNew(page, "borrowed");
   await page.getByLabel("Qui t’a prêté ?").fill("Tante Lalao");
-  await page.getByLabel("Montant (Ar)").fill("40000");
+  await page.getByLabel("Combien ? (Ar)").fill("40000");
   await page.getByRole("button", { name: "Enregistrer" }).click();
-  await expect(page.getByTestId("loans-summary")).toContainText("Tu dois en tout");
-  await expect(page.getByTestId("loans-total")).toHaveText(/^40\s000\sAr$/);
+  await expect(page.getByTestId("loans-total-lent")).toHaveText(/^50\s000\sAr$/);
+  await expect(page.getByTestId("loans-total-borrowed")).toHaveText(/^40\s000\sAr$/);
+  await expect(page.getByTestId("loan-person")).toHaveCount(2);
+
+  await page.getByTestId("loans-side-borrowed").click();
+  await expect(page.getByRole("button", { name: /Tante Lalao/ })).toContainText("tu dois");
   await expect(page.getByRole("button", { name: /Rakoto/ })).toHaveCount(0);
-  await page.getByRole("radio", { name: "On me doit" }).click();
-  await expect(page.getByTestId("loans-total")).toHaveText(/^50\s000\sAr$/);
+  await page.getByTestId("loans-side-lent").click();
+  await expect(page.getByRole("button", { name: /Tante Lalao/ })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /Rakoto/ })).toBeVisible();
+  // Touched again: the whole list.
+  await page.getByTestId("loans-side-lent").click();
+  await expect(page.getByTestId("loan-person")).toHaveCount(2);
 });
 
 test("without the Admin plan, Loans is not in the menu", async ({ page }) => {
@@ -84,45 +133,52 @@ test("without the Admin plan, Loans is not in the menu", async ({ page }) => {
   await expect(page.getByRole("link", { name: /Prêts/ })).toHaveCount(0);
   await page.goto("/loans");
   await expect(page.getByText("Prêts n’est pas encore ouvert à ton offre.")).toBeVisible();
-  await expect(page.getByRole("button", { name: "J’ai prêté de l’argent" })).toHaveCount(0);
+  await expect(page.getByTestId("loans-new")).toHaveCount(0);
 });
 
 test("a loan paid back in 3 times, with a partial repayment", async ({ page }) => {
   await asAdmin(page);
   await page.goto("/loans");
-  await page.getByRole("button", { name: "J’ai prêté de l’argent" }).click();
+  await startNew(page);
   await page.getByLabel("À qui ?").fill("Rakoto");
-  await page.getByLabel("Montant (Ar)").fill("60000");
+  await page.getByLabel("Combien ? (Ar)").fill("60000");
+  await page.getByTestId("loan-more").click();
   await page.getByLabel("Rembourser en plusieurs fois").check();
   await page.getByLabel("Combien de fois ?").fill("3");
   await expect(page.getByLabel(/^Montant de l’échéance du/)).toHaveCount(3);
   await page.getByRole("button", { name: "Enregistrer" }).click();
-  await expect(page.getByRole("button", { name: /Rakoto/ })).toContainText(/Prochaine échéance : 20\s000\sAr le/);
+  await expect(page.getByRole("button", { name: /Rakoto/ })).toContainText("Échéance le");
 
   await page.getByRole("button", { name: /Rakoto/ }).click();
-  await page.getByRole("button", { name: "On m’a rendu…" }).click();
-  await page.getByLabel("Montant (Ar)").fill("30000");
+  await expect(page.getByTestId("loan-balance")).toContainText(/Prochaine échéance : 20\s000\sAr le/);
+  await page.getByRole("button", { name: "Rakoto m’a rendu…" }).click();
+  await page.getByLabel("Combien ? (Ar)").fill("30000");
   await page.getByRole("button", { name: "Enregistrer" }).click();
-  const schedule = page.getByTestId("loan-schedule");
+  const sheet = await openLoan(page);
+  const schedule = sheet.getByTestId("loan-schedule");
   await expect(schedule.getByText("Payée")).toHaveCount(1);
   await expect(schedule.getByText("En partie")).toHaveCount(1);
   await expect(schedule.getByText("À venir")).toHaveCount(1);
-  await expect(page.getByTestId("loan-left")).toHaveText(/^Reste 30\s000\sAr$/);
+  await expect(sheet.getByTestId("loan-left")).toHaveText(/^Reste 30\s000\sAr$/);
 });
 
-test("a loan with interest: the total to pay back is followed", async ({ page }) => {
+test("a loan with interest: the total to pay back is followed, the interest a line of its own", async ({ page }) => {
   await asAdmin(page);
   await page.goto("/loans");
-  await page.getByRole("button", { name: "J’ai prêté de l’argent" }).click();
+  await startNew(page);
   await page.getByLabel("À qui ?").fill("Rakoto");
-  await page.getByLabel("Montant (Ar)").fill("100000");
+  await page.getByLabel("Combien ? (Ar)").fill("100000");
+  await page.getByTestId("loan-more").click();
   await page.getByLabel("Intérêts ou frais convenus").check();
   await page.getByLabel("Intérêts ou frais (Ar)").fill("10000");
   await expect(page.getByTestId("loan-form-total")).toHaveText(/À rendre en tout : 110\s000\sAr/);
   await page.getByRole("button", { name: "Enregistrer" }).click();
-  await expect(page.getByTestId("loans-total")).toHaveText(/^110\s000\sAr$/);
+  await expect(page.getByTestId("loans-total-lent")).toHaveText(/^110\s000\sAr$/);
   await page.getByRole("button", { name: /Rakoto/ }).click();
-  await expect(page.getByTestId("loan-interest")).toHaveText(/Prêté 100\s000\sAr · Intérêts 10\s000\sAr · À rendre 110\s000\sAr/);
+  await expect(page.getByTestId("ledger-line").filter({ hasText: "Intérêts" })).toContainText(/\+10\s000\sAr/);
+  await expect(page.getByTestId("ledger-left").first()).toContainText(/110\s000\sAr/);
+  const sheet = await openLoan(page);
+  await expect(sheet.getByTestId("loan-interest")).toHaveText(/Prêté 100\s000\sAr · Intérêts 10\s000\sAr · À rendre 110\s000\sAr/);
 });
 
 test("« Reconnaissance de dette (PDF) » gives a file", async ({ page }) => {
@@ -131,11 +187,23 @@ test("« Reconnaissance de dette (PDF) » gives a file", async ({ page }) => {
   await page.goto("/loans");
   await lend(page, "Rakoto", "50000");
   await page.getByRole("button", { name: /Rakoto/ }).click();
-  await page.getByRole("button", { name: "Reconnaissance de dette (PDF)" }).click();
+  await page.getByRole("button", { name: "Reconnaissance de dette", exact: true }).click();
   await page.getByLabel("Ton nom (celui qui prête)").fill("Hery");
   const download = page.waitForEvent("download");
   await page.getByRole("button", { name: "Créer le PDF" }).click();
   expect((await download).suggestedFilename()).toMatch(/^reconnaissance-de-dette-Rakoto\.pdf$/);
+});
+
+test("« Exporter le compte » gives the person's statement as a file", async ({ page }) => {
+  await asAdmin(page);
+  await page.addInitScript(() => { Object.defineProperty(navigator, "canShare", { value: () => false }); });
+  await page.goto("/loans");
+  await lend(page, "Rakoto", "50000");
+  await page.getByRole("button", { name: /Rakoto/ }).click();
+  await page.getByRole("button", { name: "Exporter le compte (PDF, Excel)" }).click();
+  const download = page.waitForEvent("download");
+  await page.getByRole("dialog").getByRole("button", { name: "Excel" }).click();
+  expect((await download).suggestedFilename()).toMatch(/^prets-Rakoto-.*\.xlsx$/);
 });
 
 /** Picks the test photo in the file chooser the button opens (the web camera plugin). */
@@ -150,6 +218,7 @@ test("a photo joins a loan as proof, then shows in the list and on the card", as
   await page.goto("/loans");
   await lend(page, "Rakoto", "50000");
   await page.getByRole("button", { name: /Rakoto/ }).click();
+  await openLoan(page);
   await page.getByRole("button", { name: "Ajouter une preuve" }).click();
   await pickPhoto(page, "Choisir une image");
   await expect(page.getByText("Preuve ajoutée.")).toBeVisible();
@@ -166,18 +235,19 @@ test("a photo joins a loan as proof, then shows in the list and on the card", as
 test("scanning a debt acknowledgment (demo) fills in the form, the photo kept as proof", async ({ page }) => {
   await asAdmin(page);
   await page.goto("/loans");
-  await page.getByRole("button", { name: "J’ai prêté de l’argent" }).click();
+  await page.getByTestId("loans-new").click();
   await page.getByRole("button", { name: "Scanner une reconnaissance de dette" }).click();
   await pickPhoto(page, "Choisir une image");
   // Signed out, the side can't be told from the account's name: asked.
   await page.getByRole("button", { name: "Rasoa Marie : on me doit" }).click();
   await expect(page.getByLabel("À qui ?")).toHaveValue("Rakoto Jean");
-  await expect(page.getByLabel("Montant (Ar)")).toHaveValue("150000");
+  await expect(page.getByLabel("Combien ? (Ar)")).toHaveValue("150000");
   await page.getByRole("button", { name: "Enregistrer" }).click();
-  await expect(page.getByTestId("loans-total")).toHaveText(/^150\s000\sAr$/);
+  await expect(page.getByTestId("loans-total-lent")).toHaveText(/^150\s000\sAr$/);
   await expect(page.getByTestId("loan-has-proofs")).toBeVisible();
   await page.getByRole("button", { name: /Rakoto Jean/ }).click();
-  await expect(page.getByTestId("loan-proofs").getByRole("button")).toHaveCount(1);
+  const sheet = await openLoan(page);
+  await expect(sheet.getByTestId("loan-proofs").getByRole("button")).toHaveCount(1);
 });
 
 // ---- With "Mes poches" (Admin has "expenses" too) ----------------------------
@@ -198,20 +268,24 @@ test("a loan from MVola lowers the pocket, a repayment brings it back up, « Il 
   await asAdmin(page);
   await withPockets(page);
   await page.goto("/loans");
-  await page.getByRole("button", { name: "J’ai prêté de l’argent" }).click();
+  await startNew(page);
   await page.getByLabel("À qui ?").fill("Rakoto");
-  await page.getByLabel("Montant (Ar)").fill("50000");
+  await page.getByLabel("Combien ? (Ar)").fill("50000");
+  // The pocket is in "Plus d'options", named on its button.
+  await expect(page.getByTestId("loan-more")).toContainText("Espèces");
+  await page.getByTestId("loan-more").click();
   await page.getByRole("dialog").getByRole("radio", { name: "MVola" }).click();
   await page.getByRole("button", { name: "Enregistrer" }).click();
-  await expect(page.getByTestId("loans-total")).toHaveText(/^50\s000\sAr$/);
+  await expect(page.getByTestId("loans-total-lent")).toHaveText(/^50\s000\sAr$/);
 
   await page.getByRole("button", { name: /Rakoto/ }).click();
-  await page.getByRole("button", { name: "On m’a rendu…" }).click();
-  await page.getByLabel("Montant (Ar)").fill("20000");
+  await page.getByRole("button", { name: "Rakoto m’a rendu…" }).click();
+  await page.getByLabel("Combien ? (Ar)").fill("20000");
   // The loan's pocket by default.
   await expect(page.getByRole("dialog").getByRole("radio", { name: "MVola" })).toBeChecked();
   await page.getByRole("button", { name: "Enregistrer" }).click();
-  await expect(page.getByTestId("loan-left")).toHaveText(/^Reste 30\s000\sAr$/);
+  await expect(page.getByTestId("ledger-line").first()).toContainText("MVola");
+  await expect(page.getByTestId("ledger-left").first()).toContainText(/30\s000\sAr/);
 
   await page.goto("/expenses");
   await expect(page.getByTestId("pockets")).toHaveText(/^Espèces 45\s000 Ar · MVola 200\s000 Ar$/);
@@ -221,7 +295,7 @@ test("a loan from MVola lowers the pocket, a repayment brings it back up, « Il 
   await page.getByRole("dialog", { name: "Mes poches" }).getByRole("button", { name: /^MVola/ }).click();
   await expect(page.getByTestId("pocket-loan").first()).toHaveText("Remboursement de Rakoto");
   await page.getByRole("link", { name: "Prêt à Rakoto" }).click();
-  await expect(page.getByRole("heading", { level: 2, name: "Rakoto" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Compte avec Rakoto" })).toBeVisible();
 });
 
 test("a « Vous avez reçu » from a debtor (demo): « C’est un remboursement ? », yes — the rest goes down, the income goes", async ({ page, isMobile }) => {
@@ -229,7 +303,7 @@ test("a « Vous avez reçu » from a debtor (demo): « C’est un remboursement 
   await asAdmin(page);
   await page.goto("/loans");
   await lend(page, "Rasoa Hery", "100000");
-  await expect(page.getByTestId("loans-total")).toHaveText(/^100\s000\sAr$/);
+  await expect(page.getByTestId("loans-total-lent")).toHaveText(/^100\s000\sAr$/);
 
   // Any photo comes back as the demo "Vous avez reçu" of 80 000 Ar from Rasoa Hery.
   await page.route("**/api/analyze", async (route) => {
@@ -246,5 +320,5 @@ test("a « Vous avez reçu » from a debtor (demo): « C’est un remboursement 
   await page.goto("/expenses");
   await expect(page.getByTestId("expenses-in")).toHaveText(/^0 Ar$/);
   await page.goto("/loans");
-  await expect(page.getByTestId("loans-total")).toHaveText(/^20\s000\sAr$/);
+  await expect(page.getByTestId("loans-total-lent")).toHaveText(/^20\s000\sAr$/);
 });
