@@ -1957,6 +1957,10 @@
         "title": "Mon garage",
         "body": "Tes véhicules, leur entretien, les rappels d’assurance et de vidange, les pleins et les dépenses."
       },
+      "plants": {
+        "title": "Mes plantes",
+        "body": "Quand arroser chaque plante, un rappel le matin, et de l’aide quand une plante est malade."
+      },
       "reseller": {
         "title": "Outils de revendeur",
         "body": "Un client par colis, les totaux par client, le récap du mois et un relevé PDF à envoyer."

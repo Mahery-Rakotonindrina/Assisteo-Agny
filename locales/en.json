@@ -1957,6 +1957,10 @@
         "title": "My garage",
         "body": "Your vehicles, their service, insurance and oil change reminders, fuel and expenses."
       },
+      "plants": {
+        "title": "My plants",
+        "body": "When to water each plant, a morning reminder, and help when a plant is sick."
+      },
       "reseller": {
         "title": "Reseller tools",
         "body": "A client per parcel, totals per client, the month's summary and a PDF statement to send."
