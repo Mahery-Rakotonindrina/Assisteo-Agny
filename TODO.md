@@ -60,8 +60,8 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Identification et caractéristiques
 - [x] Conseils, actions, mises en garde, idées
 - [ ] « Mes plantes » : rappels d'arrosage, diagnostic de maladie
-- [ ] Objets : prix de revente estimé, texte d'annonce prêt à publier
-- [x] Inventaire de la maison (garanties, factures liées) — « Ma maison », à partir de Premium : rappel 30 jours avant la fin de garantie, export PDF et Excel pour l’assurance ; migration 0014 à appliquer
+- [x] Objets : prix de revente estimé, texte d'annonce prêt à publier — « Je veux le vendre » sur un objet : état, lieu, annonce de l’IA (prix conseillé en ariary et fourchette, mots-clés, malgache en option), copier, WhatsApp, Facebook, partager avec la photo ; compte comme une question du jour ; gardée dans l’historique
+- [x] Inventaire de la maison (garanties, factures liées) — « Ma maison », à partir de Premium : rappel 30 jours avant la fin de garantie, export PDF et Excel pour l’assurance ; migration 0014 appliquée
 
 ## 6. Questions sur un scan
 
@@ -269,4 +269,5 @@ L’argent prêté ou emprunté, par personne. Ni dépense ni revenu : rien n’
 - [x] Partager à l’emprunteur un lien qui montre ce qu’il doit encore — « On me doit », compte connecté : page publique `/pret?t=…` sans compte (noindex), copie figée mise à jour à chaque changement (montants, échéancier, remboursements, reste ; jamais téléphone, note ni preuve), envoi WhatsApp ou copie, « Arrêter le partage » ; seul le hachage du jeton est gardé (migration 0012)
 - [x] Statistiques : total prêté sur l’année, qui rembourse en retard — section repliable « En chiffres », pour « On me doit » et « Je dois »
 - [x] Prêts partagés en famille (foyer) — bascule « Moi / Foyer » pour un membre avec « Prêts », option « Prêt du foyer » sur un nouveau prêt ; chaque membre note un remboursement, seul l’auteur modifie le prêt ; hors des poches, sans rappel ; rendus en perso à qui quitte le foyer (migration 0012)
+- [x] Écran Prêts plus simple, et le compte avec chaque personne (relevé avec le reste après chaque ligne) — carte « On te doit · Tu dois » qui filtre la liste, un seul « + Nouveau » (prêté, emprunté, scanner), cartes par personne avec pastille d’état, « Foyer » en pastille ; l’ajout en 4 gestes (« Pour quoi ? » en pastilles, le reste dans « Plus d’options ») ; « Compte avec … » : « + Il me doit encore… », « Il m’a rendu… » (réparti sur ses prêts), « Relancer », relevé par mois avec la colonne « Reste », aussi dans l’export PDF et Excel de la personne
 - [ ] Ouvrir « Prêts » à d’autres offres que l’Admin — une case à cocher dans Admin → Offres ; reste à choisir les offres

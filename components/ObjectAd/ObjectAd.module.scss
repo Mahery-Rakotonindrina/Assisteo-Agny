@@ -1,0 +1,249 @@
+@use "../../styles/mixins" as *;
+
+// Selling an object: the button under the summary, and the ad's sheet.
+// Every field is at least 16 px, so iOS doesn't zoom on focus.
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.hint,
+.status {
+  font-size: 0.92rem;
+  color: var(--text-muted);
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+
+  @include desktop {
+    align-items: center;
+  }
+}
+
+.sheet {
+  width: 100%;
+  max-width: 560px;
+  max-height: 92vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1rem 1.25rem calc(1.5rem + var(--safe-bottom));
+  border-radius: 28px 28px 0 0;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  overscroll-behavior: contain;
+
+  @include desktop {
+    border-radius: 28px;
+  }
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h2 {
+    @include display(1.7rem);
+  }
+}
+
+.close {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: var(--surface-strong);
+  color: var(--text-muted);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+
+  > span,
+  > legend {
+    padding: 0;
+    margin-bottom: 0.1rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+
+  small {
+    font-size: 0.8rem;
+    color: var(--text-subtle);
+  }
+
+  input,
+  textarea {
+    width: 100%;
+    min-width: 0;
+    padding: 0.65rem 0.8rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+    font-size: 1rem;
+    line-height: 1.45;
+    outline: none;
+
+    &:focus {
+      border-color: var(--accent-mark);
+    }
+  }
+
+  input {
+    height: 2.75rem;
+  }
+
+  textarea {
+    resize: vertical;
+  }
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.chip {
+  @include pressable;
+  min-height: 2.5rem;
+  padding: 0 0.95rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 600;
+
+  &[aria-checked="true"] {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 16%, transparent);
+    color: var(--accent);
+  }
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.95rem;
+
+  input {
+    width: 1.2rem;
+    height: 1.2rem;
+    accent-color: var(--accent);
+  }
+}
+
+.note {
+  font-size: 0.8rem;
+  color: var(--text-subtle);
+  text-align: center;
+}
+
+.error {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--radius-md);
+  background: var(--danger-soft);
+  font-size: 0.92rem;
+
+  a {
+    font-weight: 600;
+    color: var(--accent);
+  }
+}
+
+.price {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+
+  span {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+
+  strong {
+    @include display(1.6rem);
+  }
+
+  small {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+}
+
+.keywords {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    background: var(--surface-strong);
+    font-size: 0.85rem;
+  }
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}

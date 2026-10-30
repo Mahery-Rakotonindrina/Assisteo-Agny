@@ -19,6 +19,7 @@ import {
   ListChecks,
   ListPlus,
   Lock,
+  Megaphone,
   Maximize2,
   MessageCircle,
   Package,
@@ -45,6 +46,7 @@ import { FolderPicker } from "@/components/FolderPicker";
 import { ReceiptControls } from "@/components/Expenses";
 import { GarageControls } from "@/components/Garage";
 import { hasInventoryControls, InventoryControls, InventoryIcon } from "@/components/Inventory";
+import { ObjectAdControls } from "@/components/ObjectAd";
 import { PlanBadge } from "@/components/PlanBadge";
 import { PlanLock } from "@/components/PlanLock";
 import { PhotoViewer } from "@/components/PhotoViewer";
@@ -735,6 +737,13 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
             {!example && analysis.document?.registration && (
               <Section title={t("garage.title")} icon={<Car />}>
                 <GarageControls entry={entry} bare />
+              </Section>
+            )}
+
+            {/* An object: write its classified ad, to sell it. */}
+            {!example && analysis.category === "object" && (
+              <Section title={t("objectAd.section")} icon={<Megaphone />}>
+                <ObjectAdControls entry={entry} />
               </Section>
             )}
 
