@@ -1920,7 +1920,49 @@
       }
     },
     "finalTitle": "Ready to try?",
-    "finalBody": "One photo is enough to see what the AI can do for you."
+    "finalBody": "One photo is enough to see what the AI can do for you.",
+    "extrasTitle": "To go further",
+    "extrasHint": "With a plan, the app does even more. Each card tells you from which plan it is included.",
+    "extrasFrom": "From",
+    "extrasFree": "Included for free",
+    "extras": {
+      "reminders": {
+        "title": "Reminders",
+        "body": "A reminder at the right time: before a bill is due, an insurance ends or a parcel arrives. You can repeat it or snooze it."
+      },
+      "pdfExport": {
+        "title": "PDF export",
+        "body": "A clean PDF of a document, or of several scans from your history, to send or print."
+      },
+      "parcelCosts": {
+        "title": "Parcel costs",
+        "body": "The price and fees of each parcel in ariary, to know what it really cost you."
+      },
+      "multiPage": {
+        "title": "Several pages",
+        "body": "A contract or a long bill in several photos, analysed as one document."
+      },
+      "deepAnalysis": {
+        "title": "Deep analysis",
+        "body": "Analyse a scan again with the most precise AI, when it really matters."
+      },
+      "garage": {
+        "title": "My garage",
+        "body": "Your vehicles, their service, insurance and oil change reminders, fuel and expenses."
+      },
+      "reseller": {
+        "title": "Reseller tools",
+        "body": "A client per parcel, totals per client, the month's summary and a PDF statement to send."
+      },
+      "expenses": {
+        "title": "My expenses",
+        "body": "The month's budget, alone or as a household: what goes out, what is left."
+      },
+      "loans": {
+        "title": "Loans",
+        "body": "Who owes you, whom you owe, and a WhatsApp reminder when needed."
+      }
+    }
   },
   "loans": {
     "title": "Loans",

@@ -122,6 +122,18 @@
   color: var(--tint);
 }
 
+// The "from…" label of a plan feature: added after the offers' settings arrive.
+.from {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: auto;
+  padding-top: 0.25rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
 .examples {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

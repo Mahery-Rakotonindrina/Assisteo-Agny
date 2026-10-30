@@ -93,6 +93,18 @@ test("the discover page shows its title and opens a question", async ({ page }) 
   }).toPass();
 });
 
+test("the discover page labels each plan feature with its lowest plan, after the settings arrive", async ({ page }) => {
+  await prepare(page);
+  await page.goto("/decouvrir");
+  const garage = page.locator("li[data-feature=garage]");
+  await expect(garage.getByRole("heading", { name: "Mon garage" })).toBeVisible();
+  // The default settings: My garage from Premium; the Admin-only features are not announced.
+  await expect(garage).toContainText("À partir de");
+  await expect(garage.locator("[data-plan=premium]")).toBeVisible();
+  await expect(page.locator("li[data-feature=loans]")).toHaveCount(0);
+  await expect(page.locator("li[data-feature=expenses]")).toHaveCount(0);
+});
+
 test("a newcomer finds the discover page from the home screen", async ({ page }) => {
   await prepare(page);
   await page.goto("/");
