@@ -1,6 +1,6 @@
 import type { Locale } from "@/i18n.config";
 import { formatNumber } from "./format";
-import { hasFeature, planFeatures, type PlanFeature, type PlanId, type PlanLimits } from "./plans";
+import { hasFeature, planFeatures, type AnyPlanId, type PlanFeature, type PlanId, type PlanLimits } from "./plans";
 
 type Translate = (key: string, params?: Record<string, string | number>) => string;
 
@@ -35,14 +35,22 @@ export function planPerks(plan: PlanId, limits: PlanLimits, t: Translate, locale
   return perks;
 }
 
+/** "Tout Lite, et :", "Tout Premium, et :", else "Tout {plan}, et :" with the plan's name. */
+function inheritLine(below: { id: AnyPlanId; name?: string }, t: Translate) {
+  if (below.id === "lite") return t("plans.features.allLite");
+  if (below.id === "premium") return t("plans.features.allPremium");
+  return t("plans.features.allPlan", { plan: below.name ?? below.id });
+}
+
 /**
  * An offer's lines on the offers page: "All Lite, and:" when it includes the
  * offer below, then its limits, then what it adds. The deep analyses' count
- * is a limit of its own: shown on every offer that has them.
+ * is a limit of its own: shown on every offer that has them. A plan created
+ * from the Admin goes by its `name` ("Tout Famille, et :").
  */
 export function offerLines(
-  offer: { id: PlanId; features: readonly PlanFeature[]; deepPerMonth: number },
-  below: { id: "lite" | "premium"; features: readonly PlanFeature[] } | null,
+  offer: { id: AnyPlanId; features: readonly PlanFeature[]; deepPerMonth: number },
+  below: { id: AnyPlanId; name?: string; features: readonly PlanFeature[] } | null,
   limitLines: string[],
   t: Translate,
   locale: Locale,
@@ -51,7 +59,7 @@ export function offerLines(
   const added = offer.features.filter((feature) => !includesBelow || !below.features.includes(feature));
   const deep = offer.features.includes("deepAnalysis") ? [deepLine(offer.deepPerMonth, t, locale)] : [];
   return [
-    ...(includesBelow ? [{ text: t(below.id === "lite" ? "plans.features.allLite" : "plans.features.allPremium"), inherit: true }] : []),
+    ...(includesBelow ? [{ text: inheritLine(below, t), inherit: true }] : []),
     ...[...limitLines, ...deep, ...added.flatMap((feature) => featureLines(feature, offer.deepPerMonth, t, locale, false))].map((text) => ({ text })),
   ];
 }

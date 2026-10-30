@@ -1,14 +1,14 @@
-import { planFor, type PlanFeature, type PlanId, type PlanResponse } from "./plans";
+import { planFor, type AnyPlanId, type PlanFeature, type PlanResponse } from "./plans";
 
 /** The plan features the discover page presents, in its order (the own AI key is left to the offers page). */
 export const discoverFeatures = ["reminders", "pdfExport", "parcelCosts", "multiPage", "deepAnalysis", "garage", "plants", "reseller", "expenses", "loans"] as const satisfies readonly PlanFeature[];
 export type DiscoverFeature = (typeof discoverFeatures)[number];
 
 /** A card: the feature, and the lowest plan with it for the "from…" label (null: no label yet). */
-export type DiscoverCard = { feature: DiscoverFeature; from: PlanId | null };
+export type DiscoverCard = { feature: DiscoverFeature; from: AnyPlanId | null };
 
 // Announced only when a plan anyone can get has it: not switched off, not in test, not Admin only.
-const announced = (plan: PlanId | null): plan is PlanId => plan !== null && plan !== "unlimited";
+const announced = (plan: AnyPlanId | null): plan is AnyPlanId => plan !== null && plan !== "unlimited";
 
 /**
  * The cards to show. Before the settings are known (`from` null: the static

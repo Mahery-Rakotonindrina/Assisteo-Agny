@@ -9,7 +9,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { formatDate } from "@/lib/format";
 import { spring } from "@/lib/motion";
 import { planPerks } from "@/lib/planPerks";
-import { soldPlans, type PlanLimits, type SoldPlanId } from "@/lib/plans";
+import { soldPlans, type AnyPlanId, type PlanLimits, type SoldPlanId } from "@/lib/plans";
 import { haptics } from "@/services/device";
 import { planMemoryKeys, rememberPlan, usePlanMemory } from "@/services/planMemory";
 import styles from "./PlanWelcome.module.scss";
@@ -38,7 +38,7 @@ const noSubscribe = () => () => {};
  * memory of the last paid plan, for the "has ended" notice.
  */
 export function PlanWelcome() {
-  const { plan, id, fresh } = usePlan();
+  const { plan, id, fresh, current } = usePlan();
   const welcomed = usePlanMemory(planMemoryKeys.welcomed);
   const lastPaid = usePlanMemory(planMemoryKeys.lastPaid);
   const mounted = useSyncExternalStore(noSubscribe, () => true, () => false);
@@ -53,18 +53,20 @@ export function PlanWelcome() {
   }, [fresh, signedIn, id, lastPaid, welcomed]);
 
   if (!mounted) return null;
-  const show = fresh && signedIn && isSoldPlan(id) && welcomed !== id && plan !== null;
+  // A created plan is welcomed by its own id: from Lite to "Famille" is a new plan.
+  const show = fresh && signedIn && isSoldPlan(id) && welcomed !== current && plan !== null;
   return createPortal(
     <AnimatePresence>
       {show && isSoldPlan(id) && (
         <Welcome
-          key={id}
+          key={current}
           id={id}
+          current={current}
           endsAt={plan.endsAt}
           limits={plan.limits}
           onClose={() => {
             haptics.success();
-            rememberPlan(planMemoryKeys.welcomed, id);
+            rememberPlan(planMemoryKeys.welcomed, current);
           }}
         />
       )}
@@ -73,15 +75,15 @@ export function PlanWelcome() {
   );
 }
 
-function Welcome({ id, endsAt, limits, onClose }: { id: SoldPlanId; endsAt: number | null; limits: PlanLimits; onClose: () => void }) {
+function Welcome({ id, current, endsAt, limits, onClose }: { id: SoldPlanId; current: AnyPlanId; endsAt: number | null; limits: PlanLimits; onClose: () => void }) {
   const { t, locale } = useTranslation();
   const reduceMotion = useReducedMotion();
-  const { has } = usePlan();
+  const { has, name: planName, color } = usePlan();
   const [pieces] = useState(makePieces);
-  const name = t(`plans.names.${id}`);
+  const name = planName(current);
 
   return (
-    <motion.div className={styles.backdrop} data-plan={id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+    <motion.div className={styles.backdrop} data-plan={current} data-plan-color={color(current)} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
       {!reduceMotion && (
         <div className={styles.confetti} aria-hidden>
           {pieces.map((piece, index) => (
@@ -107,7 +109,7 @@ function Welcome({ id, endsAt, limits, onClose }: { id: SoldPlanId; endsAt: numb
         transition={spring}
       >
         <span className={styles.icon}>
-          <PlanIcon plan={id} size={34} />
+          <PlanIcon plan={current} size={34} />
         </span>
         <p className={styles.kicker}>{t("plans.welcome.kicker")}</p>
         <h2 id="plan-welcome-title">{t("plans.welcome.title", { plan: name })}</h2>

@@ -6,7 +6,7 @@ import { SegmentedControl } from "@/components/SegmentedControl";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { isForResale, saleKey, soldOn } from "@/lib/expenses";
-import type { PlanId } from "@/lib/plans";
+import type { AnyPlanId } from "@/lib/plans";
 import { formatAriary, formatDecimal } from "@/lib/format";
 import { currencySymbols, parseForeignAmount, type ForeignAmount } from "@/lib/money";
 import { createId } from "@/services/historyStore";
@@ -30,7 +30,7 @@ const grouped = (value: string) => value.replace(/\B(?=(\d{3})+(?!\d))/g, "\u202
  */
 export function ParcelCosts({ parcel }: { parcel: Parcel }) {
   const { t, locale } = useTranslation();
-  const { has, planFor } = usePlan();
+  const { has, planFor, name: planName } = usePlan();
   if (has("parcelCosts")) return <Costs parcel={parcel} reseller={has("reseller")} resellerFrom={planFor("reseller")} />;
   // Lost with the plan: the costs already typed stay, shown read-only.
   const kept = parcelTotalMga(parcel);
@@ -40,14 +40,15 @@ export function ParcelCosts({ parcel }: { parcel: Parcel }) {
       text={
         kept > 0
           ? t("parcels.costsReadOnly", { amount: formatAriary(kept, locale) })
-          : t("parcels.costsLocked", { plan: t(`plans.names.${planFor("parcelCosts") ?? "lite"}`) })
+          : t("parcels.costsLocked", { plan: planName(planFor("parcelCosts") ?? "lite") })
       }
     />
   );
 }
 
-function Costs({ parcel, reseller, resellerFrom }: { parcel: Parcel; reseller: boolean; resellerFrom: PlanId | null }) {
+function Costs({ parcel, reseller, resellerFrom }: { parcel: Parcel; reseller: boolean; resellerFrom: AnyPlanId | null }) {
   const { t, locale } = useTranslation();
+  const { name: planName } = usePlan();
   const [price, setPrice] = useState(parcel.priceMga ? String(parcel.priceMga) : "");
   const [fees, setFees] = useState<DraftFee[]>(() => (parcel.fees ?? []).map((fee) => ({ id: fee.id, label: fee.label, amount: fee.amountMga ? String(fee.amountMga) : "" })));
   const edited = useRef(false);
@@ -158,7 +159,7 @@ function Costs({ parcel, reseller, resellerFrom }: { parcel: Parcel; reseller: b
       </div>
       {parcelTotalMga(parcel) > 0 && <CountedLink sourceKey={`parcel:${parcel.id}`} at={parcel.createdAt} resaleAt={reseller && isForResale(parcel) ? soldOn(parcel) : undefined} />}
 
-      {reseller ? <Sale parcel={parcel} total={total} /> : <PlanLock plan={resellerFrom} text={t("parcels.sale.locked", { plan: t(`plans.names.${resellerFrom ?? "pro"}`) })} />}
+      {reseller ? <Sale parcel={parcel} total={total} /> : <PlanLock plan={resellerFrom} text={t("parcels.sale.locked", { plan: planName(resellerFrom ?? "pro") })} />}
     </div>
   );
 }

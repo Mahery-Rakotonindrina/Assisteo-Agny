@@ -1,6 +1,7 @@
 // The Row Level Security of the shared budget (migration 0009_households.sql)
 // of the loans (0010_loans.sql), of the features offered for a while (0011),
 // of the loan links and household loans (0012) and of the plants (0013),
+// with the plans created from the Admin a subscription may hold (0015),
 // tested as Supabase runs it: each query as the "authenticated" role with a
 // user id, or as the server ("service_role"). `client.query(text, params)`
 // must return { rows }. Returns the problems found (empty: all good).
@@ -354,5 +355,17 @@ export async function runRlsChecks(client) {
     const amounts = (data?.repayments ?? []).map((item) => item.amountMga).join(",");
     return data?.amountMga === 60000 && amounts === "20000,5000" ? null : `got ${JSON.stringify(data)}`;
   });
+
+  // ---- Plans created from the Admin (migration 0015_offres_creees.sql) ---------
+  await check("a subscription holds a created plan by its short id", async () => {
+    try {
+      await server("insert into public.subscriptions (email, plan) values ('famille@example.com', 'famille')");
+      return null;
+    } catch (error) {
+      return error.message;
+    }
+  });
+  await refused("a subscription's plan is a short lowercase id", () => server("insert into public.subscriptions (email, plan) values ('x@example.com', 'Famille !')"), /check constraint/);
+  await hidden("an account doesn't read the subscriptions", () => tryUser(anna, "select 1 from public.subscriptions"));
   return problems;
 }

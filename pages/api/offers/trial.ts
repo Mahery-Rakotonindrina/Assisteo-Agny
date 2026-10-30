@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { accessPeriod, TRIAL_DAYS, trialEligible } from "@/lib/offers";
 import { applyCors, clientIp, sendError } from "@/lib/server/http";
 import { claimTrial, releaseTrial, trialClaimed } from "@/lib/server/offerStore";
+import { getPlansConfig } from "@/lib/server/planConfig";
 import { rateLimit } from "@/lib/server/rateLimit";
 import { reportError } from "@/lib/server/reportError";
 import { addSubscriptions, subscriptionsForEmail } from "@/lib/server/subscriptions";
@@ -27,7 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   const email = account.email;
 
   try {
-    if (!trialEligible(await subscriptionsForEmail(email)) || (await trialClaimed(email))) return sendError(res, 403, "refused", "The Premium trial was already used.");
+    if (!trialEligible(await subscriptionsForEmail(email), (await getPlansConfig()).customPlans) || (await trialClaimed(email))) return sendError(res, 403, "refused", "The Premium trial was already used.");
     // Against a double tap: only one request goes on.
     if (!(await claimTrial(email))) return sendError(res, 403, "refused", "The Premium trial was already used.");
     const period = accessPeriod(Date.now(), TRIAL_DAYS);

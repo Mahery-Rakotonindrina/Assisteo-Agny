@@ -651,7 +651,49 @@
       "contact": "Contact to send the reference",
       "contactHint": "A phone number, or a link (WhatsApp: https://wa.me/261…, Messenger…).",
       "monthsFree": "{count} months free over the year",
-      "deepNeedsLimit": "This plan has deep analysis: set a number per month (0 would mean no limit, on the costliest AI)."
+      "deepNeedsLimit": "This plan has deep analysis: set a number per month (0 would mean no limit, on the costliest AI).",
+      "created": {
+        "title": "Created plans",
+        "subtitle": "A plan of your own, placed between two built-in ones: its name, colour, price, limits and features. People take it like Lite or Premium: you record the subscription after the payment.",
+        "empty": "No created plan yet.",
+        "create": "Create a plan",
+        "newTitle": "New plan",
+        "editTitle": "Edit the plan",
+        "nameFr": "Name in French",
+        "nameEn": "Name in English",
+        "id": "Id",
+        "idHint": "Taken from the name. It can't change once created.",
+        "idProblems": {
+          "format": "2 to 24 lowercase letters, digits or dashes, starting with a letter.",
+          "builtIn": "That's the name of a built-in plan: pick another one.",
+          "taken": "Another plan already has this id."
+        },
+        "color": "Colour",
+        "colors": {
+          "teal": "Teal",
+          "emerald": "Green",
+          "rose": "Pink",
+          "orange": "Orange",
+          "indigo": "Indigo",
+          "slate": "Grey"
+        },
+        "rank": "Place among the plans",
+        "after": {
+          "lite": "Between Lite and Premium",
+          "premium": "Between Premium and Pro",
+          "pro": "Above Pro"
+        },
+        "features": "Features included",
+        "onSale": "On sale",
+        "offSale": "Off sale",
+        "onSaleHint": "Off sale, it's no longer offered. Those who have it keep it until their subscription ends.",
+        "save": "Save the plan",
+        "saved": "Plan saved",
+        "delete": "Delete the plan",
+        "deleteConfirm": "Tap again to delete",
+        "deleted": "Plan deleted",
+        "inUse": "Someone still has this plan: take it off sale instead."
+      }
     },
     "adminAccount": "Your account is an admin: open the admin space with your account, or with the token.",
     "ai": {
@@ -779,7 +821,10 @@
         "promo_discount_used": "Discount used",
         "referral_reward": "Referral month given",
         "feature_plans": "A plan’s features changed",
-        "feature_status": "A feature’s state changed"
+        "feature_status": "A feature’s state changed",
+        "plan_create": "Plan created",
+        "plan_edit": "Created plan changed",
+        "plan_delete": "Created plan deleted"
       }
     },
     "export": {
@@ -1409,7 +1454,8 @@
       "reminders": "Reminders: on your scans (with repeat and snooze), insurance, parcel arrivals",
       "loans": "Loans: who owes you, whom you owe, WhatsApp reminders",
       "expenses": "My expenses: the month’s budget, alone or as a household",
-      "plants": "My plants: watering, morning reminder, diagnosis of a sick plant"
+      "plants": "My plants: watering, morning reminder, diagnosis of a sick plant",
+      "allPlan": "Everything in {plan}, plus:"
     },
     "how": "How to subscribe",
     "step1": "Sign in",

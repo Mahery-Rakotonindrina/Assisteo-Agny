@@ -2,6 +2,7 @@ import Link from "next/link";
 import { motion } from "motion/react";
 import { CalendarClock, Gift, KeyRound, Sparkles } from "lucide-react";
 import { Button } from "@/components/Button";
+import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { PlanId } from "@/lib/plans";
 import { spring } from "@/lib/motion";
@@ -43,10 +44,14 @@ export function TrialPill({ remaining, limit, kind }: { remaining: number; limit
 /** Replaces the capture controls once the free scans, or this month's, are used up. */
 export function TrialOver({ limit, kind, plan, canUseOwnKey }: { limit: number; kind: "trial" | "month"; plan: PlanId; canUseOwnKey: boolean }) {
   const { t } = useTranslation();
+  const { id, current, name, color } = usePlan();
+  // The account's own plan: a created one goes by its name and colour.
+  const shown = plan === id ? current : plan;
   return (
     <motion.div
       className={styles.over}
-      data-plan={kind === "month" ? plan : undefined}
+      data-plan={kind === "month" ? shown : undefined}
+      data-plan-color={kind === "month" ? color(shown) : undefined}
       initial={{ opacity: 0, scale: 0.96 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={spring}
@@ -57,7 +62,7 @@ export function TrialOver({ limit, kind, plan, canUseOwnKey }: { limit: number; 
         {kind === "trial" ? <Gift size={30} /> : <CalendarClock size={30} />}
       </span>
       <h2 id="trial-over-title">{kind === "trial" ? t("trial.overTitle") : t("trial.overTitleMonth")}</h2>
-      <p>{kind === "trial" ? t("trial.overBody", { limit }) : t("trial.overBodyMonth", { limit, plan: t(`plans.names.${plan}`) })}</p>
+      <p>{kind === "trial" ? t("trial.overBody", { limit }) : t("trial.overBodyMonth", { limit, plan: name(shown) })}</p>
       <Button href={PLANS_HREF} size="lg" icon={<Sparkles />} block>
         {t("trial.seeOffers")}
       </Button>

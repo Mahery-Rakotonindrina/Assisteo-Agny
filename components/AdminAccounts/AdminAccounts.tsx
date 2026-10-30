@@ -141,7 +141,7 @@ export function AdminAccounts({ token }: { token: string }) {
 
       <ul className={shared.people}>
         {visible.slice(0, shown).map((account) => (
-          <li key={account.id} className={shared.person} data-plan={account.plan === "free" ? undefined : account.plan}>
+          <li key={account.id} className={shared.person} data-plan={account.plan === "free" ? undefined : (account.customPlan?.id ?? account.plan)} data-plan-color={account.customPlan?.color}>
             <div className={shared.personSummary}>
               <span className={shared.personText}>
                 <strong>{account.email ?? t("admin.accounts.noEmail")}</strong>
@@ -155,7 +155,7 @@ export function AdminAccounts({ token }: { token: string }) {
                     .join(" · ")}
                 </small>
               </span>
-              {account.plan !== "free" && <PlanBadge plan={account.plan} />}
+              {account.plan !== "free" && <PlanBadge plan={account.customPlan?.id ?? account.plan} custom={account.customPlan} />}
               {account.email && (
                 <Button size="md" variant="ghost" icon={<IdCard />} onClick={() => setCardEmail(account.email)} aria-label={`${t("admin.card.open")} · ${account.email}`}>
                   {t("admin.card.open")}

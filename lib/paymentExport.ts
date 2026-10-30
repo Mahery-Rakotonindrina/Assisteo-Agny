@@ -73,7 +73,8 @@ function shape(sheet: import("exceljs").Worksheet, columns: Array<{ width: numbe
 }
 
 /** The workbook's bytes (.xlsx). */
-export async function paymentsWorkbook(rows: Subscription[], t: Translate, heading: ExportHeading): Promise<ArrayBuffer> {
+/** `planName`: a plan's name, created plans included (the locales' names by default). */
+export async function paymentsWorkbook(rows: Subscription[], t: Translate, heading: ExportHeading, planName: (plan: Subscription["plan"]) => string = (plan) => t(`plans.names.${plan}`)): Promise<ArrayBuffer> {
   const Excel = await loadExcel();
   const workbook = new Excel.Workbook();
   workbook.creator = "Assisteo Agny";
@@ -110,7 +111,7 @@ export async function paymentsWorkbook(rows: Subscription[], t: Translate, headi
     list.map((row) => [
       excelDay(Date.parse(row.createdAt)),
       row.email,
-      t(`plans.names.${row.plan}`),
+      planName(row.plan),
       excelDay(Date.parse(row.startsAt)),
       // The last day included of an exclusive end.
       row.endsAt ? excelDay(Date.parse(row.endsAt) - 1) : "",
@@ -124,7 +125,8 @@ export async function paymentsWorkbook(rows: Subscription[], t: Translate, headi
 
   // ---- Sheet 2: per month --------------------------------------------------------------
   const months = paymentsByMonth(list);
-  const plans = paidPlans.filter((plan) => list.some((row) => row.plan === plan));
+  // The built-in plans in their order, then the created ones paid for.
+  const plans = [...paidPlans.filter((plan) => list.some((row) => row.plan === plan)), ...new Set(list.map((row) => row.plan).filter((plan) => !(paidPlans as readonly string[]).includes(plan)))];
   const perMonth = workbook.addWorksheet(t("admin.export.sheetMonths"), { views: [{ state: "frozen", ySplit: TOP }] });
   sheetHeading(perMonth, heading);
   table(
@@ -133,7 +135,7 @@ export async function paymentsWorkbook(rows: Subscription[], t: Translate, headi
     [
       { name: label("month"), filterButton: true, totalsRowLabel: t("admin.export.total") },
       { name: label("count"), filterButton: true, totalsRowFunction: "sum", totalsRowResult: list.length },
-      ...plans.map((plan): TableColumn => ({ name: t(`plans.names.${plan}`), filterButton: true, totalsRowFunction: "sum", totalsRowResult: sum(months.map((month) => month.byPlan[plan] ?? 0)) })),
+      ...plans.map((plan): TableColumn => ({ name: planName(plan), filterButton: true, totalsRowFunction: "sum", totalsRowResult: sum(months.map((month) => month.byPlan[plan] ?? 0)) })),
       { name: label("amount"), filterButton: true, totalsRowFunction: "sum", totalsRowResult: sum(months.map((month) => month.totalMga)) },
     ],
     months.map((month) => [month.month, month.count, ...plans.map((plan) => month.byPlan[plan] ?? 0), month.totalMga]),
