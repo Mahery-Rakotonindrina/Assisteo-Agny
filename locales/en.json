@@ -2445,6 +2445,13 @@
         "lent": "{name} paid me back",
         "borrowed": "I paid back"
       }
+    },
+    "contacts": {
+      "pick": "Pick from my contacts",
+      "addNumber": "Add their number from my contacts",
+      "noNumber": "This contact has no number.",
+      "added": "{name}’s number added.",
+      "failed": "The number couldn’t be added. Try again."
     }
   },
   "garage": {

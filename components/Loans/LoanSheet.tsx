@@ -8,6 +8,7 @@ import { useToast } from "@/components/Toast";
 import { useNow } from "@/hooks/useNow";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDate, startOfDay, toDateInput } from "@/lib/format";
+import { contactPerson, type PickedContact } from "@/lib/contactPick";
 import { loanPurposes, spreadRepayment } from "@/lib/loanLedger";
 import { loanScanDraft, otherParty, type LoanScanDraft } from "@/lib/loanScan";
 import {
@@ -34,6 +35,7 @@ import { haptics } from "@/services/device";
 import { personalBook, type LoanBook } from "@/services/loanBook";
 import { loanStore } from "@/services/loanStore";
 import { ApiError } from "@/types/api";
+import { ContactPickButton } from "./ContactPick";
 import { LoanProofs } from "./LoanProofs";
 import styles from "./Loans.module.scss";
 import { useAccountName } from "./useAccountName";
@@ -374,6 +376,18 @@ function LoanFields({
     }
   };
 
+  /** "Choisir dans mes contacts": a known person by that name is kept (the loan goes on their account), the contact's number shown. */
+  const fromContact = (contact: PickedContact) => {
+    const name = contact.name ? contactPerson(knownPeople(loans), contact.name) : person;
+    setPerson(name);
+    setError(false);
+    const number = contact.phone ?? (phone ? undefined : knownPhone(loans, name));
+    if (number) {
+      setPhone(number);
+      setMore(true);
+    }
+  };
+
   const dueAt = () => {
     if (due === "week") return dueIn("week", timestamp());
     if (due === "month") return dueIn("month", timestamp());
@@ -501,6 +515,7 @@ function LoanFields({
           autoComplete="off"
           enterKeyHint="next"
         />
+        <ContactPickButton onPick={fromContact} />
         {people.length > 0 && (
           <div className={styles.chips} data-testid="loan-people">
             {people.map((name) => (
