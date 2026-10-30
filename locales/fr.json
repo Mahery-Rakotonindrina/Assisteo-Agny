@@ -2445,6 +2445,13 @@
         "lent": "{name} m’a rendu",
         "borrowed": "J’ai rendu"
       }
+    },
+    "contacts": {
+      "pick": "Choisir dans mes contacts",
+      "addNumber": "Ajouter son numéro depuis mes contacts",
+      "noNumber": "Ce contact n’a pas de numéro.",
+      "added": "Numéro de {name} ajouté.",
+      "failed": "Le numéro n’a pas pu être ajouté. Réessaie."
     }
   },
   "garage": {
