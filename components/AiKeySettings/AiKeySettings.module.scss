@@ -1,3 +1,5 @@
+@use "../../styles/mixins" as *;
+
 .wrap {
   display: flex;
   flex-direction: column;
@@ -53,7 +55,7 @@
     background: none;
     color: var(--text);
     font-family: var(--font-mono);
-    font-size: 0.85rem;
+    @include field-font(0.85rem);
 
     &::placeholder {
       color: var(--text-subtle);

@@ -141,7 +141,7 @@ function CardSheet({ token, email, onClose }: { token: string; email: string; on
   return (
     <motion.div className={shared.backdrop} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
       <motion.div
-        className={shared.sheet}
+        className={`${shared.sheet} ${shared.sheetPadded}`}
         data-plan={card?.plan === "free" ? undefined : card?.plan}
         role="dialog"
         aria-modal="true"

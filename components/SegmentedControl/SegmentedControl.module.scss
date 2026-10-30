@@ -25,8 +25,14 @@
 }
 
 .md .option {
-  height: 2.1rem;
+  min-height: 2.1rem;
   padding: 0 0.75rem;
+
+  // Large text: tighter, and the icon goes above the label when they no longer fit.
+  :global(html[data-text-size="large"]) &,
+  :global(html[data-text-size="xlarge"]) & {
+    padding: 0.25rem 0.35rem;
+  }
 }
 
 .option {
@@ -75,8 +81,13 @@
 .label {
   position: relative;
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.4rem;
+  justify-content: center;
+  min-width: 0;
+  gap: 0.1rem 0.4rem;
+  text-align: center;
+  line-height: 1.2;
 
   svg {
     width: 1rem;

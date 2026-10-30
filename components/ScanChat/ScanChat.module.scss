@@ -1,3 +1,5 @@
+@use "../../styles/mixins" as *;
+
 .chat {
   display: flex;
   flex-direction: column;
@@ -166,9 +168,9 @@
     background: none;
     color: var(--text);
     font: inherit;
-    font-size: 0.95rem;
     resize: none;
     field-sizing: content;
+    @include field-font(0.95rem);
   }
 }
 
