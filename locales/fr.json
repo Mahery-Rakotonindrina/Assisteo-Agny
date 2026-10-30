@@ -1920,7 +1920,49 @@
       }
     },
     "finalTitle": "Prêt à essayer ?",
-    "finalBody": "Une première photo suffit pour voir ce que l’IA peut faire pour toi."
+    "finalBody": "Une première photo suffit pour voir ce que l’IA peut faire pour toi.",
+    "extrasTitle": "Pour aller plus loin",
+    "extrasHint": "Avec une offre, l’app en fait encore plus. Chaque carte te dit à partir de quelle offre c’est inclus.",
+    "extrasFrom": "À partir de",
+    "extrasFree": "Inclus gratuitement",
+    "extras": {
+      "reminders": {
+        "title": "Rappels",
+        "body": "Un rappel au bon moment : avant l’échéance d’une facture, la fin d’une assurance ou l’arrivée d’un colis. Tu peux le répéter ou le reporter."
+      },
+      "pdfExport": {
+        "title": "Export PDF",
+        "body": "Un PDF propre d’un document, ou de plusieurs scans de ton historique, à envoyer ou à imprimer."
+      },
+      "parcelCosts": {
+        "title": "Coûts des colis",
+        "body": "Le prix et les frais de chaque colis en ariary, pour savoir ce qu’il t’a vraiment coûté."
+      },
+      "multiPage": {
+        "title": "Plusieurs pages",
+        "body": "Un contrat ou une longue facture en plusieurs photos, analysé comme un seul document."
+      },
+      "deepAnalysis": {
+        "title": "Analyse approfondie",
+        "body": "Relance l’analyse d’un scan avec l’IA la plus précise, quand le sujet compte vraiment."
+      },
+      "garage": {
+        "title": "Mon garage",
+        "body": "Tes véhicules, leur entretien, les rappels d’assurance et de vidange, les pleins et les dépenses."
+      },
+      "reseller": {
+        "title": "Outils de revendeur",
+        "body": "Un client par colis, les totaux par client, le récap du mois et un relevé PDF à envoyer."
+      },
+      "expenses": {
+        "title": "Mes dépenses",
+        "body": "Le budget du mois, seul ou en foyer : ce qui sort, ce qui reste."
+      },
+      "loans": {
+        "title": "Prêts",
+        "body": "Qui te doit, à qui tu dois, et une relance par WhatsApp quand il faut."
+      }
+    }
   },
   "loans": {
     "title": "Prêts",
