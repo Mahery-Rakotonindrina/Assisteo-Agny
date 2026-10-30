@@ -1,7 +1,7 @@
 name: Database backup
 
 # Weekly encrypted backup of the account data (history, settings, keys,
-# parcels, lists, vehicles, expenses, loans, households and their members, codes and
+# parcels, lists, vehicles, expenses, loans, plants, households and their members, codes and
 # shared expenses, subscriptions and features offered for a while), then a restore test: the file is restored
 # into a throwaway Postgres and every row must read back identical. If the
 # test fails, an issue mentions the owner.

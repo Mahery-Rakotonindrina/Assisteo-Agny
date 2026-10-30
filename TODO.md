@@ -59,7 +59,7 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 
 - [x] Identification et caractéristiques
 - [x] Conseils, actions, mises en garde, idées
-- [ ] « Mes plantes » : rappels d'arrosage, diagnostic de maladie
+- [x] « Mes plantes » : rappels d'arrosage, diagnostic de maladie — à partir de Lite : écran /plants, « Ajouter à mes plantes » depuis un scan, arrosage proposé par l’IA selon la saison, « Arrosée aujourd’hui », rappel le matin, « Ma plante a un problème » (un scan du mois) ; table plants (0013) à appliquer
 - [ ] Objets : prix de revente estimé, texte d'annonce prêt à publier
 - [ ] Inventaire de la maison (garanties, factures liées)
 

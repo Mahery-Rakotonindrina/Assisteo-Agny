@@ -290,6 +290,14 @@ export const AnalysisSchema = z.object({
     })
     .nullable()
     .describe("Only for lists (shopping lists, to-do lists, checklists), null otherwise."),
+  plant: z
+    .object({
+      place: z.enum(["indoor", "outdoor"]).nullable().describe("indoor for a houseplant or a pot inside, outdoor for a garden, balcony or field plant; null if unclear."),
+      waterEveryDaysRainy: z.number().describe("Days between waterings in Madagascar's rainy season (November to April), for this species where it stands."),
+      waterEveryDaysDry: z.number().describe("Days between waterings in Madagascar's dry season (May to October), for this species where it stands."),
+    })
+    .nullable()
+    .describe("Only for plants, null otherwise."),
   reminder: z
     .object({
       title: z.string(),
@@ -316,6 +324,7 @@ export function normalizeStoredAnalysis(raw: unknown): unknown {
     diet: null,
     vehicle: null,
     list: null,
+    plant: null,
     ...analysis,
     document: document
       ? {
@@ -514,6 +523,41 @@ export const StatementSchema = z.object({
 export type Statement = z.infer<typeof StatementSchema>;
 
 export type StatementResponse = { statement: Statement; model: string; demo: boolean; pages: number };
+
+// ---- "Mes plantes": what is wrong with a plant, from a photo -------------------
+// The photo is read and forgotten: the app keeps the answer with the plant.
+
+export const PlantDiagnosisRequestSchema = z.strictObject({
+  image: z.string().min(1).max(MAX_IMAGE_BASE64_LENGTH),
+  mediaType: z.enum(imageMediaTypes),
+  locale: z.enum(["fr", "en"]),
+  /** The plant's name or species, when known. */
+  plant: z.string().trim().max(80).optional(),
+  /** Indoor or outdoor, when known. */
+  place: z.enum(["indoor", "outdoor"]).optional(),
+});
+export type PlantDiagnosisRequest = z.infer<typeof PlantDiagnosisRequestSchema>;
+
+export const plantUrgencies = ["low", "medium", "high"] as const;
+
+export const PlantDiagnosisSchema = z.object({
+  isPlant: z.boolean().describe("True when the photo shows a plant, a leaf, a stem or roots."),
+  healthy: z.boolean().describe("True when nothing seems wrong."),
+  problem: z.string().describe("The likely problem in a few words (or 'Rien d'inquiétant' / 'Nothing worrying')."),
+  cause: z.string().describe("The probable cause in one or two plain sentences, saying how sure it is."),
+  treatment: z.array(z.string()).describe("1 to 4 simple steps the user can do at home with what is found in Madagascar."),
+  urgency: z.enum(plantUrgencies).describe("low: can wait; medium: act this week; high: act today or the plant may die or contaminate others."),
+  note: z.string().nullable().describe("When to ask a nursery or an agricultural technician, or what to watch next; null if nothing to add."),
+});
+export type PlantDiagnosis = z.infer<typeof PlantDiagnosisSchema>;
+
+export type PlantDiagnosisResponse = {
+  diagnosis: PlantDiagnosis;
+  model: string;
+  demo: boolean;
+  /** Scans used this month against the plan's. */
+  quota?: TrialState;
+};
 
 // ---- "Prêts": a debt acknowledgment read by the AI ----------------------------
 // The photo is read and forgotten: nothing is kept on the server.

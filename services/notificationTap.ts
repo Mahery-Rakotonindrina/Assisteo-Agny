@@ -2,6 +2,7 @@ import { LOAN_NOTIFICATION_PREFIX, loanTapTarget } from "@/lib/loanReminders";
 import { EVENING_ENTRY_ID } from "./eveningReminder";
 import { EXPENSE_NOTIFICATION_PREFIX } from "./expenseReminders";
 import { PARCEL_NOTIFICATION_PREFIX } from "./parcelReminders";
+import { PLANT_NOTIFICATION_PREFIX } from "./plantReminders";
 import { isSnoozeAction } from "./reminders";
 import { VEHICLE_NOTIFICATION_PREFIX } from "./vehicleReminders";
 
@@ -24,6 +25,7 @@ export function tapTarget(entryId: string): TapTarget {
   if (loan) return loan;
   if (entryId.startsWith(PARCEL_NOTIFICATION_PREFIX)) return { pathname: "/parcels" };
   if (entryId.startsWith(VEHICLE_NOTIFICATION_PREFIX)) return { pathname: "/garage", query: { open: entryId.slice(VEHICLE_NOTIFICATION_PREFIX.length) } };
+  if (entryId.startsWith(PLANT_NOTIFICATION_PREFIX)) return { pathname: "/plants" };
   if (entryId === EVENING_ENTRY_ID) return { pathname: "/expenses", query: { add: "expense" } };
   if (entryId.startsWith(EXPENSE_NOTIFICATION_PREFIX)) return { pathname: "/expenses" };
   return { pathname: "/result", query: { id: entryId, reminded: "1" } };
@@ -35,7 +37,7 @@ export function tapTarget(entryId: string): TapTarget {
  * fails, the scan opens so nothing is silently lost. Anything else opens.
  */
 export async function handleNotificationTap(entryId: string, actionId: string, notificationId: number, actions: TapActions) {
-  const isScan = ![PARCEL_NOTIFICATION_PREFIX, VEHICLE_NOTIFICATION_PREFIX, EXPENSE_NOTIFICATION_PREFIX, LOAN_NOTIFICATION_PREFIX].some((prefix) => entryId.startsWith(prefix));
+  const isScan = ![PARCEL_NOTIFICATION_PREFIX, VEHICLE_NOTIFICATION_PREFIX, EXPENSE_NOTIFICATION_PREFIX, LOAN_NOTIFICATION_PREFIX, PLANT_NOTIFICATION_PREFIX].some((prefix) => entryId.startsWith(prefix));
   if (isSnoozeAction(actionId) && isScan) {
     const at = await actions.snooze(entryId, actionId, notificationId).catch(() => null);
     if (at !== null) {

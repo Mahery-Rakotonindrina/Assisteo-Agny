@@ -13,6 +13,8 @@ import { loanStore } from "@/services/loanStore";
 import { startLoanSync, syncLoans } from "@/services/loanSync";
 import { startListSync, syncLists } from "@/services/listSync";
 import { vehicleStore } from "@/services/vehicleStore";
+import { plantStore } from "@/services/plantStore";
+import { startPlantSync, syncPlants } from "@/services/plantSync";
 import { startVehicleSync, syncVehicles } from "@/services/vehicleSync";
 import { wipeReviews } from "@/services/expenseReview";
 import { expenseStore } from "@/services/expenseStore";
@@ -98,6 +100,12 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!userId) return;
     return startVehicleSync(userId);
+  }, [userId]);
+
+  // "Mes plantes".
+  useEffect(() => {
+    if (!userId) return;
+    return startPlantSync(userId);
   }, [userId]);
 
   // "Prêts".
@@ -198,6 +206,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         syncParcels(userId).catch(() => undefined),
         syncLists(userId).catch(() => undefined),
         syncVehicles(userId).catch(() => undefined),
+        syncPlants(userId).catch(() => undefined),
         syncLoans(userId).catch(() => undefined),
         syncExpenses(userId).catch(() => undefined),
         householdId ? syncHouseholdExpenses(userId, householdId).catch(() => undefined) : undefined,
@@ -205,6 +214,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await parcelStore.wipe();
     await listStore.wipe();
     await vehicleStore.wipe();
+    await plantStore.wipe();
     await loanStore.wipe();
     await expenseStore.wipe();
     await householdExpenseStore.wipe();
@@ -228,6 +238,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await parcelStore.wipe();
     await listStore.wipe();
     await vehicleStore.wipe();
+    await plantStore.wipe();
     await loanStore.wipe();
     await expenseStore.wipe();
     await householdExpenseStore.wipe();

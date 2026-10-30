@@ -13,6 +13,14 @@ describe("AI cost", () => {
     ]);
   });
 
+  it("reads every kind of call, the loan and the plant too", () => {
+    const rows = usageRows([{ "ai:loan:gemini-3.5-flash:calls": 1, "ai:plant:gemini-3.5-flash:calls": 2, "ai:plant:gemini-3.5-flash:out": 300, "ai:other:gemini-3.5-flash:calls": 9 }]);
+    expect(rows).toEqual([
+      { kind: "loan", model: "gemini-3.5-flash", calls: 1, inputTokens: 0, outputTokens: 0 },
+      { kind: "plant", model: "gemini-3.5-flash", calls: 2, inputTokens: 0, outputTokens: 300 },
+    ]);
+  });
+
   it("prices a model by the most precise name it contains", () => {
     expect(priceFor("gemini-3.5-flash-lite", defaultAiPrices)?.match).toBe("flash-lite");
     expect(priceFor("gemini-3.8-flash", defaultAiPrices)?.match).toBe("flash");

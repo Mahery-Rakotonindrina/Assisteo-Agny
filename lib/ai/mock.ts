@@ -70,6 +70,7 @@ const food: Record<Locale, Analysis> = {
     vehicle: null,
     parcel: null,
     list: null,
+    plant: null,
     reminder: { title: "Salade au frigo", body: "Pense à finir ta salade avant demain soir.", delayHours: 24 },
   },
   en: {
@@ -135,6 +136,7 @@ const food: Record<Locale, Analysis> = {
     vehicle: null,
     parcel: null,
     list: null,
+    plant: null,
     reminder: { title: "Salad in the fridge", body: "Remember to finish your salad before tomorrow night.", delayHours: 24 },
   },
 };
@@ -175,6 +177,7 @@ const documentScan: Record<Locale, Analysis> = {
     vehicle: null,
     parcel: null,
     list: null,
+    plant: null,
     reminder: { title: "Facture d'électricité", body: "Le prélèvement de 84,20 € arrive bientôt.", delayHours: 72 },
   },
   en: {
@@ -212,6 +215,7 @@ const documentScan: Record<Locale, Analysis> = {
     vehicle: null,
     parcel: null,
     list: null,
+    plant: null,
     reminder: { title: "Electricity bill", body: "The €84.20 direct debit is coming up.", delayHours: 72 },
   },
 };
@@ -242,6 +246,7 @@ const objectScan: Record<Locale, Analysis> = {
     vehicle: null,
     parcel: null,
     list: null,
+    plant: { place: "indoor", waterEveryDaysRainy: 7, waterEveryDaysDry: 10 },
     reminder: { title: "Arroser le Monstera", body: "Vérifie la terre et arrose si elle est sèche.", delayHours: 168 },
   },
   en: {
@@ -269,6 +274,7 @@ const objectScan: Record<Locale, Analysis> = {
     vehicle: null,
     parcel: null,
     list: null,
+    plant: { place: "indoor", waterEveryDaysRainy: 7, waterEveryDaysDry: 10 },
     reminder: { title: "Water the Monstera", body: "Check the soil and water if it is dry.", delayHours: 168 },
   },
 };
@@ -327,6 +333,7 @@ const vehicleScan: Record<Locale, Analysis> = {
     },
     parcel: null,
     list: null,
+    plant: null,
     reminder: { title: "Révision de la Corolla", body: "Pense à vérifier la date de ta prochaine révision.", delayHours: 720 },
   },
   en: {
@@ -382,6 +389,7 @@ const vehicleScan: Record<Locale, Analysis> = {
     },
     parcel: null,
     list: null,
+    plant: null,
     reminder: { title: "Corolla service", body: "Remember to check when your next service is due.", delayHours: 720 },
   },
 };
@@ -437,6 +445,7 @@ const parcelScan: Record<Locale, Analysis> = {
       shippingMode: "sea",
     },
     list: null,
+    plant: null,
     reminder: null,
   },
   en: {
@@ -478,6 +487,7 @@ const parcelScan: Record<Locale, Analysis> = {
       shippingMode: "sea",
     },
     list: null,
+    plant: null,
     reminder: null,
   },
 };
@@ -511,6 +521,7 @@ const listScan: Record<Locale, Analysis> = {
         { text: "Savon", quantity: "x3", done: false },
       ],
     },
+    plant: null,
     reminder: null,
   },
   en: {
@@ -540,6 +551,7 @@ const listScan: Record<Locale, Analysis> = {
         { text: "Soap", quantity: "x3", done: false },
       ],
     },
+    plant: null,
     reminder: null,
   },
 };
@@ -588,6 +600,7 @@ const registrationScan: Record<Locale, Analysis> = {
     vehicle: null,
     parcel: null,
     list: null,
+    plant: null,
     reminder: null,
   },
   en: {
@@ -632,6 +645,7 @@ const registrationScan: Record<Locale, Analysis> = {
     vehicle: null,
     parcel: null,
     list: null,
+    plant: null,
     reminder: null,
   },
 };
@@ -684,6 +698,7 @@ const mobileMoneyScan: Record<Locale, Analysis> = {
     vehicle: null,
     parcel: null,
     list: null,
+    plant: null,
     reminder: null,
   },
   en: {
@@ -732,6 +747,7 @@ const mobileMoneyScan: Record<Locale, Analysis> = {
     vehicle: null,
     parcel: null,
     list: null,
+    plant: null,
     reminder: null,
   },
 };
@@ -784,6 +800,7 @@ const tillReceiptScan: Record<Locale, Analysis> = {
     vehicle: null,
     parcel: null,
     list: null,
+    plant: null,
     reminder: null,
   },
   en: {
@@ -832,6 +849,7 @@ const tillReceiptScan: Record<Locale, Analysis> = {
     vehicle: null,
     parcel: null,
     list: null,
+    plant: null,
     reminder: null,
   },
 };
@@ -884,6 +902,7 @@ const received = (locale: Locale): Analysis => {
     vehicle: null,
     parcel: null,
     list: null,
+    plant: null,
     reminder: null,
   };
 };
@@ -936,6 +955,7 @@ const withdrawal = (locale: Locale): Analysis => {
     vehicle: null,
     parcel: null,
     list: null,
+    plant: null,
     reminder: null,
   };
 };
