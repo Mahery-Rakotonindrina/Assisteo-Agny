@@ -21,7 +21,8 @@
     "papers": "Papiers",
     "garage": "Garage",
     "loans": "Prêts",
-    "expenses": "Dépenses"
+    "expenses": "Dépenses",
+    "plants": "Plantes"
   },
   "scan": {
     "greeting": {
@@ -664,7 +665,8 @@
         "summary": "Bilan des dépenses",
         "statement": "Relevé importé",
         "loan": "Reconnaissance de dette",
-        "ad": "Annonce d’objet"
+        "ad": "Annonce d’objet",
+        "plant": "Diagnostic de plante"
       },
       "perCall": "par appel · {calls} appel(s), {total} en tout",
       "noCalls": "aucun appel",
@@ -899,7 +901,8 @@
         "garage": "Mon garage",
         "reseller": "Outils revendeur",
         "loans": "Prêts",
-        "expenses": "Mes dépenses"
+        "expenses": "Mes dépenses",
+        "plants": "Mes plantes"
       },
       "descriptions": {
         "reminders": "Rappels sur les scans (répétition, report), l’assurance et l’arrivée des colis.",
@@ -911,7 +914,8 @@
         "garage": "Véhicules, entretien, rappels de vidange et d’assurance, pleins et dépenses.",
         "reseller": "Un client par colis, ce qu’il doit, totaux par client, export et relevés.",
         "loans": "Qui me doit, à qui je dois : remboursements, retards, relance WhatsApp. Rien n’est compté dans les dépenses.",
-        "expenses": "Le budget du mois, seul ou en foyer, et le bilan du mois par l’IA."
+        "expenses": "Le budget du mois, seul ou en foyer, et le bilan du mois par l’IA.",
+        "plants": "Les plantes, leur arrosage proposé par l’IA, le rappel du matin et le diagnostic d’une plante malade (un scan du mois)."
       },
       "deepNeedsLimit": "Impossible d’enregistrer : {list} n’a pas de quota d’analyses approfondies (0 = sans limite). Mets d’abord un nombre par mois plus haut, dans les prix et quotas des offres. Gratuit n’a pas de quota : pas d’analyse approfondie."
     }
@@ -1404,7 +1408,8 @@
       "garage": "Mon garage : entretien, rappels d’assurance et de vidange, pleins et dépenses",
       "reminders": "Rappels : sur tes scans (avec répétition et report), assurance, arrivée des colis",
       "loans": "Prêts : qui te doit, à qui tu dois, relance WhatsApp",
-      "expenses": "Mes dépenses : le budget du mois, seul ou en foyer"
+      "expenses": "Mes dépenses : le budget du mois, seul ou en foyer",
+      "plants": "Mes plantes : arrosage, rappel le matin, diagnostic d’une plante malade"
     },
     "how": "Comment s’abonner",
     "step1": "Connecte-toi",
@@ -1648,7 +1653,8 @@
     "papersHint": "CNI, assurances, garanties",
     "garageHint": "Entretien, pleins, rappels",
     "loansHint": "Qui te doit, à qui tu dois",
-    "expensesHint": "Budget du mois, ce qu’il reste"
+    "expensesHint": "Budget du mois, ce qu’il reste",
+    "plantsHint": "Arrosage et rappels"
   },
   "food": {
     "title": "Journal alimentaire",
@@ -1950,6 +1956,10 @@
       "garage": {
         "title": "Mon garage",
         "body": "Tes véhicules, leur entretien, les rappels d’assurance et de vidange, les pleins et les dépenses."
+      },
+      "plants": {
+        "title": "Mes plantes",
+        "body": "Quand arroser chaque plante, un rappel le matin, et de l’aide quand une plante est malade."
       },
       "reseller": {
         "title": "Outils de revendeur",
@@ -3325,5 +3335,91 @@
     "readOnly": "Ce récapitulatif est en lecture seule : seule la personne qui t’a prêté peut le changer.",
     "sentWith": "Envoyé avec Assisteo Agny",
     "discover": "Découvrir l’app"
+  },
+  "plants": {
+    "title": "Mes plantes",
+    "subtitle": "Quand arroser, un rappel le matin, et quoi faire quand une plante va mal.",
+    "count": "{count} plante(s)",
+    "shortcutDue": "{count} à arroser aujourd’hui",
+    "defaultName": "Ma plante",
+    "emptyTitle": "Aucune plante pour l’instant",
+    "emptyBody": "Photographie une plante : l’IA la reconnaît et te propose quand l’arroser. Tu peux aussi l’ajouter à la main.",
+    "scan": "Photographier une plante",
+    "add": "Ajouter une plante",
+    "addTitle": "Nouvelle plante",
+    "editTitle": "Modifier la plante",
+    "save": "Enregistrer",
+    "edit": "Modifier",
+    "remove": "Supprimer",
+    "removeConfirm": "Supprimer cette plante",
+    "toWaterToday": "À arroser aujourd’hui",
+    "later": "Plus tard",
+    "today": "À arroser aujourd’hui",
+    "late": "À arroser, en retard de {count} jour(s)",
+    "inDays": "À arroser dans {count} jour(s)",
+    "wateredToday": "Arrosée aujourd’hui",
+    "water": "Arrosée aujourd’hui",
+    "waterShort": "Arrosée",
+    "waterName": "{name} arrosée aujourd’hui",
+    "watered": "{name} : arrosée aujourd’hui.",
+    "watering": "Arrosage",
+    "every": "Tous les {count} jour(s)",
+    "lastWatered": "dernier arrosage le {date}",
+    "openScan": "Voir le scan de la plante",
+    "places": {
+      "indoor": "Dedans",
+      "outdoor": "Dehors"
+    },
+    "fields": {
+      "name": "Nom",
+      "namePlaceholder": "Monstera du salon",
+      "place": "Lieu",
+      "every": "Arroser tous les (jours)",
+      "everyHint": "Proposé par l’IA selon l’espèce et la saison : change-le si ta plante en demande moins ou plus.",
+      "lastWatered": "Dernier arrosage",
+      "notes": "Notes",
+      "notesPlaceholder": "Engrais, rempotage, où elle est…"
+    },
+    "addFromScan": "Ajouter à mes plantes",
+    "addHint": "Garde-la dans Mes plantes : l’arrosage est proposé, avec un rappel le matin.",
+    "saved": "Plante ajoutée à Mes plantes.",
+    "inPlants": "Dans Mes plantes : {name}.",
+    "open": "Voir",
+    "locked": "Mes plantes est inclus à partir de {plan}.",
+    "lockedScan": "Ajouter cette plante à Mes plantes est inclus à partir de {plan}.",
+    "readOnly": "Ton offre ne comprend plus Mes plantes : tes plantes restent consultables, mais tu ne peux plus rien modifier et le rappel est en pause. Repasse à {plan} pour tout retrouver.",
+    "pitch": {
+      "watering": "L’arrosage proposé par l’IA selon l’espèce et la saison à Madagascar",
+      "reminder": "Un rappel le matin des jours d’arrosage",
+      "check": "« Ma plante a un problème » : la cause probable et quoi faire"
+    },
+    "reminder": {
+      "title": "Mes plantes",
+      "one": "{name} est à arroser aujourd’hui.",
+      "many": "{count} plantes à arroser aujourd’hui : {names}."
+    },
+    "check": {
+      "title": "Ma plante a un problème",
+      "hint": "Photographie une feuille ou la plante : l’IA te dit la cause probable et quoi faire. Compte comme un scan du mois.",
+      "camera": "Prendre une photo",
+      "gallery": "Depuis la galerie",
+      "reading": "L’IA regarde ta plante…",
+      "demo": "Diagnostic d’exemple (mode démo).",
+      "notPlant": "Ce n’est pas une plante : essaie avec une photo d’une feuille ou de la plante.",
+      "healthy": "Rien d’inquiétant",
+      "remove": "Supprimer ce diagnostic",
+      "urgency": {
+        "low": "Peut attendre",
+        "medium": "Cette semaine",
+        "high": "Urgent"
+      },
+      "errors": {
+        "failed": "L’IA n’a pas pu regarder la photo. Réessaie.",
+        "limit": "Tes scans du mois sont épuisés.",
+        "signIn": "Connecte-toi pour vérifier une plante.",
+        "offline": "Pas de connexion : réessaie quand le réseau revient.",
+        "plan": "Ton offre ne comprend pas Mes plantes."
+      }
+    }
   }
 }

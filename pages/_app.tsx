@@ -8,6 +8,7 @@ import { ExpenseReminderKeeper } from "@/components/ExpenseReminderKeeper";
 import { LoanReminderKeeper } from "@/components/LoanReminderKeeper";
 import { LoanSharingKeeper } from "@/components/LoanSharingKeeper";
 import { ParcelReminderKeeper } from "@/components/ParcelReminderKeeper";
+import { PlantReminderKeeper } from "@/components/PlantReminderKeeper";
 import { ReminderKeeper } from "@/components/ReminderKeeper";
 import { ScanQueueRunner } from "@/components/ScanQueueRunner";
 import { ShareReceiver } from "@/components/ShareReceiver";
@@ -69,6 +70,7 @@ export default function App({ Component, pageProps }: AppProps) {
               <VehicleReminderKeeper />
               <ExpenseReminderKeeper />
               <LoanReminderKeeper />
+              <PlantReminderKeeper />
               <LoanSharingKeeper />
               <ScanQueueRunner />
               <ShareReceiver />

@@ -29,6 +29,7 @@ const extraIcons: Record<DiscoverFeature, LucideIcon> = {
   multiPage: Files,
   deepAnalysis: ScanSearch,
   garage: Car,
+  plants: Sprout,
   reseller: Briefcase,
   expenses: Wallet,
   loans: HandCoins,
