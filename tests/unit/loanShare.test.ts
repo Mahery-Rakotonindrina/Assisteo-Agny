@@ -18,7 +18,7 @@ const state = vi.hoisted(() => ({
   missing: false,
   reports: 0,
   // What the app's POST /api/loans/share gets (services/loanSharing.ts).
-  answer: null as (() => unknown) | null,
+  answer: null as ((body?: { action: string; person?: string }) => unknown) | null,
 }));
 vi.mock("@/lib/server/redis", () => ({ redis: null }));
 vi.mock("@/lib/server/reportError", () => ({
@@ -29,9 +29,9 @@ vi.mock("@/lib/server/reportError", () => ({
 vi.mock("@/services/account", () => ({ authHeaders: async () => ({}) }));
 vi.mock("@/services/httpClient", () => ({
   httpClient: {
-    post: async () => {
+    post: async (_url: string, body: { action: string; person?: string }) => {
       if (!state.answer) throw new Error("no answer");
-      return state.answer();
+      return state.answer(body);
     },
   },
 }));
@@ -303,6 +303,17 @@ describe("the share route", () => {
     expect(state.rows).toHaveLength(0);
   });
 
+  it("lets a link be seen and stopped without « Prêts » (signed in), never changed", async () => {
+    const created = await call({ method: "POST", body: { action: "create", person: "rakoto", snapshot } });
+    state.plan = "premium";
+    expect((await call({ method: "POST", body: { action: "update", person: "rakoto", snapshot } })).body.error?.code).toBe("plan_required");
+    expect((await call({ method: "POST", body: { action: "status" } })).body).toEqual({ ready: true, household: true, shares: [{ person: "rakoto", lender: "Anna" }] });
+    expect((await call({ method: "POST", body: { action: "revoke", person: "rakoto" } })).body.found).toBe(true);
+    expect((await call({ query: { t: created.body.token as string } })).statusCode).toBe(404);
+    state.account = false;
+    expect((await call({ method: "POST", body: { action: "revoke", person: "rakoto" } })).body.error?.code).toBe("sign_in_required");
+  });
+
   it("updates the copy of the user's own live link only", async () => {
     await call({ method: "POST", body: { action: "create", person: "rakoto", snapshot } });
     state.rows.push({ token_hash: "b".repeat(64), user_id: "someone-else", person: "rakoto", snapshot, updated_at: "", revoked_at: null });
@@ -350,5 +361,32 @@ describe("sharing on the device", () => {
     await loanSharing.stop("rakoto");
     expect(await loanSharing.link("rakoto")).toBeNull();
     expect(await loanSharing.localShares()).toHaveLength(0);
+  });
+
+  it("writes a link's copy again, and stops it once nothing is lent to that person any more", async () => {
+    state.answer = () => ({ ready: true, household: false, shares: [{ person: "rakoto", lender: "Anna" }, { person: "be", lender: "Anna" }] });
+    await loanSharing.ensure("user-4", true);
+    const sent: string[] = [];
+    state.answer = (body) => {
+      sent.push(`${body?.action} ${body?.person}`);
+      return { ok: true, found: true };
+    };
+    // Rakoto's loan turned into "Je dois", Be's still lent.
+    await loanSharing.refresh([loan({ direction: "borrowed" }), loan({ id: "l2", person: "Be" })]);
+    expect(sent).toEqual(["revoke rakoto", "update be"]);
+    const live = loanSharing.get();
+    expect(live.kind === "ready" && Object.keys(live.live)).toEqual(["be"]);
+  });
+
+  it("stops nothing while the device has no loan yet (signed in, not synced)", async () => {
+    state.answer = () => ({ ready: true, household: false, shares: [{ person: "rakoto", lender: "Anna" }] });
+    await loanSharing.ensure("user-5", true);
+    const sent: string[] = [];
+    state.answer = (body) => {
+      sent.push(body?.action ?? "");
+      return { ok: true, found: true };
+    };
+    await loanSharing.refresh([]);
+    expect(sent).toEqual([]);
   });
 });

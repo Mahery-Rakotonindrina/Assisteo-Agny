@@ -118,13 +118,25 @@ export const loanSharing = {
     }
   },
 
-  /** That person's loans changed: their link shows the new copy. A person without loans left is left alone (stopped from the screen). */
+  /**
+   * The loans changed (here, or synced from another device): each link shows
+   * the new copy. A person with no money lent left (their loans removed,
+   * renamed, or turned into "Je dois") has their link stopped. Not while the
+   * device has no loan at all, unless this session wrote their copy: a device
+   * signed in for the first time, before its loans are synced, stops nothing.
+   */
   async refresh(loans: Loan[]) {
     if (state.kind !== "ready") return;
     for (const [person, { lender }] of Object.entries(state.live)) {
+      // A copy without the lender's name can't be written again: left as it is.
+      if (!lender.trim()) continue;
       const snapshot = shareSnapshot(loans, person, lender, Date.now());
-      if (!snapshot || sameSnapshot(snapshot, written.get(person))) continue;
       try {
+        if (!snapshot) {
+          if (loans.length > 0 || written.has(person)) await loanSharing.stop(person);
+          continue;
+        }
+        if (sameSnapshot(snapshot, written.get(person))) continue;
         await post({ action: "update", person, snapshot });
         written.set(person, snapshot);
       } catch (error) {

@@ -1,6 +1,8 @@
 import type { Locale } from "@/i18n.config";
 import { amountInWords } from "@/lib/amountWords";
 import { formatAriary, formatDate } from "@/lib/format";
+import { ledgerLabels } from "@/lib/loanExport";
+import { personLedger } from "@/lib/loanLedger";
 import { loanSides } from "@/lib/loanReport";
 import { loanInterest, loanPaid, loanRemaining, loanTotal, personKey, type Loan } from "@/lib/loans";
 import { pdfFileName, PdfWriter } from "@/lib/pdf";
@@ -106,8 +108,12 @@ export async function exportAcknowledgment(loan: Loan, names: { me: string; plac
   return shareFile(pdfFileName(`${t("loans.ack.file")}-${loan.person}`), bytes, "application/pdf", text.title);
 }
 
-/** The recap per way, then per person: what each one owes (or is owed), then their loans. Each way has its own totals. */
-export async function exportLoansPdf(loans: Loan[], now: number, heading: { title: string; subtitle: string; file: string }, t: Translate, locale: Locale) {
+/**
+ * The recap per way, then per person: what each one owes (or is owed), then
+ * their loans. Each way has its own totals. `account`: one person's loans,
+ * with their statement ("Reste" after each line).
+ */
+export async function exportLoansPdf(loans: Loan[], now: number, heading: { title: string; subtitle: string; file: string }, t: Translate, locale: Locale, { account = false }: { account?: boolean } = {}) {
   const money = (value: number) => formatAriary(value, locale);
   const pdf = await PdfWriter.create();
   pdf.title(heading.title);
@@ -133,6 +139,15 @@ export async function exportLoansPdf(loans: Loan[], now: number, heading: { titl
           .filter((row) => personKey(row.person) === personKey(person.name))
           .map((row) => t("loans.export.line", { date: formatDate(row.at, locale), total: money(row.totalMga), left: money(row.remainingMga), status: t(`loans.export.status.${row.status}`) })),
       );
+      if (account) {
+        pdf.heading(t("loans.ledger.title"));
+        pdf.pairs(
+          personLedger(loans.filter((loan) => loan.direction === direction && personKey(loan.person) === personKey(person.name))).map((line) => ({
+            label: `${formatDate(line.at, locale)} · ${ledgerLabels(line, t).what}`,
+            value: t("loans.export.accountLine", { amount: `${line.kind === "repayment" ? "−" : "+"}${money(line.amountMga)}`, left: money(line.balanceMga) }),
+          })),
+        );
+      }
       pdf.rule();
     }
   }

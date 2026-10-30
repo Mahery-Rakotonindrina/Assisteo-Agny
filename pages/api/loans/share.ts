@@ -41,9 +41,11 @@ async function householdReady() {
  * "Partager ce qu'il reste à rendre". GET ?t=<token>: the public page's copy,
  * for anyone with the link (no account), rate limited by address; an unknown
  * token and a stopped link get the same 404. POST: the lender's app, signed
- * in with "Prêts": its live links and whether migration 0012 is there
- * ("status"), a new link ("create", the token given once), the copy written
- * again ("update") and "Arrêter le partage" ("revoke").
+ * in: its live links and whether migration 0012 is there ("status"), a new
+ * link ("create", the token given once), the copy written again ("update")
+ * and "Arrêter le partage" ("revoke"). Creating and updating need "Prêts";
+ * seeing and stopping one's links never do (a plan that ends must not leave
+ * a link live).
  */
 export default async function handler(req: NextApiRequest, res: NextApiResponse<SharedLoansResponse | LoanShareStatus | unknown>) {
   if (applyCors(req, res, ["GET", "POST"])) return;
@@ -87,10 +89,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
   const { account, features } = await resolvePlan(req);
   if (!account) return sendError(res, 401, "sign_in_required", "Sign in to share a loan.");
-  if (!features.has("loans")) return sendError(res, 403, "plan_required", "Loans are not part of your plan.");
   const parsed = LoanShareActionSchema.safeParse(req.body);
   if (!parsed.success) return sendError(res, 400, "invalid_request", parsed.error.issues[0]?.message ?? "Invalid request.");
   const action = parsed.data;
+  if ((action.action === "create" || action.action === "update") && !features.has("loans")) return sendError(res, 403, "plan_required", "Loans are not part of your plan.");
   const user = account.id;
   const db = supabaseAdmin();
   const unavailable = () => sendError(res, 503, "unavailable", "Sharing a loan is not available yet.");

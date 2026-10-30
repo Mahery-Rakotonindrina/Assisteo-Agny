@@ -15,15 +15,18 @@ import { useAccountName } from "./useAccountName";
  * "Partager ce qu'il reste à rendre" (money lent only): a link the person
  * opens without an account (pages/pret.tsx), with a copy of their loans kept
  * up to date by the app. Signed in only; "bientôt disponible" before migration 0012.
+ * `readOnly` (no "Prêts" any more): a live link can only be stopped.
  */
-export function ShareLink({ person }: { person: PersonLoans }) {
+export function ShareLink({ person, readOnly = false }: { person: PersonLoans; readOnly?: boolean }) {
   const { t } = useTranslation();
   const toast = useToast();
   const sharing = useLoanSharing();
   const accountName = useAccountName();
   const [asking, setAsking] = useState(false);
-  // An e-mail is not a name to show: the field starts empty then.
-  const [lender, setLender] = useState(() => (accountName.includes("@") ? "" : accountName));
+  // Null until typed: the account's name shows once the account is read, never over what was typed.
+  const [typed, setTyped] = useState<string | null>(null);
+  // An e-mail is not a name to show: the field stays empty then.
+  const lender = typed ?? (accountName.includes("@") ? "" : accountName);
   const [missing, setMissing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [link, setLink] = useState<string | null>(null);
@@ -41,7 +44,7 @@ export function ShareLink({ person }: { person: PersonLoans }) {
     };
   }, [live, person.key]);
 
-  if (sharing.kind === "unknown" || sharing.kind === "off") return null;
+  if (sharing.kind === "unknown" || sharing.kind === "off" || (readOnly && !live)) return null;
   if (sharing.kind === "signedOut")
     return (
       <p className={styles.hint} data-testid="loan-share-signin">
@@ -98,6 +101,18 @@ export function ShareLink({ person }: { person: PersonLoans }) {
     } else toast(t("loans.share.copyFailed"), "error");
   };
 
+  if (readOnly)
+    return (
+      <div className={styles.group} data-testid="loan-share">
+        <p className={styles.hint}>{t("loans.share.live", { name: person.name })}</p>
+        <div className={styles.row}>
+          <Button variant="ghost" icon={<Link2Off />} disabled={busy} onClick={() => void stop()} data-testid="loan-share-stop">
+            {t("loans.share.stop")}
+          </Button>
+        </div>
+      </div>
+    );
+
   if (live) {
     const whatsapp = link ? (whatsappLink(person.phone, message(link)) ?? `https://wa.me/?text=${encodeURIComponent(message(link))}`) : null;
     return (
@@ -124,7 +139,7 @@ export function ShareLink({ person }: { person: PersonLoans }) {
             {t("loans.share.stop")}
           </Button>
         </div>
-        {asking && <LenderField lender={lender} missing={missing} busy={busy} onChange={setLender} onMissing={setMissing} onCreate={() => void create()} />}
+        {asking && <LenderField lender={lender} missing={missing} busy={busy} onChange={setTyped} onMissing={setMissing} onCreate={() => void create()} />}
       </div>
     );
   }
@@ -132,7 +147,7 @@ export function ShareLink({ person }: { person: PersonLoans }) {
   return asking ? (
     <div className={styles.group} data-testid="loan-share">
       <p className={styles.hint}>{t("loans.share.intro", { name: person.name })}</p>
-      <LenderField lender={lender} missing={missing} busy={busy} onChange={setLender} onMissing={setMissing} onCreate={() => void create()} />
+      <LenderField lender={lender} missing={missing} busy={busy} onChange={setTyped} onMissing={setMissing} onCreate={() => void create()} />
     </div>
   ) : (
     <div className={styles.row}>
