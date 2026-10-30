@@ -39,6 +39,7 @@ async function withPocketAndGoal(page: Page) {
 }
 
 test("the month's Excel export has the pockets, the savings and the Pocket column", async ({ page }) => {
+  await page.addInitScript(() => { Object.defineProperty(navigator, "canShare", { value: () => false }); }); // phones open the share sheet for the PDF: force the download
   await withPocketAndGoal(page);
   const [download] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: "Excel", exact: true }).click()]);
   expect(download.suggestedFilename()).toMatch(/^depenses-\d{4}-\d{2}\.xlsx$/);

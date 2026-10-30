@@ -10,7 +10,14 @@ import { formatAriary, startOfDay } from "./format";
 export const loanDirections = ["lent", "borrowed"] as const;
 export type LoanDirection = (typeof loanDirections)[number];
 
-export type Repayment = { id: string; at: number; amountMga: number; note?: string };
+/**
+ * A repayment. `wallet`: the pocket it came into (or went out of), with
+ * "Mes poches" (lib/loanLink.ts). `sourceKey`: the line of "Mes dépenses" it
+ * stands for (a scanned "Vous avez reçu", a statement's line), kept out of
+ * the incomes or the expenses; `scanId`: that scan. `linked`: typed in by
+ * hand first, then said to be that line ("C'est le même").
+ */
+export type Repayment = { id: string; at: number; amountMga: number; note?: string; wallet?: string; sourceKey?: string; scanId?: string; linked?: true };
 
 /** One planned payment of a loan paid back in several times (local midnight). */
 export type Installment = { id: string; dueAt: number; amountMga: number };
@@ -44,6 +51,8 @@ export type Loan = {
   note?: string;
   /** Proofs attached (photos, scans of the history); the images live apart (lib/loanProof.ts). */
   proofs?: LoanProof[];
+  /** The pocket the money left (lent) or came into (borrowed), with "Mes poches"; none: the pockets don't move. */
+  wallet?: string;
   repayments: Repayment[];
   updatedAt: number;
   deletedAt?: number;

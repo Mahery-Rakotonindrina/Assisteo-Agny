@@ -23,6 +23,8 @@ export type LoanFields = {
   schedule?: Installment[];
   interest?: LoanInterest;
   note?: string;
+  /** The pocket of "Mes poches" (none: the pockets don't move). */
+  wallet?: string;
 };
 
 let store: ReturnType<typeof createStore> | null = null;
@@ -83,6 +85,7 @@ function cleanFields(fields: LoanFields) {
     schedule,
     interest: cleanInterest(fields.interest),
     note: cleanText(fields.note, 200),
+    wallet: cleanText(fields.wallet, 80),
   } satisfies LoanFields;
 }
 
@@ -127,15 +130,39 @@ export const loanStore = {
   },
 
   /** "Il m'a rendu…" / "J'ai rendu…": capped to what is left. Returns the amount kept, null if none. */
-  async addRepayment(id: string, repayment: { amountMga: number; at: number; note?: string }) {
+  async addRepayment(id: string, repayment: { amountMga: number; at: number; note?: string; wallet?: string; sourceKey?: string; scanId?: string }) {
     const current = await loanStore.get(id);
     if (!current) return null;
     const amountMga = cappedRepayment(current, repayment.amountMga);
     if (amountMga === null) return null;
-    const clean: Repayment = { id: createId(), at: Number.isFinite(repayment.at) ? repayment.at : Date.now(), amountMga, note: cleanText(repayment.note, 120) };
+    const clean: Repayment = {
+      id: createId(),
+      at: Number.isFinite(repayment.at) ? repayment.at : Date.now(),
+      amountMga,
+      note: cleanText(repayment.note, 120),
+      ...(repayment.wallet && { wallet: repayment.wallet }),
+      ...(repayment.sourceKey && { sourceKey: repayment.sourceKey }),
+      ...(repayment.scanId && { scanId: repayment.scanId }),
+    };
     await change(id, (loan) => ({ ...loan, repayments: byDate([...loan.repayments, clean]) }));
     return amountMga;
   },
+
+  /** "C'est le même": a repayment typed in by hand now stands for that line of "Mes dépenses". */
+  linkRepayment: (id: string, repaymentId: string, link: { sourceKey: string; scanId?: string }) =>
+    change(id, (loan) => ({
+      ...loan,
+      repayments: loan.repayments.map((item) => (item.id === repaymentId ? { ...item, sourceKey: link.sourceKey, linked: true as const, ...(link.scanId && { scanId: link.scanId }) } : item)),
+    })),
+
+  /** Undoes "C'est le même": the repayment typed in by hand stays, on its own. */
+  unlinkRepayment: (id: string, repaymentId: string) =>
+    change(id, (loan) => ({
+      ...loan,
+      repayments: loan.repayments.map((item) =>
+        item.id === repaymentId ? { id: item.id, at: item.at, amountMga: item.amountMga, ...(item.note && { note: item.note }), ...(item.wallet && { wallet: item.wallet }) } : item,
+      ),
+    })),
 
   removeRepayment: (id: string, repaymentId: string) => change(id, (loan) => ({ ...loan, repayments: loan.repayments.filter((item) => item.id !== repaymentId) })),
 

@@ -1,11 +1,13 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { CalendarOff, Check, ExternalLink, EyeOff, Pencil, Plus, RotateCcw, Trash2, Wallet } from "lucide-react";
 import { Button } from "@/components/Button";
+import { RepaymentPrompt, useLinkedLoans } from "@/components/Loans/RepaymentPrompt";
 import { useToast } from "@/components/Toast";
 import { Toggle } from "@/components/Toggle";
 import { useTranslation } from "@/hooks/useTranslation";
 import { incomeKindOf, incomeKinds, keepKey, monthKey, storedIncome, type Income, type IncomeItem, type IncomeKind } from "@/lib/expenses";
 import { formatAriary, formatDate } from "@/lib/format";
+import { repaymentKeys } from "@/lib/loanLink";
 import { dayString } from "@/lib/papers";
 import { haptics } from "@/services/device";
 import { lineWallet, type WalletBook } from "@/lib/wallets";
@@ -38,6 +40,9 @@ export function IncomePanel({ month, incomes, defaultAt, focus, book, pockets }:
   const [editing, setEditing] = useState<IncomeDraft | null>(null);
   const [opened, setOpened] = useState<string | null>(focus ?? null);
   const money = (value: number) => formatAriary(value, locale);
+  // Lines counted as a loan's repayment ("Prêts"): kept out, marked.
+  const loans = useLinkedLoans();
+  const repaid = repaymentKeys(loans);
 
   useEffect(() => {
     if (!focus) return;
@@ -83,6 +88,8 @@ export function IncomePanel({ month, incomes, defaultAt, focus, book, pockets }:
             {incomes.map((item) => {
               const open = opened === item.key;
               const auto = item.origin !== "manual";
+              const isRepayment = repaid.has(item.key);
+              const fromReceipt = item.origin === "receipt" || item.origin === "mobile_money";
               return (
                 <li key={item.key} data-key={item.key} className={styles.entry} data-excluded={item.excluded || undefined} data-fresh={focus === item.key || undefined}>
                   <button
@@ -104,6 +111,7 @@ export function IncomePanel({ month, incomes, defaultAt, focus, book, pockets }:
                             {t("expenses.doubt")}
                           </span>
                         )}
+                        {isRepayment && <span className={styles.badge}>{t("loans.link.badge")}</span>}
                         <ImportedBadge record={item.record} />
                         {item.doubt ? formatDate(item.at, locale) : detail(item)}
                       </small>
@@ -134,10 +142,16 @@ export function IncomePanel({ month, incomes, defaultAt, focus, book, pockets }:
                             {t("expenses.recurring.skip")}
                           </Button>
                         </>
-                      ) : (
+                      ) : isRepayment ? null : (
                         <Button variant="ghost" icon={item.excluded ? <RotateCcw /> : <EyeOff />} onClick={() => void expenseStore.setExcluded(item.key, !item.excluded)}>
                           {t(item.excluded ? "expenses.include" : "expenses.exclude")}
                         </Button>
+                      )}
+                      {fromReceipt && !item.doubt && (
+                        <RepaymentPrompt
+                          source={{ key: item.key, at: item.at, amountMga: item.amountMga, label: item.label, flow: "income", ...(item.key.startsWith("receipt:") && { scanId: item.key.slice("receipt:".length) }) }}
+                          wallet={book ? lineWallet(book.context, item) : undefined}
+                        />
                       )}
                       {/* The activity's profit is not money that came in: the sales it adds up came into their own pockets. */}
                       {book && pockets && pockets.wallets.length > 0 && item.origin !== "activity" && (

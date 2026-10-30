@@ -19,6 +19,8 @@ import {
   type Wallet,
   type WalletType,
 } from "@/lib/expenses";
+import { loanMoves, type LoanMoveType } from "@/lib/loanLink";
+import type { Loan, LoanDirection } from "@/lib/loans";
 import { savedTotal, savingsMoves } from "@/lib/savings";
 
 // "Mes poches": where the money really is (cash, MVola, the bank…). Pure, so
@@ -219,8 +221,8 @@ export const typedMoves = (records: ExpenseRecord[]): PocketMove[] =>
 
 // ---- Balances -------------------------------------------------------------------------
 
-/** "saved": put aside (a goal, a tontine payment); "unsaved": taken back; "pot": the tontine's pot received. */
-export type MovementType = "expense" | "income" | "move_in" | "move_out" | "correction" | "saved" | "unsaved" | "pot";
+/** "saved": put aside (a goal, a tontine payment); "unsaved": taken back; "pot": the tontine's pot received; "loan": lent, borrowed or paid back ("Prêts"). */
+export type MovementType = "expense" | "income" | "move_in" | "move_out" | "correction" | "saved" | "unsaved" | "pot" | "loan";
 
 /** One change to a pocket, signed (negative: money out). */
 export type Movement = {
@@ -233,6 +235,8 @@ export type Movement = {
   origin?: ExpenseOrigin | IncomeOrigin;
   /** A move whose other side is still to choose. */
   pending?: boolean;
+  /** A loan's move: which one, and whose (the line opens their page in "Prêts"). */
+  loan?: { type: LoanMoveType; personKey: string; direction: LoanDirection };
 };
 
 export type WalletBook = {
@@ -266,9 +270,10 @@ export function countsOn(wallet: Pick<Wallet, "startAt"> | undefined, at: number
 /**
  * Every pocket's balance: what it held at the start, plus the incomes, minus
  * the expenses (counted lines only), plus the moves in, minus the moves out,
- * plus the corrections.
+ * plus the corrections, plus or minus the loans ("Prêts", with both features:
+ * neither an expense nor an income).
  */
-export function walletBook(records: ExpenseRecord[], sources: SourceItem[], now: number): WalletBook {
+export function walletBook(records: ExpenseRecord[], sources: SourceItem[], now: number, loans: Loan[] = []): WalletBook {
   const context = walletContext(records);
   const balances = new Map(context.wallets.map((wallet) => [wallet.id, wallet.startMga]));
   const movements = new Map<string, Movement[]>(context.wallets.map((wallet) => [wallet.id, []]));
@@ -309,6 +314,8 @@ export function walletBook(records: ExpenseRecord[], sources: SourceItem[], now:
   for (const correction of byKind(records, "correction"))
     add(correction.wallet, correction.at, correction.createdAt, { key: `correction:${correction.id}`, type: "correction", amountMga: correction.amountMga });
   for (const move of savingsMoves(records)) add(move.wallet, move.at, move.at, { key: move.key, type: move.type, amountMga: move.amountMga, label: move.name });
+  for (const move of loanMoves(loans))
+    add(move.wallet, move.at, move.at, { key: move.key, type: "loan", amountMga: move.amountMga, label: move.person, loan: { type: move.type, personKey: move.personKey, direction: move.direction } });
 
   for (const list of movements.values()) list.sort((a, b) => b.at - a.at || a.key.localeCompare(b.key));
   const total = activeWallets(context.wallets).reduce((sum, wallet) => sum + (balances.get(wallet.id) ?? 0), 0);

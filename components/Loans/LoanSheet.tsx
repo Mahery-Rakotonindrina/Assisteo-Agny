@@ -3,6 +3,7 @@ import { useState, useSyncExternalStore, type FormEvent, type ReactNode } from "
 import { createPortal } from "react-dom";
 import { Camera, Check, FileImage, ScanText, X } from "lucide-react";
 import { Button } from "@/components/Button";
+import { WalletChips, type PocketChoice } from "@/components/Expenses/WalletChips";
 import { useToast } from "@/components/Toast";
 import { useNow } from "@/hooks/useNow";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -84,7 +85,24 @@ export function Sheet({ open, onClose, title, children }: { open: boolean; onClo
 type Draft = { direction: LoanDirection; person?: string; phone?: string };
 
 /** "J'ai prêté de l'argent" / "J'ai emprunté", or a loan corrected (`loan`). */
-export function LoanSheet({ open, onClose, draft, loan, loans, onSaved }: { open: boolean; onClose: () => void; draft: Draft; loan?: Loan; loans: Loan[]; onSaved?: (loan: Loan) => void }) {
+export function LoanSheet({
+  open,
+  onClose,
+  draft,
+  loan,
+  loans,
+  pockets,
+  onSaved,
+}: {
+  open: boolean;
+  onClose: () => void;
+  draft: Draft;
+  loan?: Loan;
+  loans: Loan[];
+  /** The pockets of "Mes dépenses" (with both features): the money leaves one, or comes into it. */
+  pockets?: PocketChoice;
+  onSaved?: (loan: Loan) => void;
+}) {
   const { t } = useTranslation();
   // A scanned debt acknowledgment can turn "J'ai prêté" into "J'ai emprunté" (or back).
   const [side, setSide] = useState<LoanDirection | null>(null);
@@ -104,6 +122,7 @@ export function LoanSheet({ open, onClose, draft, loan, loans, onSaved }: { open
           draft={draft}
           loan={loan}
           loans={loans}
+          pockets={pockets}
           onClose={close}
           onSaved={onSaved}
         />
@@ -122,6 +141,7 @@ function LoanFields({
   draft,
   loan,
   loans,
+  pockets,
   onClose,
   onSaved,
 }: {
@@ -130,6 +150,7 @@ function LoanFields({
   draft: Draft;
   loan?: Loan;
   loans: Loan[];
+  pockets?: PocketChoice;
   onClose: () => void;
   onSaved?: (loan: Loan) => void;
 }) {
@@ -144,6 +165,8 @@ function LoanFields({
   const [dueDay, setDueDay] = useState(loan?.dueAt !== undefined ? toDateInput(loan.dueAt) : "");
   const [phone, setPhone] = useState(loan?.phone ?? draft.phone ?? "");
   const [note, setNote] = useState(loan?.note ?? "");
+  // A loan corrected keeps its pocket (archived since included) until another is picked; one written before the pockets stays without one.
+  const [wallet, setWallet] = useState(() => (loan ? (loan.wallet ?? "") : (pockets?.primary ?? pockets?.wallets[0]?.id ?? "")));
   const saved = loan?.schedule;
   const [split, setSplit] = useState(Boolean(saved?.length));
   const [times, setTimes] = useState(String(saved?.length ?? 3));
@@ -283,6 +306,8 @@ function LoanFields({
       schedule: split ? schedule : undefined,
       interest,
       note,
+      // Without the pockets shown, the one it had stays.
+      wallet: pockets ? wallet || undefined : loan?.wallet,
     };
     try {
       if (loan) {
@@ -400,6 +425,7 @@ function LoanFields({
           <input type="date" value={day} max={today} onChange={(event) => setDay(event.target.value || today)} aria-label={t("loans.form.date")} />
         </div>
       </div>
+      {pockets && <WalletChips label={t(`loans.form.wallet.${direction}`)} wallets={pockets.wallets} value={wallet} onChange={setWallet} />}
       <label className={styles.toggle}>
         <input
           type="checkbox"
@@ -567,16 +593,16 @@ function LoanFields({
 }
 
 /** "Il m'a rendu…" / "J'ai rendu…": prefilled with what is left, capped to it. */
-export function RepaySheet({ open, onClose, loan }: { open: boolean; onClose: () => void; loan: Loan | null }) {
+export function RepaySheet({ open, onClose, loan, pockets }: { open: boolean; onClose: () => void; loan: Loan | null; pockets?: PocketChoice }) {
   const { t } = useTranslation();
   return (
     <Sheet open={open && loan !== null} onClose={onClose} title={loan ? t(`loans.repay.title.${loan.direction}`) : ""}>
-      {loan && <RepayFields key={loan.id} loan={loan} onClose={onClose} />}
+      {loan && <RepayFields key={loan.id} loan={loan} pockets={pockets} onClose={onClose} />}
     </Sheet>
   );
 }
 
-function RepayFields({ loan, onClose }: { loan: Loan; onClose: () => void }) {
+function RepayFields({ loan, pockets, onClose }: { loan: Loan; pockets?: PocketChoice; onClose: () => void }) {
   const { t, locale } = useTranslation();
   const toast = useToast();
   const now = useNow(60_000);
@@ -584,6 +610,8 @@ function RepayFields({ loan, onClose }: { loan: Loan; onClose: () => void }) {
   const [amount, setAmount] = useState(String(left));
   const today = toDateInput(now);
   const [day, setDay] = useState(today);
+  // The loan's pocket, else the default one.
+  const [wallet, setWallet] = useState(() => (pockets?.wallets.some((item) => item.id === loan.wallet) ? loan.wallet! : (pockets?.primary ?? pockets?.wallets[0]?.id ?? "")));
   const typed = parseNumber(amount);
   const capped = typed === null ? null : cappedRepayment(loan, typed);
   const over = typed !== null && typed > left;
@@ -591,7 +619,7 @@ function RepayFields({ loan, onClose }: { loan: Loan; onClose: () => void }) {
   const save = async (event: FormEvent) => {
     event.preventDefault();
     if (capped === null) return;
-    const kept = await loanStore.addRepayment(loan.id, { amountMga: capped, at: pickedAt(day) });
+    const kept = await loanStore.addRepayment(loan.id, { amountMga: capped, at: pickedAt(day), wallet: (pockets && wallet) || undefined });
     if (kept === null) return;
     haptics.success();
     const rest = left - kept;
@@ -616,6 +644,7 @@ function RepayFields({ loan, onClose }: { loan: Loan; onClose: () => void }) {
           <input type="date" value={day} max={today} onChange={(event) => setDay(event.target.value || today)} aria-label={t("loans.form.date")} />
         </div>
       </div>
+      {pockets && <WalletChips label={t(`loans.repay.wallet.${loan.direction}`)} wallets={pockets.wallets} value={wallet} onChange={setWallet} />}
       <div className={styles.sheetActions}>
         <Button type="submit" block icon={<Check />} disabled={capped === null}>
           {t("loans.form.save")}

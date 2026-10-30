@@ -2,6 +2,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { ArrowLeftRight, Check, EyeOff, Pencil, Receipt, RotateCcw } from "lucide-react";
 import { Button } from "@/components/Button";
+import { RepaymentPrompt, useLinkedLoans } from "@/components/Loans/RepaymentPrompt";
 import { useToast } from "@/components/Toast";
 import { useExpenses } from "@/hooks/useExpenses";
 import { useExpenseSources } from "@/hooks/useExpenseSources";
@@ -13,6 +14,8 @@ import { byKind, keepKey, monthExpenses, monthIncomes, monthKey, moveKeepKey, ow
 import { isMine } from "@/lib/household";
 import { isStatementKey } from "@/lib/statement";
 import { formatAriary } from "@/lib/format";
+import { linkedRepayment } from "@/lib/loanLink";
+import { lineWallet, walletContext } from "@/lib/wallets";
 import { haptics } from "@/services/device";
 import { expenseStore } from "@/services/expenseStore";
 import type { HistoryEntry } from "@/types/history";
@@ -35,6 +38,7 @@ export function ReceiptControls({ entry }: { entry: HistoryEntry }) {
   const snapshot = useHousehold();
   const { expenses: shared, isLoading: sharedLoading } = useHouseholdExpenses();
   const [open, setOpen] = useState(false);
+  const loans = useLinkedLoans();
 
   const draft = receiptDraft(entry);
   if (!has("expenses") || !draft) return null;
@@ -171,6 +175,9 @@ export function ReceiptControls({ entry }: { entry: HistoryEntry }) {
         </div>
       </div>
     );
+  // Counted as a repayment of a loan ("Prêts"): only that, with "Annuler".
+  const repayment = { key: source.key, at: source.at, amountMga: source.amountMga, label: source.label, flow: source.flow, scanId: source.scanId };
+  if (source.key === key && linkedRepayment(loans, key)) return <RepaymentPrompt source={repayment} />;
   const incoming = source.flow === "income";
   const line = incoming ? monthIncomes(records, month, sources).find((item) => item.key === source.key) : monthExpenses(records, sources, month).find((item) => item.key === source.key);
   const doubt = Boolean(line?.doubt);
@@ -215,6 +222,7 @@ export function ReceiptControls({ entry }: { entry: HistoryEntry }) {
           </Button>
         )}
       </div>
+      {source.key === key && !doubt && <RepaymentPrompt source={repayment} wallet={lineWallet(walletContext(records), source)} />}
     </div>
   );
 }

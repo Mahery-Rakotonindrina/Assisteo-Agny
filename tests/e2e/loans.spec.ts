@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { mockReceipt } from "../../lib/ai/mock";
 import { prepare } from "./helpers";
 
 // "Prêts": Admin only while tested. The demo server answers "free": the
@@ -177,4 +178,73 @@ test("scanning a debt acknowledgment (demo) fills in the form, the photo kept as
   await expect(page.getByTestId("loan-has-proofs")).toBeVisible();
   await page.getByRole("button", { name: /Rakoto Jean/ }).click();
   await expect(page.getByTestId("loan-proofs").getByRole("button")).toHaveCount(1);
+});
+
+// ---- With "Mes poches" (Admin has "expenses" too) ----------------------------
+
+/** Espèces 45 000 Ar (the default pocket) and MVola 230 000 Ar. */
+async function withPockets(page: Page) {
+  await page.goto("/expenses");
+  await page.getByRole("button", { name: /Où est ton argent \?/ }).click();
+  const setup = page.getByRole("dialog", { name: "Où est ton argent ?" });
+  await setup.getByLabel(/^Espèces : combien/).fill("45000");
+  await setup.getByRole("checkbox", { name: "MVola" }).check();
+  await setup.getByLabel(/^MVola : combien/).fill("230000");
+  await setup.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(page.getByTestId("pockets")).toHaveText(/^Espèces 45\s000 Ar · MVola 230\s000 Ar$/);
+}
+
+test("a loan from MVola lowers the pocket, a repayment brings it back up, « Il te reste » unchanged", async ({ page }) => {
+  await asAdmin(page);
+  await withPockets(page);
+  await page.goto("/loans");
+  await page.getByRole("button", { name: "J’ai prêté de l’argent" }).click();
+  await page.getByLabel("À qui ?").fill("Rakoto");
+  await page.getByLabel("Montant (Ar)").fill("50000");
+  await page.getByRole("dialog").getByRole("radio", { name: "MVola" }).click();
+  await page.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(page.getByTestId("loans-total")).toHaveText(/^50\s000\sAr$/);
+
+  await page.getByRole("button", { name: /Rakoto/ }).click();
+  await page.getByRole("button", { name: "On m’a rendu…" }).click();
+  await page.getByLabel("Montant (Ar)").fill("20000");
+  // The loan's pocket by default.
+  await expect(page.getByRole("dialog").getByRole("radio", { name: "MVola" })).toBeChecked();
+  await page.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(page.getByTestId("loan-left")).toHaveText(/^Reste 30\s000\sAr$/);
+
+  await page.goto("/expenses");
+  await expect(page.getByTestId("pockets")).toHaveText(/^Espèces 45\s000 Ar · MVola 200\s000 Ar$/);
+  await expect(page.getByTestId("expenses-in")).toHaveText(/^0 Ar$/);
+  // In the pocket's history, the line opens the person in "Prêts".
+  await page.getByRole("button", { name: "Voir mes poches" }).click();
+  await page.getByRole("dialog", { name: "Mes poches" }).getByRole("button", { name: /^MVola/ }).click();
+  await expect(page.getByTestId("pocket-loan").first()).toHaveText("Remboursement de Rakoto");
+  await page.getByRole("link", { name: "Prêt à Rakoto" }).click();
+  await expect(page.getByRole("heading", { level: 2, name: "Rakoto" })).toBeVisible();
+});
+
+test("a « Vous avez reçu » from a debtor (demo): « C’est un remboursement ? », yes — the rest goes down, the income goes", async ({ page, isMobile }) => {
+  test.skip(isMobile, "The desktop drop zone exposes a plain file input.");
+  await asAdmin(page);
+  await page.goto("/loans");
+  await lend(page, "Rasoa Hery", "100000");
+  await expect(page.getByTestId("loans-total")).toHaveText(/^100\s000\sAr$/);
+
+  // Any photo comes back as the demo "Vous avez reçu" of 80 000 Ar from Rasoa Hery.
+  await page.route("**/api/analyze", async (route) => {
+    const response = await route.fetch();
+    await route.fulfill({ response, json: { ...(await response.json()), analysis: mockReceipt("fr", "in") } });
+  });
+  await page.goto("/");
+  await page.locator('input[type="file"]').setInputFiles("tests/e2e/fixtures/apple.jpg");
+  await expect(page).toHaveURL(/\/result\?id=/, { timeout: 20_000 });
+  await expect(page.getByTestId("repayment-prompt")).toContainText("C’est un remboursement de Rasoa Hery ?");
+  await page.getByRole("button", { name: "Oui, c’est un remboursement" }).click();
+  await expect(page.getByTestId("repayment-linked")).toContainText("Compté comme remboursement de Rasoa Hery");
+
+  await page.goto("/expenses");
+  await expect(page.getByTestId("expenses-in")).toHaveText(/^0 Ar$/);
+  await page.goto("/loans");
+  await expect(page.getByTestId("loans-total")).toHaveText(/^20\s000\sAr$/);
 });

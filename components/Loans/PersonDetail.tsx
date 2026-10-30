@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { useState } from "react";
 import { ArrowLeft, CircleCheck, Copy, Download, FileText, MessageCircle, Pencil, Plus, Trash2, Undo2, X } from "lucide-react";
 import { Button } from "@/components/Button";
@@ -6,6 +7,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { formatDate } from "@/lib/format";
 import { loanInterest, loanMoney, loanNextDue, loanPaid, loanRemaining, loanStatus, loanTotal, scheduleState, whatsappLink, type Loan, type PersonLoans } from "@/lib/loans";
 import { copyText, haptics } from "@/services/device";
+import { removeRepayment } from "@/services/loanLink";
 import { loanStore } from "@/services/loanStore";
 import { LoanProofs } from "./LoanProofs";
 import styles from "./Loans.module.scss";
@@ -22,10 +24,12 @@ type Props = {
   onExport: () => void;
   /** "Reconnaissance de dette (PDF)" of one loan. */
   onAck: (loan: Loan) => void;
+  /** Opened from the "Le relancer ?" notification: "Relancer sur WhatsApp" stands out. */
+  nudge?: boolean;
 };
 
 /** One person's loans in one direction: each with its repayments, and what can be done. */
-export function PersonDetail({ person, now, readOnly, onBack, onAdd, onEdit, onRepay, onExport, onAck }: Props) {
+export function PersonDetail({ person, now, readOnly, onBack, onAdd, onEdit, onRepay, onExport, onAck, nudge }: Props) {
   const { t, locale } = useTranslation();
   const toast = useToast();
   const direction = person.loans[0]?.direction ?? "lent";
@@ -61,12 +65,18 @@ export function PersonDetail({ person, now, readOnly, onBack, onAdd, onEdit, onR
         </div>
       </div>
 
+      {nudge && canRemind && (
+        <p className={styles.nudge} data-testid="loan-nudge">
+          {t("loans.detail.nudge", { name: person.name })}
+        </p>
+      )}
       {(canRemind || !readOnly || person.loans.length > 0) && (
         <div className={styles.row}>
           {canRemind &&
             (whatsapp ? (
               <Button
                 icon={<MessageCircle />}
+                size={nudge ? "lg" : undefined}
                 onClick={() => {
                   haptics.tap();
                   window.open(whatsapp, "_blank", "noopener,noreferrer");
@@ -160,9 +170,17 @@ function LoanCard({ loan, now, readOnly, onEdit, onRepay, onAck }: { loan: Loan;
           {loan.repayments.map((repayment) => (
             <li key={repayment.id}>
               <Undo2 size={14} />
-              <span>{t("loans.detail.repaymentLine", { amount: money(repayment.amountMga), date: formatDate(repayment.at, locale) })}</span>
+              <span>
+                {t("loans.detail.repaymentLine", { amount: money(repayment.amountMga), date: formatDate(repayment.at, locale) })}
+                {repayment.scanId && (
+                  <>
+                    {" · "}
+                    <Link href={{ pathname: "/result", query: { id: repayment.scanId } }}>{t("loans.detail.receipt")}</Link>
+                  </>
+                )}
+              </span>
               {!readOnly && (
-                <button type="button" className={styles.iconButton} onClick={() => void loanStore.removeRepayment(loan.id, repayment.id)} aria-label={t("loans.detail.removeRepayment")}>
+                <button type="button" className={styles.iconButton} onClick={() => void removeRepayment(loan.id, repayment)} aria-label={t("loans.detail.removeRepayment")}>
                   <X size={14} />
                 </button>
               )}
