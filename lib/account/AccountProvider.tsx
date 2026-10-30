@@ -14,6 +14,8 @@ import { startLoanSync, syncLoans } from "@/services/loanSync";
 import { startListSync, syncLists } from "@/services/listSync";
 import { vehicleStore } from "@/services/vehicleStore";
 import { startVehicleSync, syncVehicles } from "@/services/vehicleSync";
+import { homeItemStore } from "@/services/homeItemStore";
+import { startHomeItemSync, syncHomeItems } from "@/services/homeItemSync";
 import { wipeReviews } from "@/services/expenseReview";
 import { expenseStore } from "@/services/expenseStore";
 import { startExpenseSync, syncExpenses } from "@/services/expenseSync";
@@ -100,6 +102,12 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!userId) return;
     return startVehicleSync(userId);
+  }, [userId]);
+
+  // "Ma maison" (fails quietly before migration 0014).
+  useEffect(() => {
+    if (!userId) return;
+    return startHomeItemSync(userId);
   }, [userId]);
 
   // "Prêts".
@@ -200,6 +208,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         syncParcels(userId).catch(() => undefined),
         syncLists(userId).catch(() => undefined),
         syncVehicles(userId).catch(() => undefined),
+        syncHomeItems(userId).catch(() => undefined),
         syncLoans(userId).catch(() => undefined),
         syncExpenses(userId).catch(() => undefined),
         householdId ? syncHouseholdExpenses(userId, householdId).catch(() => undefined) : undefined,
@@ -209,6 +218,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await parcelStore.wipe();
     await listStore.wipe();
     await vehicleStore.wipe();
+    await homeItemStore.wipe();
     await loanStore.wipe();
     await expenseStore.wipe();
     await householdExpenseStore.wipe();
@@ -234,6 +244,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await parcelStore.wipe();
     await listStore.wipe();
     await vehicleStore.wipe();
+    await homeItemStore.wipe();
     await loanStore.wipe();
     await expenseStore.wipe();
     await householdExpenseStore.wipe();

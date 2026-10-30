@@ -61,7 +61,7 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Conseils, actions, mises en garde, idées
 - [ ] « Mes plantes » : rappels d'arrosage, diagnostic de maladie
 - [ ] Objets : prix de revente estimé, texte d'annonce prêt à publier
-- [ ] Inventaire de la maison (garanties, factures liées)
+- [x] Inventaire de la maison (garanties, factures liées) — « Ma maison », à partir de Premium : rappel 30 jours avant la fin de garantie, export PDF et Excel pour l’assurance ; migration 0014 à appliquer
 
 ## 6. Questions sur un scan
 

@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { BookOpen, Car, FolderLock, HandCoins, Receipt, Wallet } from "lucide-react";
+import { BookOpen, Car, FolderLock, HandCoins, House, Receipt, Wallet } from "lucide-react";
 import { PlanBadge } from "@/components/PlanBadge";
 import { useKeptExpenses } from "@/hooks/useExpenses";
+import { useHomeItems } from "@/hooks/useHomeItems";
 import { useInHousehold } from "@/hooks/useHousehold";
 import { useKeptLoans, useLoans } from "@/hooks/useLoans";
 import { useNow } from "@/hooks/useNow";
@@ -35,6 +36,7 @@ export function Shortcuts({ entries }: { entries: HistoryEntry[] }) {
   const { loans } = useLoans();
   const owed = loanTotals(loansByPerson(loans, "lent", now));
   const garageDue = vehicles.reduce((count, vehicle) => count + dueReminders(vehicle, now).length, 0);
+  const { items: homeItems } = useHomeItems();
 
   return (
     <nav className={styles.shortcuts} aria-label={t("shortcuts.label")}>
@@ -81,6 +83,15 @@ export function Shortcuts({ entries }: { entries: HistoryEntry[] }) {
             ) : (
               t("shortcuts.garageHint")
             )}
+          </small>
+        </span>
+      </Link>
+      <Link href="/inventory" className={styles.shortcut} style={{ "--tone": "var(--cat-object)" } as React.CSSProperties}>
+        <House size={18} />
+        <span>
+          <strong>{t("inventory.title")}</strong>
+          <small>
+            {!has("inventory") ? <PlanBadge plan={planFor("inventory")} /> : homeItems.length > 0 ? t("inventory.count", { count: homeItems.length }) : t("shortcuts.inventoryHint")}
           </small>
         </span>
       </Link>

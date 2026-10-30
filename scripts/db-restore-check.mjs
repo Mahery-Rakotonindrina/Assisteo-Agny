@@ -73,6 +73,16 @@ function sampleBackup() {
         },
         { user_id: ben, id: "vehicle-2", data: { name: "Moto" }, updated_at: at(6), deleted_at: at(7) },
       ],
+      home_items: [
+        {
+          user_id: anna,
+          id: "home-1",
+          data: { name: "Frigo Samsung", room: "kitchen", category: "appliance", boughtOn: "2026-03-12", priceMga: 1850000, store: "Jumbo Score", warrantyUntil: "2028-03-12", serial: "RT38K5", scanIds: ["scan-1"], createdAt: 1759900000000 },
+          updated_at: at(6),
+          deleted_at: null,
+        },
+        { user_id: ben, id: "home-2", data: { name: "Télé", scanIds: [] }, updated_at: at(6), deleted_at: at(7) },
+      ],
       expenses: [
         {
           user_id: anna,

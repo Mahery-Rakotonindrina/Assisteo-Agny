@@ -1,6 +1,6 @@
 // The Row Level Security of the shared budget (migration 0009_households.sql)
 // of the loans (0010_loans.sql), of the features offered for a while (0011) and
-// of the loan links and household loans (0012),
+// of the loan links and household loans (0012) and of the home inventory (0014),
 // tested as Supabase runs it: each query as the "authenticated" role with a
 // user id, or as the server ("service_role"). `client.query(text, params)`
 // must return { rows }. Returns the problems found (empty: all good).
@@ -236,6 +236,22 @@ export async function runRlsChecks(client) {
   await check("a visitor reads no loans", async () => {
     try {
       return (await tryVisitor("select 1 from public.loans")).length ? "loans visible" : null;
+    } catch (error) {
+      return /permission denied/.test(error.message) ? null : error.message;
+    }
+  });
+  // ---- Home inventory (migration 0014_home_items.sql): always personal -----------
+  await user(anna, "insert into public.home_items (id, data, updated_at) values ('home-1', '{\"name\": \"Frigo\"}', now())");
+  await check("each one reads only their own home items", async () => {
+    const seen = [await count(anna, "select 1 from public.home_items"), await count(ben, "select 1 from public.home_items")];
+    return seen.join("/") === "1/0" ? null : `saw ${seen.join("/")} rows`;
+  });
+  await check("nobody changes someone else's home item", async () => ((await user(ben, "update public.home_items set data = '{}' where id = 'home-1' returning id")).length ? "changed" : null));
+  await check("nobody deletes someone else's home item", async () => ((await user(ben, "delete from public.home_items where id = 'home-1' returning id")).length ? "deleted" : null));
+  await refused("nobody writes a home item in someone else's name", () => tryUser(ben, "insert into public.home_items (user_id, id, data, updated_at) values ($1, 'home-2', '{}', now())", [anna]), /row-level security/);
+  await check("a visitor reads no home items", async () => {
+    try {
+      return (await tryVisitor("select 1 from public.home_items")).length ? "home items visible" : null;
     } catch (error) {
       return /permission denied/.test(error.message) ? null : error.message;
     }

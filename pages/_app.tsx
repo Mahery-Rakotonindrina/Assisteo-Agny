@@ -14,6 +14,7 @@ import { ShareReceiver } from "@/components/ShareReceiver";
 import { ToastProvider } from "@/components/Toast";
 import { UpdateGate } from "@/components/UpdateGate";
 import { VehicleReminderKeeper } from "@/components/VehicleReminderKeeper";
+import { HomeReminderKeeper } from "@/components/HomeReminderKeeper";
 import { useNativeBootstrap } from "@/hooks/useNativeBootstrap";
 import { AccountProvider } from "@/lib/account/AccountProvider";
 import { SettingsProvider } from "@/lib/settings/SettingsProvider";
@@ -67,6 +68,7 @@ export default function App({ Component, pageProps }: AppProps) {
               <ReminderKeeper />
               <ParcelReminderKeeper />
               <VehicleReminderKeeper />
+              <HomeReminderKeeper />
               <ExpenseReminderKeeper />
               <LoanReminderKeeper />
               <LoanSharingKeeper />
