@@ -70,7 +70,7 @@ export default function ScanPage() {
   const [picked, setPicked] = useState(false);
   const picking = router.isReady && router.query.pick === "1" && !picked;
   const { state, start, startWithFile, startWithSrc, retry, reset, analyzeAnyway, canRetry, pages } = useScan(mode);
-  const { has, planFor } = usePlan();
+  const { has, planFor, name: planName } = usePlan();
   const inHousehold = useInHousehold();
   const keptExpenses = useKeptExpenses(!has("expenses"));
   const keptLoans = useKeptLoans(!has("loans"));
@@ -111,7 +111,7 @@ export default function ScanPage() {
         beginPages(images);
         return;
       }
-      if (images.length > 1) toast(t("share.onlyFirst", { plan: t(`plans.names.${multiPageFrom}`) }));
+      if (images.length > 1) toast(t("share.onlyFirst", { plan: planName(multiPageFrom) }));
       void startWithSrc(images[0]);
     };
     take();

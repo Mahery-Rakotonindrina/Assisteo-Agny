@@ -1,4 +1,4 @@
-import { planAllows, type PlanFeature, type PlanResponse } from "@/lib/plans";
+import { allPlansHeader, planAllows, type PlanFeature, type PlanResponse } from "@/lib/plans";
 import { aiKeyStore } from "./aiKeyStore";
 import { httpClient } from "./httpClient";
 import { installIdHeaders } from "./trial";
@@ -48,7 +48,8 @@ export const planStore = {
 
   async refresh() {
     try {
-      const next = await httpClient.get<PlanResponse>("/api/plan", { headers: await installIdHeaders() });
+      // "all": the plans created from the Admin too (an older app gets the built-in ones only).
+      const next = await httpClient.get<PlanResponse>("/api/plan", { headers: { ...(await installIdHeaders()), [allPlansHeader]: "all" } });
       fresh = true;
       set(next);
     } catch {

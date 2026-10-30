@@ -650,7 +650,49 @@
       "contact": "Contact pour envoyer la référence",
       "contactHint": "Un numéro de téléphone, ou un lien (WhatsApp : https://wa.me/261…, Messenger…).",
       "monthsFree": "{count} mois offerts sur l’année",
-      "deepNeedsLimit": "Cette offre a l’analyse approfondie : mets un nombre par mois (0 voudrait dire sans limite, avec l’IA la plus chère)."
+      "deepNeedsLimit": "Cette offre a l’analyse approfondie : mets un nombre par mois (0 voudrait dire sans limite, avec l’IA la plus chère).",
+      "created": {
+        "title": "Offres créées",
+        "subtitle": "Une offre à toi, rangée entre deux offres de base : son nom, sa couleur, son prix, ses limites et ses fonctions. Les gens la prennent comme Lite ou Premium : tu notes l’abonnement après le paiement.",
+        "empty": "Aucune offre créée pour l’instant.",
+        "create": "Créer une offre",
+        "newTitle": "Nouvelle offre",
+        "editTitle": "Modifier l’offre",
+        "nameFr": "Nom en français",
+        "nameEn": "Nom en anglais",
+        "id": "Identifiant",
+        "idHint": "Tiré du nom. Il ne change plus après la création.",
+        "idProblems": {
+          "format": "De 2 à 24 lettres minuscules, chiffres ou tirets, en commençant par une lettre.",
+          "builtIn": "C’est le nom d’une offre de base : choisis-en un autre.",
+          "taken": "Une autre offre a déjà cet identifiant."
+        },
+        "color": "Couleur",
+        "colors": {
+          "teal": "Bleu-vert",
+          "emerald": "Vert",
+          "rose": "Rose",
+          "orange": "Orange",
+          "indigo": "Indigo",
+          "slate": "Gris"
+        },
+        "rank": "Place parmi les offres",
+        "after": {
+          "lite": "Entre Lite et Premium",
+          "premium": "Entre Premium et Pro",
+          "pro": "Au-dessus de Pro"
+        },
+        "features": "Fonctions incluses",
+        "onSale": "En vente",
+        "offSale": "Retirée de la vente",
+        "onSaleHint": "Retirée de la vente, elle n’est plus proposée. Ceux qui l’ont la gardent jusqu’à la fin de leur abonnement.",
+        "save": "Enregistrer l’offre",
+        "saved": "Offre enregistrée",
+        "delete": "Supprimer l’offre",
+        "deleteConfirm": "Appuie encore pour supprimer",
+        "deleted": "Offre supprimée",
+        "inUse": "Quelqu’un a encore cette offre : retire-la plutôt de la vente."
+      }
     },
     "adminAccount": "Ton compte est administrateur : ouvre l’espace admin avec ton compte, ou avec le jeton.",
     "ai": {
@@ -777,7 +819,10 @@
         "promo_discount_used": "Réduction utilisée",
         "referral_reward": "Mois de parrainage offert",
         "feature_plans": "Fonctionnalités d’une offre modifiées",
-        "feature_status": "État d’une fonctionnalité modifié"
+        "feature_status": "État d’une fonctionnalité modifié",
+        "plan_create": "Offre créée",
+        "plan_edit": "Offre créée modifiée",
+        "plan_delete": "Offre créée supprimée"
       }
     },
     "export": {
@@ -1404,7 +1449,8 @@
       "garage": "Mon garage : entretien, rappels d’assurance et de vidange, pleins et dépenses",
       "reminders": "Rappels : sur tes scans (avec répétition et report), assurance, arrivée des colis",
       "loans": "Prêts : qui te doit, à qui tu dois, relance WhatsApp",
-      "expenses": "Mes dépenses : le budget du mois, seul ou en foyer"
+      "expenses": "Mes dépenses : le budget du mois, seul ou en foyer",
+      "allPlan": "Tout {plan}, et :"
     },
     "how": "Comment s’abonner",
     "step1": "Connecte-toi",

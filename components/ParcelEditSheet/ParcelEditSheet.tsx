@@ -50,7 +50,7 @@ export function ParcelEditSheet({ parcel, open, onClose, clients }: Props) {
 
 function Form({ parcel, onClose, clients }: Omit<Props, "open">) {
   const { t } = useTranslation();
-  const { has, planFor } = usePlan();
+  const { has, planFor, name: planName } = usePlan();
   const reseller = has("reseller");
   const resellerFrom = planFor("reseller") ?? "pro";
   const { info } = parcel;
@@ -148,7 +148,7 @@ function Form({ parcel, onClose, clients }: Omit<Props, "open">) {
               t("parcels.fields.clientHint")
             ) : (
               <>
-                <PlanBadge plan={resellerFrom} /> {t("parcels.fields.clientLocked", { plan: t(`plans.names.${resellerFrom}`) })}
+                <PlanBadge plan={resellerFrom} /> {t("parcels.fields.clientLocked", { plan: planName(resellerFrom) })}
               </>
             )
           }

@@ -11,7 +11,7 @@ import { shareFile } from "@/services/fileShare";
 import styles from "./AdminSubscriptions.module.scss";
 
 /** The payments of a period as an Excel workbook, for the accounts. */
-export function PaymentsExport({ rows, now }: { rows: Subscription[]; now: number }) {
+export function PaymentsExport({ rows, now, planName }: { rows: Subscription[]; now: number; planName: (plan: Subscription["plan"]) => string }) {
   const { t, locale } = useTranslation();
   const toast = useToast();
   const [period, setPeriod] = useState<PaymentPeriod>("month");
@@ -35,7 +35,7 @@ export function PaymentsExport({ rows, now }: { rows: Subscription[]; now: numbe
       const bytes = await paymentsWorkbook(chosen, t, {
         title: `${t("admin.export.title")} · ${label}`,
         subtitle: t("admin.export.exportedOn", { date: formatDate(now, locale) }),
-      });
+      }, planName);
       const result = await shareFile(`paiements-${suffix}.xlsx`, bytes, XLSX_TYPE, t("admin.export.title"));
       if (result === "downloaded") toast(t("admin.export.downloaded"));
     } catch {

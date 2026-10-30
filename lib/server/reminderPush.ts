@@ -1,5 +1,5 @@
 import { AnalysisSchema, normalizeStoredAnalysis, type Analysis } from "@/lib/ai/schema";
-import { activePlan, activeSubscription, defaultFeatureSettings, effectiveFeatures, type FeatureDiff, type FeatureGrant, type FeatureSettings, type PaidPlanId } from "@/lib/plans";
+import { activePlan, activeSubscription, defaultFeatureSettings, effectiveFeatures, type CustomPlan, type FeatureDiff, type FeatureGrant, type FeatureSettings, type SubscriptionPlanId } from "@/lib/plans";
 import { nextOccurrence, parseRepeat } from "@/lib/reminderRepeat";
 
 // Decides which reminder pushes to send: pure, so it can be tested without
@@ -106,7 +106,7 @@ export function planPushes(rows: DueRow[], devices: PushDevice[], locales: Map<s
 }
 
 /** `features`: the subscription's own (migration 0011), absent before it. */
-export type SubscriptionRow = { email: string; plan: PaidPlanId; starts_at: string; ends_at: string | null; features?: FeatureDiff | null };
+export type SubscriptionRow = { email: string; plan: SubscriptionPlanId; starts_at: string; ends_at: string | null; features?: FeatureDiff | null };
 
 /**
  * The users who may use reminders by the Admin settings (Lite and up by default, the Premium trial
@@ -118,7 +118,7 @@ export function paidReminderUsers(
   users: Array<{ id: string; email: string | null }>,
   subscriptions: SubscriptionRow[],
   now: number,
-  config: FeatureSettings = defaultFeatureSettings,
+  config: FeatureSettings & { customPlans?: readonly CustomPlan[] } = defaultFeatureSettings,
   grants: ReadonlyArray<Pick<FeatureGrant, "email" | "feature" | "startsAt" | "endsAt">> = [],
 ) {
   const byEmail = new Map<string, SubscriptionRow[]>();
@@ -130,10 +130,11 @@ export function paidReminderUsers(
   for (const user of users) {
     const rows = user.email ? (byEmail.get(user.email.toLowerCase()) ?? []) : [];
     const own = rows.map((row) => ({ plan: row.plan, startsAt: row.starts_at, endsAt: row.ends_at, features: row.features ?? null }));
-    const { plan } = activePlan(own, now);
+    const created = config.customPlans ?? [];
+    const { plan, custom } = activePlan(own, now, created);
     const email = user.email?.toLowerCase();
     const offered = email ? grants.filter((grant) => grant.email.toLowerCase() === email) : [];
-    if (effectiveFeatures({ plan, email: user.email, config, subscription: activeSubscription(own, now), grants: offered, now }).has("reminders")) paid.add(user.id);
+    if (effectiveFeatures({ plan, custom, email: user.email, config, subscription: activeSubscription(own, now, created), grants: offered, now }).has("reminders")) paid.add(user.id);
   }
   return paid;
 }

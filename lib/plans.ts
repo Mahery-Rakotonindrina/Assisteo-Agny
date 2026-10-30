@@ -136,9 +136,11 @@ export function withFeatureDefaults(stored: Partial<FeatureSettings> | null | un
 
 export type FeatureInput = {
   plan: PlanId;
+  /** A plan created from the Admin (`ActivePlan.custom`): its own features, instead of `plan`'s. */
+  custom?: string | null;
   /** The account's e-mail, for the testers; null when signed out. */
   email?: string | null;
-  config: FeatureSettings;
+  config: FeatureSettings & { customPlans?: readonly CustomPlan[] };
   /** The running subscription's own features (a difference from its plan); none: the plan as it is. */
   subscription?: { features?: FeatureDiff | null } | null;
   /** Features offered for a while (Admin → an account's card): only those running at `now` count. */
@@ -182,14 +184,15 @@ export function runningGrants(grants: FeatureInput["grants"] = [], now = Date.no
 }
 
 /** The features an account would have by its plan and its own settings, before the states and the needs. */
-function ownFeatures({ plan, config, subscription, grants, now, granted = [], removed = [] }: FeatureInput): Set<PlanFeature> {
+function ownFeatures({ plan, custom, config, subscription, grants, now, granted = [], removed = [] }: FeatureInput): Set<PlanFeature> {
   const add = subscription?.features?.add ?? [];
   const remove = subscription?.features?.remove ?? [];
   const running = runningGrants(grants, now);
+  const list = planListOf(config, custom ?? plan);
   return new Set(
     planFeatures.filter((feature) => {
       if (running.has(feature)) return true;
-      const own = config.features[plan]?.includes(feature) || add.includes(feature) || granted.includes(feature);
+      const own = list.includes(feature) || add.includes(feature) || granted.includes(feature);
       return own && !remove.includes(feature) && !removed.includes(feature);
     }),
   );
@@ -253,8 +256,8 @@ export type FeatureLine = { feature: PlanFeature } & FeatureOrigin;
 /** Every feature with whether the account has it and why: the same reckoning as `effectiveFeatures`. */
 export function featureOrigins(input: FeatureInput): FeatureLine[] {
   const effective = effectiveFeatures(input);
-  const { plan, config, subscription, grants, now } = input;
-  const planHas = (feature: PlanFeature) => Boolean(config.features[plan]?.includes(feature));
+  const { plan, custom, config, subscription, grants, now } = input;
+  const planHas = (feature: PlanFeature) => planListOf(config, custom ?? plan).includes(feature);
   const add = subscription?.features?.add ?? [];
   const remove = subscription?.features?.remove ?? [];
   const running = runningGrants(grants, now);
@@ -349,48 +352,61 @@ export function withDeepFallback(
  * to 0): refused when saving, like `deepWithoutLimit` for a plan. Admin aside.
  */
 export function subscriptionDeepWithoutLimit(
-  plan: PaidPlanId,
-  config: Pick<PlansConfig, "features" | "offers">,
+  plan: SubscriptionPlanId,
+  config: Pick<PlansConfig, "features" | "offers"> & { customPlans?: readonly CustomPlan[] },
   diff: FeatureDiff | null | undefined,
   quotas: QuotaOverrides | null | undefined,
 ): boolean {
-  if (plan === "unlimited") return false;
-  const deep = withQuotas(plan, config.offers[plan], quotas).deepPerMonth;
-  const has = subscriptionFeatureList(config.features[plan], diff).includes("deepAnalysis");
+  const offer = planOfferOf(config, plan);
+  if (plan === "unlimited" || !offer) return false;
+  const deep = withQuotas("lite", offer, quotas).deepPerMonth;
+  const has = subscriptionFeatureList(planListOf(config, plan), diff).includes("deepAnalysis");
   const own = Boolean(diff?.add.includes("deepAnalysis")) || quotas?.deepPerMonth === 0;
   return has && deep === 0 && own;
 }
 
 /** The features anyone on `plan` gets (no tester, nothing of their own): what the public pages announce. */
-export function planFeatureList(plan: PlanId, config: FeatureSettings): PlanFeature[] {
-  const features = effectiveFeatures({ plan, config });
+export function planFeatureList(plan: AnyPlanId, config: FeatureInput["config"]): PlanFeature[] {
+  const created = customPlanOf(config, plan);
+  const features = effectiveFeatures(created ? { plan: created.after, custom: created.id, config } : { plan: plan as PlanId, config });
   return planFeatures.filter((feature) => features.has(feature));
 }
 
 /**
  * The lowest plan that includes each feature, for the "from…" labels: null
- * when no plan does, or while it is in test or switched off.
+ * when no plan does, or while it is in test or switched off. Built-in plans
+ * only, for an older app; with `withCreated`, the plans created from the
+ * Admin and on sale too, at their rank.
  */
-export function featureFromConfig(config: FeatureSettings): Record<PlanFeature, PlanId | null> {
-  const byPlan = planIds.map((plan) => [plan, effectiveFeatures({ plan, config })] as const);
+export function featureFromConfig(config: FeatureInput["config"]): Record<PlanFeature, PlanId | null>;
+export function featureFromConfig(config: FeatureInput["config"], withCreated: true): Record<PlanFeature, AnyPlanId | null>;
+export function featureFromConfig(config: FeatureInput["config"], withCreated = false): Record<PlanFeature, AnyPlanId | null> {
+  const created = withCreated ? (config.customPlans ?? []).filter((plan) => plan.onSale) : [];
+  const candidates: AnyPlanId[] = [...planIds, ...created.map((plan) => plan.id)];
+  const byPlan = candidates
+    .map((plan) => [plan, new Set(planFeatureList(plan, config)), rankOf(plan, created)] as const)
+    .sort(([, , a], [, , b]) => a - b);
   return Object.fromEntries(
     planFeatures.map((feature) => {
       if (config.featureStatus[feature]?.mode !== "on") return [feature, null];
-      const lowest = [...byPlan].sort(([a], [b]) => planRank[a] - planRank[b]).find(([, features]) => features.has(feature));
+      const lowest = byPlan.find(([, features]) => features.has(feature));
       return [feature, lowest ? lowest[0] : null];
     }),
-  ) as Record<PlanFeature, PlanId | null>;
+  ) as Record<PlanFeature, AnyPlanId | null>;
 }
 
 /**
  * The plans with deep analyses ticked but no monthly count (0 means no
  * limit, on the costliest model): refused when saving. The Admin plan may
- * stay without a limit; free has no count of its own, so never.
+ * stay without a limit; free has no count of its own, so never. Created
+ * plans are checked like the sold ones.
  */
-export function deepWithoutLimit(config: Pick<PlansConfig, "features" | "offers">): PlanId[] {
-  return planIds.filter(
+export function deepWithoutLimit(config: Pick<PlansConfig, "features" | "offers"> & { customPlans?: readonly CustomPlan[] }): AnyPlanId[] {
+  const builtIn = planIds.filter(
     (plan) => plan !== "unlimited" && config.features[plan].includes("deepAnalysis") && (plan === "free" || config.offers[plan].deepPerMonth === 0),
   );
+  const created = (config.customPlans ?? []).filter((plan) => plan.features.includes("deepAnalysis") && plan.deepPerMonth === 0).map((plan) => plan.id);
+  return [...builtIn, ...created];
 }
 
 /** Whether the plan the app knows allows a feature: the server's list, else the built-in ladder (older server, first start). */
@@ -400,7 +416,7 @@ export function planAllows(state: Pick<PlanResponse, "plan" | "features"> | null
 }
 
 /** The plan to suggest for a feature: the server's labels, else the built-in ladder; null when no plan has it. */
-export function planSuggested(state: Pick<PlanResponse, "featureFrom"> | null, feature: PlanFeature): PlanId | null {
+export function planSuggested(state: Pick<PlanResponse, "featureFrom"> | null, feature: PlanFeature): AnyPlanId | null {
   const from = state?.featureFrom;
   return from && feature in from ? (from[feature] ?? null) : featureFrom[feature];
 }
@@ -409,7 +425,7 @@ export function planSuggested(state: Pick<PlanResponse, "featureFrom"> | null, f
 export type Subscription = {
   id: string;
   email: string;
-  plan: PaidPlanId;
+  plan: SubscriptionPlanId;
   /** ISO dates; `endsAt` is exclusive, null for no end. */
   startsAt: string;
   endsAt: string | null;
@@ -426,23 +442,32 @@ export type Subscription = {
 };
 
 export type ActivePlan = {
+  /** A built-in plan: the subscription's, or for a created plan the built-in one just below it (what an older app knows). */
   plan: PlanId;
   /** Until when the plan runs without a gap, renewals included; null = no end. */
   endsAt: number | null;
+  /** The plan created from the Admin the account is on (`CustomPlan.id`); missing or null on a built-in plan. */
+  custom?: string | null;
 };
 
 const time = (iso: string) => new Date(iso).getTime();
 const isActive = (row: Pick<Subscription, "startsAt" | "endsAt">, now: number) =>
   time(row.startsAt) <= now && (row.endsAt === null || time(row.endsAt) > now);
 
-/** The plan an email has at `now`: the highest one running, else free. */
-export function activePlan(rows: Array<Pick<Subscription, "plan" | "startsAt" | "endsAt">>, now: number): ActivePlan {
-  const active = rows.filter((row) => isActive(row, now));
+/**
+ * The plan an email has at `now`: the highest one running, else free.
+ * `created`: the plans created from the Admin, ranked among the built-in
+ * ones; a row of a plan unknown to them (none passed, or deleted) is left out.
+ */
+export function activePlan(rows: Array<Pick<Subscription, "plan" | "startsAt" | "endsAt">>, now: number, created: readonly CustomPlanPlace[] = []): ActivePlan {
+  const known = rows.filter((row) => rankOf(row.plan, created) >= 0);
+  const active = known.filter((row) => isActive(row, now));
   if (active.length === 0) return { plan: "free", endsAt: null };
-  const plan = active.reduce<PaidPlanId>((best, row) => (planRank[row.plan] > planRank[best] ? row.plan : best), active[0].plan);
+  const rank = (plan: SubscriptionPlanId) => rankOf(plan, created);
+  const plan = active.reduce<SubscriptionPlanId>((best, row) => (rank(row.plan) > rank(best) ? row.plan : best), active[0].plan);
 
   // Follow renewals at the same level or above, each starting before the current end.
-  const covering = rows.filter((row) => planRank[row.plan] >= planRank[plan]);
+  const covering = known.filter((row) => rank(row.plan) >= rank(plan));
   let end = now;
   for (let extended = true; extended && end !== Infinity; ) {
     extended = false;
@@ -454,16 +479,19 @@ export function activePlan(rows: Array<Pick<Subscription, "plan" | "startsAt" | 
       }
     }
   }
-  return { plan, endsAt: end === Infinity ? null : end };
+  const endsAt = end === Infinity ? null : end;
+  const place = created.find((entry) => entry.id === plan);
+  return place ? { plan: place.after, endsAt, custom: place.id } : { plan: plan as PaidPlanId, endsAt };
 }
 
 /**
  * The subscription whose own settings apply at `now`: among those running
  * at the plan the e-mail has, the latest started (a renewal, once begun).
  */
-export function activeSubscription<T extends Pick<Subscription, "plan" | "startsAt" | "endsAt">>(rows: T[], now: number): T | null {
-  const { plan } = activePlan(rows, now);
-  if (plan === "free") return null;
+export function activeSubscription<T extends Pick<Subscription, "plan" | "startsAt" | "endsAt">>(rows: T[], now: number, created: readonly CustomPlanPlace[] = []): T | null {
+  const current = activePlan(rows, now, created);
+  if (current.plan === "free") return null;
+  const plan = current.custom ?? current.plan;
   return rows.filter((row) => row.plan === plan && isActive(row, now)).sort((a, b) => time(b.startsAt) - time(a.startsAt))[0] ?? null;
 }
 
@@ -507,6 +535,8 @@ export type PlansConfig = FeatureSettings & {
   freeParcels: number;
   /** Shown on the offers page: the payment happens outside the app. */
   payment: { instructions: string; contact: string };
+  /** The plans created from the Admin, each between two built-in ones (missing from an older record: none). */
+  customPlans: CustomPlan[];
 };
 
 export const defaultPlansConfig: PlansConfig = {
@@ -517,6 +547,7 @@ export const defaultPlansConfig: PlansConfig = {
   },
   freeParcels: 3,
   payment: { instructions: "", contact: "" },
+  customPlans: [],
   ...defaultFeatureSettings,
 };
 
@@ -525,12 +556,19 @@ export type PlanResponse = {
   /** False in demo mode: nothing is counted. */
   enabled: boolean;
   signedIn: boolean;
+  /** Always a built-in plan: on a created plan, the one just below it (see `customPlan`). */
   plan: PlanId;
   endsAt: number | null;
   limits: PlanLimits;
   usage: { scans: number; questionsToday: number; deep: number };
-  /** Each offer, with the features anyone on it gets (none in test nor switched off). */
-  offers: Array<PlanOffer & { id: SoldPlanId; features?: PlanFeature[] }>;
+  /**
+   * Each offer, with the features anyone on it gets (none in test nor
+   * switched off). The created plans on sale (and the account's own) only for
+   * an app that asks for them (header `x-plans: all`), with their name, colour and rank.
+   */
+  offers: Array<PlanOffer & { id: AnyPlanId; features?: PlanFeature[] } & Partial<CustomPlanInfo>>;
+  /** The created plan the account is on; null on a built-in plan (missing from an older server). */
+  customPlan?: CustomPlanInfo | null;
   payment: PlansConfig["payment"];
   // Missing from an older server or cache: treated as false / none.
   /** Signed in and never had a trial nor Premium: may start the 7-day Premium trial. */
@@ -541,15 +579,15 @@ export type PlanResponse = {
   referralCode?: string | null;
   /** What this account may use (the Admin settings applied); missing: the built-in ladder. */
   features?: PlanFeature[];
-  /** The lowest plan with each feature, for the "from…" labels; null: no plan has it now. */
-  featureFrom?: Partial<Record<PlanFeature, PlanId | null>>;
+  /** The lowest plan with each feature, for the "from…" labels; null: no plan has it now. A created plan only for `x-plans: all`. */
+  featureFrom?: Partial<Record<PlanFeature, AnyPlanId | null>>;
   /** What the account paid for its subscriptions (amount known only), for "Mes dépenses". */
   payments?: SubscriptionPayment[];
   /** The features offered to this account for a while, running now (Admin → its card). */
   grants?: Array<{ feature: PlanFeature; endsAt: number }>;
 };
 
-export type SubscriptionPayment = { id: string; plan: PaidPlanId; amountMga: number; paidAt: number };
+export type SubscriptionPayment = { id: string; plan: SubscriptionPlanId; amountMga: number; paidAt: number };
 
 /** The subscriptions paid, with their amount, the latest first (24 at most); the day paid is taken as the day it starts. */
 export function subscriptionPayments(rows: Array<Pick<Subscription, "id" | "plan" | "startsAt" | "amountMga">>): SubscriptionPayment[] {
@@ -560,4 +598,109 @@ export function subscriptionPayments(rows: Array<Pick<Subscription, "id" | "plan
     })
     .sort((a, b) => b.paidAt - a.paidAt)
     .slice(0, 24);
+}
+
+// ---- Plans created from the Admin ----------------------------------------------
+// The built-in plans stay as they are; a created plan sits right after one of
+// the sold ones and before the next, with its own name, colour, price, limits
+// and features. An older app only knows the built-in ids: the server tells it
+// the built-in plan just below (`ActivePlan.plan`), and goes itself by the
+// created plan (`ActivePlan.custom`) for what the account may use.
+
+/** Sent by an app that knows the created plans, with "all": GET /api/plan then lists them too. */
+export const allPlansHeader = "x-plans";
+
+/** A built-in plan's id, or a created plan's (`CustomPlan.id`). */
+export type AnyPlanId = PlanId | (string & {});
+/** What a subscription records: a built-in paid plan, or a created one. */
+export type SubscriptionPlanId = PaidPlanId | (string & {});
+
+/** Where a created plan may sit: right after one of these, before the next built-in plan. */
+export const customPlanSlots = ["lite", "premium", "pro"] as const;
+export type CustomPlanSlot = (typeof customPlanSlots)[number];
+
+/** The colours a created plan may take, readable on the light and the dark theme (styles/planColors.scss). */
+export const customPlanColors = ["teal", "emerald", "rose", "orange", "indigo", "slate"] as const;
+export type CustomPlanColor = (typeof customPlanColors)[number];
+
+/** A created plan's id: short, lowercase, fixed once created (also checked by migration 0015). */
+export const customPlanIdPattern = /^[a-z][a-z0-9-]{1,23}$/;
+
+/** The name typed by the Admin, in each language of the app (data, not a translation key). */
+export type PlanName = { fr: string; en: string };
+
+export type CustomPlan = PlanOffer & {
+  id: string;
+  name: PlanName;
+  color: CustomPlanColor;
+  after: CustomPlanSlot;
+  features: PlanFeature[];
+  /** Off sale: no longer offered nor recorded anew; its running subscriptions keep it until they end. */
+  onSale: boolean;
+  createdAt: number;
+};
+
+/** What ranks a created plan: its slot, then its place in the list among the plans of the same slot. */
+export type CustomPlanPlace = Pick<CustomPlan, "id" | "after">;
+
+/** What the app shows of a created plan. */
+export type CustomPlanInfo = { id: string; name: PlanName; color: CustomPlanColor; rank: number };
+
+const builtInIds: readonly string[] = planIds;
+
+/** Whether `id` can name a created plan: the right form, and not a built-in plan. */
+export function isCustomPlanId(id: string) {
+  return customPlanIdPattern.test(id) && !builtInIds.includes(id);
+}
+
+/**
+ * A plan's rank: the built-in ones keep theirs (free 0 … Admin 4); a created
+ * plan comes between its slot and the next built-in plan, in the order of the
+ * list. -1 for an id none of them has (a plan deleted since).
+ */
+export function rankOf(plan: AnyPlanId, created: readonly CustomPlanPlace[] = []): number {
+  if (builtInIds.includes(plan)) return planRank[plan as PlanId];
+  const place = created.find((entry) => entry.id === plan);
+  if (!place) return -1;
+  const siblings = created.filter((entry) => entry.after === place.after);
+  return planRank[place.after] + (siblings.indexOf(place) + 1) / (siblings.length + 1);
+}
+
+/** The created plan with this id, if any. */
+export function customPlanOf(config: { customPlans?: readonly CustomPlan[] }, plan: AnyPlanId | null | undefined): CustomPlan | null {
+  return (plan && config.customPlans?.find((entry) => entry.id === plan)) || null;
+}
+
+/** A plan's own features (before the states and the needs): a created plan's, else the Admin table's. */
+export function planListOf(config: Pick<FeatureSettings, "features"> & { customPlans?: readonly CustomPlan[] }, plan: AnyPlanId): readonly PlanFeature[] {
+  return customPlanOf(config, plan)?.features ?? config.features[plan as PlanId] ?? [];
+}
+
+/** A paid plan's price and limits: a sold or a created plan's; null for Admin, free or an unknown id. */
+export function planOfferOf(config: Pick<PlansConfig, "offers"> & { customPlans?: readonly CustomPlan[] }, plan: AnyPlanId): PlanOffer | null {
+  const created = customPlanOf(config, plan);
+  if (created) return created;
+  return (soldPlans as readonly string[]).includes(plan) ? config.offers[plan as SoldPlanId] : null;
+}
+
+/** What the app shows of a created plan. */
+export function customPlanInfo(plan: CustomPlan, created: readonly CustomPlanPlace[]): CustomPlanInfo {
+  return { id: plan.id, name: plan.name, color: plan.color, rank: rankOf(plan.id, created) };
+}
+
+/**
+ * A created plan's limits as a subscription's own (`withQuotas` over the
+ * built-in plan just below), with the subscription's own over them: what the
+ * server counts by. On a built-in plan, the subscription's own alone.
+ */
+export function createdQuotas(config: { customPlans?: readonly CustomPlan[] }, custom: string | null | undefined, own: QuotaOverrides | null | undefined): QuotaOverrides | null {
+  const created = customPlanOf(config, custom);
+  if (!created) return own ?? null;
+  const { scans, questionsPerDay, parcels, deepPerMonth } = created;
+  return { scans, questionsPerDay, parcels, deepPerMonth, ...own };
+}
+
+/** Why a created plan can't be deleted: someone has it running or starting later (then it can only go off sale). */
+export function customPlanInUse(plan: string, rows: ReadonlyArray<Pick<Subscription, "plan" | "endsAt">>, now: number) {
+  return rows.some((row) => row.plan === plan && (row.endsAt === null || time(row.endsAt) > now));
 }

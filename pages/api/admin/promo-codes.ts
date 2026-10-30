@@ -1,7 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { z } from "zod";
 import { CODE_PATTERN, normalizeCode, type PromoCode, type PromoWithUses } from "@/lib/offers";
-import { soldPlans } from "@/lib/plans";
+import { customPlanIdPattern, customPlanOf, soldPlans, type CustomPlan } from "@/lib/plans";
+import { getPlansConfig } from "@/lib/server/planConfig";
 import { guardAdmin } from "@/lib/server/adminAuth";
 import { logAdminAction } from "@/lib/server/adminLog";
 import { sendError } from "@/lib/server/http";
@@ -17,7 +18,8 @@ import {
 import { pendingDiscount } from "@/lib/server/offers";
 import { reportError } from "@/lib/server/reportError";
 
-export type AdminPromoCodesResponse = { codes: PromoWithUses[]; durable: boolean };
+/** `customPlans`: the plans created from the Admin, to name a code's plan and give one (missing from an older server). */
+export type AdminPromoCodesResponse = { codes: PromoWithUses[]; durable: boolean; customPlans?: CustomPlan[] };
 /** GET ?email=: the discount waiting for that e-mail's next payment. */
 export type AdminDiscountResponse = { discount: PendingDiscount | null };
 
@@ -27,7 +29,8 @@ const CreateSchema = z
   .object({
     code: Code,
     kind: z.enum(["access", "discount"]),
-    plan: z.enum(soldPlans),
+    // A sold plan, or one created from the Admin and on sale (checked below).
+    plan: z.union([z.enum(soldPlans), z.string().regex(customPlanIdPattern)]),
     days: z.number().int().min(1).max(366),
     percent: z.number().int().min(1).max(100),
     maxUses: z.number().int().min(0).max(100_000),
@@ -52,7 +55,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     if (req.method === "GET") {
       const email = z.string().trim().toLowerCase().pipe(z.email()).safeParse(req.query.email);
       if (email.success) return res.status(200).json({ discount: await pendingDiscount(email.data) } satisfies AdminDiscountResponse);
-      return res.status(200).json({ codes: await listPromoCodes(), durable: offersAreDurable } satisfies AdminPromoCodesResponse);
+      const [codes, config] = await Promise.all([listPromoCodes(), getPlansConfig()]);
+      return res.status(200).json({ codes, durable: offersAreDurable, customPlans: config.customPlans } satisfies AdminPromoCodesResponse);
     }
 
     if (req.method === "POST") {
@@ -61,6 +65,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       const input = parsed.data;
       if (input.kind === "access" && (!input.plan || !input.days)) return sendError(res, 400, "invalid_request", "An access code needs a plan and days.");
       if (input.kind === "discount" && !input.percent) return sendError(res, 400, "invalid_request", "A discount code needs a percentage.");
+      if (input.kind === "access" && !(soldPlans as readonly string[]).includes(input.plan!) && !customPlanOf(await getPlansConfig(), input.plan)?.onSale) {
+        return sendError(res, 400, "invalid_request", "This plan doesn't exist or is off sale.");
+      }
       // A promo code must not hide a referral code (or another promo code).
       if ((await getPromoCode(input.code)) || (await referrerOfCode(input.code))) return sendError(res, 409, "invalid_request", "This code already exists.");
       const promo: PromoCode = {

@@ -15,6 +15,10 @@ export type AdminAction =
   | "subscription_stop"
   | "subscription_delete"
   | "plans_save"
+  /** A plan created from the Admin, changed (taken off sale…) or deleted. */
+  | "plan_create"
+  | "plan_edit"
+  | "plan_delete"
   /** A plan's features ticked or unticked (Admin → Offers). */
   | "feature_plans"
   /** A feature on, in test or switched off. */

@@ -8,6 +8,7 @@ import shared from "@/components/AdminSubscriptions/AdminSubscriptions.module.sc
 import { useToast } from "@/components/Toast";
 import { useNow } from "@/hooks/useNow";
 import { useTranslation } from "@/hooks/useTranslation";
+import { localName } from "@/lib/customPlans";
 import { formatDate, formatNumber, toDateInput } from "@/lib/format";
 import { spring } from "@/lib/motion";
 import { planFeatures, type FeatureLine, type PlanFeature } from "@/lib/plans";
@@ -80,7 +81,7 @@ function CardSheet({ token, email, onClose }: { token: string; email: string; on
   }, [email, token, version]);
 
   const name = (value: PlanFeature) => t(`admin.features.names.${value}`);
-  const planName = card ? t(`plans.names.${card.plan}`) : "";
+  const planName = card ? (card.customPlan ? localName(card.customPlan.name, locale) : t(`plans.names.${card.plan}`)) : "";
   const end = offerEnd(duration, day, now);
   // Deep analyses without a monthly count would have no limit: the server refuses it too.
   const deepBlocked = feature === "deepAnalysis" && card !== null && card.plan !== "unlimited" && card.quotas.some((quota) => quota.key === "deepPerMonth" && (quota.value === 0 || quota.fallback));
@@ -142,7 +143,8 @@ function CardSheet({ token, email, onClose }: { token: string; email: string; on
     <motion.div className={shared.backdrop} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
       <motion.div
         className={shared.sheet}
-        data-plan={card?.plan === "free" ? undefined : card?.plan}
+        data-plan={card?.plan === "free" ? undefined : (card?.customPlan?.id ?? card?.plan)}
+        data-plan-color={card?.customPlan?.color}
         role="dialog"
         aria-modal="true"
         aria-labelledby="account-card-title"
@@ -167,7 +169,7 @@ function CardSheet({ token, email, onClose }: { token: string; email: string; on
         {card && (
           <>
             <div className={styles.plan}>
-              <PlanBadge plan={card.plan} />
+              <PlanBadge plan={card.customPlan?.id ?? card.plan} custom={card.customPlan} />
               <span>
                 {card.plan === "free"
                   ? t("admin.card.freePlan")

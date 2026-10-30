@@ -180,7 +180,7 @@ export function AdminFeatures({ token, plansVersion = 0 }: { token: string; plan
                     {needs.length > 0 && <small className={styles.needs}>{t("admin.features.needs", { list: names(needs) })}</small>}
                     {feature === "deepAnalysis" && noDeepLimit.length > 0 && (
                       <small className={styles.error} role="alert">
-                        {t("admin.features.deepNeedsLimit", { list: noDeepLimit.map(planName).join(", ") })}
+                        {t("admin.features.deepNeedsLimit", { list: noDeepLimit.map((plan) => planName(plan as PlanId)).join(", ") })}
                       </small>
                     )}
 

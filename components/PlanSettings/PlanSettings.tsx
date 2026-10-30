@@ -10,20 +10,20 @@ import styles from "./PlanSettings.module.scss";
 /** "Mon offre" in the settings: the plan in its colours, until when, what is left and what it includes. */
 export function PlanSettings() {
   const { t, locale } = useTranslation();
-  const { plan, id, has } = usePlan();
+  const { plan, id, has, current, name, color } = usePlan();
   if (!plan) return <div className={styles.wrap} aria-busy />;
 
   const paid = id !== "free";
   const validity = !paid ? t("plans.trial") : plan.endsAt === null ? t("plans.noEnd") : t("plans.until", { date: formatDate(plan.endsAt - 1, locale) });
 
   return (
-    <div className={styles.wrap} data-plan={id}>
+    <div className={styles.wrap} data-plan={current} data-plan-color={color()}>
       <div className={styles.hero}>
         <span className={styles.icon}>
-          <PlanIcon plan={id} size={22} />
+          <PlanIcon plan={current} size={22} />
         </span>
         <div className={styles.text}>
-          <strong>{t(`plans.names.${id}`)}</strong>
+          <strong>{name()}</strong>
           <span>{validity}</span>
         </div>
       </div>

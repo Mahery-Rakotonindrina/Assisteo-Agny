@@ -1,7 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { z } from "zod";
 import { accessPeriod, CODE_PATTERN, hasPaid, normalizeCode, promoProblem, type PromoProblem } from "@/lib/offers";
-import type { SoldPlanId } from "@/lib/plans";
+import { customPlanOf, soldPlans, type PlanName, type SoldPlanId } from "@/lib/plans";
+import { getPlansConfig } from "@/lib/server/planConfig";
 import { applyCors, clientIp, sendError } from "@/lib/server/http";
 import {
   getPromoCode,
@@ -23,7 +24,8 @@ import { verifyAccount } from "@/lib/server/supabaseAdmin";
 export type RedeemRefusal = "unknown" | PromoProblem | "already_used" | "own_code" | "already_referred" | "already_paid";
 
 export type RedeemResponse =
-  | { ok: true; kind: "access"; plan: SoldPlanId; endsAt: string }
+  /** `plan`: always a sold plan (an older app knows no other); for a created plan, the one just below it, with `name` (missing from an older server). */
+  | { ok: true; kind: "access"; plan: SoldPlanId; name?: PlanName; endsAt: string }
   | { ok: true; kind: "discount"; code: string; percent: number }
   | { ok: true; kind: "referral" }
   | { ok: false; reason: RedeemRefusal };
@@ -73,6 +75,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         return res.status(200).json({ ok: true, kind: "discount", code, percent: promo.percent } satisfies RedeemResponse);
       }
 
+      // A created plan deleted or taken off sale since: the code no longer gives it.
+      const created = (soldPlans as readonly string[]).includes(promo.plan) ? null : customPlanOf(await getPlansConfig(), promo.plan);
+      if (!created && !(soldPlans as readonly string[]).includes(promo.plan)) return refuse("inactive");
+      if (created && !created.onSale) return refuse("inactive");
+
       if (!(await markRedeemed(code, email))) return refuse("already_used");
       if (!(await takePromoUse(code, promo.maxUses))) {
         await unmarkRedeemed(code, email);
@@ -86,7 +93,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         await returnPromoUse(code).catch(() => undefined);
         throw error;
       }
-      return res.status(200).json({ ok: true, kind: "access", plan: promo.plan, endsAt: period.endsAt } satisfies RedeemResponse);
+      const shown = created ? { plan: created.after, name: created.name } : { plan: promo.plan as SoldPlanId };
+      return res.status(200).json({ ok: true, kind: "access", ...shown, endsAt: period.endsAt } satisfies RedeemResponse);
     }
 
     const referrer = await referrerOfCode(code);

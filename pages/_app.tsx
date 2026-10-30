@@ -18,6 +18,7 @@ import { useNativeBootstrap } from "@/hooks/useNativeBootstrap";
 import { AccountProvider } from "@/lib/account/AccountProvider";
 import { SettingsProvider } from "@/lib/settings/SettingsProvider";
 import "@/styles/globals.scss";
+import "@/styles/planColors.scss";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
