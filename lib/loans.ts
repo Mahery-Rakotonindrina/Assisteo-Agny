@@ -253,7 +253,7 @@ export function compareLoans(a: Loan, b: Loan, now: number) {
 }
 
 /** Late people first, then by the nearest due day, then by the biggest amount left. */
-function comparePeople(a: PersonLoans, b: PersonLoans) {
+export function comparePeople(a: PersonLoans, b: PersonLoans) {
   if (a.late !== b.late) return a.late ? -1 : 1;
   const dueA = a.nextDue ?? Infinity;
   const dueB = b.nextDue ?? Infinity;

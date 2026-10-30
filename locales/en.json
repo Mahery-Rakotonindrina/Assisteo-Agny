@@ -663,7 +663,8 @@
         "question": "Question",
         "summary": "Expenses review",
         "statement": "Imported statement",
-        "loan": "Debt acknowledgment"
+        "loan": "Debt acknowledgment",
+        "ad": "Object ad"
       },
       "perCall": "per call · {calls} call(s), {total} in all",
       "noCalls": "no call",
@@ -1969,41 +1970,31 @@
     "subtitle": "The money you lent, and the money you owe. None of it counts in your expenses.",
     "unavailable": "Loans isn’t open to your plan yet.",
     "readOnly": "Loans is no longer in your plan: your loans stay visible, but can’t be changed.",
-    "directionLabel": "Owed to me or I owe",
     "directions": {
       "lent": "Owed to me",
       "borrowed": "I owe"
     },
     "summary": {
-      "lent": "You’re owed in all",
-      "borrowed": "You owe in all",
+      "lent": "Owed to you",
+      "borrowed": "You owe",
       "people": "{count} people",
       "peopleOne": "1 person",
-      "late": "including {amount} overdue"
-    },
-    "add": {
-      "lent": "I lent money",
-      "borrowed": "I borrowed"
-    },
-    "empty": {
-      "lent": {
-        "title": "Nobody owes you money",
-        "body": "Write down the money you lend here: you’ll always know who owes you what."
-      },
-      "borrowed": {
-        "title": "You don’t owe anyone",
-        "body": "Write down the money you borrow here: you’ll always know what’s left to pay back."
+      "late": "including {amount} overdue",
+      "nobody": {
+        "lent": "Nobody",
+        "borrowed": "Nobody"
       }
     },
-    "allRepaid": {
-      "lent": "Everyone has paid you back.",
-      "borrowed": "You’ve paid everything back."
+    "empty": {
+      "title": "No loans yet",
+      "body": "Write down here the money you lend or borrow: you’ll always know who owes what.",
+      "lent": "Nobody owes you money.",
+      "borrowed": "You don’t owe anyone anything."
     },
+    "allRepaid": "Everything is paid back, both ways.",
     "search": "Find a person",
     "noMatch": "Nobody has that name.",
     "late": "Overdue",
-    "open": "{count} open loans",
-    "openOne": "1 open loan",
     "dueOn": "due {date}",
     "repaidSection": "Paid back ({count})",
     "repaidOn": "Paid back on {date}",
@@ -2021,8 +2012,8 @@
         "borrowed": "Who lent it to you?"
       },
       "personPlaceholder": "Rakoto, Aunt Lalao…",
-      "amount": "Amount (Ar)",
-      "date": "Date",
+      "amount": "How much? (Ar)",
+      "date": "When?",
       "today": "Today",
       "due": "To pay back by (optional)",
       "dueDay": "Day to pay back by",
@@ -2033,8 +2024,6 @@
         "pick": "Choose"
       },
       "phone": "Phone (optional)",
-      "note": "Note (optional)",
-      "notePlaceholder": "for school fees",
       "save": "Save",
       "missing": "Write the person’s name and the amount.",
       "split": "Pay back in several times",
@@ -2059,7 +2048,25 @@
       "wallet": {
         "lent": "Which pocket does the money come out of?",
         "borrowed": "Which pocket does the money go into?"
-      }
+      },
+      "titleMore": {
+        "lent": "{name} owes me more…",
+        "borrowed": "I owe {name} more…"
+      },
+      "purpose": "What for?",
+      "purposePlaceholder": "Or write it: motorbike repair…",
+      "purposes": {
+        "school": "School fees",
+        "health": "Health",
+        "transport": "Transport",
+        "shopping": "Groceries",
+        "rent": "Rent",
+        "family": "Family",
+        "other": "Other"
+      },
+      "more": "More options",
+      "moreHint": "Date to pay back, in several times, interest, phone…",
+      "proofsLater": "A photo as proof? You can add it once the loan is saved."
     },
     "saved": {
       "lent": "Noted: {person} owes you {amount}.",
@@ -2068,18 +2075,14 @@
     },
     "detail": {
       "back": "Back to the list",
-      "left": {
-        "lent": "Still owes you {amount}",
-        "borrowed": "You still owe {amount}"
-      },
       "settled": "All paid back",
       "on": {
         "lent": "Lent on {date}",
         "borrowed": "Borrowed on {date}"
       },
       "another": {
-        "lent": "New loan",
-        "borrowed": "New borrowing"
+        "lent": "{name} owes me more…",
+        "borrowed": "I owe {name} more…"
       },
       "repayments": "Repayments",
       "repaymentLine": "{amount} paid back on {date}",
@@ -2091,8 +2094,6 @@
       "remove": "Delete",
       "confirmRemove": "Delete for good",
       "removed": "Loan deleted.",
-      "whatsapp": "Remind on WhatsApp",
-      "copy": "Copy the message",
       "copied": "Message copied: paste it in WhatsApp or a text.",
       "copyFailed": "Couldn’t copy the message.",
       "principal": {
@@ -2111,13 +2112,25 @@
         "late": "Late"
       },
       "ack": "Acknowledgment of debt (PDF)",
-      "export": "Export",
+      "export": "Export the account (PDF, Excel)",
       "nudge": "{name} was due to pay you back today. You can send a reminder on WhatsApp.",
-      "receipt": "See the receipt"
+      "receipt": "See the receipt",
+      "title": "Account with {name}",
+      "owes": {
+        "lent": "{name} owes you {amount}",
+        "borrowed": "You owe {name} {amount}"
+      },
+      "remind": "Remind",
+      "remindCopy": "Remind (copy the message)",
+      "alsoOwes": {
+        "lent": "{name} also owes you {amount}",
+        "borrowed": "You also owe {name} {amount}"
+      },
+      "ackShort": "Debt acknowledgment"
     },
     "repay": {
       "title": {
-        "lent": "They paid back…",
+        "lent": "Paid back to me…",
         "borrowed": "I paid back…"
       },
       "left": "{amount} left to pay back.",
@@ -2127,6 +2140,12 @@
       "wallet": {
         "lent": "Which pocket does the money go into?",
         "borrowed": "Which pocket does the money come out of?"
+      },
+      "amount": "How much? (Ar)",
+      "spread": "Spread over {count} sums, the most urgent first.",
+      "titleNamed": {
+        "lent": "{name} paid me back…",
+        "borrowed": "I paid {name} back…"
       }
     },
     "reminder": {
@@ -2158,21 +2177,22 @@
       "make": "Create the PDF",
       "withProof": "Attach the proof in annex",
       "withProofs": "Attach the {count} proofs in annex",
-      "annex": "Annex {number}: attached proof"
+      "annex": "Annex {number}: attached proof",
+      "choose": "For which sum?"
     },
     "export": {
       "button": "Export (Excel, PDF)",
       "sheetTitle": "Export my loans",
-      "sheetTitlePerson": "Export the loans with {name}",
+      "sheetTitlePerson": "Export the account with {name}",
       "excel": "Excel",
-      "excelHint": "A spreadsheet: each loan, then a summary per person.",
+      "excelHint": "A table: each loan, a summary per person, and for one person their statement.",
       "pdf": "PDF",
       "pdfHint": "A summary per person, easy to send.",
       "working": "Creating the file…",
       "downloaded": "File downloaded",
       "failed": "The file could not be created. Try again.",
       "title": "My loans",
-      "titlePerson": "Loans with {name}",
+      "titlePerson": "Account with {name}",
       "exportedOn": "Exported on {date}",
       "file": "loans",
       "line": "{date} · {total} · {left} left · {status}",
@@ -2189,7 +2209,12 @@
         "status": "Status",
         "note": "Note",
         "loans": "Loans",
-        "lateMga": "Late"
+        "lateMga": "Late",
+        "what": "What for",
+        "kind": "Line",
+        "addedMga": "Owed",
+        "repaidMga": "Paid back",
+        "balanceMga": "Left"
       },
       "status": {
         "open": "Ongoing",
@@ -2207,7 +2232,12 @@
       "totalBy": {
         "lent": "Total owed to me",
         "borrowed": "Total I owe"
-      }
+      },
+      "sheetAccountBy": {
+        "lent": "Account (owed to me)",
+        "borrowed": "Account (I owe)"
+      },
+      "accountLine": "{amount} · {left} left"
     },
     "stats": {
       "title": "In figures ({year})",
@@ -2332,7 +2362,7 @@
     "share": {
       "button": "Share what is left to pay back",
       "intro": "{name} will see, without an account: the amounts, the schedule, their repayments and what is left. Never your number, your notes or your proofs.",
-      "lender": "Your name, as they will see it",
+      "lender": "Your name, as it will be shown",
       "create": "Create the link",
       "missingName": "Write your name.",
       "live": "Link active: {name} sees what is left to pay back, updated with every change.",
@@ -2350,16 +2380,61 @@
       "message": "Hello {name}, here is what is left to pay back, updated with every repayment: {link}"
     },
     "household": {
-      "scopeLabel": "My loans or the household’s",
-      "scopes": {
-        "personal": "Me",
-        "household": "Household"
-      },
       "hint": "The household’s loans are seen by all its members. Anyone can note a repayment. They don’t touch your pockets and have no reminders.",
       "soon": "The household’s loans are coming soon.",
       "option": "Household loan",
       "optionHint": "Seen by every member of the household, without touching your pockets.",
-      "by": "Noted by {name}"
+      "by": "Noted by {name}",
+      "chip": "Household"
+    },
+    "new": {
+      "button": "New",
+      "title": "What are you writing down?",
+      "lent": "I lent money",
+      "lentHint": "Someone owes you money: you’ll always know how much.",
+      "borrowed": "I borrowed money",
+      "borrowedHint": "You owe someone money: you’ll know what is left to pay back."
+    },
+    "filter": {
+      "lent": "Owed to you",
+      "borrowed": "You owe",
+      "clear": "Show all"
+    },
+    "card": {
+      "lent": "owes you",
+      "borrowed": "you owe"
+    },
+    "badge": {
+      "late": "{count} days late",
+      "lateOne": "1 day late",
+      "due": "Due on {date}",
+      "upToDate": "Up to date",
+      "repaid": "Paid back"
+    },
+    "ledger": {
+      "title": "The statement",
+      "what": "What for",
+      "amount": "Amount",
+      "left": "Left"
+    },
+    "line": {
+      "title": {
+        "lent": "Loan of {date}",
+        "borrowed": "Borrowing of {date}"
+      },
+      "loan": {
+        "lent": "Loan",
+        "borrowed": "Borrowing"
+      },
+      "interest": "Interest",
+      "interestOf": {
+        "lent": "on the loan of {date}",
+        "borrowed": "on the borrowing of {date}"
+      },
+      "repayment": {
+        "lent": "{name} paid me back",
+        "borrowed": "I paid back"
+      }
     }
   },
   "garage": {
@@ -3183,6 +3258,47 @@
         "parcels": "Parcels"
       }
     }
+  },
+  "objectAd": {
+    "section": "Sell this object",
+    "hint": "The AI writes you an honest ad, with a suggested price in ariary.",
+    "sell": "I want to sell it",
+    "saved": "Ad ready: {title}, {price}",
+    "open": "See the ad",
+    "sheetTitle": "Sell this object",
+    "close": "Close",
+    "condition": "Condition",
+    "conditions": {
+      "new": "New",
+      "veryGood": "Very good",
+      "good": "Good",
+      "worn": "Worn",
+      "toRepair": "To repair"
+    },
+    "conditionHint": "Suggested from the photo: change it if needed.",
+    "place": "Place (town), optional",
+    "placePlaceholder": "Antananarivo",
+    "malagasy": "In Malagasy too",
+    "write": "Write the ad",
+    "regenerate": "Write the ad again",
+    "writing": "The AI is writing your ad…",
+    "countsAsQuestion": "Counts as one of today’s questions.",
+    "demo": "Sample ad (demo mode).",
+    "price": "Suggested price",
+    "priceRange": "Between {low} and {high}",
+    "priceNote": "It is an estimate: look at the ads near you too.",
+    "priceLabel": "Price:",
+    "title": "Title",
+    "text": "Ad text",
+    "textMg": "Text in Malagasy",
+    "keywords": "Keywords",
+    "copy": "Copy",
+    "copied": "Ad copied.",
+    "whatsapp": "WhatsApp",
+    "facebook": "Facebook",
+    "facebookHint": "Ad copied: paste it in your Facebook post.",
+    "share": "Share",
+    "again": "Change the condition or write again"
   },
   "loanShare": {
     "metaTitle": "What is left to pay back",

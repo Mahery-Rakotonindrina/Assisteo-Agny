@@ -108,12 +108,12 @@ export function ExportSheet({ open, onClose, loans, person }: { open: boolean; o
       let result: Awaited<ReturnType<typeof shareFile>>;
       if (kind === "excel") {
         const { loansWorkbook } = await import("@/lib/loanExport");
-        const bytes = await loansWorkbook(loans, now, t, { title, subtitle });
+        const bytes = await loansWorkbook(loans, now, t, { title, subtitle }, { account: Boolean(person) });
         // The same safe name as the PDF, as .xlsx.
         result = await shareFile(pdfFileName(file).replace(/\.pdf$/, ".xlsx"), bytes, XLSX_TYPE, title);
       } else {
         const { exportLoansPdf } = await import("@/services/loanPdf");
-        result = await exportLoansPdf(loans, now, { title, subtitle, file }, t, locale);
+        result = await exportLoansPdf(loans, now, { title, subtitle, file }, t, locale, { account: Boolean(person) });
       }
       if (result === "downloaded") toast(t("loans.export.downloaded"));
       onClose();
