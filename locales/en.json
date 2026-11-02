@@ -3608,5 +3608,22 @@
         "plan": "Your plan doesn't include My plants."
       }
     }
+  },
+  "webPush": {
+    "titleIphone": "Get reminders on this iPhone",
+    "titleDevice": "Get reminders on this device",
+    "hint": "They arrive even when Assisteo is closed.",
+    "on": "Turn on",
+    "off": "Stop",
+    "subscribed": "Done: your reminders will arrive here.",
+    "unsubscribed": "You won’t get reminders here anymore.",
+    "denied": "Notifications are blocked. Allow them in your device’s settings, then try again.",
+    "error": "That didn’t work. Try again in a moment.",
+    "signIn": "Sign in to your account to get your reminders here.",
+    "locked": "Reminders on this device are included from {plan}.",
+    "installHint": "First, add Assisteo to your home screen:",
+    "step1": "In Safari, tap the Share button (the square with an arrow).",
+    "step2": "Choose “Add to Home Screen”, then “Add”.",
+    "step3": "Open Assisteo from its new icon and come back here."
   }
 }

@@ -92,7 +92,7 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Rappels récurrents (chaque mois, chaque année) : même jour d’origine (le 31 tombe au dernier jour des mois courts), continuent app fermée (push serveur)
 - [x] « Me rappeler plus tard » : dans 1 h, demain, dans une semaine (page du scan, accueil) ; boutons « Dans 1 h » et « Demain » sur la notification de l’app Android
 - [x] Ajout au calendrier du téléphone : lien Google Agenda ou fichier .ics, depuis la feuille de rappel
-- [ ] Notifications sur iPhone (web push)
+- [x] Notifications sur iPhone (web push) — bouton dans Réglages → Notifications, pour le site ouvert depuis l’écran d’accueil (et les navigateurs d’ordinateur), à partir de l’offre qui a les rappels ; clés VAPID et migration 0017 à ajouter
 
 ## 9. Mes colis
 

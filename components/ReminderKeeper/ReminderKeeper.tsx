@@ -3,7 +3,10 @@ import { usePlan } from "@/hooks/usePlan";
 import { useReminderTexts } from "@/hooks/useReminderTexts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { historyStore } from "@/services/historyStore";
-import { reconcileReminders, registerReminderActions } from "@/services/reminders";
+import { isNative } from "@/services/device";
+import { reconcileReminders, registerReminderActions, releaseScanReminders } from "@/services/reminders";
+import { refreshPushTakeover } from "@/services/webPush";
+import { onPushTakeoverChange } from "@/services/webPushTakeover";
 
 /**
  * Keeps this device's notifications in line with the history: insurance
@@ -29,6 +32,14 @@ export function ReminderKeeper() {
   useEffect(() => {
     void registerReminderActions({ hour: t("reminders.notifyHour"), tomorrow: t("reminders.notifyTomorrow") });
   }, [t]);
+
+  // On the web: Web Push switched on or off here moves the scan reminders to it, or back to the page.
+  useEffect(() => {
+    if (isNative()) return;
+    const unsubscribe = onPushTakeoverChange(() => void releaseScanReminders().catch(() => undefined));
+    void refreshPushTakeover().catch(() => undefined);
+    return unsubscribe;
+  }, []);
 
   useEffect(() => {
     if (!known) return;

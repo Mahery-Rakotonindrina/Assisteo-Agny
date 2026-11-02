@@ -91,6 +91,20 @@ export async function scheduleReminder(entry: HistoryEntry, at: number, texts: T
   return true;
 }
 
+/**
+ * Forgets this device's scan reminder notifications (Web Push switched on or
+ * off here): the next reconcile schedules them again the new way.
+ */
+export async function releaseScanReminders() {
+  for (const entry of await historyStore.list()) {
+    if (!entry.reminderId) continue;
+    await cancelNotification(entry.reminderId);
+    // Device-local fields only; not silent, so the ReminderKeeper reconciles.
+    const latest = await historyStore.rawGet(entry.id);
+    if (latest) await historyStore.rawPut({ ...latest, reminderId: undefined, reminderScheduledAt: undefined });
+  }
+}
+
 export async function cancelReminder(entry: HistoryEntry) {
   if (entry.reminderId) await cancelNotification(entry.reminderId);
   await historyStore.update(entry.id, { reminderId: undefined, reminderAt: undefined, reminderScheduledAt: undefined, reminderRepeat: undefined, reminderFiredAt: undefined });

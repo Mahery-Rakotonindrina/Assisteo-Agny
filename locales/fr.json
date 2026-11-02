@@ -3608,5 +3608,22 @@
         "plan": "Ton offre ne comprend pas Mes plantes."
       }
     }
+  },
+  "webPush": {
+    "titleIphone": "Recevoir les rappels sur cet iPhone",
+    "titleDevice": "Recevoir les rappels sur cet appareil",
+    "hint": "Ils arrivent même quand Assisteo est fermé.",
+    "on": "Activer",
+    "off": "Arrêter",
+    "subscribed": "C’est fait : tes rappels arriveront ici.",
+    "unsubscribed": "Tu ne recevras plus les rappels ici.",
+    "denied": "Les notifications sont refusées. Autorise-les dans les réglages de ton appareil, puis réessaie.",
+    "error": "Ça n’a pas marché. Réessaie dans un moment.",
+    "signIn": "Connecte-toi à ton compte pour recevoir tes rappels ici.",
+    "locked": "Les rappels sur cet appareil sont inclus à partir de {plan}.",
+    "installHint": "D’abord, ajoute Assisteo à l’écran d’accueil :",
+    "step1": "Dans Safari, touche le bouton Partager (le carré avec une flèche).",
+    "step2": "Choisis « Sur l’écran d’accueil », puis « Ajouter ».",
+    "step3": "Ouvre Assisteo depuis sa nouvelle icône et reviens ici."
   }
 }

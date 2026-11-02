@@ -1,17 +1,19 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { isCron } from "@/lib/server/cronAuth";
-import { pushEnabled, sendPush } from "@/lib/server/fcm";
+import { pushEnabled } from "@/lib/server/fcm";
 import { sendError } from "@/lib/server/http";
 import { getPlansConfig } from "@/lib/server/planConfig";
 import { dueNotices, noticeKey, noticeMessage, type PlanNotice } from "@/lib/server/planReminders";
 import { redis } from "@/lib/server/redis";
-import type { PushDevice, PushLocale } from "@/lib/server/reminderPush";
+import { sendToDevice } from "@/lib/server/pushSend";
+import { reachableDevices, type PushDevice, type PushLocale } from "@/lib/server/reminderPush";
 import { reportError } from "@/lib/server/reportError";
 import { listSubscriptions } from "@/lib/server/subscriptions";
 import { accountsEnabled, supabaseAdmin } from "@/lib/server/supabaseAdmin";
+import { webPushEnabled } from "@/lib/server/webPush";
 
 // Every few minutes, with the reminder pushes (.github/workflows/reminders.yml):
-// tells subscribers on their Android devices that their plan ends in three
+// tells subscribers on their Android devices (and subscribed browsers) that their plan ends in three
 // days, ends today, or has ended. Each moment is pushed once (Redis).
 
 export const config = { maxDuration: 60 };
@@ -55,7 +57,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method !== "GET" && req.method !== "POST") return sendError(res, 405, "method_not_allowed", "Use GET or POST.");
   if (!isCron(req, { required: true })) return sendError(res, 401, "invalid_key", "Unauthorized.");
   res.setHeader("Cache-Control", "no-store");
-  if (!pushEnabled || !accountsEnabled) return res.status(200).json({ skipped: "push not configured" });
+  if ((!pushEnabled && !webPushEnabled) || !accountsEnabled) return res.status(200).json({ skipped: "push not configured" });
 
   try {
     const notices = dueNotices(await listSubscriptions(), Date.now(), (await getPlansConfig()).customPlans);
@@ -68,7 +70,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const userIds = [...new Set(ids.values())];
     const [devices, settings] = userIds.length
       ? await Promise.all([
-          db.from("push_devices").select("user_id, device_id, token, scheduled").in("user_id", userIds),
+          db.from("push_devices").select("user_id, device_id, token, scheduled, platform").in("user_id", userIds),
           db.from("user_settings").select("user_id, data").in("user_id", userIds),
         ])
       : [{ data: [], error: null }, { data: [] }];
@@ -81,14 +83,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     let retried = 0;
     for (const notice of claimed) {
       const userId = ids.get(notice.email);
-      const targets = ((devices.data ?? []) as PushDevice[]).filter((device) => device.user_id === userId);
+      const targets = reachableDevices((devices.data ?? []) as PushDevice[], { fcm: pushEnabled, web: webPushEnabled }).filter((device) => device.user_id === userId);
       // No account or no Android device: the app's banner says it when they open it.
       if (targets.length === 0) continue;
       const message = noticeMessage(notice, locales.get(userId!) ?? "fr");
       let delivered = false;
       let failed = false;
       for (const device of targets) {
-        const result = await sendPush(device.token, { ...message, data: { route: "/plans" } }).catch(() => "error" as const);
+        const result = await sendToDevice(device, { ...message, target: { route: "/plans" } }).catch(() => "error" as const);
         if (result === "sent") delivered = true;
         else if (result === "error") failed = true;
       }

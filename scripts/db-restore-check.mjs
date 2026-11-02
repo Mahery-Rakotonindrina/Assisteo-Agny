@@ -57,7 +57,11 @@ function sampleBackup() {
       ],
       user_settings: [{ user_id: anna, data: { locale: "fr", theme: "dark", haptics: true }, updated_at: at(4) }],
       user_ai_keys: [{ user_id: anna, preset_id: "gemini", ciphertext: "v1.sample.sample.sample", updated_at: at(4) }],
-      push_devices: [{ user_id: anna, device_id: "install-1", token: "fcm-token", platform: "android", scheduled: ["scan-1"], updated_at: at(4) }],
+      push_devices: [
+        { user_id: anna, device_id: "install-1", token: "fcm-token", platform: "android", scheduled: ["scan-1"], updated_at: at(4) },
+        // A browser subscribed to Web Push (migration 0017).
+        { user_id: ben, device_id: "install-2", token: JSON.stringify({ endpoint: "https://web.push.apple.com/sample", keys: { p256dh: "BSample", auth: "sample" } }), platform: "web", scheduled: [], updated_at: at(4) },
+      ],
       parcels: [
         { user_id: anna, id: "parcel-1", data: { label: "Chaussures", status: "transit", costs: { goodsMga: 120000 } }, updated_at: at(5), deleted_at: null },
         { user_id: ben, id: "parcel-2", data: { label: "Sac" }, updated_at: at(6), deleted_at: at(7) },
