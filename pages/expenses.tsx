@@ -45,7 +45,8 @@ import {
 import type { SearchHit } from "@/lib/expenseSearch";
 import { formatAriary, formatMonthYear } from "@/lib/format";
 import { activityMonth, excludedKeys, separatesActivity } from "@/lib/resale";
-import { activeWallets, lastUsedWallet, walletBook, type WalletBook } from "@/lib/wallets";
+import type { Loan } from "@/lib/loans";
+import { activeWallets, lastUsedWallet, walletBook, type Movement, type WalletBook } from "@/lib/wallets";
 import { rise, stagger } from "@/lib/motion";
 
 const tabs = ["month", "income", "recurring", "history", "budget"] as const;
@@ -210,6 +211,18 @@ function Expenses({ canRemind, reseller, withLoans, joinCode }: { canRemind: boo
     setTab(hit.flow === "income" ? "income" : "month");
     setFocus(hit.key);
   };
+  // A pocket's statement line: a typed-in expense opens in its form, any other line is shown in its month and tab (like a search result).
+  const openMovement = (movement: Movement) => {
+    setView("personal");
+    if (movement.type === "expense" && movement.recordId) {
+      void router.replace({ pathname: router.pathname, query: { open: movement.recordId } }, undefined, { shallow: true });
+      return;
+    }
+    closeOpened();
+    setPicked(monthKey(movement.at));
+    setTab(movement.type === "income" ? "income" : "month");
+    setFocus(movement.key);
+  };
   const forecast = useMemo(() => monthForecast(figures.items, figures.incomes, month, now), [figures, month, now]);
 
   const defaultAt = month === current ? now : monthStart(month);
@@ -261,6 +274,8 @@ function Expenses({ canRemind, reseller, withLoans, joinCode }: { canRemind: boo
               canRemind={canRemind}
               reseller={reseller}
               sources={allSources}
+              loans={loans}
+              onOpenMovement={openMovement}
             />
           </motion.div>
 
@@ -337,10 +352,13 @@ type CardProps = {
   reseller: boolean;
   /** Every line the app knows (the activity's purchases and sales among them). */
   sources: SourceItem[];
+  /** Every loan: a pocket one of them names is never removed. */
+  loans: Loan[];
+  onOpenMovement: (movement: Movement) => void;
 };
 
 /** "Il te reste…": the month at a glance, above every tab, with the end-of-month forecast, the budget, its warnings, what the pockets hold and what is set aside. */
-function MonthCard({ month, balance, budget, records, book, now, forecast, pockets, canRemind, reseller, sources }: CardProps) {
+function MonthCard({ month, balance, budget, records, book, now, forecast, pockets, canRemind, reseller, sources, loans, onOpenMovement }: CardProps) {
   const { t, locale } = useTranslation();
   const { categoryName } = useExpenseLabels(records);
   const money = (value: number) => formatAriary(value, locale);
@@ -386,7 +404,7 @@ function MonthCard({ month, balance, budget, records, book, now, forecast, pocke
           </span>
         </p>
       )}
-      <Pockets book={book} records={records} now={now} />
+      <Pockets book={book} records={records} loans={loans} now={now} onOpen={onOpenMovement} />
       <Savings records={records} book={book} pockets={pockets} canRemind={canRemind} now={now} />
       {reseller && <Activity month={month} records={records} sources={sources} book={book} pockets={pockets} />}
     </section>
