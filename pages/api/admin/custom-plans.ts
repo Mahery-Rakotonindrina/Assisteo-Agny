@@ -4,7 +4,7 @@ import { customPlanInUse, customPlanOf, type CustomPlan, type PlansConfig } from
 import { guardAdmin } from "@/lib/server/adminAuth";
 import { logAdminAction } from "@/lib/server/adminLog";
 import { sendError } from "@/lib/server/http";
-import { CustomPlanSchema, getPlansConfig, MAX_CUSTOM_PLANS, setCustomPlans } from "@/lib/server/planConfig";
+import { CustomPlanSchema, getPlansConfig, MAX_CUSTOM_PLANS, seatsOrDefault, setCustomPlans } from "@/lib/server/planConfig";
 import { reportError } from "@/lib/server/reportError";
 import { listSubscriptions } from "@/lib/server/subscriptions";
 import { accountsEnabled } from "@/lib/server/supabaseAdmin";
@@ -36,7 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const config = await getPlansConfig();
     if (customPlanOf(config, parsed.data.id)) return sendError(res, 400, "invalid_request", "This id is already taken.");
     if (config.customPlans.length >= MAX_CUSTOM_PLANS) return sendError(res, 400, "invalid_request", `At most ${MAX_CUSTOM_PLANS} created plans.`);
-    const plan: CustomPlan = { ...parsed.data, onSale: true, createdAt: Date.now() };
+    const plan: CustomPlan = { ...parsed.data, familySeats: seatsOrDefault(parsed.data.familySeats), onSale: true, createdAt: Date.now() };
     if (deepRefused(plan)) return sendError(res, 400, "invalid_request", "Deep analyses need a monthly count.");
     const saved = await setCustomPlans([...config.customPlans, plan]);
     await logAdminAction(actor.id, "plan_create", detail(plan));
@@ -49,7 +49,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const config = await getPlansConfig();
     const before = customPlanOf(config, parsed.data.id);
     if (!before) return sendError(res, 404, "invalid_request", "No such plan.");
-    const plan: CustomPlan = { ...parsed.data, createdAt: before.createdAt };
+    const plan: CustomPlan = { ...parsed.data, familySeats: seatsOrDefault(parsed.data.familySeats, before), createdAt: before.createdAt };
     // One already without a count doesn't block a save (an emergency change still goes through).
     if (deepRefused(plan) && !deepRefused(before)) return sendError(res, 400, "invalid_request", "Deep analyses need a monthly count.");
     // A plan moved to another slot goes to the end of it.

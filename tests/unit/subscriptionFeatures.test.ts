@@ -241,7 +241,7 @@ describe("before migration 0011", () => {
     const { currentGrantsForEmail } = await import("@/lib/server/featureGrants");
     const { reportError } = await import("@/lib/server/reportError");
     vi.mocked(reportError).mockClear();
-    expect(await accessForEmail("a@example.com", NOW)).toEqual({ current: { plan: "premium", endsAt: null }, subscription: { id: "s1", features: null, quotas: null } });
+    expect(await accessForEmail("a@example.com", NOW)).toEqual({ current: { plan: "premium", endsAt: null }, subscription: { id: "s1", features: null, quotas: null, paymentMethod: null } });
     expect(await currentGrantsForEmail("a@example.com", NOW)).toEqual([]);
     // Next time, the missing pieces aren't asked again.
     fake.state.calls = [];

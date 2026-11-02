@@ -19,18 +19,31 @@ function featureLines(feature: PlanFeature, deepPerMonth: number, t: Translate, 
 const deepLine = (value: number, t: Translate, locale: Locale) =>
   value === 0 ? t("plans.features.deepUnlimited") : t("plans.features.deep", { count: formatNumber(value, locale) });
 
+/** "Jusqu'à 4 personnes de ta famille": the plan's family seats (Admin → Offers); nothing without seats. */
+export function familyLine(familySeats: number | undefined, t: Translate, locale: Locale): string[] {
+  return familySeats && familySeats > 0 ? [t("plans.features.family", { count: formatNumber(familySeats, locale) })] : [];
+}
+
 /**
- * What a plan includes, in plain words: its limits, then its features. `has`
- * is what the account may use (usePlan); the built-in ladder by default.
+ * What a plan includes, in plain words: its limits, its family seats, then
+ * its features. `has` is what the account may use (usePlan); the built-in
+ * ladder by default.
  */
-export function planPerks(plan: PlanId, limits: PlanLimits, t: Translate, locale: Locale, has: (feature: PlanFeature) => boolean = (feature) => hasFeature(plan, feature)): string[] {
+export function planPerks(
+  plan: PlanId,
+  limits: PlanLimits,
+  t: Translate,
+  locale: Locale,
+  has: (feature: PlanFeature) => boolean = (feature) => hasFeature(plan, feature),
+  familySeats = 0,
+): string[] {
   if (plan === "unlimited") return [t("plans.perks.everything"), t("plans.perks.adminMenu")];
   const limit = (value: number, key: "scans" | "questions" | "parcels" | "deep") =>
     value === 0 ? t(`plans.features.${key}Unlimited`) : t(`plans.features.${key}`, { count: formatNumber(value, locale) });
   const perks =
     plan === "free"
       ? [t("plans.perks.trialScans", { count: limits.scans }), limit(limits.questionsPerDay, "questions"), limit(limits.parcels, "parcels")]
-      : [limit(limits.scans, "scans"), limit(limits.questionsPerDay, "questions"), limit(limits.parcels, "parcels")];
+      : [limit(limits.scans, "scans"), limit(limits.questionsPerDay, "questions"), limit(limits.parcels, "parcels"), ...familyLine(familySeats, t, locale)];
   for (const feature of planFeatures) if (has(feature)) perks.push(...featureLines(feature, limits.deepPerMonth, t, locale));
   return perks;
 }

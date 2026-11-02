@@ -1,5 +1,6 @@
 import { Check, Gift, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/Button";
+import { FamilySeats } from "@/components/FamilySeats";
 import { PlanIcon } from "@/components/PlanBadge";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -14,7 +15,18 @@ export function PlanSettings() {
   if (!plan) return <div className={styles.wrap} aria-busy />;
 
   const paid = id !== "free";
-  const validity = !paid ? t("plans.trial") : plan.endsAt === null ? t("plans.noEnd") : t("plans.until", { date: formatDate(plan.endsAt - 1, locale) });
+  const seat = plan.familySeat ?? null;
+  const validity = seat
+    ? seat.endsAt === null
+      ? t("plans.family.offeredByNoEnd", { owner: seat.owner })
+      : t("plans.family.offeredBy", { owner: seat.owner, date: formatDate(seat.endsAt - 1, locale) })
+    : !paid
+      ? t("plans.trial")
+      : plan.endsAt === null
+        ? t("plans.noEnd")
+        : t("plans.until", { date: formatDate(plan.endsAt - 1, locale) });
+  // The family line is the subscriber's: a person on a seat can't share it further. Missing from an older server: none.
+  const familySeats = seat ? 0 : (plan.offers.find((offer) => offer.id === current)?.familySeats ?? 0);
 
   return (
     <div className={styles.wrap} data-plan={current} data-plan-color={color()}>
@@ -37,7 +49,7 @@ export function PlanSettings() {
       )}
 
       <ul className={styles.perks} aria-label={t("plans.includes")}>
-        {planPerks(id, plan.limits, t, locale, has).map((perk) => (
+        {planPerks(id, plan.limits, t, locale, has, familySeats).map((perk) => (
           <li key={perk}>
             <Check size={14} /> {perk}
           </li>
@@ -54,6 +66,8 @@ export function PlanSettings() {
           ))}
         </ul>
       )}
+
+      <FamilySeats />
 
       {!plan.signedIn && <p className={styles.hint}>{t("plans.signInHint")}</p>}
 

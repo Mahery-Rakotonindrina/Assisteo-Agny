@@ -5,6 +5,7 @@ import { sendError } from "@/lib/server/http";
 import { getPlansConfig } from "@/lib/server/planConfig";
 import { collectPending, nextReminderAt, paidReminderUsers, planPushes, type DueRow, type PushDevice, type PushLocale } from "@/lib/server/reminderPush";
 import { reportError } from "@/lib/server/reportError";
+import { seatsForMembers } from "@/lib/server/familySeats";
 import { currentGrantsForEmails } from "@/lib/server/featureGrants";
 import { subscriptionRowsForEmails } from "@/lib/server/subscriptions";
 import { accountsEnabled, supabaseAdmin } from "@/lib/server/supabaseAdmin";
@@ -45,8 +46,11 @@ async function paidUsers(db: ReturnType<typeof supabaseAdmin>, userIds: string[]
   }
   const users = userIds.map((id) => ({ id, email: emails.get(id) ?? null }));
   const known = users.map((user) => user.email).filter((email): email is string => Boolean(email));
-  const [rows, config, grants] = await Promise.all([subscriptionRowsForEmails(known), getPlansConfig(), currentGrantsForEmails(known, now).catch(() => [])]);
-  return paidReminderUsers(users, rows, now, config, grants);
+  // Family seats (migration 0016; none before it): their subscribers' subscriptions are read too.
+  const seats = await seatsForMembers(known).catch(() => []);
+  const owners = [...new Set(seats.map((seat) => seat.ownerEmail))].filter((email) => !known.includes(email));
+  const [rows, config, grants] = await Promise.all([subscriptionRowsForEmails([...known, ...owners]), getPlansConfig(), currentGrantsForEmails(known, now).catch(() => [])]);
+  return paidReminderUsers(users, rows, now, config, grants, seats);
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

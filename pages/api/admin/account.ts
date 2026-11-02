@@ -19,6 +19,7 @@ import {
 } from "@/lib/plans";
 import { guardAdmin } from "@/lib/server/adminAuth";
 import { logAdminAction } from "@/lib/server/adminLog";
+import { memberSeat, seatsGivenBy } from "@/lib/server/familySeats";
 import { addGrant, getGrant, grantsForEmail, grantsReady, stopGrant } from "@/lib/server/featureGrants";
 import { sendError } from "@/lib/server/http";
 import { limitsFor, limitsWithCap } from "@/lib/server/plan";
@@ -42,6 +43,8 @@ export type AdminAccountCard = {
   quotas: Array<{ key: keyof PlanLimits; value: number; own: boolean; /** Deep analyses allowed with no count: the emergency cap applies. */ fallback?: boolean }>;
   /** Every offer made to it, ended ones included, the latest first. */
   grants: FeatureGrant[];
+  /** Its family seats: whose plan it shares (`seatOf`, an e-mail) and the people it added; null before migration 0016 (missing from an older server). */
+  family?: { seatOf: string | null; members: string[] } | null;
   /** False before migration 0011: own settings and offers can't be kept yet. */
   ready: { own: boolean; grants: boolean };
 };
@@ -129,7 +132,7 @@ async function planAndLimits(email: string, now = Date.now()) {
 
 async function card(email: string): Promise<AdminAccountCard> {
   const now = Date.now();
-  const [{ config, current, running }, grants, own, offers] = await Promise.all([planAndLimits(email, now), grantsForEmail(email), ownSettingsReady(), grantsReady()]);
+  const [{ config, current, running }, grants, own, offers, family] = await Promise.all([planAndLimits(email, now), grantsForEmail(email), ownSettingsReady(), grantsReady(), familyOf(email)]);
   const base = await limitsFor(current.plan, config, createdQuotas(config, current.custom, null));
   const ownQuotas = current.plan === "unlimited" ? null : normalizeQuotas(base, running?.quotas);
   const input = { plan: current.plan, custom: current.custom, email, config, subscription: running, grants, now };
@@ -149,6 +152,18 @@ async function card(email: string): Promise<AdminAccountCard> {
         : { key, value: ownQuotas?.[key] ?? base[key], own: ownQuotas?.[key] !== undefined },
     ),
     grants,
+    family,
     ready: { own, grants: offers },
   };
+}
+
+/** An account's family seats; null before migration 0016. */
+async function familyOf(email: string): Promise<AdminAccountCard["family"]> {
+  try {
+    const [seat, given] = await Promise.all([memberSeat(email), seatsGivenBy(email)]);
+    return { seatOf: seat?.ownerEmail ?? null, members: given.map((entry) => entry.memberEmail) };
+  } catch (error) {
+    if (error instanceof MigrationNeededError) return null;
+    throw error;
+  }
 }
