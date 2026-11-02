@@ -38,7 +38,11 @@ export type AdminAction =
   | "app_save"
   | "two_factor_on"
   | "two_factor_off"
-  | "two_factor_codes";
+  | "two_factor_codes"
+  /** A subscriber added or removed a person from their family seats ("Mon offre"), or a person left one. */
+  | "family_seat_add"
+  | "family_seat_remove"
+  | "family_seat_leave";
 
 export type AdminLogEntry = {
   at: number;

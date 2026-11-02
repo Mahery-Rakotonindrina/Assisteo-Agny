@@ -768,6 +768,10 @@ export type ApiErrorCode =
   | "migration_needed"
   /** A shared loan link that doesn't exist or was stopped (the same answer for both). */
   | "not_found"
+  /** Family seats: all taken, the person already holds one, or it is the subscriber's own e-mail. */
+  | "seats_full"
+  | "seat_taken"
+  | "seat_self"
   | "method_not_allowed";
 
 export type ApiErrorBody = {

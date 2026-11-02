@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MAX_FAMILY_SEATS } from "@/lib/familySeats";
 import { defaultYearPrice } from "@/lib/offers";
 import {
   customPlanColors,
@@ -27,6 +28,8 @@ const Offer = z.object({
   questionsPerDay: z.number().int().min(0).max(10_000),
   parcels: z.number().int().min(0).max(10_000),
   deepPerMonth: z.number().int().min(0).max(10_000),
+  // Optional: the Admin of an older APK doesn't send it (see `keepSeats`, `seatsOrDefault`).
+  familySeats: z.number().int().min(0).max(MAX_FAMILY_SEATS).optional(),
 });
 
 const Feature = z.enum(planFeatures);
@@ -90,11 +93,24 @@ function storedCustomPlans(stored: unknown): CustomPlan[] {
   for (const entry of stored) {
     // A feature removed from the app since is dropped, the plan kept.
     const features = Array.isArray(entry?.features) ? entry.features.filter((feature: unknown) => typeof feature === "string" && known.includes(feature)) : entry?.features;
-    const parsed = CustomPlanSchema.safeParse({ ...entry, features });
-    if (parsed.success && !plans.some((plan) => plan.id === parsed.data.id)) plans.push({ ...parsed.data, features: planFeatures.filter((feature) => parsed.data.features.includes(feature)) });
+    // Saved before the family seats existed: those of the sold plan it comes after.
+    const familySeats = entry?.familySeats ?? defaultPlansConfig.offers[entry?.after as (typeof soldPlans)[number]]?.familySeats ?? 0;
+    const parsed = CustomPlanSchema.safeParse({ ...entry, features, familySeats });
+    if (parsed.success && !plans.some((plan) => plan.id === parsed.data.id)) plans.push({ ...parsed.data, familySeats: parsed.data.familySeats ?? 0, features: planFeatures.filter((feature) => parsed.data.features.includes(feature)) });
   }
   return plans.slice(0, MAX_CUSTOM_PLANS);
 }
+
+/**
+ * Offers saved without their family seats (the Admin of an older APK): those
+ * saved before are kept (0 / 4 / 4 by default), rather than refused or reset.
+ */
+export function keepSeats(offers: z.infer<typeof PlansConfigSchema>["offers"], before: PlansConfig["offers"]): PlansConfig["offers"] {
+  return Object.fromEntries(soldPlans.map((plan) => [plan, { ...offers[plan], familySeats: offers[plan].familySeats ?? before[plan].familySeats }])) as PlansConfig["offers"];
+}
+
+/** A created plan sent without its family seats: those it had, else none. */
+export const seatsOrDefault = (sent: number | undefined, before?: Pick<CustomPlan, "familySeats"> | null) => sent ?? before?.familySeats ?? 0;
 
 const KEY = "config:plans";
 let memory: PlansConfig | null = null;

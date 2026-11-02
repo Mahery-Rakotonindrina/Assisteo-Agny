@@ -9,7 +9,7 @@
 // are public, and a real backup holds personal data.
 import { randomBytes, randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { applyMigrations, compareData, connect, decryptBackup, encryptBackup, exportData, RESTORE_KEYS, restoreData } from "./lib/backup.mjs";
+import { applyMigrations, compareData, connect, decryptBackup, encryptBackup, exportData, RESTORE_KEYS, restoreData, TABLES } from "./lib/backup.mjs";
 import { SUPABASE_STUBS } from "./lib/supabaseStubs.mjs";
 
 const [file] = process.argv.slice(2);
@@ -161,6 +161,11 @@ function sampleBackup() {
         { id: randomUUID(), email: "ben@example.com", feature: "garage", starts_at: at(3), ends_at: at(10), note: "Essai du garage", created_by: "owner", created_at: at(3) },
         { id: randomUUID(), email: "anna@example.com", feature: "pdfExport", starts_at: at(1), ends_at: at(2), note: null, created_by: "admin@example.com", created_at: at(1) },
       ],
+      // Migration 0016: Anna shares her Premium with two people.
+      family_seats: [
+        { id: randomUUID(), owner_id: anna, owner_email: "anna@example.com", owner_name: "Anna", member_email: "mere.rabe@example.com", created_at: at(4) },
+        { id: randomUUID(), owner_id: anna, owner_email: "anna@example.com", owner_name: null, member_email: "fils.rabe@example.com", created_at: at(5) },
+      ],
       _migrations: [],
     },
   };
@@ -210,6 +215,9 @@ try {
   const known = new Set((await client.query("select name from public._migrations")).rows.map((row) => row.name));
   const unknown = (data.tables._migrations ?? []).filter((row) => !known.has(row.name));
   if (unknown.length) problems.push(`_migrations: ${unknown.length} migration(s) of the backup are not in this code`);
+  for (const table of Object.keys(data.tables)) {
+    if (table !== "auth.users" && !TABLES.includes(table)) problems.push(`${table}: in the backup, but this code can't restore it (scripts/lib/backup.mjs)`);
+  }
 
   await client.query("begin");
   for (const user of data.tables["auth.users"] ?? []) {

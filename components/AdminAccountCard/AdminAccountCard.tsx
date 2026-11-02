@@ -179,6 +179,17 @@ function CardSheet({ token, email, onClose }: { token: string; email: string; on
               </span>
             </div>
             {(!card.ready.own || !card.ready.grants) && <p className={shared.adminWarning}>{t("admin.card.needsMigration")}</p>}
+            {/* Family seats (migration 0016): whose plan it shares, and the people it added. */}
+            {card.family?.seatOf && (
+              <p className={styles.none} data-testid="admin-card-seat-of">
+                {t("admin.card.seatOf", { email: card.family.seatOf })}
+              </p>
+            )}
+            {card.family && card.family.members.length > 0 && (
+              <p className={styles.none} data-testid="admin-card-seats">
+                {t("admin.card.seatsGiven", { list: card.family.members.join(", ") })}
+              </p>
+            )}
 
             <h3 className={shared.group}>{t("admin.card.features")}</h3>
             <ul className={styles.lines} aria-label={t("admin.card.features")}>

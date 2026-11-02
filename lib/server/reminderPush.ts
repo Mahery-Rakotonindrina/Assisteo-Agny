@@ -1,5 +1,6 @@
 import { AnalysisSchema, normalizeStoredAnalysis, type Analysis } from "@/lib/ai/schema";
-import { activePlan, activeSubscription, defaultFeatureSettings, effectiveFeatures, type CustomPlan, type FeatureDiff, type FeatureGrant, type FeatureSettings, type SubscriptionPlanId } from "@/lib/plans";
+import { seatLive, seatWins, shareableSeats } from "@/lib/familySeats";
+import { activePlan, activeSubscription, defaultFeatureSettings, defaultPlansConfig, effectiveFeatures, type CustomPlan, type FeatureDiff, type FeatureGrant, type FeatureSettings, type PlansConfig, type SubscriptionPlanId } from "@/lib/plans";
 import { nextOccurrence, parseRepeat } from "@/lib/reminderRepeat";
 
 // Decides which reminder pushes to send: pure, so it can be tested without
@@ -105,36 +106,56 @@ export function planPushes(rows: DueRow[], devices: PushDevice[], locales: Map<s
   return planned;
 }
 
-/** `features`: the subscription's own (migration 0011), absent before it. */
-export type SubscriptionRow = { email: string; plan: SubscriptionPlanId; starts_at: string; ends_at: string | null; features?: FeatureDiff | null };
+/** `features`: the subscription's own (migration 0011), absent before it. `payment_method`: "trial" gives no family seat. */
+export type SubscriptionRow = { email: string; plan: SubscriptionPlanId; starts_at: string; ends_at: string | null; payment_method?: string | null; features?: FeatureDiff | null };
+
+/** A family seat (migration 0016), with its subscriber's other seats passed alongside to rank it. */
+export type SeatRow = { id: string; ownerId: string; ownerEmail: string; memberEmail: string; createdAt: number };
 
 /**
  * The users who may use reminders by the Admin settings (Lite and up by default, the Premium trial
  * included) right now: only they get reminder pushes, and only their
  * recurring reminders move on. Subscriptions are kept by e-mail; a
- * subscription's own features and the features offered for a while count.
+ * subscription's own features and the features offered for a while count,
+ * and so does a family seat (`seats`: those of the users and every seat of
+ * their subscribers), as `resolvePlan` reckons it.
  */
 export function paidReminderUsers(
   users: Array<{ id: string; email: string | null }>,
   subscriptions: SubscriptionRow[],
   now: number,
-  config: FeatureSettings & { customPlans?: readonly CustomPlan[] } = defaultFeatureSettings,
+  config: FeatureSettings & { customPlans?: readonly CustomPlan[]; offers?: PlansConfig["offers"] } = defaultFeatureSettings,
   grants: ReadonlyArray<Pick<FeatureGrant, "email" | "feature" | "startsAt" | "endsAt">> = [],
+  seats: readonly SeatRow[] = [],
 ) {
   const byEmail = new Map<string, SubscriptionRow[]>();
   for (const row of subscriptions) {
     const email = row.email.toLowerCase();
     byEmail.set(email, [...(byEmail.get(email) ?? []), row]);
   }
+  const created = config.customPlans ?? [];
+  const access = (email: string) => {
+    const rows = (byEmail.get(email) ?? []).map((row) => ({ plan: row.plan, startsAt: row.starts_at, endsAt: row.ends_at, paymentMethod: row.payment_method ?? null, features: row.features ?? null }));
+    return { current: activePlan(rows, now, created), subscription: activeSubscription(rows, now, created) };
+  };
+  const offers = { offers: config.offers ?? defaultPlansConfig.offers, customPlans: config.customPlans };
   const paid = new Set<string>();
   for (const user of users) {
-    const rows = user.email ? (byEmail.get(user.email.toLowerCase()) ?? []) : [];
-    const own = rows.map((row) => ({ plan: row.plan, startsAt: row.starts_at, endsAt: row.ends_at, features: row.features ?? null }));
-    const created = config.customPlans ?? [];
-    const { plan, custom } = activePlan(own, now, created);
-    const email = user.email?.toLowerCase();
+    const email = user.email?.toLowerCase() ?? null;
+    let { current, subscription } = access(email ?? "");
+    // A family seat: the subscriber's plan, while it runs and gives this seat, when better than the user's own.
+    const seat = email ? seats.find((entry) => entry.memberEmail.toLowerCase() === email) : undefined;
+    if (seat) {
+      const owner = access(seat.ownerEmail.toLowerCase());
+      const { seats: count } = shareableSeats(offers, owner.current, owner.subscription?.paymentMethod);
+      const live = seatLive(seats.filter((entry) => entry.ownerId === seat.ownerId), seat.id, count);
+      if (live && seatWins(current, owner.current, created)) {
+        current = owner.current;
+        subscription = null;
+      }
+    }
     const offered = email ? grants.filter((grant) => grant.email.toLowerCase() === email) : [];
-    if (effectiveFeatures({ plan, custom, email: user.email, config, subscription: activeSubscription(own, now, created), grants: offered, now }).has("reminders")) paid.add(user.id);
+    if (effectiveFeatures({ plan: current.plan, custom: current.custom, email: user.email, config, subscription, grants: offered, now }).has("reminders")) paid.add(user.id);
   }
   return paid;
 }

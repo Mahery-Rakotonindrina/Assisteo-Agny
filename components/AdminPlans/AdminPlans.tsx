@@ -12,7 +12,7 @@ import { httpClient } from "@/services/httpClient";
 import styles from "./AdminPlans.module.scss";
 import { CustomPlans } from "./CustomPlans";
 
-const offerFields: Array<keyof PlanOffer> = ["priceMga", "yearPriceMga", "scans", "questionsPerDay", "parcels", "deepPerMonth"];
+const offerFields: Array<keyof PlanOffer> = ["priceMga", "yearPriceMga", "scans", "questionsPerDay", "parcels", "deepPerMonth", "familySeats"];
 
 /** Prices and limits of each plan, and how to pay: shown on the app's offers page. */
 export function AdminPlans({ token, onSaved }: { token: string; onSaved?: () => void }) {
@@ -87,6 +87,7 @@ export function AdminPlans({ token, onSaved }: { token: string; onSaved?: () => 
                   <input inputMode="numeric" value={String(draft.offers[plan][field])} onChange={(event) => setOffer(plan, field, event.target.value)} />
                   {field === "yearPriceMga" && <small>{t("admin.plans.monthsFree", { count: monthsFree(draft.offers[plan]) })}</small>}
                   {field === "deepPerMonth" && noDeepLimit.includes(plan) && <small className={styles.error}>{t("admin.plans.deepNeedsLimit")}</small>}
+                  {field === "familySeats" && <small>{t("admin.plans.familySeatsHint")}</small>}
                 </label>
               ))}
             </div>

@@ -1,0 +1,1 @@
+export { FamilySeats } from "./FamilySeats";

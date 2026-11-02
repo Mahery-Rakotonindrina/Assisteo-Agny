@@ -1,7 +1,7 @@
 // The Row Level Security of the shared budget (migration 0009_households.sql)
 // of the loans (0010_loans.sql), of the features offered for a while (0011),
 // of the loan links and household loans (0012), of the plants (0013), of the home inventory (0014),
-// with the plans created from the Admin a subscription may hold (0015),
+// with the plans created from the Admin a subscription may hold (0015), of the family seats (0016),
 // tested as Supabase runs it: each query as the "authenticated" role with a
 // user id, or as the server ("service_role"). `client.query(text, params)`
 // must return { rows }. Returns the problems found (empty: all good).
@@ -383,5 +383,29 @@ export async function runRlsChecks(client) {
   });
   await refused("a subscription's plan is a short lowercase id", () => server("insert into public.subscriptions (email, plan) values ('x@example.com', 'Famille !')"), /check constraint/);
   await hidden("an account doesn't read the subscriptions", () => tryUser(anna, "select 1 from public.subscriptions"));
+  // ---- Family seats (migration 0016): read by the subscriber and the person, written by the server ----
+  const seatSql = "insert into public.family_seats (owner_id, owner_email, member_email) values ($1, 'anna.rabe@example.com', $2)";
+  await server(seatSql, [anna, "ben@example.com"]);
+  /** As a signed-in account whose session carries its e-mail (auth.jwt()). */
+  const withEmail = (who, email, sql) =>
+    as("authenticated", who, async () => {
+      await client.query("select set_config('request.jwt.claims', $1, true)", [JSON.stringify({ sub: who, email, role: "authenticated" })]);
+      return (await client.query(sql)).rows;
+    }, { keep: false });
+  await check("the subscriber reads their seats", async () => ((await count(anna, "select 1 from public.family_seats")) === 1 ? null : "not visible"));
+  await check("the invited person reads their own seat", async () => ((await withEmail(ben, "ben@example.com", "select 1 from public.family_seats")).length === 1 ? null : "not visible"));
+  await check("another account reads no seat", async () => ((await withEmail(carla, "carla@example.com", "select 1 from public.family_seats")).length ? "visible" : null));
+  await hidden("a visitor reads no seat", () => tryVisitor("select 1 from public.family_seats"));
+  await refused("an account can't give itself a seat", () => tryUser(carla, seatSql, [anna, "carla@example.com"]), /permission denied|row-level security/);
+  await refused("the subscriber can't write a seat directly (the server checks the plan)", () => tryUser(anna, seatSql, [anna, "dora@example.com"]), /permission denied|row-level security/);
+  await check("the subscriber can't delete a seat directly", async () => {
+    try {
+      return (await tryUser(anna, "delete from public.family_seats returning id")).length ? "deleted" : null;
+    } catch (error) {
+      return /permission denied/.test(error.message) ? null : error.message;
+    }
+  });
+  await refused("one seat per person", () => server(seatSql, [anna, "ben@example.com"]), /duplicate key|unique/);
+  await refused("no seat for oneself", () => server(seatSql, [anna, "anna.rabe@example.com"]), /check constraint/);
   return problems;
 }

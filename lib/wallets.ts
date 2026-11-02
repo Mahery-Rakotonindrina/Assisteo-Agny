@@ -44,27 +44,39 @@ export const walletColors: Record<WalletType, string> = {
   other: "#8a8f98",
 };
 
-/** Every pocket (archived ones included), the oldest first. */
-export const walletsOf = (records: ExpenseRecord[]) => byKind(records, "wallet").sort((a, b) => a.createdAt - b.createdAt || a.id.localeCompare(b.id));
+/** Pockets in the order the user chose; those never moved after, the oldest first. */
+const placeOf = (wallet: Wallet) => (wallet.order !== undefined && Number.isFinite(wallet.order) ? wallet.order : Number.MAX_SAFE_INTEGER);
+export const byPlace = (a: Wallet, b: Wallet) => placeOf(a) - placeOf(b) || a.createdAt - b.createdAt || a.id.localeCompare(b.id);
+
+/** Every pocket (archived ones included), in the user's order. */
+export const walletsOf = (records: ExpenseRecord[]) => byKind(records, "wallet").sort(byPlace);
 
 export const activeWallets = (wallets: Wallet[]) => wallets.filter((wallet) => !wallet.archived);
 
-/** The pocket used when nothing says otherwise: the one marked, else cash, else the first. */
+/**
+ * The pockets shown, the oldest first, whatever their order: the order is
+ * for display only. A line without a pocket goes by type and creation, so
+ * "Monter" never moves it, and an older app (which ignores `order`) counts it
+ * in the same pocket.
+ */
+const byCreation = (wallets: Wallet[]) => activeWallets(wallets).sort((a, b) => a.createdAt - b.createdAt || a.id.localeCompare(b.id));
+
+/** The pocket used when nothing says otherwise: the one marked, else cash, else the first created. */
 export function primaryWallet(wallets: Wallet[]) {
-  const active = activeWallets(wallets);
+  const active = byCreation(wallets);
   return active.filter((wallet) => wallet.primary).sort((a, b) => b.updatedAt - a.updatedAt)[0] ?? active.find((wallet) => wallet.type === "cash") ?? active[0];
 }
 
-/** A pocket of that type: the default one if it is, else the first. */
+/** A pocket of that type: the default one if it is, else the first created. */
 export function ofType(wallets: Wallet[], type: WalletType) {
-  const matching = activeWallets(wallets).filter((wallet) => wallet.type === type);
+  const matching = byCreation(wallets).filter((wallet) => wallet.type === type);
   const primary = primaryWallet(wallets);
   return matching.find((wallet) => wallet.id === primary?.id) ?? matching[0];
 }
 
-/** The Mobile Money pocket: the default one if it is, else the first; with `onlyOne`, none when there are several. */
+/** The Mobile Money pocket: the default one if it is, else the first created; with `onlyOne`, none when there are several. */
 function mobileWallet(wallets: Wallet[], onlyOne = false) {
-  const matching = activeWallets(wallets).filter((wallet) => mobileMoneyTypes.includes(wallet.type));
+  const matching = byCreation(wallets).filter((wallet) => mobileMoneyTypes.includes(wallet.type));
   if (onlyOne) return matching.length === 1 ? matching[0] : undefined;
   const primary = primaryWallet(wallets);
   return matching.find((wallet) => wallet.id === primary?.id) ?? matching[0];
@@ -237,6 +249,10 @@ export type Movement = {
   pending?: boolean;
   /** A loan's move: which one, and whose (the line opens their page in "Prêts"). */
   loan?: { type: LoanMoveType; personKey: string; direction: LoanDirection };
+  /** A typed-in expense or income: the record the line opens. */
+  recordId?: string;
+  /** A move read from a scan: its result. */
+  href?: string;
 };
 
 export type WalletBook = {
@@ -299,17 +315,26 @@ export function walletBook(records: ExpenseRecord[], sources: SourceItem[], now:
         label: item.label,
         category: item.category,
         origin: item.origin,
+        ...(item.record && { recordId: item.record.id }),
       });
     }
     for (const item of monthIncomes(records, month, sources)) {
       if (item.excluded) continue;
-      add(lineWallet(context, item), item.at, item.record?.createdAt ?? item.scannedAt, { key: item.key, type: "income", amountMga: item.amountMga, label: item.label, origin: item.origin });
+      add(lineWallet(context, item), item.at, item.record?.createdAt ?? item.scannedAt, {
+        key: item.key,
+        type: "income",
+        amountMga: item.amountMga,
+        label: item.label,
+        origin: item.origin,
+        ...(item.record && { recordId: item.record.id }),
+      });
     }
   }
   for (const move of moves) {
     const pending = isPending(move);
-    add(move.from, move.at, move.enteredAt, { key: move.key, type: "move_out", amountMga: -move.amountMga, label: move.label, pending });
-    add(move.to, move.at, move.enteredAt, { key: move.key, type: "move_in", amountMga: move.amountMga, label: move.label, pending });
+    const href = move.href ? { href: move.href } : {};
+    add(move.from, move.at, move.enteredAt, { key: move.key, type: "move_out", amountMga: -move.amountMga, label: move.label, pending, ...href });
+    add(move.to, move.at, move.enteredAt, { key: move.key, type: "move_in", amountMga: move.amountMga, label: move.label, pending, ...href });
   }
   for (const correction of byKind(records, "correction"))
     add(correction.wallet, correction.at, correction.createdAt, { key: `correction:${correction.id}`, type: "correction", amountMga: correction.amountMga });
@@ -338,4 +363,62 @@ export function lastUsedWallet(records: ExpenseRecord[], context: WalletContext)
     if ((record.kind === "expense" || record.kind === "income") && !record.deletedAt && record.wallet && context.byId.get(record.wallet) && !context.byId.get(record.wallet)!.archived)
       if (!latest || record.createdAt > latest.at) latest = { at: record.createdAt, wallet: record.wallet };
   return latest?.wallet;
+}
+
+// ---- One pocket's sheet ---------------------------------------------------------------
+
+/** A movement with what the pocket held once it was counted ("Solde"). */
+export type StatementLine = Movement & { balanceMga: number };
+
+export type StatementMonth = { month: string; lines: StatementLine[] };
+
+/**
+ * A pocket's statement, like a bank's: every movement counted on it, the
+ * latest first, grouped by month, with the balance after each line (the
+ * first one's is what it holds now, the last month ends on its starting
+ * balance). Changing the starting balance or day changes every line.
+ */
+export function pocketStatement(book: WalletBook, walletId: string): StatementMonth[] {
+  let balance = book.balances.get(walletId) ?? 0;
+  const months: StatementMonth[] = [];
+  for (const movement of book.movements.get(walletId) ?? []) {
+    const month = monthKey(movement.at);
+    const line = { ...movement, balanceMga: balance };
+    balance -= movement.amountMga;
+    if (months.at(-1)?.month === month) months.at(-1)!.lines.push(line);
+    else months.push({ month, lines: [line] });
+  }
+  return months;
+}
+
+/**
+ * Whether anything uses the pocket: a movement counted on it, or any line
+ * that names it (even dated before its start, or picked for a bill, a
+ * savings deposit, a loan). Such a pocket is archived, never removed: its
+ * lines would silently move to another one.
+ */
+export function walletInUse(records: ExpenseRecord[], loans: Loan[], book: WalletBook, walletId: string) {
+  if ((book.movements.get(walletId)?.length ?? 0) > 0) return true;
+  for (const record of records) {
+    if (record.deletedAt) continue;
+    if ((record.kind === "expense" || record.kind === "income") && record.wallet === walletId) return true;
+    if ((record.kind === "correction" || record.kind === "walletPick") && record.wallet === walletId) return true;
+    if (record.kind === "transfer" && (record.from === walletId || record.to === walletId)) return true;
+    if ((record.kind === "savingsGoal" || record.kind === "tontine") && (record.deposits ?? []).some((deposit) => deposit.wallet === walletId)) return true;
+    if (record.kind === "tontine" && record.received?.wallet === walletId) return true;
+  }
+  return loans.some((loan) => !loan.deletedAt && (loan.wallet === walletId || (loan.repayments ?? []).some((repayment) => repayment.wallet === walletId)));
+}
+
+/**
+ * "Monter" (-1) or "Descendre" (+1) among the pockets shown (archived ones
+ * apart): the new order of their ids, or none when it can't move.
+ */
+export function movedOrder(wallets: Wallet[], walletId: string, step: -1 | 1): string[] | null {
+  const ids = activeWallets([...wallets].sort(byPlace)).map((wallet) => wallet.id);
+  const from = ids.indexOf(walletId);
+  const to = from + step;
+  if (from < 0 || to < 0 || to >= ids.length) return null;
+  [ids[from], ids[to]] = [ids[to], ids[from]];
+  return ids;
 }

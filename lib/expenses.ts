@@ -184,6 +184,8 @@ export type Wallet = Base & {
   archived?: boolean;
   /** The pocket used when nothing says otherwise. */
   primary?: boolean;
+  /** Its place in the lists ("Monter", "Descendre"); none: after the others, the oldest first. */
+  order?: number;
 };
 
 /** Money moved by hand from one pocket to another: neither spent nor earned. Its fees are an expense, from the first pocket. */
