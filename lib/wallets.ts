@@ -422,3 +422,31 @@ export function movedOrder(wallets: Wallet[], walletId: string, step: -1 | 1): s
   [ids[from], ids[to]] = [ids[to], ids[from]];
   return ids;
 }
+
+/** A correction's line: the record to open or remove (none for any other line). */
+export const correctionId = (movement: Pick<Movement, "type" | "key">) =>
+  movement.type === "correction" && movement.key.startsWith("correction:") ? movement.key.slice("correction:".length) : undefined;
+
+/** Under "Il te reste": the first pockets shown (in their order), and how many more ("+ 2 autres"). */
+export function pocketPreview<T>(wallets: T[], max = 4): { shown: T[]; more: number } {
+  if (wallets.length <= max) return { shown: wallets, more: 0 };
+  return { shown: wallets.slice(0, max), more: wallets.length - max };
+}
+
+/** Where a page lives, for a link (Next's `href`). */
+export type PageTarget = string | { pathname: string; query: Record<string, string> };
+
+/**
+ * What a statement line opens, as a new page (back returns to the pocket):
+ * a loan's person in "Prêts", a typed-in expense in its form, any other
+ * expense or income in its month and tab, a scanned move in its result.
+ * Nothing for a move between pockets, a correction or the savings.
+ */
+export function movementTarget(movement: Movement): PageTarget | null {
+  if (movement.loan)
+    return { pathname: "/loans", query: { ...(movement.loan.direction === "borrowed" && { dir: "borrowed" }), person: movement.loan.personKey } };
+  if (movement.type === "expense" && movement.recordId) return { pathname: "/expenses", query: { open: movement.recordId } };
+  if (movement.type === "expense" || movement.type === "income")
+    return { pathname: "/expenses", query: { month: monthKey(movement.at), tab: movement.type === "income" ? "income" : "month", focus: movement.key } };
+  return movement.href ?? null;
+}
