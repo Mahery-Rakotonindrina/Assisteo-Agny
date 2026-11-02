@@ -9,7 +9,7 @@
 // are public, and a real backup holds personal data.
 import { randomBytes, randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { applyMigrations, compareData, connect, decryptBackup, encryptBackup, exportData, RESTORE_KEYS, restoreData } from "./lib/backup.mjs";
+import { applyMigrations, compareData, connect, decryptBackup, encryptBackup, exportData, RESTORE_KEYS, restoreData, TABLES } from "./lib/backup.mjs";
 import { SUPABASE_STUBS } from "./lib/supabaseStubs.mjs";
 
 const [file] = process.argv.slice(2);
@@ -210,6 +210,9 @@ try {
   const known = new Set((await client.query("select name from public._migrations")).rows.map((row) => row.name));
   const unknown = (data.tables._migrations ?? []).filter((row) => !known.has(row.name));
   if (unknown.length) problems.push(`_migrations: ${unknown.length} migration(s) of the backup are not in this code`);
+  for (const table of Object.keys(data.tables)) {
+    if (table !== "auth.users" && !TABLES.includes(table)) problems.push(`${table}: in the backup, but this code can't restore it (scripts/lib/backup.mjs)`);
+  }
 
   await client.query("begin");
   for (const user of data.tables["auth.users"] ?? []) {
