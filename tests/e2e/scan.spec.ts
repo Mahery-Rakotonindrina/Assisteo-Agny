@@ -10,8 +10,17 @@ async function pretendPlan(page: import("@playwright/test").Page, plan: string) 
   });
 }
 
+/**
+ * The demo receipts are dated October 2026: the page starts on a day of that
+ * month (time then flows), so they land in "this month" whatever the real date.
+ */
+async function inReceiptMonth(page: import("@playwright/test").Page) {
+  await page.clock.install({ time: new Date("2026-10-25T09:00:00+03:00") });
+}
+
 /** Any photo comes back as the demo MVola receipt (money paid, or received). */
 async function serveReceipt(page: import("@playwright/test").Page, direction: "out" | "in" | "own" = "out") {
+  await inReceiptMonth(page);
   await page.route("**/api/analyze", async (route) => {
     const response = await route.fetch();
     await route.fulfill({ response, json: { ...(await response.json()), analysis: mockReceipt("fr", direction) } });
@@ -146,6 +155,7 @@ test.describe("scan", () => {
   });
 
   async function scanTwice(page: import("@playwright/test").Page, direction: "out" | "in", dates: [string, string] | null) {
+    await inReceiptMonth(page);
     let n = 0;
     await page.route("**/api/analyze", async (route) => {
       const response = await route.fetch();
