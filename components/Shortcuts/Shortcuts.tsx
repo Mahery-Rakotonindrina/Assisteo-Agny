@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpen, Car, FolderLock, HandCoins, House, Receipt, Sprout, Wallet } from "lucide-react";
+import { BookOpen, Car, FolderLock, HandCoins, House, Receipt, Sprout, Wallet, WalletCards } from "lucide-react";
 import { PlanBadge } from "@/components/PlanBadge";
 import { useKeptExpenses } from "@/hooks/useExpenses";
 import { useHomeItems } from "@/hooks/useHomeItems";
@@ -122,6 +122,15 @@ export function Shortcuts({ entries }: { entries: HistoryEntry[] }) {
           <span>
             <strong>{t("expenses.title")}</strong>
             <small>{t("shortcuts.expensesHint")}</small>
+          </span>
+        </Link>
+      )}
+      {has("expenses") && (
+        <Link href="/pockets" className={styles.shortcut} style={{ "--tone": "var(--cat-food)" } as React.CSSProperties}>
+          <WalletCards size={18} />
+          <span>
+            <strong>{t("expenses.pockets.title")}</strong>
+            <small>{t("shortcuts.pocketsHint")}</small>
           </span>
         </Link>
       )}

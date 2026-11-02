@@ -23,7 +23,8 @@
     "loans": "Prêts",
     "expenses": "Dépenses",
     "inventory": "Maison",
-    "plants": "Plantes"
+    "plants": "Plantes",
+    "pockets": "Poches"
   },
   "scan": {
     "greeting": {
@@ -1739,7 +1740,8 @@
     "loansHint": "Qui te doit, à qui tu dois",
     "expensesHint": "Budget du mois, ce qu’il reste",
     "inventoryHint": "Objets, garanties, factures",
-    "plantsHint": "Arrosage et rappels"
+    "plantsHint": "Arrosage et rappels",
+    "pocketsHint": "Espèces, MVola, banque…"
   },
   "food": {
     "title": "Journal alimentaire",
@@ -3145,17 +3147,39 @@
       "startDay": "Date du solde de départ",
       "startHint": "Le solde de départ, c’est ce que la poche avait ce jour-là. Le changer recalcule tout le relevé : ce n’est pas une correction.",
       "edited": "Poche modifiée",
-      "transferFrom": "Virement depuis cette poche",
-      "transferTo": "Virement vers cette poche",
-      "moveUp": "Monter",
-      "moveDown": "Descendre",
       "orderHint": "L’ordre de tes poches est le même partout : « Payé avec », l’export et l’accueil.",
       "remove": "Supprimer",
       "removeAsk": "Supprimer {name} pour de bon ? Elle n’a aucun mouvement.",
       "removeConfirm": "Oui, supprimer",
       "removed": "Poche supprimée",
       "inUse": "Tu ne peux pas la supprimer : des mouvements l’utilisent. Archive-la plutôt : elle sera cachée, et ses mouvements gardés.",
-      "typeHint": "Changer le type peut ramener ici des lignes qui n’avaient pas de poche (payées par carte ou Mobile Money, par exemple)."
+      "typeHint": "Changer le type peut ramener ici des lignes qui n’avaient pas de poche (payées par carte ou Mobile Money, par exemple).",
+      "allMoney": "Tout ton argent",
+      "subtitle": "Où est ton argent : espèces, Mobile Money, banque… L’app compte pour toi.",
+      "toExpenses": "Voir mes dépenses",
+      "more": "+ {count} autres",
+      "moreOne": "+ {count} autre",
+      "reorder": "Réordonner",
+      "reorderDone": "Terminé",
+      "moveUpNamed": "Monter {name}",
+      "moveDownNamed": "Descendre {name}",
+      "howTitle": "Comment ça marche ?",
+      "how1": "L’app compte toute seule : chaque dépense sort de la poche avec laquelle tu as payé, chaque revenu entre dans la sienne.",
+      "how2": "Un virement déplace de l’argent d’une poche à l’autre : ce n’est ni une dépense ni un revenu.",
+      "how3": "Si le solde n’est pas le bon, ouvre la poche et touche « Corriger le solde ».",
+      "transferShort": "Virement",
+      "swap": "Inverser",
+      "moreShort": "Plus",
+      "moreActions": "Plus d’actions",
+      "editHint": "Nom, type, solde de départ",
+      "makeDefaultHint": "Une dépense sans poche y sera comptée.",
+      "archivedOne": "archivée",
+      "unavailable": "Tes poches font partie de « Mes dépenses », qui n’est pas dans ton offre.",
+      "correctionWhat": "Ce n’est ni une dépense ni un revenu : ça remet juste le solde de la poche d’accord avec la réalité.",
+      "correctionRemove": "Supprimer cette correction",
+      "correctionAsk": "Supprimer cette correction ? Le solde reviendra à ce qu’il était avant.",
+      "correctionRemoved": "Correction supprimée",
+      "forgotHint": "Tu as oublié une dépense ou un revenu ? Ajoute-le plutôt : le solde se remettra juste tout seul."
     },
     "forecast": {
       "left": "À ce rythme, il te restera environ {amount} le {day}.",

@@ -5,10 +5,10 @@ import { AlertTriangle, CalendarSync, ChevronLeft, ChevronRight, History, PiggyB
 import { BudgetPanel, HistoryPanel, HouseholdPanel, IncomePanel, MonthPanel, MonthReview, RecurringPanel } from "@/components/Expenses";
 import { Activity } from "@/components/Expenses/Activity";
 import styles from "@/components/Expenses/Expenses.module.scss";
-import { Pockets } from "@/components/Expenses/Pockets";
 import { Savings } from "@/components/Expenses/Savings";
 import { ExpenseSearch } from "@/components/Expenses/Search";
 import type { PocketChoice } from "@/components/Expenses/WalletChips";
+import { PocketsSummary } from "@/components/Pockets";
 import { SegmentedControl } from "@/components/SegmentedControl";
 import { Seo } from "@/components/Seo";
 import { useDismissed } from "@/hooks/useDismissed";
@@ -16,11 +16,11 @@ import { useExpenseLabels } from "@/hooks/useExpenseLabels";
 import { useExpenses } from "@/hooks/useExpenses";
 import { useBudgetSources, useExpenseSources } from "@/hooks/useExpenseSources";
 import { useHousehold } from "@/hooks/useHousehold";
-import { useLoans } from "@/hooks/useLoans";
 import { useNow } from "@/hooks/useNow";
 import { useParcels } from "@/hooks/useParcels";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useWalletBook } from "@/hooks/useWalletBook";
 import { overallCap } from "@/lib/expenseExport";
 import {
   barPercent,
@@ -45,8 +45,7 @@ import {
 import type { SearchHit } from "@/lib/expenseSearch";
 import { formatAriary, formatMonthYear } from "@/lib/format";
 import { activityMonth, excludedKeys, separatesActivity } from "@/lib/resale";
-import type { Loan } from "@/lib/loans";
-import { activeWallets, lastUsedWallet, walletBook, type Movement, type WalletBook } from "@/lib/wallets";
+import { activeWallets, lastUsedWallet, type WalletBook } from "@/lib/wallets";
 import { rise, stagger } from "@/lib/motion";
 
 const tabs = ["month", "income", "recurring", "history", "budget"] as const;
@@ -73,7 +72,7 @@ export default function ExpensesPage() {
   return (
     <>
       <Seo title={`${allowed ? t("expenses.title") : t("expenses.household.title")} · ${t("meta.title")}`} noindex />
-      {!known ? null : allowed ? <Expenses canRemind={has("reminders")} reseller={has("reseller")} withLoans={has("loans")} joinCode={joinCode} /> : <HouseholdOnly joinCode={joinCode} />}
+      {!known ? null : allowed ? <Expenses canRemind={has("reminders")} reseller={has("reseller")} joinCode={joinCode} /> : <HouseholdOnly joinCode={joinCode} />}
     </>
   );
 }
@@ -125,7 +124,7 @@ function MonthPicker({ month, onPick }: { month: string; onPick: (month: string)
   );
 }
 
-function Expenses({ canRemind, reseller, withLoans, joinCode }: { canRemind: boolean; reseller: boolean; withLoans: boolean; joinCode?: string }) {
+function Expenses({ canRemind, reseller, joinCode }: { canRemind: boolean; reseller: boolean; joinCode?: string }) {
   const { t } = useTranslation();
   const now = useNow(60_000);
   const { records } = useExpenses();
@@ -142,6 +141,8 @@ function Expenses({ canRemind, reseller, withLoans, joinCode }: { canRemind: boo
   const askedTab = isTab(router.query.tab) ? router.query.tab : null;
   // "?add=expense" (the evening reminder): the add form, open on the current month.
   const adding = !opened && router.query.add === "expense";
+  // "&wallet=<id>": paid with that pocket (from "Corriger le solde").
+  const addingWallet = adding && typeof router.query.wallet === "string" ? router.query.wallet : undefined;
   const [chosenFocus, setFocus] = useState<string | null>(null);
   const focus = chosenFocus ?? (typeof router.query.focus === "string" ? router.query.focus : null);
   const [picked, setPicked] = useState<string | null>(null);
@@ -184,10 +185,8 @@ function Expenses({ canRemind, reseller, withLoans, joinCode }: { canRemind: boo
       budget: budgetLines(budget, totals),
     };
   }, [records, sources, month]);
-  // Where the money really is: the pockets, always personal (never the household's).
-  // With "Prêts" too: lending and repayments move the pockets (lib/loanLink.ts).
-  const { loans } = useLoans();
-  const book = useMemo(() => walletBook(records, allSources, now, withLoans ? loans : []), [records, allSources, now, withLoans, loans]);
+  // Where the money really is: the pockets, always personal (never the household's), the same as in "Mes poches".
+  const { book } = useWalletBook(records, allSources, now);
   const pockets = useMemo<PocketChoice>(
     () => ({ wallets: activeWallets(book.context.wallets), lastUsed: lastUsedWallet(records, book.context), primary: book.context.primary?.id }),
     [book, records],
@@ -210,18 +209,6 @@ function Expenses({ canRemind, reseller, withLoans, joinCode }: { canRemind: boo
     setPicked(key);
     setTab(hit.flow === "income" ? "income" : "month");
     setFocus(hit.key);
-  };
-  // A pocket's statement line: a typed-in expense opens in its form, any other line is shown in its month and tab (like a search result).
-  const openMovement = (movement: Movement) => {
-    setView("personal");
-    if (movement.type === "expense" && movement.recordId) {
-      void router.replace({ pathname: router.pathname, query: { open: movement.recordId } }, undefined, { shallow: true });
-      return;
-    }
-    closeOpened();
-    setPicked(monthKey(movement.at));
-    setTab(movement.type === "income" ? "income" : "month");
-    setFocus(movement.key);
   };
   const forecast = useMemo(() => monthForecast(figures.items, figures.incomes, month, now), [figures, month, now]);
 
@@ -274,8 +261,6 @@ function Expenses({ canRemind, reseller, withLoans, joinCode }: { canRemind: boo
               canRemind={canRemind}
               reseller={reseller}
               sources={allSources}
-              loans={loans}
-              onOpenMovement={openMovement}
             />
           </motion.div>
 
@@ -308,6 +293,7 @@ function Expenses({ canRemind, reseller, withLoans, joinCode }: { canRemind: boo
                   month={month}
                   initialEditing={opened}
                   adding={adding}
+                  addingWallet={addingWallet}
                   onEdited={closeOpened}
                   records={records}
                   items={figures.items}
@@ -352,13 +338,10 @@ type CardProps = {
   reseller: boolean;
   /** Every line the app knows (the activity's purchases and sales among them). */
   sources: SourceItem[];
-  /** Every loan: a pocket one of them names is never removed. */
-  loans: Loan[];
-  onOpenMovement: (movement: Movement) => void;
 };
 
 /** "Il te reste…": the month at a glance, above every tab, with the end-of-month forecast, the budget, its warnings, what the pockets hold and what is set aside. */
-function MonthCard({ month, balance, budget, records, book, now, forecast, pockets, canRemind, reseller, sources, loans, onOpenMovement }: CardProps) {
+function MonthCard({ month, balance, budget, records, book, now, forecast, pockets, canRemind, reseller, sources }: CardProps) {
   const { t, locale } = useTranslation();
   const { categoryName } = useExpenseLabels(records);
   const money = (value: number) => formatAriary(value, locale);
@@ -404,7 +387,7 @@ function MonthCard({ month, balance, budget, records, book, now, forecast, pocke
           </span>
         </p>
       )}
-      <Pockets book={book} records={records} loans={loans} now={now} onOpen={onOpenMovement} />
+      <PocketsSummary book={book} now={now} />
       <Savings records={records} book={book} pockets={pockets} canRemind={canRemind} now={now} />
       {reseller && <Activity month={month} records={records} sources={sources} book={book} pockets={pockets} />}
     </section>

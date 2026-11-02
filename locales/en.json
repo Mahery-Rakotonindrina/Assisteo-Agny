@@ -23,7 +23,8 @@
     "loans": "Loans",
     "expenses": "Expenses",
     "inventory": "Home",
-    "plants": "Plants"
+    "plants": "Plants",
+    "pockets": "Pockets"
   },
   "scan": {
     "greeting": {
@@ -1739,7 +1740,8 @@
     "loansHint": "Who owes you, whom you owe",
     "expensesHint": "Monthly budget, what is left",
     "inventoryHint": "Items, warranties, invoices",
-    "plantsHint": "Watering and reminders"
+    "plantsHint": "Watering and reminders",
+    "pocketsHint": "Cash, mobile money, bank…"
   },
   "food": {
     "title": "Food journal",
@@ -3145,17 +3147,39 @@
       "startDay": "Date of the starting balance",
       "startHint": "The starting balance is what the pocket held on that day. Changing it works the whole statement out again: it isn’t a correction.",
       "edited": "Pocket changed",
-      "transferFrom": "Move money out of this pocket",
-      "transferTo": "Move money into this pocket",
-      "moveUp": "Move up",
-      "moveDown": "Move down",
       "orderHint": "Your pockets are in this order everywhere: “Paid with”, the export and the home screen.",
       "remove": "Delete",
       "removeAsk": "Delete {name} for good? Nothing has moved in it.",
       "removeConfirm": "Yes, delete",
       "removed": "Pocket deleted",
       "inUse": "You can’t delete it: some movements use it. Archive it instead: it will be hidden, and its movements kept.",
-      "typeHint": "Changing the type can bring here lines that had no pocket (paid by card or Mobile Money, for example)."
+      "typeHint": "Changing the type can bring here lines that had no pocket (paid by card or Mobile Money, for example).",
+      "allMoney": "All your money",
+      "subtitle": "Where your money is: cash, Mobile Money, the bank… The app counts for you.",
+      "toExpenses": "See my expenses",
+      "more": "+ {count} more",
+      "moreOne": "+ {count} more",
+      "reorder": "Reorder",
+      "reorderDone": "Done",
+      "moveUpNamed": "Move {name} up",
+      "moveDownNamed": "Move {name} down",
+      "howTitle": "How does it work?",
+      "how1": "The app counts by itself: each expense leaves the pocket you paid with, each income goes into its own.",
+      "how2": "A transfer moves money from one pocket to another: it is neither an expense nor an income.",
+      "how3": "If a balance is wrong, open the pocket and tap “Correct the balance”.",
+      "transferShort": "Transfer",
+      "swap": "Swap",
+      "moreShort": "More",
+      "moreActions": "More actions",
+      "editHint": "Name, type, starting balance",
+      "makeDefaultHint": "An expense without a pocket will count here.",
+      "archivedOne": "archived",
+      "unavailable": "Your pockets are part of “My expenses”, which is not in your plan.",
+      "correctionWhat": "It is neither an expense nor an income: it just brings the pocket’s balance in line with reality.",
+      "correctionRemove": "Delete this correction",
+      "correctionAsk": "Delete this correction? The balance will go back to what it was before.",
+      "correctionRemoved": "Correction deleted",
+      "forgotHint": "Did you forget an expense or an income? Add it instead: the balance will put itself right."
     },
     "forecast": {
       "left": "At this pace, you’ll have about {amount} left at the end of the month (day {day}).",

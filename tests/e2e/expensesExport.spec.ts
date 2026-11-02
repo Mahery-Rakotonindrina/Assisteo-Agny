@@ -1,6 +1,6 @@
 import ExcelJS from "exceljs";
 import { expect, test, type Page } from "@playwright/test";
-import { prepare } from "./helpers";
+import { prepare, setUpPockets } from "./helpers";
 
 // "Mes dépenses": the pockets and the money set aside, in the export and in the month's review (demo).
 
@@ -11,11 +11,7 @@ async function withPocketAndGoal(page: Page) {
     const response = await route.fetch();
     await route.fulfill({ response, json: { ...(await response.json()), plan: "unlimited", features: undefined } });
   });
-  await page.goto("/expenses");
-  await page.getByRole("button", { name: /Où est ton argent \?/ }).click();
-  const setup = page.getByRole("dialog", { name: "Où est ton argent ?" });
-  await setup.getByLabel(/^Espèces : combien/).fill("45000");
-  await setup.getByRole("button", { name: "Enregistrer" }).click();
+  await setUpPockets(page, { cash: "45000" });
   await expect(page.getByTestId("pockets-total")).toHaveText(/^45\s000 Ar$/);
 
   await page.getByRole("button", { name: "Ajouter une dépense" }).click();

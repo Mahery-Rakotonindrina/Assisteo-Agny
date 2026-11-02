@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { mockReceipt } from "../../lib/ai/mock";
-import { prepare } from "./helpers";
+import { expectPockets, prepare, setUpPockets } from "./helpers";
 
 // "Prêts": Admin only while tested. The demo server answers "free": the
 // tests that need the screen pretend the account is Admin.
@@ -254,14 +254,8 @@ test("scanning a debt acknowledgment (demo) fills in the form, the photo kept as
 
 /** Espèces 45 000 Ar (the default pocket) and MVola 230 000 Ar. */
 async function withPockets(page: Page) {
-  await page.goto("/expenses");
-  await page.getByRole("button", { name: /Où est ton argent \?/ }).click();
-  const setup = page.getByRole("dialog", { name: "Où est ton argent ?" });
-  await setup.getByLabel(/^Espèces : combien/).fill("45000");
-  await setup.getByRole("checkbox", { name: "MVola" }).check();
-  await setup.getByLabel(/^MVola : combien/).fill("230000");
-  await setup.getByRole("button", { name: "Enregistrer" }).click();
-  await expect(page.getByTestId("pockets")).toHaveText(/^Espèces 45\s000 Ar · MVola 230\s000 Ar$/);
+  await setUpPockets(page, { cash: "45000", mvola: "230000" });
+  await expectPockets(page, ["Espèces 45 000 Ar", "MVola 230 000 Ar"]);
 }
 
 test("a loan from MVola lowers the pocket, a repayment brings it back up, « Il te reste » unchanged", async ({ page }) => {
@@ -288,14 +282,16 @@ test("a loan from MVola lowers the pocket, a repayment brings it back up, « Il 
   await expect(page.getByTestId("ledger-left").first()).toContainText(/30\s000\sAr/);
 
   await page.goto("/expenses");
-  await expect(page.getByTestId("pockets")).toHaveText(/^Espèces 45\s000 Ar · MVola 200\s000 Ar$/);
+  await expectPockets(page, ["Espèces 45 000 Ar", "MVola 200 000 Ar"]);
   await expect(page.getByTestId("expenses-in")).toHaveText(/^0 Ar$/);
-  // In the pocket's history, the line opens the person in "Prêts".
-  await page.getByRole("button", { name: "Voir mes poches" }).click();
-  await page.getByRole("dialog", { name: "Mes poches" }).getByRole("button", { name: /^MVola/ }).click();
-  await expect(page.getByTestId("pocket-loan").first()).toHaveText("Remboursement de Rakoto");
-  await page.getByRole("link", { name: "Prêt à Rakoto" }).click();
+  // In the pocket's statement, the line opens the person in "Prêts"; back returns to the pocket.
+  await page.getByTestId("pockets-link").click();
+  await page.getByTestId("pocket-card").filter({ hasText: "MVola" }).click();
+  await expect(page.getByTestId("pocket-loan").first()).toContainText("Remboursement de Rakoto");
+  await page.getByTestId("pocket-loan").filter({ hasText: "Prêt à Rakoto" }).click();
   await expect(page.getByRole("heading", { level: 2, name: "Compte avec Rakoto" })).toBeVisible();
+  await page.goBack();
+  await expect(page.getByTestId("pocket-name")).toHaveText("MVola");
 });
 
 test("a « Vous avez reçu » from a debtor (demo): « C’est un remboursement ? », yes — the rest goes down, the income goes", async ({ page, isMobile }) => {
