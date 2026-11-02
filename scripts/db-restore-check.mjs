@@ -9,7 +9,7 @@
 // are public, and a real backup holds personal data.
 import { randomBytes, randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { applyMigrations, compareData, connect, decryptBackup, encryptBackup, exportData, RESTORE_KEYS, restoreData } from "./lib/backup.mjs";
+import { applyMigrations, compareData, connect, decryptBackup, encryptBackup, exportData, RESTORE_KEYS, restoreData, TABLES } from "./lib/backup.mjs";
 import { SUPABASE_STUBS } from "./lib/supabaseStubs.mjs";
 
 const [file] = process.argv.slice(2);
@@ -57,7 +57,11 @@ function sampleBackup() {
       ],
       user_settings: [{ user_id: anna, data: { locale: "fr", theme: "dark", haptics: true }, updated_at: at(4) }],
       user_ai_keys: [{ user_id: anna, preset_id: "gemini", ciphertext: "v1.sample.sample.sample", updated_at: at(4) }],
-      push_devices: [{ user_id: anna, device_id: "install-1", token: "fcm-token", platform: "android", scheduled: ["scan-1"], updated_at: at(4) }],
+      push_devices: [
+        { user_id: anna, device_id: "install-1", token: "fcm-token", platform: "android", scheduled: ["scan-1"], updated_at: at(4) },
+        // A browser subscribed to Web Push (migration 0017).
+        { user_id: ben, device_id: "install-2", token: JSON.stringify({ endpoint: "https://web.push.apple.com/sample", keys: { p256dh: "BSample", auth: "sample" } }), platform: "web", scheduled: [], updated_at: at(4) },
+      ],
       parcels: [
         { user_id: anna, id: "parcel-1", data: { label: "Chaussures", status: "transit", costs: { goodsMga: 120000 } }, updated_at: at(5), deleted_at: null },
         { user_id: ben, id: "parcel-2", data: { label: "Sac" }, updated_at: at(6), deleted_at: at(7) },
@@ -161,6 +165,11 @@ function sampleBackup() {
         { id: randomUUID(), email: "ben@example.com", feature: "garage", starts_at: at(3), ends_at: at(10), note: "Essai du garage", created_by: "owner", created_at: at(3) },
         { id: randomUUID(), email: "anna@example.com", feature: "pdfExport", starts_at: at(1), ends_at: at(2), note: null, created_by: "admin@example.com", created_at: at(1) },
       ],
+      // Migration 0016: Anna shares her Premium with two people.
+      family_seats: [
+        { id: randomUUID(), owner_id: anna, owner_email: "anna@example.com", owner_name: "Anna", member_email: "mere.rabe@example.com", created_at: at(4) },
+        { id: randomUUID(), owner_id: anna, owner_email: "anna@example.com", owner_name: null, member_email: "fils.rabe@example.com", created_at: at(5) },
+      ],
       _migrations: [],
     },
   };
@@ -210,6 +219,9 @@ try {
   const known = new Set((await client.query("select name from public._migrations")).rows.map((row) => row.name));
   const unknown = (data.tables._migrations ?? []).filter((row) => !known.has(row.name));
   if (unknown.length) problems.push(`_migrations: ${unknown.length} migration(s) of the backup are not in this code`);
+  for (const table of Object.keys(data.tables)) {
+    if (table !== "auth.users" && !TABLES.includes(table)) problems.push(`${table}: in the backup, but this code can't restore it (scripts/lib/backup.mjs)`);
+  }
 
   await client.query("begin");
   for (const user of data.tables["auth.users"] ?? []) {

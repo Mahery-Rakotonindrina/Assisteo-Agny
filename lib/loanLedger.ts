@@ -50,7 +50,10 @@ export function personLedger(loans: Loan[]): LedgerLine[] {
       if (counted > 0) lines.push({ id: `${loan.id}:${repayment.id}`, kind: "repayment", at: repayment.at, amountMga: counted, loan, repayment });
     }
   }
-  lines.sort((a, b) => a.at - b.at || rank[a.kind] - rank[b.kind] || a.loan.at - b.loan.at || a.id.localeCompare(b.id));
+  // A repayment dated before its loan (a typo, a loan entered late) still
+  // comes after it, so "Reste" never goes below 0 in the middle of the list.
+  const sortAt = (line: Omit<LedgerLine, "balanceMga">) => (line.kind === "repayment" ? Math.max(line.at, line.loan.at) : line.at);
+  lines.sort((a, b) => sortAt(a) - sortAt(b) || rank[a.kind] - rank[b.kind] || a.at - b.at || a.loan.at - b.loan.at || a.id.localeCompare(b.id));
   let balance = 0;
   return lines.map((line) => {
     balance += line.kind === "repayment" ? -line.amountMga : line.amountMga;

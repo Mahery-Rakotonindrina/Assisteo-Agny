@@ -1,17 +1,21 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { isCron } from "@/lib/server/cronAuth";
-import { pushEnabled, sendPush } from "@/lib/server/fcm";
+import { pushEnabled } from "@/lib/server/fcm";
 import { sendError } from "@/lib/server/http";
 import { getPlansConfig } from "@/lib/server/planConfig";
-import { collectPending, nextReminderAt, paidReminderUsers, planPushes, type DueRow, type PushDevice, type PushLocale } from "@/lib/server/reminderPush";
+import { sendToDevice } from "@/lib/server/pushSend";
+import { collectPending, nextReminderAt, paidReminderUsers, planPushes, reachableDevices, type DueRow, type PushDevice, type PushLocale } from "@/lib/server/reminderPush";
 import { reportError } from "@/lib/server/reportError";
+import { seatsForMembers } from "@/lib/server/familySeats";
 import { currentGrantsForEmails } from "@/lib/server/featureGrants";
 import { subscriptionRowsForEmails } from "@/lib/server/subscriptions";
 import { accountsEnabled, supabaseAdmin } from "@/lib/server/supabaseAdmin";
+import { webPushEnabled } from "@/lib/server/webPush";
 
 // Every few minutes (GitHub Actions, .github/workflows/reminders.yml): pushes
 // reminders that are due to the user's Android devices that don't already
-// hold them as local notifications (see services/push.ts). A recurring
+// hold them as local notifications (see services/push.ts), and by Web Push to
+// the browsers subscribed in the settings (the site on an iPhone home screen). A recurring
 // reminder then moves on to its next occurrence (reminder_at), which the
 // devices pick up at their next sync. Reminders are for paid plans (Lite and
 // up): other users get no push. Their due reminders are only marked as handled,
@@ -45,15 +49,18 @@ async function paidUsers(db: ReturnType<typeof supabaseAdmin>, userIds: string[]
   }
   const users = userIds.map((id) => ({ id, email: emails.get(id) ?? null }));
   const known = users.map((user) => user.email).filter((email): email is string => Boolean(email));
-  const [rows, config, grants] = await Promise.all([subscriptionRowsForEmails(known), getPlansConfig(), currentGrantsForEmails(known, now).catch(() => [])]);
-  return paidReminderUsers(users, rows, now, config, grants);
+  // Family seats (migration 0016; none before it): their subscribers' subscriptions are read too.
+  const seats = await seatsForMembers(known).catch(() => []);
+  const owners = [...new Set(seats.map((seat) => seat.ownerEmail))].filter((email) => !known.includes(email));
+  const [rows, config, grants] = await Promise.all([subscriptionRowsForEmails([...known, ...owners]), getPlansConfig(), currentGrantsForEmails(known, now).catch(() => [])]);
+  return paidReminderUsers(users, rows, now, config, grants, seats);
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "GET" && req.method !== "POST") return sendError(res, 405, "method_not_allowed", "Use GET or POST.");
   if (!isCron(req, { required: true })) return sendError(res, 401, "invalid_key", "Unauthorized.");
   res.setHeader("Cache-Control", "no-store");
-  if (!pushEnabled || !accountsEnabled) return res.status(200).json({ skipped: "push not configured" });
+  if ((!pushEnabled && !webPushEnabled) || !accountsEnabled) return res.status(200).json({ skipped: "push not configured" });
 
   const db = supabaseAdmin();
   const now = new Date();
@@ -118,7 +125,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const userIds = [...new Set(due.map((row) => row.user_id))];
   const [devices, settings] = await Promise.all([
-    db.from("push_devices").select("user_id, device_id, token, scheduled").in("user_id", userIds),
+    db.from("push_devices").select("user_id, device_id, token, scheduled, platform").in("user_id", userIds),
     db.from("user_settings").select("user_id, data").in("user_id", userIds),
   ]);
   if (devices.error) {
@@ -133,10 +140,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const stale = new Map<string, PushDevice>();
   // Entries whose every push failed for a transient reason: retried next run.
   const outcome = new Map<string, { delivered: boolean; failed: boolean }>();
-  for (const push of planPushes(due, devices.data as PushDevice[], locales)) {
-    const result = await sendPush(push.device.token, { title: push.title, body: push.body, data: { entryId: push.entryId } }).catch(
-      () => "error" as const,
-    );
+  // A device whose channel isn't configured here is left out (kept for when it is).
+  const targets = reachableDevices(devices.data as PushDevice[], { fcm: pushEnabled, web: webPushEnabled });
+  for (const push of planPushes(due, targets, locales)) {
+    const result = await sendToDevice(push.device, { title: push.title, body: push.body, target: { entryId: push.entryId } }).catch(() => "error" as const);
     const state = outcome.get(push.entryId) ?? { delivered: false, failed: false };
     if (result === "sent") {
       sent += 1;

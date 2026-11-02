@@ -25,7 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
   const installId = InstallIdSchema.safeParse(req.headers[installIdHeader]).data ?? null;
   const config = await getPlansConfig();
-  const { account, current, features, quotas, grants, customPlan } = await resolvePlan(req, config);
+  const { account, current, features, quotas, grants, customPlan, seat } = await resolvePlan(req, config);
   const all = req.headers[allPlansHeader] === "all";
   const limits = await limitsFor(current.plan, config, quotas, features);
 
@@ -57,12 +57,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     features: planFeatures.filter((feature) => features.has(feature)),
     featureFrom: all ? featureFromConfig(config, true) : featureFromConfig(config),
     grants: grants.map(({ feature, endsAt }) => ({ feature, endsAt: Date.parse(endsAt) })),
+    familySeat: seat && { owner: seat.owner, endsAt: seat.endsAt },
     ...offers,
   } satisfies PlanResponse);
 }
 
 /** A created plan's price and limits, as an offer. */
-const offerOf = ({ id, priceMga, yearPriceMga, scans, questionsPerDay, parcels, deepPerMonth }: CustomPlan) => ({ id, priceMga, yearPriceMga, scans, questionsPerDay, parcels, deepPerMonth });
+const offerOf = ({ id, priceMga, yearPriceMga, scans, questionsPerDay, parcels, deepPerMonth, familySeats }: CustomPlan) => ({ id, priceMga, yearPriceMga, scans, questionsPerDay, parcels, deepPerMonth, familySeats });
 
 /**
  * The account's Premium trial, waiting discount, referral code and payments;

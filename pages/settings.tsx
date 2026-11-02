@@ -44,6 +44,7 @@ import { SegmentedControl } from "@/components/SegmentedControl";
 import { Seo } from "@/components/Seo";
 import { PlanBadge } from "@/components/PlanBadge";
 import { Toggle } from "@/components/Toggle";
+import { WebPushSettings } from "@/components/WebPushSettings";
 import { useToast } from "@/components/Toast";
 import { useAiStatus } from "@/hooks/useAiStatus";
 import { useAppVersion } from "@/hooks/useAppVersion";
@@ -392,6 +393,7 @@ export default function SettingsPage() {
                 </select>
               </Row>
             )}
+            <WebPushSettings />
             {permission === "denied" && <p className={styles.warning}>{t("settings.notificationsDenied")}</p>}
             <Row icon={<Vibrate />} label={t("settings.haptics")} hint={t("settings.hapticsHint")}>
               <Toggle label={t("settings.haptics")} checked={settings.haptics} onChange={(haptics) => update({ haptics })} />

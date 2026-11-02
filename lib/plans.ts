@@ -530,6 +530,8 @@ export type PlanOffer = PlanLimits & {
   priceMga: number;
   /** The price of a year paid at once (cheaper than twelve months). */
   yearPriceMga: number;
+  /** People the subscriber may add from "Mon offre", each with the plan's features and own quotas (0: none). */
+  familySeats: number;
 };
 
 /** Prices, limits, how to pay and the features of each plan: editable from /admin. */
@@ -545,9 +547,9 @@ export type PlansConfig = FeatureSettings & {
 
 export const defaultPlansConfig: PlansConfig = {
   offers: {
-    lite: { priceMga: 5000, yearPriceMga: 50000, scans: 60, questionsPerDay: 10, parcels: 15, deepPerMonth: 0 },
-    premium: { priceMga: 15000, yearPriceMga: 150000, scans: 300, questionsPerDay: 50, parcels: 0, deepPerMonth: 30 },
-    pro: { priceMga: 25000, yearPriceMga: 250000, scans: 600, questionsPerDay: 50, parcels: 0, deepPerMonth: 60 },
+    lite: { priceMga: 5000, yearPriceMga: 50000, scans: 60, questionsPerDay: 10, parcels: 15, deepPerMonth: 0, familySeats: 0 },
+    premium: { priceMga: 15000, yearPriceMga: 150000, scans: 300, questionsPerDay: 50, parcels: 0, deepPerMonth: 30, familySeats: 4 },
+    pro: { priceMga: 25000, yearPriceMga: 250000, scans: 600, questionsPerDay: 50, parcels: 0, deepPerMonth: 60, familySeats: 4 },
   },
   freeParcels: 3,
   payment: { instructions: "", contact: "" },
@@ -589,6 +591,8 @@ export type PlanResponse = {
   payments?: SubscriptionPayment[];
   /** The features offered to this account for a while, running now (Admin → its card). */
   grants?: Array<{ feature: PlanFeature; endsAt: number }>;
+  /** The plan comes from a family seat: who offers it (first name or e-mail) and until when; null otherwise (missing from an older server). */
+  familySeat?: { owner: string; endsAt: number | null } | null;
 };
 
 export type SubscriptionPayment = { id: string; plan: SubscriptionPlanId; amountMga: number; paidAt: number };
@@ -613,6 +617,20 @@ export function subscriptionPayments(rows: Array<Pick<Subscription, "id" | "plan
 
 /** Sent by an app that knows the created plans, with "all": GET /api/plan then lists them too. */
 export const allPlansHeader = "x-plans";
+
+/** Whether a request comes from an app that knows the created plans (header `x-plans: all`). */
+export const knowsCreatedPlans = (headers: Record<string, string | string[] | undefined>) => headers[allPlansHeader] === "all";
+
+/**
+ * A plan id as an older app knows it (its Admin screens only have icons for
+ * the built-in plans): a created plan as the built-in plan just below it, an
+ * id no plan has any more (a created plan deleted since) as Lite, the lowest
+ * paid plan; a built-in plan as it is.
+ */
+export function olderAppPlan<T extends string>(config: { customPlans?: readonly CustomPlan[] }, plan: T): T {
+  if (builtInIds.includes(plan)) return plan;
+  return (customPlanOf(config, plan)?.after ?? "lite") as T;
+}
 
 /** A built-in plan's id, or a created plan's (`CustomPlan.id`). */
 export type AnyPlanId = PlanId | (string & {});

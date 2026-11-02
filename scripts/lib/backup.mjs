@@ -34,6 +34,7 @@ export const RESTORE_KEYS = {
   household_loans: ["household_id", "id"],
   subscriptions: ["id"],
   feature_grants: ["id"],
+  family_seats: ["id"],
 };
 
 export const TABLES = [...Object.keys(RESTORE_KEYS), "_migrations"];
@@ -91,6 +92,12 @@ export async function exportData(client) {
     const exists = await client.query("select to_regclass($1) as name", [`public.${table}`]);
     if (!exists.rows[0].name) continue;
     data.tables[table] = (await client.query(`select * from public.${table}`)).rows;
+  }
+  // A table this code doesn't know yet (newer migration) is still saved: the
+  // restore test then says this code can't put it back, but nothing is lost.
+  const { rows: others } = await client.query("select tablename from pg_tables where schemaname = 'public' order by tablename");
+  for (const { tablename } of others) {
+    if (!TABLES.includes(tablename)) data.tables[tablename] = (await client.query(`select * from public."${tablename}"`)).rows;
   }
   // Enough to re-create the accounts with the same ids if the project is lost.
   data.tables["auth.users"] = (await client.query("select id, email, created_at, last_sign_in_at from auth.users")).rows;

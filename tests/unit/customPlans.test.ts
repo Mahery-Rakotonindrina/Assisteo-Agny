@@ -14,6 +14,7 @@ import {
   effectiveFeatures,
   featureFromConfig,
   isCustomPlanId,
+  olderAppPlan,
   planFeatureList,
   rankOf,
   withQuotas,
@@ -60,6 +61,9 @@ const { resolvePlan, limitsFor } = await import("@/lib/server/plan");
 const { getPlansConfig, setPlansConfig, setCustomPlans, CustomPlanSchema } = await import("@/lib/server/planConfig");
 const { default: planRoute } = await import("@/pages/api/plan");
 const { default: customPlansRoute } = await import("@/pages/api/admin/custom-plans");
+const { default: subscriptionsRoute } = await import("@/pages/api/admin/subscriptions");
+const { default: promoCodesRoute } = await import("@/pages/api/admin/promo-codes");
+const { savePromoCode } = await import("@/lib/server/offerStore");
 
 const NOW = Date.now();
 const day = (offset: number) => new Date(NOW + offset * 24 * 3600 * 1000).toISOString();
@@ -79,6 +83,7 @@ const famille: CustomPlan = {
   questionsPerDay: 20,
   parcels: 30,
   deepPerMonth: 0,
+  familySeats: 0,
 };
 const config: PlansConfig = { ...defaultPlansConfig, customPlans: [famille] };
 
@@ -239,6 +244,35 @@ describe("GET /api/plan", () => {
     state.account = { id: "user-1", email: "rado@example.com" };
     state.rows = [row("famille", -2, 28)];
     expect((await get({ "x-plans": "all" })).offers.map((offer) => offer.id)).toContain("famille");
+  });
+});
+
+describe("Admin lists for an older app", () => {
+  const get = async (route: typeof subscriptionsRoute, headers: Record<string, string> = {}) => {
+    const { res, api } = reply();
+    await route(request({ headers }), api);
+    return res.body as { subscriptions?: Array<{ plan: string }>; codes?: Array<{ code: string; plan: string }> };
+  };
+
+  it("names a created plan by the built-in plan just below, a deleted one Lite, a built-in one as it is", () => {
+    expect(olderAppPlan(config, "famille")).toBe("lite");
+    expect(olderAppPlan(config, "partie")).toBe("lite");
+    expect(olderAppPlan(config, "premium")).toBe("premium");
+    expect(olderAppPlan(config, "unlimited")).toBe("unlimited");
+    expect(olderAppPlan({ customPlans: [{ ...famille, id: "pros", after: "premium" }] }, "pros")).toBe("premium");
+  });
+
+  it("gives the subscriptions with a built-in plan, unless the app asks for all", async () => {
+    state.rows = [row("famille", -2, 28), row("pro", -2, 28)];
+    expect((await get(subscriptionsRoute)).subscriptions?.map((entry) => entry.plan)).toEqual(["lite", "pro"]);
+    expect((await get(subscriptionsRoute, { "x-plans": "all" })).subscriptions?.map((entry) => entry.plan)).toEqual(["famille", "pro"]);
+  });
+
+  it("gives the promo codes with a built-in plan, unless the app asks for all", async () => {
+    await savePromoCode({ code: "FAMILLE30", kind: "access", plan: "famille", days: 30, percent: 0, maxUses: 0, expiresAt: null, active: true, createdAt: NOW });
+    const shown = (codes?: Array<{ code: string; plan: string }>) => codes?.find((promo) => promo.code === "FAMILLE30")?.plan;
+    expect(shown((await get(promoCodesRoute)).codes)).toBe("lite");
+    expect(shown((await get(promoCodesRoute, { "x-plans": "all" })).codes)).toBe("famille");
   });
 });
 

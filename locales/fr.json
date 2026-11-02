@@ -487,7 +487,9 @@
       "ended": "Fini le {date}",
       "givenOn": "Offert le {date}",
       "stop": "Arrêter maintenant",
-      "stopped": "Offre arrêtée."
+      "stopped": "Offre arrêtée.",
+      "seatOf": "Place famille de {email}",
+      "seatsGiven": "Places famille données : {list}"
     },
     "title": "Administration",
     "subtitle": "Réglages du serveur, appliqués immédiatement à toutes les apps.",
@@ -642,7 +644,8 @@
         "questionsPerDay": "Questions / jour",
         "parcels": "Colis suivis",
         "deepPerMonth": "Analyses approfondies / mois",
-        "yearPriceMga": "Prix (Ar / an)"
+        "yearPriceMga": "Prix (Ar / an)",
+        "familySeats": "Places famille"
       },
       "zeroHint": "0 = sans limite. Admin : tout est sans limite.",
       "freeParcels": "Colis suivis sans offre",
@@ -694,7 +697,8 @@
         "deleteConfirm": "Appuie encore pour supprimer",
         "deleted": "Offre supprimée",
         "inUse": "Quelqu’un a encore cette offre : retire-la plutôt de la vente."
-      }
+      },
+      "familySeatsHint": "Personnes que l’abonné peut ajouter. 0 : aucune."
     },
     "adminAccount": "Ton compte est administrateur : ouvre l’espace admin avec ton compte, ou avec le jeton.",
     "ai": {
@@ -825,7 +829,10 @@
         "feature_status": "État d’une fonctionnalité modifié",
         "plan_create": "Offre créée",
         "plan_edit": "Offre créée modifiée",
-        "plan_delete": "Offre créée supprimée"
+        "plan_delete": "Offre créée supprimée",
+        "family_seat_add": "Place famille ajoutée (par l’abonné)",
+        "family_seat_remove": "Place famille retirée (par l’abonné)",
+        "family_seat_leave": "Place famille quittée"
       }
     },
     "export": {
@@ -1459,7 +1466,8 @@
       "expenses": "Mes dépenses : le budget du mois, seul ou en foyer",
       "inventory": "Ma maison : tes objets, leur garantie et leurs factures, export pour l’assurance",
       "plants": "Mes plantes : arrosage, rappel le matin, diagnostic d’une plante malade",
-      "allPlan": "Tout {plan}, et :"
+      "allPlan": "Tout {plan}, et :",
+      "family": "Jusqu’à {count} personnes de ta famille"
     },
     "how": "Comment s’abonner",
     "step1": "Connecte-toi",
@@ -1542,7 +1550,33 @@
       "share": "Partager",
       "copy": "Copier le code"
     },
-    "unavailable": "Cette fonction n’est pas disponible pour le moment."
+    "unavailable": "Cette fonction n’est pas disponible pour le moment.",
+    "family": {
+      "title": "Partager mon offre avec ma famille",
+      "count": "{used}/{seats} places",
+      "hint": "Ajoute l’e-mail d’un proche : il a les fonctions de ton offre et ses propres quotas, tant que ton abonnement court.",
+      "noSeats": "Ton offre actuelle n’a pas de place famille.",
+      "trial": "Pendant l’essai gratuit, tu ne peux pas encore partager ton offre.",
+      "emailLabel": "E-mail de la personne",
+      "add": "Ajouter",
+      "added": "{email} profite maintenant de ton offre.",
+      "removeLabel": "Retirer {email}",
+      "removed": "{email} n’a plus ta place famille.",
+      "inactive": "Au-delà de tes places : rien pour l’instant",
+      "full": "Toutes tes places sont prises.",
+      "taken": "Cette personne a déjà une place famille.",
+      "self": "C’est ton propre e-mail.",
+      "invalid": "Cet e-mail n’a pas l’air correct.",
+      "unavailable": "Le partage en famille arrive bientôt.",
+      "failed": "Ça n’a pas marché. Réessaie.",
+      "offeredBy": "Offert par {owner} jusqu’au {date}",
+      "offeredByNoEnd": "Offert par {owner}",
+      "joined": "Tu as une place dans l’offre de {owner}. Tu gardes toutes tes données si tu la quittes.",
+      "leave": "Quitter cette place",
+      "leaveConfirm": "Oui, quitter",
+      "cancel": "Annuler",
+      "left": "Tu as quitté la place famille."
+    }
   },
   "deep": {
     "button": "Analyse approfondie",
@@ -3099,7 +3133,29 @@
         "borrowed": "Emprunt à {name}",
         "repaid_in": "Remboursement de {name}",
         "repaid_out": "Remboursement à {name}"
-      }
+      },
+      "back": "Toutes mes poches",
+      "balanceNow": "Ce qu’il y a dedans aujourd’hui",
+      "statement": "Ses mouvements",
+      "balanceAfter": "Solde : {amount}",
+      "startLine": "Solde de départ",
+      "edit": "Modifier",
+      "editTitle": "Modifier la poche",
+      "startAmount": "Solde de départ",
+      "startDay": "Date du solde de départ",
+      "startHint": "Le solde de départ, c’est ce que la poche avait ce jour-là. Le changer recalcule tout le relevé : ce n’est pas une correction.",
+      "edited": "Poche modifiée",
+      "transferFrom": "Virement depuis cette poche",
+      "transferTo": "Virement vers cette poche",
+      "moveUp": "Monter",
+      "moveDown": "Descendre",
+      "orderHint": "L’ordre de tes poches est le même partout : « Payé avec », l’export et l’accueil.",
+      "remove": "Supprimer",
+      "removeAsk": "Supprimer {name} pour de bon ? Elle n’a aucun mouvement.",
+      "removeConfirm": "Oui, supprimer",
+      "removed": "Poche supprimée",
+      "inUse": "Tu ne peux pas la supprimer : des mouvements l’utilisent. Archive-la plutôt : elle sera cachée, et ses mouvements gardés.",
+      "typeHint": "Changer le type peut ramener ici des lignes qui n’avaient pas de poche (payées par carte ou Mobile Money, par exemple)."
     },
     "forecast": {
       "left": "À ce rythme, il te restera environ {amount} le {day}.",
@@ -3608,5 +3664,22 @@
         "plan": "Ton offre ne comprend pas Mes plantes."
       }
     }
+  },
+  "webPush": {
+    "titleIphone": "Recevoir les rappels sur cet iPhone",
+    "titleDevice": "Recevoir les rappels sur cet appareil",
+    "hint": "Ils arrivent même quand Assisteo est fermé.",
+    "on": "Activer",
+    "off": "Arrêter",
+    "subscribed": "C’est fait : tes rappels arriveront ici.",
+    "unsubscribed": "Tu ne recevras plus les rappels ici.",
+    "denied": "Les notifications sont refusées. Autorise-les dans les réglages de ton appareil, puis réessaie.",
+    "error": "Ça n’a pas marché. Réessaie dans un moment.",
+    "signIn": "Connecte-toi à ton compte pour recevoir tes rappels ici.",
+    "locked": "Les rappels sur cet appareil sont inclus à partir de {plan}.",
+    "installHint": "D’abord, ajoute Assisteo à l’écran d’accueil :",
+    "step1": "Dans Safari, touche le bouton Partager (le carré avec une flèche).",
+    "step2": "Choisis « Sur l’écran d’accueil », puis « Ajouter ».",
+    "step3": "Ouvre Assisteo depuis sa nouvelle icône et reviens ici."
   }
 }

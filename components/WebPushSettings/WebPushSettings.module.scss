@@ -1,0 +1,15 @@
+// The three steps to add the site to an iPhone home screen.
+.steps {
+  margin: 0;
+  padding-left: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  color: var(--text);
+
+  li::marker {
+    font-weight: 700;
+    color: var(--accent-text);
+  }
+}

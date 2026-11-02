@@ -868,6 +868,10 @@
 
   @include desktop {
     border-radius: 28px;
+
+    &[data-wide] {
+      max-width: 980px;
+    }
   }
 
   // The form is the sheet itself: no card inside it.
@@ -1058,6 +1062,91 @@
   input {
     min-height: 2.75rem;
   }
+}
+
+// ---- A pocket's sheet ----------------------------------------------------------------
+
+// A computer: the pockets on the left, the one picked on the right.
+.pocketsSplit {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  gap: 1.25rem;
+  align-items: start;
+
+  .entry[data-current] {
+    border-color: var(--accent-mark);
+    box-shadow: 0 0 0 2px var(--accent-soft);
+  }
+}
+
+.backLink {
+  align-self: flex-start;
+  min-height: 2.75rem;
+}
+
+.pocketHead {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.pocketBalance {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex: none;
+  margin-left: auto;
+
+  small {
+    font-size: 0.76rem;
+    color: var(--text-muted);
+  }
+
+  strong {
+    font-size: 1.25rem;
+
+    &[data-tone="bad"] {
+      color: var(--danger, #d63a3a);
+    }
+  }
+}
+
+.actions[data-flush] {
+  padding: 0;
+}
+
+.statement {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.statementMonth {
+  margin: 0.35rem 0 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: capitalize;
+  color: var(--text-muted);
+}
+
+// A line that opens its expense or income: a link's look, a finger's size.
+.statementOpen {
+  min-height: 2.75rem;
+  padding: 0;
+  text-align: left;
+  color: var(--accent-text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  overflow-wrap: anywhere;
+}
+
+.statementAmount {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex: none;
+  text-align: right;
 }
 
 .movements {

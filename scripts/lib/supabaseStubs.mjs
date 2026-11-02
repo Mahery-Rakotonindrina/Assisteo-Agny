@@ -1,12 +1,15 @@
 // What Supabase provides and the migrations rely on, reduced to the minimum,
 // for a throwaway Postgres (scripts/db-restore-check.mjs, db-rls-check.mjs).
 // auth.uid() reads the user id like Supabase does (request.jwt.claim.sub):
-// null unless a test sets it.
+// null unless a test sets it; auth.jwt() the whole session (request.jwt.claims).
 export const SUPABASE_STUBS = `
 create schema if not exists auth;
 create table if not exists auth.users (id uuid primary key, email text, created_at timestamptz, last_sign_in_at timestamptz, raw_user_meta_data jsonb);
 create or replace function auth.uid() returns uuid language sql stable as $$
   select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid
+$$;
+create or replace function auth.jwt() returns jsonb language sql stable as $$
+  select coalesce(nullif(current_setting('request.jwt.claim', true), ''), nullif(current_setting('request.jwt.claims', true), ''))::jsonb
 $$;
 do $$ begin
   if not exists (select from pg_roles where rolname = 'anon') then create role anon nologin; end if;
@@ -29,7 +32,7 @@ $$;
  */
 export const SUPABASE_GRANTS = `
 grant usage on schema public, auth to anon, authenticated, service_role;
-grant execute on function auth.uid() to anon, authenticated, service_role;
+grant execute on function auth.uid(), auth.jwt() to anon, authenticated, service_role;
 alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
 alter default privileges in schema public grant all on functions to anon, authenticated, service_role;
 `;
