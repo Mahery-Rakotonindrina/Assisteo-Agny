@@ -318,6 +318,7 @@
     background: none;
     color: var(--text);
     font: inherit;
+    @include field-font;
   }
 
   button {

@@ -19,11 +19,14 @@
   width: 100%;
   max-width: 560px;
   max-height: 92vh;
+  max-height: 92dvh;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
-  padding: 1rem 1.25rem calc(1.5rem + var(--safe-bottom));
+  // No bottom padding: the sticky actions bar is the last child and carries
+  // it, so Safari and Chrome pin it at the same place (no negative offsets).
+  padding: 1rem 1.25rem 0;
   border-radius: 28px 28px 0 0;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
@@ -97,8 +100,8 @@
   background: var(--surface);
   color: var(--text);
   font: inherit;
-  font-size: 0.95rem;
   outline: none;
+  @include field-font(0.95rem);
 
   &:focus {
     border-color: var(--accent-mark);
@@ -145,8 +148,8 @@
 
 .actions {
   position: sticky;
-  bottom: calc(-1.5rem - var(--safe-bottom));
-  margin: 0.4rem -1.25rem calc(-1.5rem - var(--safe-bottom));
+  bottom: 0;
+  margin: 0.4rem -1.25rem 0;
   padding: 0.85rem 1.25rem calc(1rem + var(--safe-bottom));
   background: linear-gradient(to top, var(--bg-elevated) 70%, transparent);
 }

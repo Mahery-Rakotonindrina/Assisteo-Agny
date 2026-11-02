@@ -160,6 +160,7 @@
   color: var(--text);
   font: inherit;
   font-variant-numeric: tabular-nums;
+  @include field-font;
 }
 
 .mono {
