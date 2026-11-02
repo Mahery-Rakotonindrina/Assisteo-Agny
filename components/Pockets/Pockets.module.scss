@@ -1,0 +1,555 @@
+@use "../../styles/mixins" as *;
+
+// "Mes poches": the screen (the list, a pocket's sheet), and its summary under "Il te reste".
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 720px;
+  min-width: 0;
+
+  &[data-split] {
+    max-width: 1120px;
+  }
+}
+
+.header {
+  padding-top: 1.25rem;
+
+  @include desktop {
+    padding-top: 0;
+  }
+
+  h1 {
+    @include display(2.6rem);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    overflow-wrap: anywhere;
+
+    svg {
+      flex: none;
+      color: var(--cat-food);
+    }
+  }
+
+  p {
+    margin-top: 0.3rem;
+    color: var(--text-muted);
+  }
+}
+
+// ---- Computer: the list and the pocket side by side --------------------------------
+
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+// ---- The list ------------------------------------------------------------------------
+
+// "Tout ton argent", in big.
+.total {
+  @include card;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 1rem 1.1rem;
+  border-radius: var(--radius-lg, 20px);
+
+  small {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+
+  > strong {
+    @include display(2.2rem);
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+
+    &[data-tone="bad"] {
+      color: var(--danger);
+    }
+  }
+}
+
+// Every row as tall as the tallest: the cards keep one height when a name or an amount wraps (very large text).
+.cards {
+  display: grid;
+  grid-auto-rows: 1fr;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    display: flex;
+    min-width: 0;
+  }
+}
+
+.card {
+  @include card;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 3.5rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: var(--radius-md);
+  color: var(--text);
+  text-align: left;
+
+  &:is(button) {
+    @include pressable;
+  }
+
+  &[data-current] {
+    border-color: var(--accent-mark);
+    box-shadow: 0 0 0 2px var(--accent-soft);
+  }
+
+  &[data-archived] {
+    opacity: 0.75;
+  }
+
+  // "Réordonner": ↑ ↓ take the icon's room, the name and the balance keep theirs.
+  &[data-reorder] > .icon {
+    display: none;
+  }
+
+}
+
+.addCard {
+  border-style: dashed;
+  color: var(--accent-text);
+
+  > svg {
+    flex: none;
+    margin-inline: 0.55rem;
+  }
+}
+
+.icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--tone, var(--text-muted)) 18%, transparent);
+  color: var(--tone, var(--text-muted));
+
+  &[data-size="lg"] {
+    width: 3rem;
+    height: 3rem;
+  }
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+
+  h2,
+  .nameRow strong {
+    overflow-wrap: break-word;
+  }
+
+  h2 {
+    @include display(1.7rem);
+  }
+
+  small {
+    font-size: 0.86rem;
+    color: var(--text-muted);
+  }
+}
+
+// The name and the "Par défaut" pill, side by side while they fit.
+.nameRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.1rem 0.4rem;
+  min-width: 0;
+
+  > span {
+    margin-right: 0;
+  }
+}
+
+.balance {
+  max-width: 100%;
+  font-size: 1.2rem;
+  font-variant-numeric: tabular-nums;
+  // Only when nothing else fits (a huge amount, very large text, ↑ ↓ shown).
+  overflow-wrap: anywhere;
+
+  &[data-tone="bad"] {
+    color: var(--danger);
+  }
+}
+
+.chevron {
+  flex: none;
+  color: var(--text-muted);
+}
+
+// "Réordonner": ↑ ↓ on each card, finger-sized.
+// One above the other: the card keeps its width for the name and the balance.
+.arrows {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.arrow {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  background: var(--surface-strong);
+  color: var(--text);
+
+  &:disabled {
+    opacity: 0.35;
+  }
+}
+
+.listActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-width: 0;
+
+  // Long labels in very large text: the button grows to the full width and its text wraps.
+  > button {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    height: auto;
+    min-height: 2.75rem;
+    padding-block: 0.45rem;
+    white-space: normal;
+    text-align: center;
+  }
+}
+
+.how {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+
+  > button {
+    min-height: 2.75rem;
+  }
+
+  ul {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin: 0;
+    padding-left: 1.2rem;
+    color: var(--text-muted);
+    font-size: 0.92rem;
+  }
+}
+
+.fold {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 2.75rem;
+  margin-bottom: 0.4rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-align: left;
+
+  svg {
+    flex: none;
+    transition: transform 0.2s ease;
+
+    &[data-open] {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+// ---- A pocket's sheet ----------------------------------------------------------------
+
+.back {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2.75rem;
+}
+
+.head {
+  @include card;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 1rem 1.1rem;
+  border-radius: var(--radius-lg, 20px);
+
+  > small {
+    margin-top: 0.6rem;
+    font-size: 0.86rem;
+    color: var(--text-muted);
+  }
+}
+
+.headTop {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.bigBalance {
+  @include display(2.2rem);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+
+  &[data-tone="bad"] {
+    color: var(--danger);
+  }
+}
+
+.lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// A statement line: the whole line opens its page, when it has one.
+.line {
+  display: flex;
+  // Very large text: the amount goes under the label, never the label letter by letter.
+  flex-wrap: wrap;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  gap: 0.6rem;
+  min-height: 2.75rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: var(--radius-sm, 10px);
+  color: var(--text);
+  font-size: 0.88rem;
+  text-decoration: none;
+
+  &:is(a):hover {
+    background: var(--surface-strong);
+  }
+
+  small {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+
+  strong[data-tone="in"] {
+    color: var(--success, #2e9e5b);
+  }
+}
+
+.lineText {
+  flex: 1 1 8rem;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-wrap: break-word;
+
+  + span {
+    margin-left: auto;
+  }
+}
+
+// "Plus": big lines, one per action.
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  button {
+    @include pressable;
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    width: 100%;
+    min-height: 3.5rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: var(--radius-md);
+    background: var(--surface-strong);
+    color: var(--text);
+    text-align: left;
+
+    > svg {
+      flex: none;
+      color: var(--text-muted);
+    }
+
+    &[data-tone="danger"],
+    &[data-tone="danger"] > svg {
+      color: var(--danger);
+    }
+  }
+
+  span {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  small {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+}
+
+// The transfer: ⇅ between "De" and "Vers".
+.swapRow {
+  display: flex;
+  justify-content: center;
+}
+
+.swap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.75rem;
+  padding: 0.3rem 0.9rem;
+  border-radius: var(--radius-pill);
+  background: var(--surface-strong);
+  color: var(--text);
+  font-weight: 600;
+
+  &:disabled {
+    opacity: 0.4;
+  }
+}
+
+// ---- Under "Il te reste" ---------------------------------------------------------------
+
+.summary {
+  text-decoration: none;
+}
+
+.summaryText {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.summaryRows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+
+  small {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+}
+
+// A pocket: its name on the left, its balance on the right.
+.summaryRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0 0.75rem;
+  font-size: 0.88rem;
+
+  > span {
+    min-width: 0;
+    overflow-wrap: break-word;
+    color: var(--text-muted);
+  }
+
+  > strong {
+    flex: none;
+    margin-left: auto;
+    font-variant-numeric: tabular-nums;
+
+    &[data-tone="bad"] {
+      color: var(--danger);
+    }
+  }
+}
+
+.summaryOpen {
+  font-size: 0.82rem;
+  color: var(--accent-text);
+}
+
+// A correction, opened: its amount in big, its pocket and day.
+.correctionAmount {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+
+  strong {
+    @include display(1.9rem);
+    font-variant-numeric: tabular-nums;
+
+    &[data-tone="in"] {
+      color: var(--success, #2e9e5b);
+    }
+  }
+
+  small {
+    font-size: 0.86rem;
+    color: var(--text-muted);
+  }
+}
+
+// "Corriger le solde": a forgotten expense is better noted as one.
+.forgot {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+
+  p {
+    font-size: 0.92rem;
+  }
+
+  > a {
+    max-width: 100%;
+    height: auto;
+    min-height: 2.75rem;
+    white-space: normal;
+  }
+}

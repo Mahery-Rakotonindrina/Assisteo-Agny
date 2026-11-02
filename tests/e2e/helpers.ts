@@ -1,4 +1,27 @@
-import type { Page, Request, Route } from "@playwright/test";
+import { expect, type Page, type Request, type Route } from "@playwright/test";
+
+/**
+ * "Mes poches", the first time (a plan with "Mes dépenses"): cash with what
+ * it holds, MVola too when given (cash stays the default one), then back to
+ * "Mes dépenses".
+ */
+export async function setUpPockets(page: Page, { cash, mvola }: { cash: string; mvola?: string }) {
+  await page.goto("/pockets");
+  const setup = page.getByRole("form", { name: "Où est ton argent ?" });
+  await setup.getByLabel(/^Espèces : combien/).fill(cash);
+  if (mvola) {
+    await setup.getByRole("checkbox", { name: "MVola" }).check();
+    await setup.getByLabel(/^MVola : combien/).fill(mvola);
+  }
+  await setup.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(page.getByTestId("pockets-all")).toBeVisible();
+  await page.goto("/expenses");
+}
+
+/** The pockets under "Il te reste", one line each ("Espèces 45 000 Ar"), in their order. */
+export async function expectPockets(page: Page, rows: string[]) {
+  await expect(page.getByTestId("pockets-row")).toHaveText(rows.map((row) => new RegExp(`^${row.replace(/ /g, "\\s")}$`)));
+}
 
 /** Starts the app as a returning French user (onboarding done) unless told otherwise. */
 export async function prepare(page: Page, { onboardingDone = true } = {}) {
