@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { motion } from "motion/react";
-import { BookOpen, Car, Download, Sprout, FolderLock, HandCoins, History, ListChecks, Package, ScanLine, Settings2, ShieldCheck, Smartphone, UserRound, Wallet } from "lucide-react";
+import { BookOpen, Car, Download, Sprout, FolderLock, HandCoins, History, House, ListChecks, Package, ScanLine, Settings2, ShieldCheck, Smartphone, UserRound, Wallet } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { useAiStatus } from "@/hooks/useAiStatus";
 import { useAndroidDownload } from "@/hooks/useAndroidDownload";
@@ -22,6 +22,7 @@ const links = [
   { href: "/lists", key: "lists", Icon: ListChecks },
   { href: "/papers", key: "papers", Icon: FolderLock },
   { href: "/garage", key: "garage", Icon: Car },
+  { href: "/inventory", key: "inventory", Icon: House },
   { href: "/plants", key: "plants", Icon: Sprout },
   { href: "/food", key: "food", Icon: BookOpen },
   { href: "/settings", key: "settings", Icon: Settings2 },
@@ -45,7 +46,7 @@ export function Sidebar() {
   const keptExpenses = useKeptExpenses(!has("expenses"));
   const keptLoans = useKeptLoans(!has("loans"));
   // The plan is null on the server and at hydration: the extra links only appear once it is read.
-  const shown = [...links.slice(0, 7), ...(has("expenses") || inHousehold || keptExpenses ? [expensesLink] : []), ...(has("loans") || keptLoans ? [loansLink] : []), ...links.slice(7), ...(isAdmin ? [adminLink] : [])];
+  const shown = [...links.slice(0, 8), ...(has("expenses") || inHousehold || keptExpenses ? [expensesLink] : []), ...(has("loans") || keptLoans ? [loansLink] : []), ...links.slice(8), ...(isAdmin ? [adminLink] : [])];
   const android = useAndroidDownload();
   const { t } = useTranslation();
   const aiStatus = useAiStatus();

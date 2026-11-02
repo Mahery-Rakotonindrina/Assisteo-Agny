@@ -46,6 +46,7 @@ import { DocumentText } from "@/components/DocumentText";
 import { FolderPicker } from "@/components/FolderPicker";
 import { ReceiptControls } from "@/components/Expenses";
 import { GarageControls } from "@/components/Garage";
+import { hasInventoryControls, InventoryControls, InventoryIcon } from "@/components/Inventory";
 import { ObjectAdControls } from "@/components/ObjectAd";
 import { PlanBadge } from "@/components/PlanBadge";
 import { PlanLock } from "@/components/PlanLock";
@@ -752,6 +753,13 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
             {!example && canAddExpense && analysis.document?.receipt && (
               <Section title={t("expenses.receipt.title")} icon={<Receipt />}>
                 <ReceiptControls entry={entry} />
+              </Section>
+            )}
+
+            {/* "Ma maison": add an object to it, or link an invoice, a receipt or a warranty card to one of its things (Premium). */}
+            {!example && hasInventoryControls(entry) && (
+              <Section title={t("inventory.title")} icon={<InventoryIcon />}>
+                <InventoryControls entry={entry} />
               </Section>
             )}
 
