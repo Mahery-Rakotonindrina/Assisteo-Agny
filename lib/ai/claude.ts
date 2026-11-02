@@ -9,6 +9,8 @@ import {
   buildSummaryPrompt,
   buildUserPrompt,
   firstAskText,
+  buildPlantDiagnosisPrompt,
+  PLANT_DIAGNOSIS_SYSTEM_PROMPT,
   isReadTask,
   LOAN_SCAN_SYSTEM_PROMPT,
   OBJECT_AD_SYSTEM_PROMPT,
@@ -19,6 +21,9 @@ import {
 import {
   AnalysisSchema,
   ExpenseSummarySchema,
+  PlantDiagnosisSchema,
+  type PlantDiagnosis,
+  type PlantDiagnosisRequest,
   imagesOf,
   LoanReadingSchema,
   ObjectAdSchema,
@@ -178,6 +183,37 @@ export async function readStatementWithClaude(input: StatementRequest, signal?: 
     throw new AnalysisError("upstream_error", 502, `Unusable model output (stop_reason: ${response.stop_reason}).`);
   }
   return { statement: response.parsed_output, model: response.model, usage: claudeUsage(response.usage) };
+}
+
+/** "Mes plantes": what is wrong with a plant, from its photo. */
+export async function diagnosePlantWithClaude(input: PlantDiagnosisRequest, signal?: AbortSignal): Promise<{ diagnosis: PlantDiagnosis; model: string; usage?: AiUsage }> {
+  const model = CLAUDE_MODEL;
+  let response;
+  try {
+    response = await getClient().beta.messages.parse(
+      {
+        model,
+        max_tokens: 3000,
+        ...(supportsFallbacks(model) && { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const }),
+        output_config: {
+          ...(supportsEffort(model) && { effort: "low" as const }),
+          format: betaZodOutputFormat(PlantDiagnosisSchema),
+        },
+        system: [{ type: "text", text: PLANT_DIAGNOSIS_SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
+        messages: [{ role: "user", content: [imageBlock(input), { type: "text", text: buildPlantDiagnosisPrompt(input) }] }],
+      },
+      { signal },
+    );
+  } catch (error) {
+    throw toAnalysisError(error, model);
+  }
+  if (response.stop_reason === "refusal") {
+    throw new AnalysisError("refused", 422, response.stop_details?.explanation ?? "The model declined this photo.");
+  }
+  if (response.stop_reason === "max_tokens" || !response.parsed_output) {
+    throw new AnalysisError("upstream_error", 502, `Unusable model output (stop_reason: ${response.stop_reason}).`);
+  }
+  return { diagnosis: response.parsed_output, model: response.model, usage: claudeUsage(response.usage) };
 }
 
 /** "Prêts": a debt acknowledgment read from its photo (low effort: a reading task). */

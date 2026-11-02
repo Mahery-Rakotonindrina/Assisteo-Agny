@@ -33,6 +33,7 @@ describe("discoverCards", () => {
     expect(labelOf(cards, "garage")).toBe("premium");
     expect(labelOf(cards, "reminders")).toBe("lite");
     expect(labelOf(cards, "reseller")).toBe("pro");
+    expect(labelOf(cards, "plants")).toBe("lite");
   });
 
   it("hides a feature switched off or in test", () => {
