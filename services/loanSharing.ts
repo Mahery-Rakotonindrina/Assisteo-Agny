@@ -1,7 +1,7 @@
 import { clear, createStore, del, get, set, values } from "idb-keyval";
 import { config } from "@/lib/config";
 import { sameSnapshot, shareSnapshot, shareUrl, type LoanShareAction, type LoanShareSnapshot, type LoanShareStatus } from "@/lib/loanShare";
-import type { Loan } from "@/lib/loans";
+import { personKey, type Loan } from "@/lib/loans";
 import { ApiError } from "@/types/api";
 import { authHeaders } from "./account";
 import { httpClient } from "./httpClient";
@@ -32,6 +32,10 @@ let asking: Promise<void> | null = null;
 let askedFor: string | null = null;
 // The copy last written for each person in this session.
 const written = new Map<string, LoanShareSnapshot>();
+// The people seen with money lent on this device in this session: once all
+// their loans are gone (removed here, or synced from another device), the
+// device knows it is a removal and not a list not synced yet.
+const seen = new Set<string>();
 const listeners = new Set<() => void>();
 
 function publish(next: SharingState) {
@@ -118,12 +122,18 @@ export const loanSharing = {
     }
   },
 
+  /** The loans on the device when the app starts: who has money lent, before anything changes. */
+  saw(loans: Loan[]) {
+    for (const loan of loans) if (!loan.deletedAt && loan.direction === "lent") seen.add(personKey(loan.person));
+  },
+
   /**
    * The loans changed (here, or synced from another device): each link shows
    * the new copy. A person with no money lent left (their loans removed,
-   * renamed, or turned into "Je dois") has their link stopped. Not while the
-   * device has no loan at all, unless this session wrote their copy: a device
-   * signed in for the first time, before its loans are synced, stops nothing.
+   * renamed, or turned into "Je dois") has their link stopped. When the device
+   * has no loan at all, only if it knew that person's loans (seen in this
+   * session, or the link made here): a device signed in for the first time,
+   * before its loans are synced, stops nothing.
    */
   async refresh(loans: Loan[]) {
     if (state.kind !== "ready") return;
@@ -133,9 +143,11 @@ export const loanSharing = {
       const snapshot = shareSnapshot(loans, person, lender, Date.now());
       try {
         if (!snapshot) {
-          if (loans.length > 0 || written.has(person)) await loanSharing.stop(person);
+          const known = loans.length > 0 || written.has(person) || seen.has(person) || Boolean(await get<LocalShare>(person, db()).catch(() => undefined));
+          if (known) await loanSharing.stop(person);
           continue;
         }
+        seen.add(person);
         if (sameSnapshot(snapshot, written.get(person))) continue;
         await post({ action: "update", person, snapshot });
         written.set(person, snapshot);
@@ -149,6 +161,7 @@ export const loanSharing = {
   /** Signing out or deleting the account. */
   async wipe() {
     written.clear();
+    seen.clear();
     askedFor = null;
     await clear(db()).catch(() => undefined);
     publish({ kind: "signedOut" });

@@ -391,4 +391,21 @@ describe("sharing on the device", () => {
     await loanSharing.refresh([]);
     expect(sent).toEqual([]);
   });
+
+  it("stops a link once all that person's loans are removed on another device", async () => {
+    state.answer = () => ({ ready: true, household: false, shares: [{ person: "soa", lender: "Anna" }, { person: "naivo", lender: "Anna" }] });
+    await loanSharing.ensure("user-6", true);
+    // At start, Soa has money lent on this device; Naivo's loans were never here.
+    loanSharing.saw([loan({ id: "s1", person: "Soa" })]);
+    const sent: string[] = [];
+    state.answer = (body) => {
+      sent.push(`${body?.action} ${body?.person}`);
+      return { ok: true, found: true };
+    };
+    // The sync removed every loan: Soa's link stops, Naivo's (unknown here) is left.
+    await loanSharing.refresh([]);
+    expect(sent).toEqual(["revoke soa"]);
+    const live = loanSharing.get();
+    expect(live.kind === "ready" && Object.keys(live.live)).toEqual(["naivo"]);
+  });
 });

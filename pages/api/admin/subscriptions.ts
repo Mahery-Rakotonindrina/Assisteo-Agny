@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { z } from "zod";
 import { describeOwn } from "@/lib/featureChanges";
 import { formatAriary } from "@/lib/format";
-import { customPlanIdPattern, customPlanOf, normalizeDiff, normalizeQuotas, paidPlans, planListOf, planOfferOf, subscriptionDeepWithoutLimit, type CustomPlan, type PlansConfig, type Subscription } from "@/lib/plans";
+import { customPlanIdPattern, customPlanOf, knowsCreatedPlans, normalizeDiff, olderAppPlan, normalizeQuotas, paidPlans, planListOf, planOfferOf, subscriptionDeepWithoutLimit, type CustomPlan, type PlansConfig, type Subscription } from "@/lib/plans";
 import { guardAdmin } from "@/lib/server/adminAuth";
 import { logAdminAction } from "@/lib/server/adminLog";
 import { sendError } from "@/lib/server/http";
@@ -73,11 +73,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   if (!actor) return;
   const ownerOnly = () => sendError(res, 403, "owner_only", "Only the owner can grant or take back the admin plan.");
   if (!accountsEnabled) return sendError(res, 503, "unavailable", "Accounts are not configured on the server.");
+  // An older app only knows the built-in plans (it breaks on a created plan's
+  // id): it reads a created plan as the built-in plan just below it.
+  const all = knowsCreatedPlans(req.headers);
+  const forApp = <T extends { plan: string }>(row: T, config: PlansConfig): T => (all ? row : { ...row, plan: olderAppPlan(config, row.plan) });
 
   try {
     if (req.method === "GET") {
       const [subscriptions, config] = await Promise.all([listSubscriptions(), getPlansConfig()]);
-      return res.status(200).json({ subscriptions, customPlans: config.customPlans } satisfies AdminSubscriptionsResponse);
+      return res.status(200).json({ subscriptions: subscriptions.map((row) => forApp(row, config)), customPlans: config.customPlans } satisfies AdminSubscriptionsResponse);
     }
 
     // Its own settings, kept only where they differ from the plan; deep analyses without a count refused.
@@ -111,7 +115,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       await logAdminAction(actor.id, "subscription_add", [detail(created.map((row) => row.email).join(", "), fields.plan, fields.amountMga, config), created[0] && ownDetail(created[0])].filter(Boolean).join(" · "));
       // A payment uses up a waiting discount, and may earn a referrer their month.
       await afterPayment(actor.id, created.map((row) => row.email), fields.amountMga);
-      return res.status(201).json({ subscriptions: created } satisfies AdminSubscriptionsResponse);
+      return res.status(201).json({ subscriptions: created.map((row) => forApp(row, config)) } satisfies AdminSubscriptionsResponse);
     }
 
     if (req.method === "PUT") {
@@ -121,12 +125,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       if (!actor.owner && (given.plan === "unlimited" || (await getSubscription(id))?.plan === "unlimited")) return ownerOnly();
       const config = await getPlansConfig();
       const before = await getSubscription(id);
+      // An older app sends back the built-in plan it was shown: the created plan stays.
+      if (!all && before && given.plan !== before.plan && given.plan === olderAppPlan(config, before.plan)) given.plan = before.plan;
       if (unknownPlan(given.plan, config, before?.plan !== given.plan)) return planRefused();
       const input = own(given, config);
       if (!input) return deepRefused();
       const updated = await updateSubscription(id, input);
       await logAdminAction(actor.id, "subscription_edit", [detail(updated.email, updated.plan, updated.amountMga, config), ownDetail(updated) || (input.features === null && input.quotas === null ? "plan" : "")].filter(Boolean).join(" · "));
-      return res.status(200).json(updated);
+      return res.status(200).json(forApp(updated, config));
     }
 
     if (req.method === "PATCH") {

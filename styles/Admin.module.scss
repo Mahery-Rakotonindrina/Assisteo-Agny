@@ -76,11 +76,13 @@
   }
 }
 
+// On a narrow phone in a large text size, the control goes under its label.
 .stepper {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 0.75rem 1rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid var(--border);
 }

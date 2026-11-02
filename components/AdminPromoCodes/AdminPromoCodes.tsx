@@ -9,7 +9,7 @@ import { formatDate, formatNumber } from "@/lib/format";
 import { rise } from "@/lib/motion";
 import { CODE_PATTERN, normalizeCode, type PromoCode, type PromoWithUses } from "@/lib/offers";
 import { adminPlanName, localName } from "@/lib/customPlans";
-import { soldPlans } from "@/lib/plans";
+import { allPlansHeader, soldPlans } from "@/lib/plans";
 import type { AdminPromoCodesResponse } from "@/pages/api/admin/promo-codes";
 import { httpClient } from "@/services/httpClient";
 import styles from "./AdminPromoCodes.module.scss";
@@ -34,11 +34,12 @@ export function AdminPromoCodes({ token }: { token: string }) {
   const [draft, setDraft] = useState<Draft | null>(null);
   const [armed, setArmed] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const headers = { Authorization: `Bearer ${token}` };
+  // "all": the created plans by their own id (an older app gets the built-in plan just below).
+  const headers = { Authorization: `Bearer ${token}`, [allPlansHeader]: "all" };
 
   useEffect(() => {
     httpClient
-      .get<AdminPromoCodesResponse>("/api/admin/promo-codes", { headers: { Authorization: `Bearer ${token}` } })
+      .get<AdminPromoCodesResponse>("/api/admin/promo-codes", { headers: { Authorization: `Bearer ${token}`, [allPlansHeader]: "all" } })
       .then(setData)
       .catch(() => undefined);
   }, [token, version]);

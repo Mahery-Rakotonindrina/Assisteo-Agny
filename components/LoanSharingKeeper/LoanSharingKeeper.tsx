@@ -37,6 +37,8 @@ export function LoanSharingKeeper() {
   useEffect(() => {
     if (!live || !allowed) return;
     let timer: ReturnType<typeof setTimeout> | undefined;
+    // Who has money lent now: their link stops if their loans are removed on another device.
+    void loanStore.list().then((loans) => loanSharing.saw(loans));
     const unsubscribe = loanStore.subscribe(() => {
       clearTimeout(timer);
       timer = setTimeout(() => void loanStore.list().then((loans) => loanSharing.refresh(loans)), 2000);

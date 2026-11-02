@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { z } from "zod";
 import { CODE_PATTERN, normalizeCode, type PromoCode, type PromoWithUses } from "@/lib/offers";
-import { customPlanIdPattern, customPlanOf, soldPlans, type CustomPlan } from "@/lib/plans";
+import { customPlanIdPattern, customPlanOf, knowsCreatedPlans, olderAppPlan, soldPlans, type CustomPlan } from "@/lib/plans";
 import { getPlansConfig } from "@/lib/server/planConfig";
 import { guardAdmin } from "@/lib/server/adminAuth";
 import { logAdminAction } from "@/lib/server/adminLog";
@@ -56,7 +56,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       const email = z.string().trim().toLowerCase().pipe(z.email()).safeParse(req.query.email);
       if (email.success) return res.status(200).json({ discount: await pendingDiscount(email.data) } satisfies AdminDiscountResponse);
       const [codes, config] = await Promise.all([listPromoCodes(), getPlansConfig()]);
-      return res.status(200).json({ codes, durable: offersAreDurable, customPlans: config.customPlans } satisfies AdminPromoCodesResponse);
+      // An older app only knows the built-in plans: a created plan's code shows the built-in plan just below it.
+      const shown = knowsCreatedPlans(req.headers) ? codes : codes.map((promo) => ({ ...promo, plan: olderAppPlan(config, promo.plan) }));
+      return res.status(200).json({ codes: shown, durable: offersAreDurable, customPlans: config.customPlans } satisfies AdminPromoCodesResponse);
     }
 
     if (req.method === "POST") {

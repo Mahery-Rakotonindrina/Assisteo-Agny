@@ -229,6 +229,8 @@
   gap: 0.4rem;
   padding: 0;
   border: 0;
+  // A fieldset is as wide as its content by default: it would go past the summary.
+  min-width: 0;
 
   legend {
     margin-bottom: 0.3rem;
