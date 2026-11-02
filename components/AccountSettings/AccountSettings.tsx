@@ -20,7 +20,7 @@ export function AccountSettings() {
   const toast = useToast();
   const now = useNow(30_000);
   const { session, email, syncStatus, syncNow, signOut, deleteAccount } = useAccount();
-  const { id: plan } = usePlan();
+  const { id, current: plan, color } = usePlan();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [confirmOut, setConfirmOut] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -65,12 +65,12 @@ export function AccountSettings() {
   return (
     <div className={styles.wrap}>
       <div className={styles.row}>
-        <span className={styles.avatar} data-plan={plan}>
+        <span className={styles.avatar} data-plan={plan} data-plan-color={color()}>
           {(email ?? "?").charAt(0).toUpperCase()}
         </span>
         <div className={styles.text}>
           <strong>{email}</strong>
-          {plan !== "free" && <PlanBadge plan={plan} className={styles.plan} />}
+          {id !== "free" && <PlanBadge plan={plan} className={styles.plan} />}
           <small className={styles.status} data-state={syncStatus.state}>
             {syncStatus.state === "syncing" ? (
               <RefreshCw size={13} className={styles.spin} />

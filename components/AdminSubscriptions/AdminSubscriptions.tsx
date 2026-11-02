@@ -7,24 +7,29 @@ import { Button } from "@/components/Button";
 import { PlanBadge, PlanIcon } from "@/components/PlanBadge";
 import { useToast } from "@/components/Toast";
 import { useTranslation } from "@/hooks/useTranslation";
+import { adminPlanName, localName } from "@/lib/customPlans";
 import { formatAriary, formatDate, toDateInput } from "@/lib/format";
 import { easeOut, rise, spring } from "@/lib/motion";
 import { offeredMethods, suggestedAmount } from "@/lib/offers";
 import {
   activePlan,
+  customPlanOf,
   durations,
   normalizeDiff,
   normalizeQuotas,
   paidPlans,
   periodEnd,
+  planListOf,
+  planOfferOf,
   subscriptionDeepWithoutLimit,
   type ActivePlan,
+  type CustomPlan,
   type Duration,
   type FeatureDiff,
-  type PaidPlanId,
   type PlansConfig,
   type QuotaOverrides,
   type Subscription,
+  type SubscriptionPlanId,
 } from "@/lib/plans";
 import type { AdminDiscountResponse } from "@/pages/api/admin/promo-codes";
 import type { AdminSubscriptionsResponse } from "@/pages/api/admin/subscriptions";
@@ -49,25 +54,28 @@ type Person = {
   status: Status;
   rows: Subscription[];
   nextStart: number | null;
-  /** The plan shown: the running one, else the latest recorded. */
-  shown: PaidPlanId;
+  /** The plan shown: the running one (a created plan by its own id), else the latest recorded. */
+  shown: SubscriptionPlanId;
 };
 
 /** The list filters: everyone, one plan running, or no plan running (ended or not started). */
-type Filter = "all" | PaidPlanId | "inactive";
+type Filter = "all" | SubscriptionPlanId | "inactive";
 
-function people(rows: Subscription[], now: number): Person[] {
+/** The plan an e-mail is on: a created plan's own id, else the built-in plan's. */
+const held = (current: ActivePlan): SubscriptionPlanId => current.custom ?? current.plan;
+
+function people(rows: Subscription[], now: number, created: readonly CustomPlan[]): Person[] {
   const byEmail = new Map<string, Subscription[]>();
   for (const row of rows) byEmail.set(row.email, [...(byEmail.get(row.email) ?? []), row]);
   return [...byEmail.entries()]
     .map(([email, list]) => {
-      const current = activePlan(list, now);
+      const current = activePlan(list, now, created);
       const starts = list.map((row) => Date.parse(row.startsAt)).filter((start) => start > now);
       const nextStart = starts.length ? Math.min(...starts) : null;
       const status: Status =
         current.plan === "free" ? (nextStart ? "upcoming" : "ended") : current.endsAt === null ? "offered" : current.endsAt - now < SOON_MS ? "soon" : "active";
       const sorted = [...list].sort((a, b) => Date.parse(b.startsAt) - Date.parse(a.startsAt));
-      return { email, current, status, rows: sorted, nextStart, shown: current.plan === "free" ? sorted[0].plan : current.plan };
+      return { email, current, status, rows: sorted, nextStart, shown: current.plan === "free" ? sorted[0].plan : held(current) };
     })
     .sort((a, b) => statusOrder.indexOf(a.status) - statusOrder.indexOf(b.status) || a.email.localeCompare(b.email));
 }
@@ -82,7 +90,7 @@ type Draft = {
   id?: string;
   /** Several e-mails when adding (one payment for a family), one when editing. */
   emails: string;
-  plan: PaidPlanId;
+  plan: SubscriptionPlanId;
   start: string;
   /** Exact start kept while its day is unchanged (renewals, edits). */
   startAt?: string;
@@ -155,6 +163,7 @@ export function AdminSubscriptions({ token, owner }: { token: string; owner: boo
   const { t, locale } = useTranslation();
   const toast = useToast();
   const [rows, setRows] = useState<Subscription[] | null>(null);
+  const [created, setCreated] = useState<CustomPlan[]>([]);
   const [failure, setFailure] = useState<"error" | "disabled" | null>(null);
   const [version, setVersion] = useState(0);
   const [query, setQuery] = useState("");
@@ -172,6 +181,7 @@ export function AdminSubscriptions({ token, owner }: { token: string; owner: boo
       .then((result) => {
         if (cancelled) return;
         setRows(result.subscriptions);
+        setCreated(result.customPlans ?? []);
         setFailure(null);
         setNow(timestamp());
       })
@@ -210,19 +220,23 @@ export function AdminSubscriptions({ token, owner }: { token: string; owner: boo
   }
   if (!rows) return <div className={styles.card} aria-busy />;
 
-  const list = people(rows, now);
+  const list = people(rows, now, created);
+  const planName = (plan: SubscriptionPlanId) => adminPlanName(plan, t, locale, created);
+  const info = (plan: SubscriptionPlanId) => customPlanOf({ customPlans: created }, plan);
   const needle = query.trim().toLowerCase();
   const running = list.filter((person) => person.current.plan !== "free");
   const matchesFilter = (person: Person) =>
-    filter === "all" ? true : filter === "inactive" ? person.current.plan === "free" : person.current.plan === filter;
+    filter === "all" ? true : filter === "inactive" ? person.current.plan === "free" : held(person.current) === filter;
   const visible = list.filter((person) => matchesFilter(person) && (!needle || person.email.includes(needle)));
   const soon = list.filter((person) => person.status === "soon").length;
   const thisMonth = toDateInput(now).slice(0, 7);
   const cashedThisMonth = rows.filter((row) => toDateInput(Date.parse(row.createdAt)).slice(0, 7) === thisMonth).reduce((total, row) => total + (row.amountMga ?? 0), 0);
   // Per plan: who has it now, and what came in for it this month.
-  const perPlan = paidPlans.map((plan) => ({
+  // The created plans after the built-in ones: those on sale, and those someone still has.
+  const createdShown = created.filter((plan) => plan.onSale || running.some((person) => held(person.current) === plan.id)).map((plan) => plan.id);
+  const perPlan = [...paidPlans, ...createdShown].map((plan) => ({
     plan,
-    count: running.filter((person) => person.current.plan === plan).length,
+    count: running.filter((person) => held(person.current) === plan).length,
     cashed: rows
       .filter((row) => row.plan === plan && toDateInput(Date.parse(row.createdAt)).slice(0, 7) === thisMonth)
       .reduce((total, row) => total + (row.amountMga ?? 0), 0),
@@ -245,7 +259,7 @@ export function AdminSubscriptions({ token, owner }: { token: string; owner: boo
 
   // A reminder to renew, written for the subscriber: by e-mail, or copied for WhatsApp / SMS.
   const reminder = (person: Person) => {
-    const plan = t(`plans.names.${person.shown}`);
+    const plan = planName(person.shown);
     const ended = person.current.plan === "free";
     const end = person.current.endsAt ?? Math.max(...person.rows.map((row) => (row.endsAt ? Date.parse(row.endsAt) : 0)));
     const values = { plan, date: formatDate(lastDay(end), locale), link: `${typeof window === "undefined" ? "" : window.location.origin}/plans` };
@@ -270,7 +284,7 @@ export function AdminSubscriptions({ token, owner }: { token: string; owner: boo
     setDraft(
       newDraft(now, {
         emails: person.email,
-        plan: person.current.plan === "free" ? last.plan : person.current.plan,
+        plan: person.current.plan === "free" ? last.plan : held(person.current),
         start: startAt ? toDateInput(coveredUntil!) : toDateInput(now),
         startAt,
         amount: last.amountMga === null ? "" : String(last.amountMga),
@@ -304,11 +318,12 @@ export function AdminSubscriptions({ token, owner }: { token: string; owner: boo
             type="button"
             className={styles.planTile}
             data-plan={plan}
+            data-plan-color={info(plan)?.color}
             aria-pressed={filter === plan}
             onClick={() => setFilter(filter === plan ? "all" : plan)}
           >
             <span className={styles.planTileHead}>
-              <PlanIcon plan={plan} size={15} /> {t(`plans.names.${plan}`)}
+              <PlanIcon plan={plan} size={15} /> {planName(plan)}
             </span>
             <strong>{count}</strong>
             <small>{plan === "unlimited" ? t("admin.subs.adminRole") : t("admin.subs.cashed", { amount: formatAriary(cashed, locale) })}</small>
@@ -316,8 +331,8 @@ export function AdminSubscriptions({ token, owner }: { token: string; owner: boo
         ))}
       </div>
 
-      <AdminCharts rows={rows} counts={perPlan} now={now} />
-      <PaymentsExport rows={rows} now={now} />
+      <AdminCharts rows={rows} counts={perPlan} now={now} created={created} />
+      <PaymentsExport rows={rows} now={now} planName={planName} />
 
       <Button icon={<Plus />} block onClick={() => setDraft(newDraft(now))}>
         {t("admin.subs.add")}
@@ -338,8 +353,8 @@ export function AdminSubscriptions({ token, owner }: { token: string; owner: boo
           {perPlan
             .filter(({ count }) => count > 0)
             .map(({ plan, count }) => (
-              <button key={plan} type="button" data-plan={plan} aria-pressed={filter === plan} onClick={() => setFilter(plan)}>
-                <PlanIcon plan={plan} size={13} /> {t(`plans.names.${plan}`)} <span>{count}</span>
+              <button key={plan} type="button" data-plan={plan} data-plan-color={info(plan)?.color} aria-pressed={filter === plan} onClick={() => setFilter(plan)}>
+                <PlanIcon plan={plan} size={13} /> {planName(plan)} <span>{count}</span>
               </button>
             ))}
           {inactive > 0 && (
@@ -357,13 +372,13 @@ export function AdminSubscriptions({ token, owner }: { token: string; owner: boo
         {visible.map((person) => {
           const open = openEmail === person.email;
           return (
-            <li key={person.email} className={styles.person} data-status={person.status} data-plan={person.shown}>
+            <li key={person.email} className={styles.person} data-status={person.status} data-plan={person.shown} data-plan-color={info(person.shown)?.color}>
               <button type="button" className={styles.personSummary} onClick={() => setOpenEmail(open ? null : person.email)} aria-expanded={open}>
                 <span className={styles.personText}>
                   <strong>{person.email}</strong>
                   <small>{describe(person)}</small>
                 </span>
-                <PlanBadge plan={person.shown} />
+                <PlanBadge plan={person.shown} custom={info(person.shown)} />
                 <ChevronDown size={16} className={open ? styles.chevronOpen : styles.chevron} />
               </button>
               <AnimatePresence initial={false}>
@@ -412,9 +427,9 @@ export function AdminSubscriptions({ token, owner }: { token: string; owner: boo
                       </div>
                       <ol className={styles.history}>
                         {person.rows.map((row) => (
-                          <li key={row.id} data-plan={row.plan}>
+                          <li key={row.id} data-plan={row.plan} data-plan-color={info(row.plan)?.color}>
                             <div>
-                              <PlanBadge plan={row.plan} />
+                              <PlanBadge plan={row.plan} custom={info(row.plan)} />
                               <strong>
                                 {formatDate(Date.parse(row.startsAt), locale)} →{" "}
                                 {row.endsAt ? formatDate(lastDay(Date.parse(row.endsAt)), locale) : t("admin.subs.noEndShort")}
@@ -562,8 +577,11 @@ function SheetForm({
   const offers = config?.offers ?? null;
   // Its own features and limits, kept only where they differ from the plan chosen (none for Admin).
   const sold = draft.plan === "unlimited" ? null : draft.plan;
-  const planList = config ? config.features[draft.plan] : null;
-  const limits = config && sold ? config.offers[sold] : null;
+  const planList = config ? planListOf(config, draft.plan) : null;
+  const limits = config && sold ? planOfferOf(config, sold) : null;
+  // The created plans on sale, and the one of a record being edited even off sale.
+  const createdChoices = (config?.customPlans ?? []).filter((plan) => plan.onSale || plan.id === initial.plan);
+  const chosen = config ? customPlanOf(config, draft.plan) : null;
   const ownFeatures = planList && sold ? normalizeDiff(planList, draft.features) : null;
   const ownQuotas = limits ? normalizeQuotas(limits, draft.quotas) : null;
   const deepWithoutLimit = Boolean(config && sold && subscriptionDeepWithoutLimit(sold, config, ownFeatures, ownQuotas));
@@ -599,7 +617,7 @@ function SheetForm({
   }, [single, token]);
 
   const waiting = single ? discount : null;
-  const suggestion = !typed && offers && draft.plan !== "unlimited" ? suggestedAmount(offers[draft.plan], draft.duration, waiting?.percent ?? null) : null;
+  const suggestion = !typed && offers && draft.plan !== "unlimited" ? suggestedAmount(planOfferOf(config!, draft.plan) ?? offers.lite, draft.duration, waiting?.percent ?? null) : null;
   const amount = suggestion !== null ? String(suggestion) : draft.amount.replace(/\D/g, "");
 
   const save = async () => {
@@ -625,6 +643,7 @@ function SheetForm({
       <motion.form
         className={styles.sheet}
         data-plan={draft.plan}
+        data-plan-color={chosen?.color}
         role="dialog"
         aria-modal="true"
         aria-labelledby="subscription-title"
@@ -665,6 +684,11 @@ function SheetForm({
               .map((plan) => (
               <button key={plan} type="button" data-plan={plan} aria-pressed={draft.plan === plan} onClick={() => set("plan", plan)}>
                 <PlanIcon plan={plan} size={14} /> {t(`plans.names.${plan}`)}
+              </button>
+            ))}
+            {createdChoices.map((plan) => (
+              <button key={plan.id} type="button" data-plan={plan.id} data-plan-color={plan.color} aria-pressed={draft.plan === plan.id} onClick={() => set("plan", plan.id)}>
+                <PlanIcon plan={plan.id} size={14} /> {localName(plan.name, locale)}
               </button>
             ))}
           </div>

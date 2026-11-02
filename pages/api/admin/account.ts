@@ -3,12 +3,16 @@ import { z } from "zod";
 import {
   activePlan,
   activeSubscription,
+  createdQuotas,
+  customPlanInfo,
+  customPlanOf,
   effectiveFeatures,
   featureOrigins,
   normalizeQuotas,
   planFeatures,
   quotaKeys,
   type ActivePlan,
+  type CustomPlanInfo,
   type FeatureGrant,
   type FeatureLine,
   type PlanLimits,
@@ -28,6 +32,8 @@ export type AdminAccountCard = {
   email: string;
   plan: ActivePlan["plan"];
   endsAt: number | null;
+  /** A plan created from the Admin (then `plan` is the built-in one just below); missing or null otherwise. */
+  customPlan?: CustomPlanInfo | null;
   /** The running subscription whose own settings apply; null on free. */
   subscriptionId: string | null;
   /** Every feature, whether the account has it and why. */
@@ -115,23 +121,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 /** The plan an e-mail has now and its limits, its subscription's own included. */
 async function planAndLimits(email: string, now = Date.now()) {
   const [rows, config] = await Promise.all([subscriptionsForEmail(email), getPlansConfig()]);
-  const current = activePlan(rows, now);
-  const running = activeSubscription(rows, now);
-  return { rows, config, current, running, plan: current.plan, limits: await limitsFor(current.plan, config, running?.quotas) };
+  const current = activePlan(rows, now, config.customPlans);
+  const running = activeSubscription(rows, now, config.customPlans);
+  // A created plan's limits over the built-in plan below it, its subscription's own over them.
+  return { rows, config, current, running, plan: current.plan, limits: await limitsFor(current.plan, config, createdQuotas(config, current.custom, running?.quotas)) };
 }
 
 async function card(email: string): Promise<AdminAccountCard> {
   const now = Date.now();
   const [{ config, current, running }, grants, own, offers] = await Promise.all([planAndLimits(email, now), grantsForEmail(email), ownSettingsReady(), grantsReady()]);
-  const base = await limitsFor(current.plan, config);
+  const base = await limitsFor(current.plan, config, createdQuotas(config, current.custom, null));
   const ownQuotas = current.plan === "unlimited" ? null : normalizeQuotas(base, running?.quotas);
-  const input = { plan: current.plan, email, config, subscription: running, grants, now };
+  const input = { plan: current.plan, custom: current.custom, email, config, subscription: running, grants, now };
   // The limits as the server applies them, the emergency cap on deep analyses included.
-  const capped = await limitsWithCap(current.plan, config, running?.quotas, effectiveFeatures(input));
+  const capped = await limitsWithCap(current.plan, config, createdQuotas(config, current.custom, running?.quotas), effectiveFeatures(input));
+  const created = customPlanOf(config, current.custom);
   return {
     email,
     plan: current.plan,
     endsAt: current.endsAt,
+    customPlan: created ? customPlanInfo(created, config.customPlans) : null,
     subscriptionId: running?.id ?? null,
     features: featureOrigins(input),
     quotas: quotaKeys.map((key) =>

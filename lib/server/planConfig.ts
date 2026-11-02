@@ -1,6 +1,21 @@
 import { z } from "zod";
 import { defaultYearPrice } from "@/lib/offers";
-import { defaultPlansConfig, featureModes, planFeatures, planIds, soldPlans, withFeatureDefaults, type FeatureSettings, type PlanOffer, type PlansConfig } from "@/lib/plans";
+import {
+  customPlanColors,
+  customPlanIdPattern,
+  customPlanSlots,
+  defaultPlansConfig,
+  featureModes,
+  isCustomPlanId,
+  planFeatures,
+  planIds,
+  soldPlans,
+  withFeatureDefaults,
+  type CustomPlan,
+  type FeatureSettings,
+  type PlanOffer,
+  type PlansConfig,
+} from "@/lib/plans";
 import { redis } from "./redis";
 
 // Prices, limits and payment instructions of the plans, editable from /admin.
@@ -54,6 +69,33 @@ export const PlansConfigSchema = z.object({
   }),
 });
 
+/** A plan created from the Admin (Admin → Offers → "Créer une offre"). */
+export const CustomPlanSchema = Offer.extend({
+  id: z.string().regex(customPlanIdPattern).refine(isCustomPlanId, "This id is a built-in plan."),
+  name: z.object({ fr: z.string().trim().min(1).max(24), en: z.string().trim().min(1).max(24) }),
+  color: z.enum(customPlanColors),
+  after: z.enum(customPlanSlots),
+  features: z.array(Feature).max(planFeatures.length),
+  onSale: z.boolean(),
+  createdAt: z.number().int().min(0),
+});
+/** At most this many created plans. */
+export const MAX_CUSTOM_PLANS = 12;
+
+/** The stored created plans that still read right (a broken one is left out rather than failing every request). */
+function storedCustomPlans(stored: unknown): CustomPlan[] {
+  if (!Array.isArray(stored)) return [];
+  const plans: CustomPlan[] = [];
+  const known: readonly string[] = planFeatures;
+  for (const entry of stored) {
+    // A feature removed from the app since is dropped, the plan kept.
+    const features = Array.isArray(entry?.features) ? entry.features.filter((feature: unknown) => typeof feature === "string" && known.includes(feature)) : entry?.features;
+    const parsed = CustomPlanSchema.safeParse({ ...entry, features });
+    if (parsed.success && !plans.some((plan) => plan.id === parsed.data.id)) plans.push({ ...parsed.data, features: planFeatures.filter((feature) => parsed.data.features.includes(feature)) });
+  }
+  return plans.slice(0, MAX_CUSTOM_PLANS);
+}
+
 const KEY = "config:plans";
 let memory: PlansConfig | null = null;
 
@@ -76,7 +118,15 @@ export async function getPlansConfig(): Promise<PlansConfig> {
     // Per plan, so a setting added later gets its default.
     offers: Object.fromEntries(soldPlans.map((plan) => [plan, mergeOffer(plan, stored?.offers?.[plan])])) as PlansConfig["offers"],
     payment: { ...defaultPlansConfig.payment, ...stored?.payment },
+    customPlans: storedCustomPlans(stored?.customPlans),
   };
+}
+
+/** Replaces the created plans, the rest kept. */
+export async function setCustomPlans(customPlans: CustomPlan[]) {
+  const config: PlansConfig = { ...(await getPlansConfig()), customPlans };
+  await setPlansConfig(config);
+  return config;
 }
 
 /** Replaces the features of each plan and their state, the rest kept. */

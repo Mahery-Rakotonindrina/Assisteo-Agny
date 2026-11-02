@@ -1,4 +1,4 @@
-import { activePlan, periodEnd, planRank, soldPlans, type Duration, type PlanOffer, type SoldPlanId, type Subscription } from "./plans";
+import { activePlan, periodEnd, planRank, rankOf, soldPlans, type CustomPlan, type CustomPlanPlace, type Duration, type PlanOffer, type SoldPlanId, type Subscription } from "./plans";
 
 // Pure rules of the offered accesses: the yearly price, the Premium trial,
 // the promo codes and the referral reward. The server applies them
@@ -24,9 +24,9 @@ export function monthsFree(offer: Pick<PlanOffer, "priceMga" | "yearPriceMga">) 
 
 // ---- Premium trial ------------------------------------------------------------
 
-/** Once per account: never had a trial, nor Premium or above (paid or offered). */
-export function trialEligible(rows: Array<Pick<Subscription, "plan" | "paymentMethod">>) {
-  return !rows.some((row) => row.paymentMethod === "trial" || planRank[row.plan] >= planRank.premium);
+/** Once per account: never had a trial, nor Premium or above (paid or offered; `created`: the plans created from the Admin, ranked). */
+export function trialEligible(rows: Array<Pick<Subscription, "plan" | "paymentMethod">>, created: readonly CustomPlanPlace[] = []) {
+  return !rows.some((row) => row.paymentMethod === "trial" || rankOf(row.plan, created) >= planRank.premium);
 }
 
 /** True when the e-mail has paid for something (an amount above 0). */
@@ -38,8 +38,8 @@ export const hasPaid = (rows: Array<Pick<Subscription, "amountMga">>) => rows.so
 export type PromoCode = {
   code: string;
   kind: "access" | "discount";
-  /** Access codes: the plan and how many days. */
-  plan: SoldPlanId;
+  /** Access codes: the plan and how many days (a sold plan, or one created from the Admin). */
+  plan: PromoPlanId;
   days: number;
   /** Discount codes: the percentage off. */
   percent: number;
@@ -50,6 +50,9 @@ export type PromoCode = {
   active: boolean;
   createdAt: number;
 };
+
+/** What an access code gives: a sold plan, or a created one (`CustomPlan.id`). */
+export type PromoPlanId = SoldPlanId | (string & {});
 
 /** A code as listed in /admin, with how many times it was used. */
 export type PromoWithUses = PromoCode & { uses: number };
@@ -122,13 +125,19 @@ export function referralCodeFor(accountId: string) {
 
 /**
  * The referrer's month: their sold plan running now (Lite if none), starting
- * when what they have runs out, else now.
+ * when what they have runs out, else now. A created plan still on sale is
+ * given as is; off sale, the built-in plan just below it.
  */
-export function referralReward(rows: Array<Pick<Subscription, "plan" | "startsAt" | "endsAt">>, now: number) {
-  const current = activePlan(rows, now);
-  const plan: SoldPlanId = (soldPlans as readonly string[]).includes(current.plan) ? (current.plan as SoldPlanId) : "lite";
+export function referralReward(
+  rows: Array<Pick<Subscription, "plan" | "startsAt" | "endsAt">>,
+  now: number,
+  created: ReadonlyArray<Pick<CustomPlan, "id" | "after" | "onSale">> = [],
+) {
+  const current = activePlan(rows, now, created);
+  const builtIn: SoldPlanId = (soldPlans as readonly string[]).includes(current.plan) ? (current.plan as SoldPlanId) : "lite";
+  const plan: PromoPlanId = created.find((entry) => entry.id === current.custom)?.onSale ? current.custom! : builtIn;
   // The coverage of that plan (an admin's plan doesn't delay a Lite month).
-  const covered = activePlan(rows.filter((row) => planRank[row.plan] >= planRank[plan] && row.plan !== "unlimited"), now);
+  const covered = activePlan(rows.filter((row) => rankOf(row.plan, created) >= rankOf(plan, created) && row.plan !== "unlimited"), now, created);
   const start = new Date(covered.plan !== "free" && covered.endsAt !== null && covered.endsAt > now ? covered.endsAt : now);
   return { plan, startsAt: start.toISOString(), endsAt: periodEnd(start, "month")!.toISOString() };
 }

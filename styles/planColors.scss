@@ -1,0 +1,49 @@
+// The colours a plan created from the Admin may take (lib/plans.ts,
+// customPlanColors), on top of [data-plan] (styles/globals.scss): each pair
+// stays readable (AA) under the badge's ink, the page's background, on the
+// dark theme (bright tones) and the light one (deep tones). Checked by
+// tests/unit/customPlans.test.ts.
+
+@use "sass:list";
+
+$dark: (
+  "teal": (#2dd4bf, #14b8a6),
+  "emerald": (#34d399, #10b981),
+  "rose": (#fb7185, #f43f5e),
+  "orange": (#fb923c, #f97316),
+  "indigo": (#a5b4fc, #818cf8),
+  "slate": (#cbd5e1, #94a3b8),
+);
+
+$light: (
+  "teal": (#0f766e, #115e59),
+  "emerald": (#047857, #065f46),
+  "rose": (#be123c, #9f1239),
+  "orange": (#c2410c, #9a3412),
+  "indigo": (#4338ca, #3730a3),
+  "slate": (#475569, #334155),
+);
+
+@mixin tones($map) {
+  @each $name, $pair in $map {
+    &[data-plan-color="#{$name}"],
+    & [data-plan][data-plan-color="#{$name}"] {
+      --plan: #{list.nth($pair, 1)};
+      --plan-2: #{list.nth($pair, 2)};
+    }
+  }
+}
+
+:root {
+  @include tones($dark);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    @include tones($light);
+  }
+}
+
+:root[data-theme="light"] {
+  @include tones($light);
+}

@@ -80,7 +80,12 @@ export function setPlanFeatures(settings: FeatureSettings, plan: PlanId, feature
   return { ...settings, features: { ...settings.features, [plan]: planFeatures.filter((feature) => current.has(feature)) } };
 }
 
-/** The accounts on each paid plan right now (their highest running subscription), from every recorded subscription. */
+/**
+ * The accounts on each paid plan right now (their highest running
+ * subscription), from every recorded subscription. The plans created from
+ * the Admin are not columns of the features table: their subscriptions are
+ * left out here (and below), their features being their plan's own.
+ */
 export function activeSubscriberCounts(rows: Array<Pick<Subscription, "email" | "plan" | "startsAt" | "endsAt">>, now: number): Record<PaidPlanId, number> {
   const byEmail = new Map<string, typeof rows>();
   for (const row of rows) {
@@ -119,11 +124,13 @@ export function keepRunningRights(
   for (const [email, own] of byEmail) {
     const running = activeSubscription(own, now);
     if (!running) continue;
-    const was = before[running.plan];
-    const will = after[running.plan];
+    // Built-in here: without the created plans, `activeSubscription` leaves their rows out.
+    const plan = running.plan as PaidPlanId;
+    const was = before[plan];
+    const will = after[plan];
     if (was.length === will.length && was.every((feature) => will.includes(feature))) continue;
     const features = keptDiff(was, will, running.features);
-    if (JSON.stringify(features) !== JSON.stringify(running.features ?? null)) updates.push({ id: running.id, email, plan: running.plan, features });
+    if (JSON.stringify(features) !== JSON.stringify(running.features ?? null)) updates.push({ id: running.id, email, plan, features });
   }
   return updates;
 }

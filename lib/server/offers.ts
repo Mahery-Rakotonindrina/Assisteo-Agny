@@ -1,5 +1,6 @@
 import { discountStillValid, referralReward, type PromoCode } from "@/lib/offers";
 import { logAdminAction } from "./adminLog";
+import { getPlansConfig } from "./planConfig";
 import {
   clearDiscount,
   getDiscount,
@@ -80,7 +81,7 @@ export async function afterPayment(actor: string, emails: string[], amountMga: n
       const referrer = await parentOf(email);
       if (!referrer || !(await markRewarded(email))) continue;
       try {
-        const reward = referralReward(await subscriptionsForEmail(referrer), now);
+        const reward = referralReward(await subscriptionsForEmail(referrer), now, (await getPlansConfig()).customPlans);
         await addSubscriptions([
           { email: referrer, ...reward, amountMga: null, paymentMethod: "referral", paymentRef: null, note: `Parrainage : ${email}` },
         ]);

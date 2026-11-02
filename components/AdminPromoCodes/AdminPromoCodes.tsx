@@ -8,12 +8,13 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { formatDate, formatNumber } from "@/lib/format";
 import { rise } from "@/lib/motion";
 import { CODE_PATTERN, normalizeCode, type PromoCode, type PromoWithUses } from "@/lib/offers";
-import { soldPlans, type SoldPlanId } from "@/lib/plans";
+import { adminPlanName, localName } from "@/lib/customPlans";
+import { soldPlans } from "@/lib/plans";
 import type { AdminPromoCodesResponse } from "@/pages/api/admin/promo-codes";
 import { httpClient } from "@/services/httpClient";
 import styles from "./AdminPromoCodes.module.scss";
 
-type Draft = { code: string; kind: PromoCode["kind"]; plan: SoldPlanId; days: string; percent: string; maxUses: string; expires: string };
+type Draft = { code: string; kind: PromoCode["kind"]; plan: PromoCode["plan"]; days: string; percent: string; maxUses: string; expires: string };
 
 const emptyDraft: Draft = { code: "", kind: "access", plan: "premium", days: "30", percent: "20", maxUses: "0", expires: "" };
 const digits = (value: string) => value.replace(/\D/g, "").slice(0, 6);
@@ -81,7 +82,7 @@ export function AdminPromoCodes({ token }: { token: string }) {
   const describe = (promo: PromoWithUses) =>
     [
       promo.kind === "access"
-        ? t("admin.promo.accessLine", { plan: t(`plans.names.${promo.plan}`), days: promo.days })
+        ? t("admin.promo.accessLine", { plan: adminPlanName(promo.plan, t, locale, data.customPlans ?? []), days: promo.days })
         : t("admin.promo.discountLine", { percent: promo.percent }),
       promo.maxUses > 0
         ? t("admin.promo.usesOf", { count: formatNumber(promo.uses, locale), max: formatNumber(promo.maxUses, locale) })
@@ -187,6 +188,13 @@ export function AdminPromoCodes({ token }: { token: string }) {
                       <PlanIcon plan={plan} size={14} /> {t(`plans.names.${plan}`)}
                     </button>
                   ))}
+                  {(data.customPlans ?? [])
+                    .filter((plan) => plan.onSale)
+                    .map((plan) => (
+                      <button key={plan.id} type="button" data-plan={plan.id} data-plan-color={plan.color} aria-pressed={draft.plan === plan.id} onClick={() => set("plan", plan.id)}>
+                        <PlanIcon plan={plan.id} size={14} /> {localName(plan.name, locale)}
+                      </button>
+                    ))}
                 </div>
               </div>
               <label className={styles.field}>

@@ -77,7 +77,7 @@ export default function SettingsPage() {
   const { settings, update } = useSettings();
   // Parcel arrival notifications are reminders: paid plans only (Lite and up).
   const canRemind = usePlan().has("reminders");
-  const { planFor } = usePlan();
+  const { planFor, name: planName } = usePlan();
   const android = useAndroidDownload();
   const { entries } = useHistory();
   const [permission, setPermission] = useState<NotificationPermission>("prompt");
@@ -371,7 +371,7 @@ export default function SettingsPage() {
                   disabled={permission === "unsupported"}
                 />
               ) : (
-                <Link href="/plans" aria-label={t("reminders.lockedParcels", { plan: t(`plans.names.${planFor("reminders") ?? "lite"}`) })}>
+                <Link href="/plans" aria-label={t("reminders.lockedParcels", { plan: planName(planFor("reminders") ?? "lite") })}>
                   <PlanBadge plan={planFor("reminders")} />
                 </Link>
               )}

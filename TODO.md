@@ -165,7 +165,7 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Fonctionnalités réglables par abonné : à l'ajout ou au renouvellement d'un abonné, les fonctionnalités de son offre sont cochées par défaut, et on peut en ajouter ou en retirer pour lui seul — gardé comme la différence avec l'offre, bouton « Revenir à l'offre » ; migration 0011 à coller
 - [x] L'app de chaque utilisateur suit ces réglages (menus, boutons, étiquettes « à partir de… », refus côté serveur), tout de suite et sans nouvel APK — le serveur et le site tout de suite ; sur Android, à partir du prochain APK, puis sans nouvelle version
 - [x] Chaque changement de fonctionnalités noté dans le journal des actions admin
-- [ ] Créer une nouvelle offre depuis l'Admin (nom, couleur, prix, quotas, fonctionnalités)
+- [x] Créer une nouvelle offre depuis l'Admin (nom, couleur, prix, quotas, fonctionnalités) — Admin → Offres → « Créer une offre », rangée entre deux offres de base, vendue comme Lite ou Premium ; migration 0015 à coller
 - [x] Avant d'enregistrer un changement d'offre : nombre d'abonnés concernés, et choix « tous » ou « seulement les nouveaux abonnements et renouvellements » — « seulement les nouveaux » : chaque abonné actif garde ses droits jusqu'à son renouvellement, noté au journal
 - [x] Règle commune quand une fonctionnalité est retirée : données gardées, écran en lecture seule, rappels coupés, tout revient si elle est réactivée — complétée pour les coûts des colis et « Mes dépenses »
 - [x] Dépendances entre fonctionnalités (rappels du garage → rappels ; budget en famille → « Mes dépenses ») : avertissement, et les fonctions qui en dépendent sont décochées avec — outils revendeur → coûts des colis
