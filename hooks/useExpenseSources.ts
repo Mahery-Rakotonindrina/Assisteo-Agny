@@ -1,8 +1,10 @@
 import { useMemo } from "react";
 import { listBills } from "@/lib/bills";
 import { isMine } from "@/lib/household";
-import { sourceItems, type ExpenseRecord, type SourceItem } from "@/lib/expenses";
+import type { ExpenseRecord, SourceItem } from "@/lib/expenses";
 import { budgetSources, excludedKeys, separatesActivity } from "@/lib/resale";
+import { resetSince, sourcesSince } from "@/lib/screenReset";
+import { useExpenses } from "./useExpenses";
 import { useHistory } from "./useHistory";
 import { useHousehold, useHouseholdExpenses } from "./useHousehold";
 import { useLists } from "./useLists";
@@ -14,9 +16,11 @@ import { useVehicles } from "./useVehicles";
  * What "Mes dépenses" takes from the rest of the app, computed each time
  * (never copied): paid bills, ticked shopping, parcel costs and sales, the
  * garage, scanned receipts (money paid or received) and the subscriptions paid.
+ * Those from before "Remettre à zéro" are left out (lib/screenReset.ts).
  */
 export function useExpenseSources() {
   const { entries } = useHistory();
+  const since = resetSince(useExpenses().records);
   const { lists } = useLists();
   const { parcels } = useParcels();
   const { vehicles } = useVehicles();
@@ -28,17 +32,20 @@ export function useExpenseSources() {
   return useMemo(
     // The bills' status doesn't matter here, only their payment day: any "now" does.
     () =>
-      sourceItems({
-        bills: listBills(entries, 0),
-        lists,
-        parcels,
-        vehicles,
-        receipts: entries,
-        payments,
-        // A receipt the user moved to the household counts there, not here.
-        taken: shared.filter((expense) => isMine(expense, me)),
-      }),
-    [entries, lists, parcels, vehicles, payments, shared, me],
+      sourcesSince(
+        {
+          bills: listBills(entries, 0),
+          lists,
+          parcels,
+          vehicles,
+          receipts: entries,
+          payments,
+          // A receipt the user moved to the household counts there, not here.
+          taken: shared.filter((expense) => isMine(expense, me)),
+        },
+        since,
+      ),
+    [entries, lists, parcels, vehicles, payments, shared, me, since],
   );
 }
 

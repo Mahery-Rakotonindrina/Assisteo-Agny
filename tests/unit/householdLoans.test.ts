@@ -11,14 +11,24 @@ vi.mock("@/lib/supabase", () => ({
   supabase: () => ({
     from: () => ({
       select: () => ({
-        match: async (match: Record<string, string>) => ({ data: server.rows.filter((row) => row.household_id === match.household_id), error: null }),
+        match: (match: Record<string, string>) => ({
+          order: () => ({
+            range: async (from: number, to: number) => ({ data: server.rows.filter((row) => row.household_id === match.household_id).slice(from, to + 1), error: null }),
+          }),
+        }),
       }),
-      upsert: async (row: Row) => {
-        if (row.user_id !== server.as) return { error: { message: "new row violates row-level security policy" } };
-        const existing = server.rows.find((item) => item.household_id === row.household_id && item.id === row.id);
-        if (existing && existing.user_id !== server.as) return { error: { message: "new row violates row-level security policy" } };
-        if (existing) Object.assign(existing, row);
-        else server.rows.push({ ...row });
+      upsert: async (rows: Row | Row[]) => {
+        // One request: refused whole when a row breaks the policy.
+        for (const row of [rows].flat()) {
+          if (row.user_id !== server.as) return { error: { message: "new row violates row-level security policy" } };
+          const existing = server.rows.find((item) => item.household_id === row.household_id && item.id === row.id);
+          if (existing && existing.user_id !== server.as) return { error: { message: "new row violates row-level security policy" } };
+        }
+        for (const row of [rows].flat()) {
+          const existing = server.rows.find((item) => item.household_id === row.household_id && item.id === row.id);
+          if (existing) Object.assign(existing, row);
+          else server.rows.push({ ...row });
+        }
         return { error: null };
       },
     }),

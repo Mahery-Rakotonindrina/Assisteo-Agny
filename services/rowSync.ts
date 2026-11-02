@@ -31,6 +31,11 @@ export type RowSyncOptions<T> = {
   accept?: (record: T) => T | null;
 };
 
+/** The server's cap on the rows of one answer (Supabase's max rows). */
+export const PULL_PAGE = 1000;
+/** Rows written in one request. */
+export const PUSH_BATCH = 200;
+
 const time = (value: string | null) => (value ? new Date(value).getTime() : 0);
 
 /** What is stored server-side: the record without device bookkeeping. */
@@ -49,13 +54,20 @@ export function createRowSync<T extends SyncedRecord>(table: string, store: Sync
     running ??= (async () => {
       const db = supabase();
       const columns: string = withAuthor ? "id, data, updated_at, deleted_at, user_id" : "id, data, updated_at, deleted_at";
-      const query = db.from(table).select(columns);
-      const { data, error } = await (match ? query.match(match) : query);
-      if (error) throw error;
+      // The server answers 1000 rows at most: read page by page (a screen reset leaves many tombstones).
+      const rows: Row<T>[] = [];
+      for (let from = 0; ; from += PULL_PAGE) {
+        const query = db.from(table).select(columns);
+        const { data, error } = await (match ? query.match(match) : query).order("id").range(from, from + PULL_PAGE - 1);
+        if (error) throw error;
+        const page = (data ?? []) as unknown as Row<T>[];
+        rows.push(...page);
+        if (page.length < PULL_PAGE) break;
+      }
       let changed = false;
 
       // Pull: take the server's version unless this device has a newer edit.
-      for (const row of (data ?? []) as unknown as Row<T>[]) {
+      for (const row of rows) {
         const local = await store.rawGet(row.id);
         const remoteAt = time(row.updated_at);
         if (local?.dirty && local.updatedAt >= remoteAt) continue;
@@ -74,23 +86,28 @@ export function createRowSync<T extends SyncedRecord>(table: string, store: Sync
         }
       }
 
-      // Push.
-      for (const local of await store.raw()) {
-        if (!local.dirty || (canPush && !canPush(local, uid))) continue;
-        const { error: pushError } = await db.from(table).upsert({
-          ...match,
-          user_id: uid,
-          id: local.id,
-          data: toData(local),
-          updated_at: new Date(local.updatedAt).toISOString(),
-          deleted_at: local.deletedAt ? new Date(local.deletedAt).toISOString() : null,
-        });
+      // Push, a batch at a time (a screen reset marks hundreds of rows at once).
+      const dirty = (await store.raw()).filter((local) => local.dirty && (!canPush || canPush(local, uid)));
+      for (let start = 0; start < dirty.length; start += PUSH_BATCH) {
+        const batch = dirty.slice(start, start + PUSH_BATCH);
+        const { error: pushError } = await db.from(table).upsert(
+          batch.map((local) => ({
+            ...match,
+            user_id: uid,
+            id: local.id,
+            data: toData(local),
+            updated_at: new Date(local.updatedAt).toISOString(),
+            deleted_at: local.deletedAt ? new Date(local.deletedAt).toISOString() : null,
+          })),
+        );
         if (pushError) throw pushError;
-        // Only clear the flag if nothing changed while uploading.
-        const latest = await store.rawGet(local.id);
-        if (latest && latest.updatedAt === local.updatedAt) {
-          if (latest.deletedAt) await store.rawDelete(local.id);
-          else await store.rawPut({ ...latest, dirty: false });
+        for (const local of batch) {
+          // Only clear the flag if nothing changed while uploading.
+          const latest = await store.rawGet(local.id);
+          if (latest && latest.updatedAt === local.updatedAt) {
+            if (latest.deletedAt) await store.rawDelete(local.id);
+            else await store.rawPut({ ...latest, dirty: false });
+          }
         }
       }
 

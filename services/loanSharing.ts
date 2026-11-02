@@ -122,6 +122,22 @@ export const loanSharing = {
     }
   },
 
+  /**
+   * "Remettre à zéro" of the loans: every live link stopped, like "Arrêter le
+   * partage". False when the server can't be reached (offline) while links may
+   * be live: nothing should be removed then. Signed out, or before migration
+   * 0012, there is no link to stop.
+   */
+  async stopAll() {
+    // Asked again: a link may have been made on another device since.
+    await loanSharing.ensure(askedFor ?? "device", true);
+    // Unknown: offline (the server alone knows the links).
+    if (state.kind === "unknown") return false;
+    if (state.kind !== "ready") return true;
+    const results = await Promise.allSettled(Object.keys(state.live).map((person) => loanSharing.stop(person)));
+    return results.every((result) => result.status === "fulfilled");
+  },
+
   /** The loans on the device when the app starts: who has money lent, before anything changes. */
   saw(loans: Loan[]) {
     for (const loan of loans) if (!loan.deletedAt && loan.direction === "lent") seen.add(personKey(loan.person));

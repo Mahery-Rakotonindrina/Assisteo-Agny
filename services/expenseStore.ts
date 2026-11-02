@@ -4,6 +4,8 @@ import {
   type ActivitySetting,
   BUDGET_ID,
   exclusionId,
+  RESET_ID,
+  type ResetMark,
   type Budget,
   type Converted,
   type CustomCategory,
@@ -22,6 +24,7 @@ import {
   walletPickId,
 } from "@/lib/expenses";
 import { createId } from "./historyStore";
+import { removeRecords } from "./storeRemoval";
 
 // "Mes dépenses": expenses, incomes, recurring items, the budget, custom
 // categories and exclusions, one record each. Local-first like the garage;
@@ -293,6 +296,20 @@ export const expenseStore = {
       await del(id, db());
       notify();
     }
+  },
+
+  // ---- "Remettre à zéro" (lib/screenReset.ts) -------------------------------------------
+
+  /** Removes these records at once (synced like any removal). */
+  async removeMany(ids: string[]) {
+    const wanted = new Set(ids);
+    await removeRecords(db(), (await values<ExpenseRecord>(db())).filter((record) => wanted.has(record.id) && !record.deletedAt), keepTombstones);
+    notify();
+  },
+
+  /** The lines computed from the rest of the app no longer count before now. */
+  async markReset(at = Date.now()) {
+    await save<ResetMark>("reset", RESET_ID, { at });
   },
 
   // ---- For the sync engine -----------------------------------------------------

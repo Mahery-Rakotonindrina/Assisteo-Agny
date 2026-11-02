@@ -1,0 +1,132 @@
+@use "../../styles/mixins" as *;
+
+// "Remettre à zéro" in Réglages: one line per screen, then its window.
+
+.intro {
+  margin: 0;
+  padding: 0.85rem 1rem 0.25rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.row {
+  @include pressable;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  width: 100%;
+  min-height: 44px;
+  padding: 0.85rem 1rem;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  & + & {
+    border-top: 1px solid var(--border);
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.6;
+
+    &:active {
+      transform: none;
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent-mark);
+    outline-offset: -2px;
+  }
+}
+
+.icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 10px;
+  background: var(--danger-soft);
+  color: var(--danger);
+
+  svg {
+    width: 1.05rem;
+    height: 1.05rem;
+  }
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  font-weight: 500;
+  overflow-wrap: break-word;
+
+  small {
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: var(--text-muted);
+  }
+}
+
+.chevron {
+  flex-shrink: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+  color: var(--text-muted);
+}
+
+// ---- The window ----------------------------------------------------------------------
+
+.window {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  overflow-wrap: break-word;
+
+  h3 {
+    margin: 0 0 0.35rem;
+    font-size: 0.95rem;
+  }
+
+  p {
+    margin: 0;
+    color: var(--text-muted);
+  }
+
+  .warning {
+    padding: 0.6rem 0.8rem;
+    border-radius: var(--radius-sm);
+    background: var(--danger-soft);
+    color: var(--danger);
+    font-size: 0.88rem;
+  }
+}
+
+.goes {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.export {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  font-weight: 600;
+  color: var(--accent-text);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
