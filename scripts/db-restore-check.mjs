@@ -161,6 +161,11 @@ function sampleBackup() {
         { id: randomUUID(), email: "ben@example.com", feature: "garage", starts_at: at(3), ends_at: at(10), note: "Essai du garage", created_by: "owner", created_at: at(3) },
         { id: randomUUID(), email: "anna@example.com", feature: "pdfExport", starts_at: at(1), ends_at: at(2), note: null, created_by: "admin@example.com", created_at: at(1) },
       ],
+      // Migration 0016: Anna shares her Premium with two people.
+      family_seats: [
+        { id: randomUUID(), owner_id: anna, owner_email: "anna@example.com", owner_name: "Anna", member_email: "mere.rabe@example.com", created_at: at(4) },
+        { id: randomUUID(), owner_id: anna, owner_email: "anna@example.com", owner_name: null, member_email: "fils.rabe@example.com", created_at: at(5) },
+      ],
       _migrations: [],
     },
   };

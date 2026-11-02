@@ -487,7 +487,9 @@
       "ended": "Ended on {date}",
       "givenOn": "Offered on {date}",
       "stop": "Stop now",
-      "stopped": "Offer stopped."
+      "stopped": "Offer stopped.",
+      "seatOf": "Family seat of {email}",
+      "seatsGiven": "Family seats given: {list}"
     },
     "title": "Admin",
     "subtitle": "Server settings, applied immediately to every app.",
@@ -642,7 +644,8 @@
         "questionsPerDay": "Questions / day",
         "parcels": "Parcels followed",
         "deepPerMonth": "Deep analyses / month",
-        "yearPriceMga": "Price (Ar / year)"
+        "yearPriceMga": "Price (Ar / year)",
+        "familySeats": "Family seats"
       },
       "zeroHint": "0 = no limit. Admin: everything is unlimited.",
       "freeParcels": "Parcels followed without a plan",
@@ -694,7 +697,8 @@
         "deleteConfirm": "Tap again to delete",
         "deleted": "Plan deleted",
         "inUse": "Someone still has this plan: take it off sale instead."
-      }
+      },
+      "familySeatsHint": "People the subscriber may add. 0: none."
     },
     "adminAccount": "Your account is an admin: open the admin space with your account, or with the token.",
     "ai": {
@@ -825,7 +829,10 @@
         "feature_status": "A feature’s state changed",
         "plan_create": "Plan created",
         "plan_edit": "Created plan changed",
-        "plan_delete": "Created plan deleted"
+        "plan_delete": "Created plan deleted",
+        "family_seat_add": "Family seat added (by the subscriber)",
+        "family_seat_remove": "Family seat removed (by the subscriber)",
+        "family_seat_leave": "Family seat left"
       }
     },
     "export": {
@@ -1459,7 +1466,8 @@
       "expenses": "My expenses: the month’s budget, alone or as a household",
       "inventory": "My home: your items, their warranty and invoices, export for the insurer",
       "plants": "My plants: watering, morning reminder, diagnosis of a sick plant",
-      "allPlan": "Everything in {plan}, plus:"
+      "allPlan": "Everything in {plan}, plus:",
+      "family": "Up to {count} people of your family"
     },
     "how": "How to subscribe",
     "step1": "Sign in",
@@ -1542,7 +1550,33 @@
       "share": "Share",
       "copy": "Copy the code"
     },
-    "unavailable": "This feature isn’t available right now."
+    "unavailable": "This feature isn’t available right now.",
+    "family": {
+      "title": "Share my plan with my family",
+      "count": "{used}/{seats} seats",
+      "hint": "Add a relative’s e-mail: they get your plan’s features and their own quotas while your subscription runs.",
+      "noSeats": "Your current plan has no family seats.",
+      "trial": "During the free trial, you can’t share your plan yet.",
+      "emailLabel": "The person’s e-mail",
+      "add": "Add",
+      "added": "{email} now enjoys your plan.",
+      "removeLabel": "Remove {email}",
+      "removed": "{email} no longer has your family seat.",
+      "inactive": "Beyond your seats: nothing for now",
+      "full": "All your seats are taken.",
+      "taken": "This person already has a family seat.",
+      "self": "That’s your own e-mail.",
+      "invalid": "This e-mail doesn’t look right.",
+      "unavailable": "Family sharing is coming soon.",
+      "failed": "That didn’t work. Try again.",
+      "offeredBy": "Offered by {owner} until {date}",
+      "offeredByNoEnd": "Offered by {owner}",
+      "joined": "You have a seat in {owner}’s plan. You keep all your data if you leave it.",
+      "leave": "Leave this seat",
+      "leaveConfirm": "Yes, leave",
+      "cancel": "Cancel",
+      "left": "You left the family seat."
+    }
   },
   "deep": {
     "button": "Deep analysis",

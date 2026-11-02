@@ -164,7 +164,8 @@ async function selectOwn<T>(columns: string, read: (columns: string) => Read): P
 export async function subscriptionRowsForEmails(emails: string[]) {
   if (emails.length === 0 || !accountsEnabled) return [];
   const lower = emails.map((email) => email.toLowerCase());
-  return selectOwn<Array<Pick<Row, "email" | "plan" | "starts_at" | "ends_at" | "features">>>("email, plan, starts_at, ends_at", (columns) =>
+  // payment_method: a free trial gives no family seat (lib/familySeats.ts).
+  return selectOwn<Array<Pick<Row, "email" | "plan" | "starts_at" | "ends_at" | "payment_method" | "features">>>("email, plan, starts_at, ends_at, payment_method", (columns) =>
     table().select(columns).in("email", lower),
   );
 }
@@ -172,19 +173,19 @@ export async function subscriptionRowsForEmails(emails: string[]) {
 export type Access = {
   current: ActivePlan;
   /** The subscription whose own settings apply now; null on free. */
-  subscription: Pick<Subscription, "id" | "features" | "quotas"> | null;
+  subscription: (Pick<Subscription, "id" | "features" | "quotas"> & { paymentMethod?: string | null }) | null;
 };
 
 /** The plan an e-mail has right now and its running subscription's own settings, in one read (`created`: the plans created from the Admin). */
 export async function accessForEmail(email: string | null | undefined, now = Date.now(), created: readonly CustomPlanPlace[] = []): Promise<Access> {
   if (!email || !accountsEnabled) return { current: { plan: "free", endsAt: null }, subscription: null };
   const rows = (
-    await selectOwn<Array<Pick<Row, "id" | "plan" | "starts_at" | "ends_at" | "features" | "quotas">>>("id, plan, starts_at, ends_at", (columns) =>
+    await selectOwn<Array<Pick<Row, "id" | "plan" | "starts_at" | "ends_at" | "payment_method" | "features" | "quotas">>>("id, plan, starts_at, ends_at, payment_method", (columns) =>
       table().select(columns).eq("email", email.toLowerCase()),
     )
-  ).map((row) => ({ id: row.id, plan: row.plan, startsAt: row.starts_at, endsAt: row.ends_at, features: row.features ?? null, quotas: row.quotas ?? null }));
+  ).map((row) => ({ id: row.id, plan: row.plan, startsAt: row.starts_at, endsAt: row.ends_at, paymentMethod: row.payment_method ?? null, features: row.features ?? null, quotas: row.quotas ?? null }));
   const running = activeSubscription(rows, now, created);
-  return { current: activePlan(rows, now, created), subscription: running && { id: running.id, features: running.features, quotas: running.quotas } };
+  return { current: activePlan(rows, now, created), subscription: running && { id: running.id, features: running.features, quotas: running.quotas, paymentMethod: running.paymentMethod } };
 }
 
 /** The plan an e-mail has right now; free when signed out or without accounts. */

@@ -34,6 +34,7 @@ export const RESTORE_KEYS = {
   household_loans: ["household_id", "id"],
   subscriptions: ["id"],
   feature_grants: ["id"],
+  family_seats: ["id"],
 };
 
 export const TABLES = [...Object.keys(RESTORE_KEYS), "_migrations"];

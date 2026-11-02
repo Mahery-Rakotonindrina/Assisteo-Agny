@@ -15,7 +15,7 @@ import { rise, stagger } from "@/lib/motion";
 import { defaultYearPrice, discountedPrice, monthsFree, TRIAL_DAYS } from "@/lib/offers";
 import { isBuiltInPlan, localName, planRankIn } from "@/lib/customPlans";
 import { defaultPlansConfig, planIds, planRank, soldPlans, type AnyPlanId, type PlanOffer, type PlanResponse } from "@/lib/plans";
-import { offerLines } from "@/lib/planPerks";
+import { familyLine, offerLines } from "@/lib/planPerks";
 import { haptics, shareText } from "@/services/device";
 import { redeemCode, startPremiumTrial } from "@/services/offers";
 import { planStore } from "@/services/plan";
@@ -110,7 +110,7 @@ export default function PlansPage() {
     return below === "lite" || below === "premium" || below === "pro" ? below : null;
   };
   const features = (offer: PlanOffer, offerId: AnyPlanId) => {
-    const limits = [limit(offer.scans, "scans"), limit(offer.questionsPerDay, "questions"), limit(offer.parcels, "parcels")];
+    const limits = [limit(offer.scans, "scans"), limit(offer.questionsPerDay, "questions"), limit(offer.parcels, "parcels"), ...familyLine(offer.familySeats, t, locale)];
     const below = belowOf(offerId);
     return offerLines(
       { id: offerId, features: offerFeatures(offerId), deepPerMonth: offer.deepPerMonth },

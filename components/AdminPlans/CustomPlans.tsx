@@ -15,7 +15,7 @@ import { httpClient } from "@/services/httpClient";
 import { ApiError } from "@/types/api";
 import styles from "./AdminPlans.module.scss";
 
-const offerFields: Array<keyof PlanOffer> = ["priceMga", "yearPriceMga", "scans", "questionsPerDay", "parcels", "deepPerMonth"];
+const offerFields: Array<keyof PlanOffer> = ["priceMga", "yearPriceMga", "scans", "questionsPerDay", "parcels", "deepPerMonth", "familySeats"];
 
 type Draft = Omit<CustomPlan, "createdAt"> & { createdAt?: number };
 
@@ -32,6 +32,7 @@ const blank = (): Draft => ({
   questionsPerDay: 0,
   parcels: 0,
   deepPerMonth: 0,
+  familySeats: 0,
 });
 
 /**
@@ -267,6 +268,7 @@ function PlanForm({
             <input inputMode="numeric" value={String(draft[field])} onChange={(event) => onChange({ ...draft, [field]: number(event.target.value) })} data-testid={`custom-plan-${field}`} />
             {field === "yearPriceMga" && <small>{t("admin.plans.monthsFree", { count: monthsFree(draft) })}</small>}
             {field === "deepPerMonth" && deepWithoutLimit && <small className={styles.error}>{t("admin.plans.deepNeedsLimit")}</small>}
+            {field === "familySeats" && <small>{t("admin.plans.familySeatsHint")}</small>}
           </label>
         ))}
       </div>

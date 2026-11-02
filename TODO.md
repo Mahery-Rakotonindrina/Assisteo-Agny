@@ -144,7 +144,7 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Codes promo, parrainage (1 mois offert) — codes créés dans l'Admin (accès offert ou réduction), « J'ai un code » sur la page Offres, mois offert au parrain au premier paiement du filleul
 - [x] Offre annuelle moins chère, Premium à l'essai 7 jours — prix annuel réglable (10 mois par défaut), essai une seule fois par compte
 - [ ] Reçu de paiement en PDF
-- [ ] Places famille réellement gérées dans Premium
+- [x] Places famille réellement gérées dans Premium — l’abonné ajoute ou retire des proches par e-mail depuis « Mon offre » (4 places en Premium et Pro, réglables dans Admin → Offres) ; migration 0016 à coller
 
 ## 12. Administration
 
