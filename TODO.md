@@ -61,7 +61,7 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Conseils, actions, mises en garde, idées
 - [x] « Mes plantes » : rappels d'arrosage, diagnostic de maladie — à partir de Lite : écran /plants, « Ajouter à mes plantes » depuis un scan, arrosage proposé par l’IA selon la saison, « Arrosée aujourd’hui », rappel le matin, « Ma plante a un problème » (un scan du mois) ; table plants (0013), appliquée en production
 - [x] Objets : prix de revente estimé, texte d'annonce prêt à publier — « Je veux le vendre » sur un objet : état, lieu, annonce de l’IA (prix conseillé en ariary et fourchette, mots-clés, malgache en option), copier, WhatsApp, Facebook, partager avec la photo ; compte comme une question du jour ; gardée dans l’historique
-- [ ] Inventaire de la maison (garanties, factures liées)
+- [x] Inventaire de la maison (garanties, factures liées) — « Ma maison », à partir de Premium : rappel 30 jours avant la fin de garantie, export PDF et Excel pour l’assurance ; migration 0014 appliquée
 
 ## 6. Questions sur un scan
 
@@ -165,7 +165,7 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Fonctionnalités réglables par abonné : à l'ajout ou au renouvellement d'un abonné, les fonctionnalités de son offre sont cochées par défaut, et on peut en ajouter ou en retirer pour lui seul — gardé comme la différence avec l'offre, bouton « Revenir à l'offre » ; migration 0011 à coller
 - [x] L'app de chaque utilisateur suit ces réglages (menus, boutons, étiquettes « à partir de… », refus côté serveur), tout de suite et sans nouvel APK — le serveur et le site tout de suite ; sur Android, à partir du prochain APK, puis sans nouvelle version
 - [x] Chaque changement de fonctionnalités noté dans le journal des actions admin
-- [ ] Créer une nouvelle offre depuis l'Admin (nom, couleur, prix, quotas, fonctionnalités)
+- [x] Créer une nouvelle offre depuis l'Admin (nom, couleur, prix, quotas, fonctionnalités) — Admin → Offres → « Créer une offre », rangée entre deux offres de base, vendue comme Lite ou Premium ; migration 0015 à coller
 - [x] Avant d'enregistrer un changement d'offre : nombre d'abonnés concernés, et choix « tous » ou « seulement les nouveaux abonnements et renouvellements » — « seulement les nouveaux » : chaque abonné actif garde ses droits jusqu'à son renouvellement, noté au journal
 - [x] Règle commune quand une fonctionnalité est retirée : données gardées, écran en lecture seule, rappels coupés, tout revient si elle est réactivée — complétée pour les coûts des colis et « Mes dépenses »
 - [x] Dépendances entre fonctionnalités (rappels du garage → rappels ; budget en famille → « Mes dépenses ») : avertissement, et les fonctions qui en dépendent sont décochées avec — outils revendeur → coûts des colis
@@ -193,6 +193,7 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Référencement Google : titres et descriptions, robots.txt et sitemap, aperçu au partage (WhatsApp, Facebook), écrans privés exclus des résultats
 - [x] Page de présentation pour Google : ce que fait l'app, les offres, questions fréquentes — sur /decouvrir : lien depuis l'accueil (sous l'intro sur ordinateur, sous les exemples avant le premier scan sur téléphone), lien du message de parrainage, sitemap
 - [x] iPhone : ajout à l'écran d'accueil (icône, écran de démarrage)
+- [x] Safari sur iPhone : plus de zoom en touchant un champ, feuilles du bas qui tiennent avec la barre d'adresse et le clavier, listes déroulantes, dates et textes d'aide comme sur Android, barre d'onglets et boutons lisibles en très grand texte
 - [x] App Android signée, construite par GitHub à chaque mise en ligne
 - [x] Bandeau de mise à jour, mise à jour obligatoire possible
 - [x] ⭐ Lien de téléchargement automatique de l'APK (GitHub Releases) et bouton « Télécharger l'app Android »
@@ -265,7 +266,7 @@ L’argent prêté ou emprunté, par personne. Ni dépense ni revenu : rien n’
 - [x] Remboursement en plusieurs fois prévu d’avance (échéancier), intérêts ou frais convenus — parts égales modifiables, chaque semaine ou chaque mois ; prochaine échéance et retard calculés sur l’échéancier ; intérêts fixes ou en %, le total à rendre est suivi
 - [x] Reconnaissance de dette en PDF, à faire signer ou à envoyer — montant en chiffres et en lettres (fr, en), échéancier et intérêts, deux cases de signature
 - [x] Export Excel ou PDF du récapitulatif par personne — tout l’écran ou une seule personne ; une feuille par sens (« On me doit », « Je dois ») et son « Par personne », chacune avec son total ; le PDF a une section par sens
-- [ ] Choisir la personne dans les contacts du téléphone
+- [x] Choisir la personne dans les contacts du téléphone — Android et Chrome, sans permission (bouton caché ailleurs) ; aussi « Ajouter son numéro depuis mes contacts » dans le compte
 - [x] Partager à l’emprunteur un lien qui montre ce qu’il doit encore — « On me doit », compte connecté : page publique `/pret?t=…` sans compte (noindex), copie figée mise à jour à chaque changement (montants, échéancier, remboursements, reste ; jamais téléphone, note ni preuve), envoi WhatsApp ou copie, « Arrêter le partage » ; seul le hachage du jeton est gardé (migration 0012)
 - [x] Statistiques : total prêté sur l’année, qui rembourse en retard — section repliable « En chiffres », pour « On me doit » et « Je dois »
 - [x] Prêts partagés en famille (foyer) — bascule « Moi / Foyer » pour un membre avec « Prêts », option « Prêt du foyer » sur un nouveau prêt ; chaque membre note un remboursement, seul l’auteur modifie le prêt ; hors des poches, sans rappel ; rendus en perso à qui quitte le foyer (migration 0012)

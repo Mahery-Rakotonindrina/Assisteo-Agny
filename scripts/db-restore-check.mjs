@@ -73,6 +73,16 @@ function sampleBackup() {
         },
         { user_id: ben, id: "vehicle-2", data: { name: "Moto" }, updated_at: at(6), deleted_at: at(7) },
       ],
+      home_items: [
+        {
+          user_id: anna,
+          id: "home-1",
+          data: { name: "Frigo Samsung", room: "kitchen", category: "appliance", boughtOn: "2026-03-12", priceMga: 1850000, store: "Jumbo Score", warrantyUntil: "2028-03-12", serial: "RT38K5", scanIds: ["scan-1"], createdAt: 1759900000000 },
+          updated_at: at(6),
+          deleted_at: null,
+        },
+        { user_id: ben, id: "home-2", data: { name: "Télé", scanIds: [] }, updated_at: at(6), deleted_at: at(7) },
+      ],
       expenses: [
         {
           user_id: anna,
@@ -143,6 +153,8 @@ function sampleBackup() {
       ],
       subscriptions: [
         { id: randomUUID(), email: "anna@example.com", plan: "premium", starts_at: at(1), ends_at: at(31), amount_mga: 15000, payment_method: "mvola", payment_ref: "REF-1", note: "Payé en avance", created_at: at(1), updated_at: at(1), features: { add: ["reseller", "parcelCosts"], remove: ["multiPage"] }, quotas: { scans: 500, deepPerMonth: 10 } },
+        // A plan created from the Admin (migration 0015).
+        { id: randomUUID(), email: "ben@example.com", plan: "famille", starts_at: at(3), ends_at: at(33), amount_mga: 8000, payment_method: "orange", payment_ref: null, note: null, created_at: at(3), updated_at: at(3), features: null, quotas: null },
         { id: randomUUID(), email: "carla@example.com", plan: "unlimited", starts_at: at(2), ends_at: null, amount_mga: null, payment_method: null, payment_ref: null, note: null, created_at: at(2), updated_at: at(2), features: null, quotas: null },
       ],
       feature_grants: [

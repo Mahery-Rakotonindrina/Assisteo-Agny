@@ -46,6 +46,7 @@ import { DocumentText } from "@/components/DocumentText";
 import { FolderPicker } from "@/components/FolderPicker";
 import { ReceiptControls } from "@/components/Expenses";
 import { GarageControls } from "@/components/Garage";
+import { hasInventoryControls, InventoryControls, InventoryIcon } from "@/components/Inventory";
 import { ObjectAdControls } from "@/components/ObjectAd";
 import { PlanBadge } from "@/components/PlanBadge";
 import { PlanLock } from "@/components/PlanLock";
@@ -156,7 +157,7 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
   const canRemind = usePlan().has("reminders");
   // "Mes dépenses" stays hidden from the other plans (Admin only while tested).
   const canAddExpense = usePlan().has("expenses");
-  const { planFor } = usePlan();
+  const { planFor, name: planName } = usePlan();
   // The reminder has come (or the scan was opened from its notification): offer to put it off.
   const showSnooze = canRemind && forcedAt === null && Boolean(entry.reminderAt) && (router.query.reminded === "1" || canSnooze(entry, now));
   const repeatLabel = reminderActive && entry.reminderRepeat ? t(entry.reminderRepeat.every === "monthly" ? "reminders.repeatMonthly" : "reminders.repeatYearly") : null;
@@ -755,6 +756,13 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
               </Section>
             )}
 
+            {/* "Ma maison": add an object to it, or link an invoice, a receipt or a warranty card to one of its things (Premium). */}
+            {!example && hasInventoryControls(entry) && (
+              <Section title={t("inventory.title")} icon={<InventoryIcon />}>
+                <InventoryControls entry={entry} />
+              </Section>
+            )}
+
             {analysis.suggestions.length > 0 && (
               <Section title={t("result.suggestions")} icon={<Sparkles />}>
                 <SuggestionList suggestions={analysis.suggestions} />
@@ -850,7 +858,7 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
               ))}
             </div>
           )}
-          {forcedAt !== null && !canRemind && <PlanLock plan={planFor("reminders")} text={t("reminders.lockedInsurance", { plan: t(`plans.names.${planFor("reminders") ?? "lite"}`) })} />}
+          {forcedAt !== null && !canRemind && <PlanLock plan={planFor("reminders")} text={t("reminders.lockedInsurance", { plan: planName(planFor("reminders") ?? "lite") })} />}
           {forcedAt !== null && canRemind && (
             <p className={styles.insurance}>
               <Lock size={15} />

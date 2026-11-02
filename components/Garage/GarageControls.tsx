@@ -23,14 +23,14 @@ export function GarageControls({ entry, bare = false }: { entry: HistoryEntry; b
   const { t } = useTranslation();
   const toast = useToast();
   const router = useRouter();
-  const { has, planFor } = usePlan();
+  const { has, planFor, name: planName } = usePlan();
   const { vehicles } = useVehicles();
   const [busy, setBusy] = useState(false);
 
   if (!has("garage")) {
     return (
       <div className={styles.controls} data-bare={bare || undefined}>
-        <PlanLock plan={planFor("garage")} text={t("garage.lockedScan", { plan: t(`plans.names.${planFor("garage") ?? "premium"}`) })} />
+        <PlanLock plan={planFor("garage")} text={t("garage.lockedScan", { plan: planName(planFor("garage") ?? "premium") })} />
       </div>
     );
   }

@@ -7,11 +7,13 @@ import { useTranslation } from "@/hooks/useTranslation";
 import type { Locale } from "@/i18n.config";
 import { formatDate, formatMonthYear } from "@/lib/format";
 import { ledgerMonths, personBadge, personLedger, type LedgerLine, type PersonBadge } from "@/lib/loanLedger";
+import type { PickedContact } from "@/lib/contactPick";
 import { hasProofs } from "@/lib/loanProof";
 import { loanInterest, loanMoney, loanNextDue, loanPaid, loanRemaining, loanStatus, loanTotal, scheduleState, whatsappLink, type Loan, type PersonLoans, type Repayment } from "@/lib/loans";
 import { copyText, haptics } from "@/services/device";
 import { personalBook, type LoanBook } from "@/services/loanBook";
 import { loanSharing } from "@/services/loanSharing";
+import { ContactPickButton } from "./ContactPick";
 import { LoanProofs } from "./LoanProofs";
 import { Sheet } from "./LoanSheet";
 import styles from "./Loans.module.scss";
@@ -115,6 +117,22 @@ export function PersonDetail({ person, other, now, readOnly, planEnded, onBack, 
     } else toast(t("loans.detail.copyFailed"), "error");
   };
 
+  /** "Ajouter son numéro depuis mes contacts": the number goes on their loans (those this user may change), as if typed there. */
+  const addPhone = async (contact: PickedContact) => {
+    if (!contact.phone) {
+      toast(t("loans.contacts.noNumber"), "error");
+      return;
+    }
+    const phone = contact.phone;
+    try {
+      await Promise.all(person.loans.filter((loan) => book.canEdit(loan)).map((loan) => book.edit(loan.id, { ...loan, phone })));
+      haptics.success();
+      toast(t("loans.contacts.added", { name: person.name }));
+    } catch {
+      toast(t("loans.contacts.failed"), "error");
+    }
+  };
+
   return (
     <section className={styles.detail} aria-label={t("loans.detail.title", { name: person.name })}>
       <div className={styles.detailTop}>
@@ -157,6 +175,7 @@ export function PersonDetail({ person, other, now, readOnly, planEnded, onBack, 
               {whatsapp ? t("loans.detail.remind") : t("loans.detail.remindCopy")}
             </Button>
           )}
+          {!person.phone && person.loans.some((loan) => book.canEdit(loan)) && <ContactPickButton variant="ghost" label={t("loans.contacts.addNumber")} onPick={(contact) => void addPhone(contact)} testId="loan-contact-phone" />}
         </div>
       )}
 

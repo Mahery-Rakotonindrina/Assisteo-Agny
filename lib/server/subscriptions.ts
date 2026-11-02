@@ -1,4 +1,4 @@
-import { activePlan, activeSubscription, type ActivePlan, type FeatureDiff, type PaidPlanId, type QuotaOverrides, type Subscription } from "@/lib/plans";
+import { activePlan, activeSubscription, isCustomPlanId, type ActivePlan, type CustomPlanPlace, type FeatureDiff, type QuotaOverrides, type Subscription, type SubscriptionPlanId } from "@/lib/plans";
 import { isSchemaMissing, knownMissing, MigrationNeededError, noteFound, noteMissing } from "./schemaMissing";
 import { accountsEnabled, supabaseAdmin } from "./supabaseAdmin";
 
@@ -8,7 +8,7 @@ import { accountsEnabled, supabaseAdmin } from "./supabaseAdmin";
 type Row = {
   id: string;
   email: string;
-  plan: PaidPlanId;
+  plan: SubscriptionPlanId;
   starts_at: string;
   ends_at: string | null;
   amount_mga: number | null;
@@ -61,6 +61,8 @@ function check<T>({ data, error }: { data: T | null; error: { message: string; c
 
 /** The columns of migration 0011 (a subscription's own features and limits). */
 const OWN = "columns";
+/** The migration that lets a subscription hold a plan created from the Admin. */
+export const CREATED_PLANS = "0015_offres_creees";
 
 /**
  * A write with a subscription's own settings. Before migration 0011, it goes
@@ -71,6 +73,8 @@ async function writeOwn<T>(inputs: SubscriptionInput[], write: (rows: ReturnType
   try {
     return await write(inputs.map(toRow));
   } catch (error) {
+    // A created plan, refused by the fixed list of plans of migration 0005 (check_violation).
+    if ((error as { code?: string }).code === "23514" && inputs.some((input) => isCustomPlanId(input.plan))) throw new MigrationNeededError(CREATED_PLANS);
     if (!isSchemaMissing(error)) throw error;
     await noteMissing(OWN, error);
     if (inputs.some((input) => input.features || input.quotas)) throw new MigrationNeededError("0011_subscription_features");
@@ -171,20 +175,20 @@ export type Access = {
   subscription: Pick<Subscription, "id" | "features" | "quotas"> | null;
 };
 
-/** The plan an e-mail has right now and its running subscription's own settings, in one read. */
-export async function accessForEmail(email: string | null | undefined, now = Date.now()): Promise<Access> {
+/** The plan an e-mail has right now and its running subscription's own settings, in one read (`created`: the plans created from the Admin). */
+export async function accessForEmail(email: string | null | undefined, now = Date.now(), created: readonly CustomPlanPlace[] = []): Promise<Access> {
   if (!email || !accountsEnabled) return { current: { plan: "free", endsAt: null }, subscription: null };
   const rows = (
     await selectOwn<Array<Pick<Row, "id" | "plan" | "starts_at" | "ends_at" | "features" | "quotas">>>("id, plan, starts_at, ends_at", (columns) =>
       table().select(columns).eq("email", email.toLowerCase()),
     )
   ).map((row) => ({ id: row.id, plan: row.plan, startsAt: row.starts_at, endsAt: row.ends_at, features: row.features ?? null, quotas: row.quotas ?? null }));
-  const running = activeSubscription(rows, now);
-  return { current: activePlan(rows, now), subscription: running && { id: running.id, features: running.features, quotas: running.quotas } };
+  const running = activeSubscription(rows, now, created);
+  return { current: activePlan(rows, now, created), subscription: running && { id: running.id, features: running.features, quotas: running.quotas } };
 }
 
 /** The plan an e-mail has right now; free when signed out or without accounts. */
-export async function planForEmail(email: string | null | undefined, now = Date.now()): Promise<ActivePlan> {
+export async function planForEmail(email: string | null | undefined, now = Date.now(), created: readonly CustomPlanPlace[] = []): Promise<ActivePlan> {
   if (!email || !accountsEnabled) return { plan: "free", endsAt: null };
   const rows = check<Array<Pick<Row, "plan" | "starts_at" | "ends_at">>>(
     await table().select("plan, starts_at, ends_at").eq("email", email.toLowerCase()),
@@ -192,5 +196,6 @@ export async function planForEmail(email: string | null | undefined, now = Date.
   return activePlan(
     rows.map((row) => ({ plan: row.plan, startsAt: row.starts_at, endsAt: row.ends_at })),
     now,
+    created,
   );
 }

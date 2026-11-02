@@ -17,6 +17,7 @@
   aspect-ratio: 3 / 4;
   // Phones: leave room for the status, tips and Cancel above the tab bar.
   max-height: 46vh;
+  max-height: 46dvh;
   border-radius: var(--radius-lg);
   overflow: hidden;
   background: var(--bg-elevated);
@@ -24,6 +25,7 @@
 
   @include desktop {
     max-height: 58vh;
+    max-height: 58dvh;
   }
 }
 

@@ -13,7 +13,8 @@ import { formatAriary, formatDate, formatNumber } from "@/lib/format";
 import { config } from "@/lib/config";
 import { rise, stagger } from "@/lib/motion";
 import { defaultYearPrice, discountedPrice, monthsFree, TRIAL_DAYS } from "@/lib/offers";
-import { defaultPlansConfig, planRank, soldPlans, type PlanOffer, type PlanResponse, type SoldPlanId } from "@/lib/plans";
+import { isBuiltInPlan, localName, planRankIn } from "@/lib/customPlans";
+import { defaultPlansConfig, planIds, planRank, soldPlans, type AnyPlanId, type PlanOffer, type PlanResponse } from "@/lib/plans";
 import { offerLines } from "@/lib/planPerks";
 import { haptics, shareText } from "@/services/device";
 import { redeemCode, startPremiumTrial } from "@/services/offers";
@@ -28,12 +29,13 @@ export default function PlansPage() {
   const { t, locale } = useTranslation();
   const router = useRouter();
   const toast = useToast();
-  const { plan, id } = usePlan();
+  const { plan, id, current, name: planName, color } = usePlan();
   const { email } = useAccount();
   const [refreshing, setRefreshing] = useState(false);
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState<"trial" | "code" | null>(null);
-  const offers = plan?.offers ?? fallbackOffers;
+  // By rank: a plan created from the Admin sits between the built-in ones.
+  const offers = [...(plan?.offers ?? fallbackOffers)].sort((a, b) => planRankIn(a.id, plan) - planRankIn(b.id, plan));
   const payment = plan?.payment ?? defaultPlansConfig.payment;
   const discount = email ? (plan?.discount ?? null) : null;
   const referralCode = email ? (plan?.referralCode ?? null) : null;
@@ -68,7 +70,7 @@ export default function PlansPage() {
       if (result.kind === "discount") toast(t("plans.codes.discountDone", { percent: result.percent }));
       else if (result.kind === "referral") toast(t("plans.codes.referralDone"));
       // An access: the plan is fetched again, and the welcome screen shows it.
-      else toast(t("plans.codes.accessDone", { plan: t(`plans.names.${result.plan}`) }));
+      else toast(t("plans.codes.accessDone", { plan: result.name ? localName(result.name, locale) : t(`plans.names.${result.plan}`) }));
     } catch (error) {
       toast(error instanceof ApiError && error.code === "rate_limited" ? t("plans.codes.tooMany") : t("plans.codes.failed"), "error");
     } finally {
@@ -97,11 +99,26 @@ export default function PlansPage() {
     value === 0 ? t(`plans.features.${key}Unlimited`) : t(`plans.features.${key}`, { count: formatNumber(value, locale) });
 
   // Each offer's features as set in /admin (none in test nor switched off); the built-in ladder from an older server.
-  const offerFeatures = (offerId: SoldPlanId) => offers.find((offer) => offer.id === offerId)?.features ?? defaultPlansConfig.features[offerId];
-  const features = (offer: PlanOffer, offerId: SoldPlanId) => {
+  const offerFeatures = (offerId: AnyPlanId) =>
+    offers.find((offer) => offer.id === offerId)?.features ?? (isBuiltInPlan(offerId) ? defaultPlansConfig.features[offerId] : []);
+  // The built-in plan below: Lite under Premium, Premium under Pro; a created plan, the one it comes after.
+  const belowOf = (offerId: AnyPlanId) => {
+    if (offerId === "pro") return "premium";
+    if (offerId === "premium") return "lite";
+    if (isBuiltInPlan(offerId)) return null;
+    const below = planIds[Math.floor(planRankIn(offerId, plan))];
+    return below === "lite" || below === "premium" || below === "pro" ? below : null;
+  };
+  const features = (offer: PlanOffer, offerId: AnyPlanId) => {
     const limits = [limit(offer.scans, "scans"), limit(offer.questionsPerDay, "questions"), limit(offer.parcels, "parcels")];
-    const below = offerId === "pro" ? "premium" : offerId === "premium" ? "lite" : null;
-    return offerLines({ id: offerId, features: offerFeatures(offerId), deepPerMonth: offer.deepPerMonth }, below && { id: below, features: offerFeatures(below) }, limits, t, locale);
+    const below = belowOf(offerId);
+    return offerLines(
+      { id: offerId, features: offerFeatures(offerId), deepPerMonth: offer.deepPerMonth },
+      below && { id: below, name: planName(below), features: offerFeatures(below) },
+      limits,
+      t,
+      locale,
+    );
   };
 
   /** "or 50 000 Ar a year: 2 months free" (a plan cached by an older version has no yearly price). */
@@ -147,11 +164,11 @@ export default function PlansPage() {
         </motion.header>
 
         {id !== "free" && plan && (
-          <motion.p variants={rise} className={styles.current} data-plan={id}>
-            <PlanIcon plan={id} size={16} />{" "}
+          <motion.p variants={rise} className={styles.current} data-plan={current} data-plan-color={color()}>
+            <PlanIcon plan={current} size={16} />{" "}
             {plan.endsAt === null
-              ? t("plans.currentNoEnd", { plan: t(`plans.names.${id}`) })
-              : t("plans.current", { plan: t(`plans.names.${id}`), date: formatDate(plan.endsAt - 1, locale) })}
+              ? t("plans.currentNoEnd", { plan: planName() })
+              : t("plans.current", { plan: planName(), date: formatDate(plan.endsAt - 1, locale) })}
           </motion.p>
         )}
 
@@ -173,15 +190,15 @@ export default function PlansPage() {
 
         <motion.div variants={rise} className={styles.offers}>
           {offers.map((offer) => {
-            const isCurrent = id === offer.id;
-            const included = !isCurrent && planRank[id] > planRank[offer.id];
+            const isCurrent = current === offer.id;
+            const included = !isCurrent && planRankIn(current, plan) > planRankIn(offer.id, plan);
             return (
-              <article key={offer.id} className={styles.offer} data-plan={offer.id} data-current={isCurrent ? "" : undefined}>
+              <article key={offer.id} className={styles.offer} data-plan={offer.id} data-plan-color={color(offer.id)} data-current={isCurrent ? "" : undefined}>
                 <div className={styles.offerHead}>
                   <span className={styles.offerIcon}>
                     <PlanIcon plan={offer.id} size={20} />
                   </span>
-                  <h2>{t(`plans.names.${offer.id}`)}</h2>
+                  <h2>{planName(offer.id)}</h2>
                   {isCurrent && <span className={styles.tag}>{t("plans.yours")}</span>}
                   {included && <span className={styles.tag}>{t("plans.included")}</span>}
                   {offer.id === "premium" && !isCurrent && !included && <span className={styles.tag}>{t("plans.recommended")}</span>}
@@ -191,7 +208,7 @@ export default function PlansPage() {
                   <strong>{formatAriary(price(offer.priceMga), locale)}</strong> <span>{t("plans.perMonth")}</span>
                 </p>
                 {yearly(offer)}
-                <p className={styles.pitch}>{t(`plans.pitch.${offer.id}`)}</p>
+                {isBuiltInPlan(offer.id) && <p className={styles.pitch}>{t(`plans.pitch.${offer.id}`)}</p>}
                 <ul>
                   {features(offer, offer.id).map((line) => (
                     <li key={line.text} className={line.inherit ? styles.inherit : undefined}>

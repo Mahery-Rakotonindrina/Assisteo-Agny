@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { isCron } from "@/lib/server/cronAuth";
 import { pushEnabled, sendPush } from "@/lib/server/fcm";
 import { sendError } from "@/lib/server/http";
+import { getPlansConfig } from "@/lib/server/planConfig";
 import { dueNotices, noticeKey, noticeMessage, type PlanNotice } from "@/lib/server/planReminders";
 import { redis } from "@/lib/server/redis";
 import type { PushDevice, PushLocale } from "@/lib/server/reminderPush";
@@ -57,7 +58,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!pushEnabled || !accountsEnabled) return res.status(200).json({ skipped: "push not configured" });
 
   try {
-    const notices = dueNotices(await listSubscriptions(), Date.now());
+    const notices = dueNotices(await listSubscriptions(), Date.now(), (await getPlansConfig()).customPlans);
     const claimed: PlanNotice[] = [];
     for (const notice of notices) if (await claim(noticeKey(notice))) claimed.push(notice);
     if (claimed.length === 0) return res.status(200).json({ due: notices.length, sent: 0 });

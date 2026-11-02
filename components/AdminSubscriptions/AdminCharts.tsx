@@ -1,13 +1,16 @@
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatAriary, formatCompact, formatMonth, toDateInput } from "@/lib/format";
-import { paidPlans, type PaidPlanId, type Subscription } from "@/lib/plans";
+import { adminPlanName } from "@/lib/customPlans";
+import { customPlanOf, paidPlans, type CustomPlan, type SubscriptionPlanId, type Subscription } from "@/lib/plans";
 import styles from "./AdminCharts.module.scss";
 
 type Props = {
   rows: Subscription[];
   /** Subscribers with each plan running now. */
-  counts: Array<{ plan: PaidPlanId; count: number }>;
+  counts: Array<{ plan: SubscriptionPlanId; count: number }>;
   now: number;
+  /** The plans created from the Admin: their names, colours and payments. */
+  created?: readonly CustomPlan[];
 };
 
 const RADIUS = 46;
@@ -17,8 +20,9 @@ const MONTHS = 6;
 const monthOf = (time: number) => toDateInput(time).slice(0, 7);
 
 /** Admin charts in the plans' colours: who has which plan, and the money of the last months. */
-export function AdminCharts({ rows, counts, now }: Props) {
+export function AdminCharts({ rows, counts, now, created = [] }: Props) {
   const { t, locale } = useTranslation();
+  const color = (plan: SubscriptionPlanId) => customPlanOf({ customPlans: created }, plan)?.color;
 
   // The ring: one arc per plan, in proportion.
   const active = counts.filter(({ count }) => count > 0);
@@ -38,7 +42,7 @@ export function AdminCharts({ rows, counts, now }: Props) {
   });
   const byMonth = months.map((time) => {
     const month = monthOf(time);
-    const parts = paidPlans
+    const parts = [...paidPlans, ...created.map((plan) => plan.id)]
       .map((plan) => ({
         plan,
         amount: rows.filter((row) => row.plan === plan && monthOf(Date.parse(row.createdAt)) === month).reduce((sum, row) => sum + (row.amountMga ?? 0), 0),
@@ -59,6 +63,7 @@ export function AdminCharts({ rows, counts, now }: Props) {
               <circle
                 key={plan}
                 data-plan={plan}
+                data-plan-color={color(plan)}
                 cx="60"
                 cy="60"
                 r={RADIUS}
@@ -77,9 +82,9 @@ export function AdminCharts({ rows, counts, now }: Props) {
           </svg>
           <ul className={styles.legend}>
             {active.map(({ plan, count }) => (
-              <li key={plan} data-plan={plan}>
+              <li key={plan} data-plan={plan} data-plan-color={color(plan)}>
                 <i />
-                <span>{t(`plans.names.${plan}`)}</span>
+                <span>{adminPlanName(plan, t, locale, created)}</span>
                 <strong>{count}</strong>
                 <small>{Math.round((count / total) * 100)} %</small>
               </li>
@@ -101,7 +106,7 @@ export function AdminCharts({ rows, counts, now }: Props) {
                 <div className={styles.track2}>
                   <div className={styles.bar} style={{ height: `${(monthTotal / highest) * 100}%` }}>
                     {parts.map(({ plan, amount }) => (
-                      <span key={plan} data-plan={plan} style={{ flexGrow: amount }} />
+                      <span key={plan} data-plan={plan} data-plan-color={color(plan)} style={{ flexGrow: amount }} />
                     ))}
                   </div>
                 </div>

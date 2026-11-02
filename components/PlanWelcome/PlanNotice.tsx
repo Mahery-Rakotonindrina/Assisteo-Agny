@@ -6,7 +6,7 @@ import { useNow } from "@/hooks/useNow";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDate } from "@/lib/format";
-import type { PlanId } from "@/lib/plans";
+import type { AnyPlanId } from "@/lib/plans";
 import { rise } from "@/lib/motion";
 import { planMemoryKeys, rememberPlan, usePlanMemory } from "@/services/planMemory";
 import { isSoldPlan } from "./PlanWelcome";
@@ -22,7 +22,7 @@ const NOTICE_DAYS = 3;
  */
 export function PlanNotice() {
   const { t, locale } = useTranslation();
-  const { plan, id, fresh } = usePlan();
+  const { plan, id, fresh, current, name } = usePlan();
   const now = useNow(60_000);
   const lastPaid = usePlanMemory(planMemoryKeys.lastPaid);
   const dismissed = usePlanMemory(planMemoryKeys.noticeDismissed);
@@ -34,8 +34,8 @@ export function PlanNotice() {
     const days = Math.ceil((plan.endsAt! - now) / DAY_MS);
     return (
       <Banner
-        plan={id}
-        title={t("plans.notice.endingTitle", { plan: t(`plans.names.${id}`) })}
+        plan={current}
+        title={t("plans.notice.endingTitle", { plan: name() })}
         body={
           days <= 1
             ? t("plans.notice.endingTomorrow", { date: formatDate(plan.endsAt! - 1, locale) })
@@ -59,10 +59,11 @@ export function PlanNotice() {
   return null;
 }
 
-function Banner({ plan, title, body, onDismiss }: { plan: PlanId; title: string; body: string; onDismiss: () => void }) {
+function Banner({ plan, title, body, onDismiss }: { plan: AnyPlanId; title: string; body: string; onDismiss: () => void }) {
   const { t } = useTranslation();
+  const { color } = usePlan();
   return (
-    <motion.div variants={rise} initial="hidden" animate="show" className={styles.banner} data-plan={plan} role="status">
+    <motion.div variants={rise} initial="hidden" animate="show" className={styles.banner} data-plan={plan} data-plan-color={color(plan)} role="status">
       <span className={styles.icon}>
         <PlanIcon plan={plan} size={18} />
       </span>

@@ -128,6 +128,35 @@ export class PdfWriter {
     this.y += height + 3;
   }
 
+  /** A small photo on the left (or an empty frame), its lines beside it, the first in bold (an inventory's things). */
+  thumbRow(dataUrl: string | undefined, lines: string[], edge = 20) {
+    const gap = 4;
+    const textWidth = WIDTH - edge - gap;
+    this.doc.setFont("helvetica", "normal").setFontSize(10);
+    const wrapped = lines.map((line) => this.doc.splitTextToSize(pdfText(line), textWidth) as string[]);
+    const textHeight = wrapped.reduce((total, parts) => total + parts.length * 4.4, 0);
+    const height = Math.max(edge, textHeight) + 3;
+    this.ensure(height);
+    if (dataUrl) {
+      try {
+        const { width, height: imageHeight } = this.size(dataUrl, edge, edge);
+        this.doc.addImage(dataUrl, "JPEG", MARGIN + (edge - width) / 2, this.y + (edge - imageHeight) / 2, width, imageHeight, undefined, "FAST");
+      } catch {
+        // An unreadable photo leaves the frame empty.
+      }
+    }
+    this.doc.setDrawColor(220).setLineWidth(0.2).rect(MARGIN, this.y, edge, edge);
+    let y = this.y;
+    wrapped.forEach((parts, index) => {
+      this.doc.setFont("helvetica", index === 0 ? "bold" : "normal").setFontSize(index === 0 ? 10.5 : 9.5).setTextColor(index === 0 ? 20 : 70);
+      for (const part of parts) {
+        this.doc.text(part, MARGIN + edge + gap, y + 3.6);
+        y += 4.4;
+      }
+    });
+    this.y += height;
+  }
+
   private size(dataUrl: string, maxWidth: number, maxHeight: number) {
     const props = this.doc.getImageProperties(dataUrl);
     const scale = Math.min(maxWidth / props.width, maxHeight / props.height);

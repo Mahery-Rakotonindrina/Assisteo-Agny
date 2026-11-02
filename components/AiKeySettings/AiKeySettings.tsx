@@ -38,7 +38,8 @@ export function AiKeySettings({ requestOpen = false }: { requestOpen?: boolean }
   const { t } = useTranslation();
   const toast = useToast();
   const trial = useTrial();
-  const ownKeyFrom = usePlan().planFor("ownKey") ?? "lite";
+  const { planFor, name: planName, color } = usePlan();
+  const ownKeyFrom = planFor("ownKey") ?? "lite";
   const [saved, setSaved] = useState<SavedKey | null>(null);
   const [chosen, setChosen] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
@@ -209,10 +210,10 @@ export function AiKeySettings({ requestOpen = false }: { requestOpen?: boolean }
           >
             {!trial.canUseOwnKey ? (
               <div className={styles.advancedInner}>
-                <div className={styles.locked} data-plan={ownKeyFrom}>
+                <div className={styles.locked} data-plan={ownKeyFrom} data-plan-color={color(ownKeyFrom)}>
                   <PlanBadge plan={ownKeyFrom} />
                   <p>
-                    <Lock size={14} /> {saved ? t("settings.aiLockedSaved") : t("settings.aiLocked", { plan: t(`plans.names.${ownKeyFrom}`) })}
+                    <Lock size={14} /> {saved ? t("settings.aiLockedSaved") : t("settings.aiLocked", { plan: planName(ownKeyFrom) })}
                   </p>
                 </div>
                 <Button href="/plans" block icon={<Sparkles />}>

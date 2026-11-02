@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { activePlan, type ActivePlan, type Subscription } from "@/lib/plans";
+import { activePlan, customPlanInfo, customPlanOf, type ActivePlan, type CustomPlanInfo, type Subscription } from "@/lib/plans";
+import { getPlansConfig } from "@/lib/server/planConfig";
 import { guardAdmin } from "@/lib/server/adminAuth";
 import { sendError } from "@/lib/server/http";
 import { reportError } from "@/lib/server/reportError";
@@ -16,6 +17,8 @@ export type AdminAccount = {
   /** The plan running now ("free" without one), and until when. */
   plan: ActivePlan["plan"];
   planEndsAt: number | null;
+  /** A plan created from the Admin (then `plan` is the built-in one just below); missing or null otherwise. */
+  customPlan?: CustomPlanInfo | null;
 };
 
 export type AdminAccountsResponse = { accounts: AdminAccount[] };
@@ -45,10 +48,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     for (const row of await listSubscriptions()) byEmail.set(row.email, [...(byEmail.get(row.email) ?? []), row]);
 
     const now = Date.now();
+    const { customPlans } = await getPlansConfig();
     const accounts = users
       .map((user): AdminAccount => {
         const email = user.email?.toLowerCase() ?? null;
-        const current = activePlan(email ? (byEmail.get(email) ?? []) : [], now);
+        const current = activePlan(email ? (byEmail.get(email) ?? []) : [], now, customPlans);
+        const created = customPlanOf({ customPlans }, current.custom);
         return {
           id: user.id,
           email,
@@ -57,6 +62,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
           providers: [...new Set((user.identities ?? []).map((identity) => identity.provider))],
           plan: current.plan,
           planEndsAt: current.endsAt,
+          customPlan: created ? customPlanInfo(created, customPlans) : null,
         };
       })
       .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
