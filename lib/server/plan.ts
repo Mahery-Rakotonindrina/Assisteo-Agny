@@ -1,5 +1,7 @@
 import type { NextApiRequest } from "next";
 import { createdQuotas, customPlanOf, effectiveFeatures, runningGrants, withDeepFallback, withQuotas, type ActivePlan, type CustomPlan, type FeatureGrant, type PlanFeature, type PlanLimits, type PlansConfig, type QuotaOverrides } from "@/lib/plans";
+import { seatLive, seatWins, shareableSeats } from "@/lib/familySeats";
+import { seatForMember, seatsOfOwner } from "./familySeats";
 import { currentGrantsForEmail } from "./featureGrants";
 import { getPlansConfig } from "./planConfig";
 import { reportError } from "./reportError";
@@ -21,6 +23,8 @@ export type ResolvedPlan = {
   customPlan: CustomPlan | null;
   /** The features offered to the account for a while, running now, each with its end. */
   grants: Array<{ feature: PlanFeature; endsAt: string }>;
+  /** The plan comes from a family seat (better than the account's own): who offers it and until when; null otherwise. */
+  seat: { owner: string; ownerEmail: string; endsAt: number | null } | null;
 };
 
 /**
@@ -32,14 +36,39 @@ export type ResolvedPlan = {
 export async function resolvePlan(req: NextApiRequest, config?: PlansConfig): Promise<ResolvedPlan> {
   const [account, plans] = await Promise.all([verifyAccount(req).catch(() => null), config ?? getPlansConfig()]);
   const email = account?.email ?? null;
-  const [access, grants] = await Promise.all([currentAccess(email, plans.customPlans), currentGrants(email)]);
+  const [own, grants, seat] = await Promise.all([currentAccess(email, plans.customPlans), currentGrants(email), currentSeat(email, plans)]);
   const now = Date.now();
+  // A family seat: the subscriber's plan, its features and limits (none of the subscriber's own settings), when better than the account's own.
+  const fromSeat = seat !== null && seatWins(own.current, seat.access.current, plans.customPlans);
+  const access: Access = fromSeat ? { current: seat.access.current, subscription: null } : own;
   const { plan, custom } = access.current;
   // A created plan: its own features and limits, never those of the built-in plan below it.
   const features = effectiveFeatures({ plan, custom, email, config: plans, subscription: access.subscription, grants, now });
   const running = [...runningGrants(grants, now)].filter(([feature]) => features.has(feature)).map(([feature, endsAt]) => ({ feature, endsAt }));
   const quotas = createdQuotas(plans, custom, access.subscription?.quotas);
-  return { account, current: access.current, features, quotas, grants: running, customPlan: customPlanOf(plans, custom) };
+  const seatInfo = fromSeat ? { owner: seat.owner, ownerEmail: seat.ownerEmail, endsAt: seat.access.current.endsAt } : null;
+  return { account, current: access.current, features, quotas, grants: running, customPlan: customPlanOf(plans, custom), seat: seatInfo };
+}
+
+/**
+ * The family seat an e-mail holds, with the subscriber's plan now: null
+ * without one, before migration 0016 (at no cost), when the subscriber can't
+ * share any more (plan ended, trial, fewer seats) or when unreadable.
+ */
+async function currentSeat(email: string | null, plans: PlansConfig): Promise<{ access: Access; owner: string; ownerEmail: string } | null> {
+  if (!email) return null;
+  try {
+    const seat = await seatForMember(email);
+    if (!seat) return null;
+    const [access, seats] = await Promise.all([accessForEmail(seat.ownerEmail, Date.now(), plans.customPlans), seatsOfOwner(seat.ownerId)]);
+    const { seats: count } = shareableSeats(plans, access.current, access.subscription?.paymentMethod);
+    if (!seatLive(seats, seat.id, count)) return null;
+    return { access, owner: seat.ownerName || seat.ownerEmail, ownerEmail: seat.ownerEmail };
+  } catch (error) {
+    // Unreadable: the account's own plan, rather than failing the request.
+    await reportError(error, { route: "plan", kind: "family_seat_unreadable" });
+    return null;
+  }
 }
 
 async function currentAccess(email: string | null, created: PlansConfig["customPlans"]): Promise<Access> {

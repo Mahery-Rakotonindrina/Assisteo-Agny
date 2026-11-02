@@ -64,6 +64,7 @@ export function PlanWelcome() {
           current={current}
           endsAt={plan.endsAt}
           limits={plan.limits}
+          familySeats={plan.familySeat ? 0 : (plan.offers.find((offer) => offer.id === current)?.familySeats ?? 0)}
           onClose={() => {
             haptics.success();
             rememberPlan(planMemoryKeys.welcomed, current);
@@ -75,7 +76,7 @@ export function PlanWelcome() {
   );
 }
 
-function Welcome({ id, current, endsAt, limits, onClose }: { id: SoldPlanId; current: AnyPlanId; endsAt: number | null; limits: PlanLimits; onClose: () => void }) {
+function Welcome({ id, current, endsAt, limits, familySeats, onClose }: { id: SoldPlanId; current: AnyPlanId; endsAt: number | null; limits: PlanLimits; familySeats: number; onClose: () => void }) {
   const { t, locale } = useTranslation();
   const reduceMotion = useReducedMotion();
   const { has, name: planName, color } = usePlan();
@@ -115,7 +116,7 @@ function Welcome({ id, current, endsAt, limits, onClose }: { id: SoldPlanId; cur
         <h2 id="plan-welcome-title">{t("plans.welcome.title", { plan: name })}</h2>
         <p className={styles.until}>{endsAt === null ? t("plans.noEnd") : t("plans.welcome.until", { date: formatDate(endsAt - 1, locale) })}</p>
         <ul className={styles.perks}>
-          {planPerks(id, limits, t, locale, has).map((perk) => (
+          {planPerks(id, limits, t, locale, has, familySeats).map((perk) => (
             <li key={perk}>
               <Check size={15} /> {perk}
             </li>

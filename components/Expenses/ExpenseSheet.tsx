@@ -8,19 +8,20 @@ import styles from "./Expenses.module.scss";
 
 const noSubscribe = () => () => {};
 
-type Props = { open: boolean; title: string; onClose: () => void; children: ReactNode };
+/** `wide`: a computer's wider window (a list and its detail side by side). */
+type Props = { open: boolean; title: string; onClose: () => void; wide?: boolean; children: ReactNode };
 
 /**
  * The sheet the expenses' forms open in: from the bottom on a phone, a
  * centred window on a computer (like the parcel's edit sheet).
  */
-export function ExpenseSheet({ open, title, onClose, children }: Props) {
+export function ExpenseSheet({ open, title, onClose, wide, children }: Props) {
   const mounted = useSyncExternalStore(noSubscribe, () => true, () => false);
   if (!mounted) return null;
   return createPortal(
     <AnimatePresence>
       {open && (
-        <Sheet title={title} onClose={onClose}>
+        <Sheet title={title} onClose={onClose} wide={wide}>
           {children}
         </Sheet>
       )}
@@ -29,7 +30,7 @@ export function ExpenseSheet({ open, title, onClose, children }: Props) {
   );
 }
 
-function Sheet({ title, onClose, children }: Omit<Props, "open">) {
+function Sheet({ title, onClose, wide, children }: Omit<Props, "open">) {
   const { t } = useTranslation();
   const id = useId();
 
@@ -45,6 +46,7 @@ function Sheet({ title, onClose, children }: Omit<Props, "open">) {
     <motion.div className={styles.backdrop} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
       <motion.div
         className={styles.sheet}
+        data-wide={wide || undefined}
         role="dialog"
         aria-modal="true"
         aria-labelledby={id}

@@ -163,7 +163,16 @@ export const expenseStore = {
     const name = cleanText(draft.name, 40);
     if (!name) return null;
     const startMga = Number.isFinite(draft.startMga) ? Math.max(0, Math.round(draft.startMga)) : 0;
-    return save<Wallet>("wallet", draft.id, { name, type: draft.type, startMga, startAt: draft.startAt, archived: draft.archived || undefined, primary: draft.primary || undefined });
+    const order = draft.order !== undefined && Number.isFinite(draft.order) ? Math.round(draft.order) : undefined;
+    return save<Wallet>("wallet", draft.id, { name, type: draft.type, startMga, startAt: draft.startAt, archived: draft.archived || undefined, primary: draft.primary || undefined, order });
+  },
+
+  /** The pockets' order (lib/wallets.ts movedOrder): each one's place, written only when it changes. */
+  async setWalletOrder(ids: string[]) {
+    for (const [index, id] of ids.entries()) {
+      const wallet = await current<Wallet>(id);
+      if (wallet && wallet.order !== index) await write({ ...wallet, order: index });
+    }
   },
 
   /** The pocket used when nothing says otherwise (the others lose the mark). */

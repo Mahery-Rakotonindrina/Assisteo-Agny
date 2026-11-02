@@ -79,6 +79,7 @@ const famille: CustomPlan = {
   questionsPerDay: 20,
   parcels: 30,
   deepPerMonth: 0,
+  familySeats: 0,
 };
 const config: PlansConfig = { ...defaultPlansConfig, customPlans: [famille] };
 
