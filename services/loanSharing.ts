@@ -131,8 +131,9 @@ export const loanSharing = {
   async stopAll() {
     // Asked again: a link may have been made on another device since.
     await loanSharing.ensure(askedFor ?? "device", true);
-    // Unknown: offline (the server alone knows the links).
-    if (state.kind === "unknown") return false;
+    // Unknown: offline (the server alone knows the links). Without an account
+    // there is none to stop: a link needs one.
+    if (state.kind === "unknown") return askedFor === "device";
     if (state.kind !== "ready") return true;
     const results = await Promise.allSettled(Object.keys(state.live).map((person) => loanSharing.stop(person)));
     return results.every((result) => result.status === "fulfilled");

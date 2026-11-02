@@ -408,4 +408,14 @@ describe("sharing on the device", () => {
     const live = loanSharing.get();
     expect(live.kind === "ready" && Object.keys(live.live)).toEqual(["naivo"]);
   });
+
+  it("resets the loans offline without an account (no link to stop), not with one", async () => {
+    state.answer = () => {
+      throw new Error("offline");
+    };
+    await loanSharing.ensure("device", true);
+    expect(await loanSharing.stopAll()).toBe(true);
+    await loanSharing.ensure("user-7", true);
+    expect(await loanSharing.stopAll()).toBe(false);
+  });
 });

@@ -127,7 +127,7 @@ describe("what each reset removes", () => {
 
   it("counts what the window lists", () => {
     expect(expenseResetCounts(everyKind)).toEqual({ expenses: 2, incomes: 1, recurring: 1, savings: 2, budget: true });
-    expect(pocketResetCounts(everyKind)).toEqual({ pockets: 1, moves: 2 });
+    expect(pocketResetCounts(everyKind)).toEqual({ pockets: 1, moves: 2, picks: 1 });
     const loans = [
       { id: "l1", direction: "lent", person: "Rakoto", amountMga: 1000, at: start, updatedAt: start, repayments: [{ id: "p", amountMga: 100, at: start }], proofs: [{ id: "f", kind: "photo", addedAt: start }] },
       { id: "l2", direction: "borrowed", person: "Be", amountMga: 1000, at: start, updatedAt: start, repayments: [] },
@@ -263,10 +263,20 @@ describe("resetting a screen on the device", () => {
     expect((await loanProofStore.pendingRemovals()).length).toBeGreaterThan(0);
   });
 
-  it("Prêts, offline: nothing removed (a borrower would keep reading the old copy)", async () => {
+  it("Prêts, offline with an account: nothing removed (a borrower would keep reading the old copy)", async () => {
     await loanStore.rawPut({ id: "l1", direction: "lent", person: "Rakoto", amountMga: 1000, at: start, updatedAt: start, repayments: [] } as Loan);
+    const { loanSharing } = await import("@/services/loanSharing");
+    await loanSharing.ensure("user-1", true);
     await expect(resetScreen("loans")).rejects.toBeInstanceOf(ResetOfflineError);
     expect(await loanStore.list()).toHaveLength(1);
+  });
+
+  it("Prêts, offline without an account: no link to stop, the loans go", async () => {
+    await loanStore.rawPut({ id: "l1", direction: "lent", person: "Rakoto", amountMga: 1000, at: start, updatedAt: start, repayments: [] } as Loan);
+    const { loanSharing } = await import("@/services/loanSharing");
+    await loanSharing.ensure("device", true);
+    await resetScreen("loans");
+    expect(await loanStore.list()).toEqual([]);
   });
 
   it("Prêts, signed out or before the sharing: nothing to stop", async () => {

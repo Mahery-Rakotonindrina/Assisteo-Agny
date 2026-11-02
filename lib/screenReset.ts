@@ -40,11 +40,11 @@ export function expenseResetCounts(records: ExpenseRecord[]): ExpenseResetCounts
   };
 }
 
-export type PocketResetCounts = { pockets: number; moves: number };
+export type PocketResetCounts = { pockets: number; moves: number; picks: number };
 
-/** What the "pockets" reset window lists: the pockets (archived ones too) and the moves typed in. */
+/** What the "pockets" reset window lists: the pockets (archived ones too), the moves typed in and the pockets picked for a line. */
 export function pocketResetCounts(records: ExpenseRecord[]): PocketResetCounts {
-  return { pockets: byKind(records, "wallet").length, moves: byKind(records, "transfer").length + byKind(records, "correction").length };
+  return { pockets: byKind(records, "wallet").length, moves: byKind(records, "transfer").length + byKind(records, "correction").length, picks: byKind(records, "walletPick").length };
 }
 
 export type LoanResetCounts = { loans: number; repayments: number; proofs: number };

@@ -62,14 +62,14 @@ export function ScreenReset() {
       ...(expenseCounts.budget ? [{ key: "budget" }] : []),
       { key: "computed", count: computed },
     ],
-    pockets: [{ key: "pockets", count: pocketCounts.pockets }, { key: "moves", count: pocketCounts.moves }],
+    pockets: [{ key: "pockets", count: pocketCounts.pockets }, { key: "moves", count: pocketCounts.moves }, { key: "picks", count: pocketCounts.picks }],
     loans: [{ key: "loans", count: loanCounts.loans }, { key: "repayments", count: loanCounts.repayments }, { key: "proofs", count: loanCounts.proofs }, { key: "links" }],
     parcels: [{ key: "parcels", count: parcels.length }, { key: "parcelReminders" }],
   };
   const hasData: Record<ResetScreen, boolean> = {
     history: entries.length > 0,
     expenses: expenseCounts.expenses + expenseCounts.incomes + expenseCounts.recurring + expenseCounts.savings + computed > 0 || expenseCounts.budget,
-    pockets: pocketCounts.pockets + pocketCounts.moves > 0,
+    pockets: pocketCounts.pockets + pocketCounts.moves + pocketCounts.picks > 0,
     loans: loanCounts.loans > 0,
     parcels: parcels.length > 0,
   };

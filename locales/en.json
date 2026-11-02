@@ -339,6 +339,8 @@
         "pocketsOne": "1 pocket",
         "moves": "{count} transfers and corrections",
         "movesOne": "1 transfer or correction",
+        "picks": "{count} pockets picked for your lines",
+        "picksOne": "1 pocket picked for a line",
         "loans": "{count} loans",
         "loansOne": "1 loan",
         "repayments": "{count} repayments",

@@ -339,6 +339,8 @@
         "pocketsOne": "1 poche",
         "moves": "{count} virements et corrections",
         "movesOne": "1 virement ou correction",
+        "picks": "{count} choix de poche faits sur tes lignes",
+        "picksOne": "1 choix de poche fait sur une ligne",
         "loans": "{count} prêts",
         "loansOne": "1 prêt",
         "repayments": "{count} remboursements",

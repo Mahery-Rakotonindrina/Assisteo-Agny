@@ -88,19 +88,32 @@ export function createRowSync<T extends SyncedRecord>(table: string, store: Sync
 
       // Push, a batch at a time (a screen reset marks hundreds of rows at once).
       const dirty = (await store.raw()).filter((local) => local.dirty && (!canPush || canPush(local, uid)));
+      const toRow = (local: (typeof dirty)[number]) => ({
+        ...match,
+        user_id: uid,
+        id: local.id,
+        data: toData(local),
+        updated_at: new Date(local.updatedAt).toISOString(),
+        deleted_at: local.deletedAt ? new Date(local.deletedAt).toISOString() : null,
+      });
+      let refused: unknown = null;
       for (let start = 0; start < dirty.length; start += PUSH_BATCH) {
-        const batch = dirty.slice(start, start + PUSH_BATCH);
-        const { error: pushError } = await db.from(table).upsert(
-          batch.map((local) => ({
-            ...match,
-            user_id: uid,
-            id: local.id,
-            data: toData(local),
-            updated_at: new Date(local.updatedAt).toISOString(),
-            deleted_at: local.deletedAt ? new Date(local.deletedAt).toISOString() : null,
-          })),
-        );
-        if (pushError) throw pushError;
+        let batch = dirty.slice(start, start + PUSH_BATCH);
+        const { error: pushError } = await db.from(table).upsert(batch.map(toRow));
+        if (pushError) {
+          // No code: the server wasn't reached (offline), tried again next time.
+          if (!pushError.code) throw pushError;
+          // The server refused a row (a rule, a check): one at a time, so the
+          // others still go; the refused ones stay to send.
+          const sent: typeof batch = [];
+          for (const local of batch) {
+            const { error } = await db.from(table).upsert(toRow(local));
+            if (!error) sent.push(local);
+            else if (!error.code) throw error;
+            else refused = error;
+          }
+          batch = sent;
+        }
         for (const local of batch) {
           // Only clear the flag if nothing changed while uploading.
           const latest = await store.rawGet(local.id);
@@ -112,6 +125,7 @@ export function createRowSync<T extends SyncedRecord>(table: string, store: Sync
       }
 
       if (changed) store.notify();
+      if (refused) throw refused;
     })().finally(() => {
       running = null;
     });
