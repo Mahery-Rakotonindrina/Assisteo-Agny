@@ -13,6 +13,7 @@ import { easeOut, rise, spring } from "@/lib/motion";
 import { offeredMethods, suggestedAmount } from "@/lib/offers";
 import {
   activePlan,
+  allPlansHeader,
   customPlanOf,
   durations,
   normalizeDiff,
@@ -172,12 +173,13 @@ export function AdminSubscriptions({ token, owner }: { token: string; owner: boo
   const [openEmail, setOpenEmail] = useState<string | null>(null);
   const [cardEmail, setCardEmail] = useState<string | null>(null);
   const [now, setNow] = useState(timestamp);
-  const headers = { Authorization: `Bearer ${token}` };
+  // "all": the created plans by their own id (an older app gets the built-in plan just below).
+  const headers = { Authorization: `Bearer ${token}`, [allPlansHeader]: "all" };
 
   useEffect(() => {
     let cancelled = false;
     httpClient
-      .get<AdminSubscriptionsResponse>("/api/admin/subscriptions", { headers: { Authorization: `Bearer ${token}` } })
+      .get<AdminSubscriptionsResponse>("/api/admin/subscriptions", { headers: { Authorization: `Bearer ${token}`, [allPlansHeader]: "all" } })
       .then((result) => {
         if (cancelled) return;
         setRows(result.subscriptions);

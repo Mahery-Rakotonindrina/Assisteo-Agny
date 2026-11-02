@@ -614,6 +614,20 @@ export function subscriptionPayments(rows: Array<Pick<Subscription, "id" | "plan
 /** Sent by an app that knows the created plans, with "all": GET /api/plan then lists them too. */
 export const allPlansHeader = "x-plans";
 
+/** Whether a request comes from an app that knows the created plans (header `x-plans: all`). */
+export const knowsCreatedPlans = (headers: Record<string, string | string[] | undefined>) => headers[allPlansHeader] === "all";
+
+/**
+ * A plan id as an older app knows it (its Admin screens only have icons for
+ * the built-in plans): a created plan as the built-in plan just below it, an
+ * id no plan has any more (a created plan deleted since) as Lite, the lowest
+ * paid plan; a built-in plan as it is.
+ */
+export function olderAppPlan<T extends string>(config: { customPlans?: readonly CustomPlan[] }, plan: T): T {
+  if (builtInIds.includes(plan)) return plan;
+  return (customPlanOf(config, plan)?.after ?? "lite") as T;
+}
+
 /** A built-in plan's id, or a created plan's (`CustomPlan.id`). */
 export type AnyPlanId = PlanId | (string & {});
 /** What a subscription records: a built-in paid plan, or a created one. */

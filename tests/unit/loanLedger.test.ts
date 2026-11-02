@@ -48,6 +48,22 @@ describe("personLedger", () => {
     expect(lines.at(-1)?.balanceMga).toBe(0);
   });
 
+  it("puts a repayment dated before its loan after that loan, so what is left never goes below 0", () => {
+    const lines = personLedger([
+      loan({ id: "a", amountMga: 30_000, at: day(2026, 9, 1), repayments: [] }),
+      loan({ id: "b", amountMga: 50_000, at: day(2026, 9, 10), repayments: [{ id: "early", at: day(2026, 9, 5), amountMga: 40_000 }, { id: "same", at: day(2026, 9, 10), amountMga: 5_000 }] }),
+    ]);
+    expect(lines.map((line) => [line.id, line.balanceMga])).toEqual([
+      ["a", 30_000],
+      ["b", 80_000],
+      ["b:early", 40_000],
+      ["b:same", 35_000],
+    ]);
+    expect(lines.every((line) => line.balanceMga >= 0)).toBe(true);
+    // The line keeps the day written on the repayment.
+    expect(lines[2].at).toBe(day(2026, 9, 5));
+  });
+
   it("agrees with the person's total left, with a schedule and several loans", () => {
     const first = day(2026, 9, 15, 0);
     const loans = [
