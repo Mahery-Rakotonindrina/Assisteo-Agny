@@ -15,7 +15,19 @@ export type DueRow = {
   /** The synced user fields, among them reminderRepeat (see services/sync.ts). */
   meta?: { reminderRepeat?: unknown } | null;
 };
-export type PushDevice = { user_id: string; device_id: string; token: string; scheduled: string[] | null };
+/** `platform` "web": a browser's Web Push subscription in `token` (lib/webPush.ts); otherwise an FCM token. */
+export type PushDevice = { user_id: string; device_id: string; token: string; scheduled: string[] | null; platform?: string | null };
+export type PushChannel = "fcm" | "web";
+
+/** How this device is reached: Web Push for a browser (iPhone home screen), FCM for the Android app. */
+export function pushChannel(device: Pick<PushDevice, "platform">): PushChannel {
+  return device.platform === "web" ? "web" : "fcm";
+}
+
+/** The devices whose channel is configured on the server (FCM, VAPID keys): the others are left alone, never dropped. */
+export function reachableDevices<T extends Pick<PushDevice, "platform">>(devices: T[], enabled: Record<PushChannel, boolean>) {
+  return devices.filter((device) => enabled[pushChannel(device)]);
+}
 export type PushLocale = "fr" | "en";
 export type PlannedPush = { device: PushDevice; entryId: string; title: string; body: string };
 

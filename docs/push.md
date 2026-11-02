@@ -80,3 +80,29 @@ défaut (`master`), et peuvent démarrer avec quelques minutes de retard.
 
 iOS n’est pas encore branché : il faut un Mac et une clé APNs. Les rappels
 restent locaux sur iPhone.
+
+## iPhone et navigateurs (Web Push)
+
+Il n’y a pas d’app iPhone : le site, **ajouté à l’écran d’accueil** (iOS 16.4
+et plus), reçoit le Web Push standard. Dans Réglages → Notifications, le bouton
+« Recevoir les rappels sur cet iPhone » demande la permission (seulement au
+toucher, Safari l’exige) puis enregistre l’abonnement du navigateur dans
+`push_devices` (plateforme `web`, migration 0017). Dans Safari, hors écran
+d’accueil, il montre les 3 étapes pour ajouter le site. Sur ordinateur (Chrome,
+Edge, Firefox), le même bouton dit « sur cet appareil ».
+
+Le cron des rappels (et celui des offres) envoie alors le même titre, le même
+texte et le même lien que FCM. Un abonnement qui répond 404 ou 410 est oublié.
+Le service worker `public/sw.js` ne fait que `push` et `notificationclick` :
+aucun cache, il n’est enregistré qu’au toucher du bouton, jamais dans l’APK.
+
+Tant que ce navigateur est abonné **et que le serveur confirme son abonnement**
+(GET `/api/push/web?deviceId=…`, lu une fois par session), la page ne programme
+plus ses propres rappels de scan : le push les montre, une seule fois. C’est un
+choix : un rappel posé hors ligne et pas encore synchronisé, ou un cron en
+retard, arrive tard. Au moindre doute (hors ligne, erreur, pas de ligne), la
+page garde ses rappels. Si l’enregistrement échoue, le navigateur est désabonné.
+
+À régler sur Vercel (sans elles, le bouton n’apparaît pas et le cron saute le
+Web Push) : `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` (clés brutes en
+base64url, une paire P-256) et `VAPID_SUBJECT` (`mailto:` ou `https://`).

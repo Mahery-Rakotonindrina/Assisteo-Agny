@@ -1,5 +1,6 @@
 import { Capacitor } from "@capacitor/core";
 import { LocalNotifications } from "@capacitor/local-notifications";
+import { pushTakesOver, readPushTakeover } from "./webPushTakeover";
 
 // Local notifications only: nothing leaves the device. On the web the plugin
 // falls back to the Notification API.
@@ -45,6 +46,9 @@ export async function notify({ title, body, at, entryId, actionTypeId }: NotifyO
   if ((await getNotificationPermission()) !== "granted") return null;
 
   const id = nextId();
+  // Web Push shows this scan reminder on this browser (services/webPushTakeover.ts): an id with nothing behind, so
+  // the reminder is kept as scheduled here and comes once.
+  if (pushTakesOver({ native: Capacitor.isNativePlatform(), takeover: readPushTakeover(), scanReminder: actionTypeId === REMINDER_ACTION_TYPE, later: Boolean(at) })) return id;
   await LocalNotifications.schedule({
     notifications: [
       {

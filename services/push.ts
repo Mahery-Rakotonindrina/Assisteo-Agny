@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { historyStore } from "./historyStore";
 import { notify, REMINDER_ACTION_TYPE } from "./notifications";
 import { getInstallId } from "./trial";
+import { unsubscribeWebPush } from "./webPush";
 
 // Server push for reminders (Android only for now). Local notifications stay
 // the primary path: precise and offline. Push covers this device when a
@@ -64,9 +65,9 @@ export async function registerPush(onOpen: (target: PushTarget) => void) {
   await PushNotifications.register();
 }
 
-/** Signing out or deleting the account: this device stops receiving the account's pushes. */
+/** Signing out or deleting the account: this device stops receiving the account's pushes (FCM, or Web Push on the site). */
 export async function unregisterPush() {
-  if (!pushAvailable()) return;
+  if (!pushAvailable()) return unsubscribeWebPush();
   const deviceId = await getInstallId();
   await supabase().from("push_devices").delete().eq("device_id", deviceId);
   await PushNotifications.unregister().catch(() => undefined);
