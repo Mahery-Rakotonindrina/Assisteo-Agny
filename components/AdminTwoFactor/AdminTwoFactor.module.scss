@@ -150,9 +150,9 @@
     background: var(--surface);
     color: var(--text);
     font-family: var(--font-mono);
-    font-size: 1.05rem;
     letter-spacing: 0.08em;
     outline: none;
+    @include field-font(1.05rem);
 
     &:focus {
       border-color: var(--accent-mark);

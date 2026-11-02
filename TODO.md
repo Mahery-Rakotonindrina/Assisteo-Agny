@@ -193,6 +193,7 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Référencement Google : titres et descriptions, robots.txt et sitemap, aperçu au partage (WhatsApp, Facebook), écrans privés exclus des résultats
 - [x] Page de présentation pour Google : ce que fait l'app, les offres, questions fréquentes — sur /decouvrir : lien depuis l'accueil (sous l'intro sur ordinateur, sous les exemples avant le premier scan sur téléphone), lien du message de parrainage, sitemap
 - [x] iPhone : ajout à l'écran d'accueil (icône, écran de démarrage)
+- [x] Safari sur iPhone : plus de zoom en touchant un champ, feuilles du bas qui tiennent avec la barre d'adresse et le clavier, listes déroulantes, dates et textes d'aide comme sur Android, barre d'onglets et boutons lisibles en très grand texte
 - [x] App Android signée, construite par GitHub à chaque mise en ligne
 - [x] Bandeau de mise à jour, mise à jour obligatoire possible
 - [x] ⭐ Lien de téléchargement automatique de l'APK (GitHub Releases) et bouton « Télécharger l'app Android »

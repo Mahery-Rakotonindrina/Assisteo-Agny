@@ -29,7 +29,11 @@
 
 .tab {
   position: relative;
-  flex: 1;
+  // Equal widths, whatever the label length.
+  flex: 1 1 0;
+  min-width: 0;
+  // The label scales with the tab (cqi below).
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -68,7 +72,19 @@
 
 .label {
   position: relative;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 0.74rem;
   font-weight: 600;
   letter-spacing: 0.01em;
+
+  // Large text on a narrow phone: five labels must still fit side by side.
+  :global(html[data-text-size="large"]) &,
+  :global(html[data-text-size="xlarge"]) & {
+    // "Historique" fits a 320 px phone too.
+    font-size: min(0.74rem, 3.3vw, 19.5cqi);
+    letter-spacing: 0;
+  }
 }

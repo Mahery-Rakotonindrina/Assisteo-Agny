@@ -81,8 +81,8 @@
     background: var(--surface);
     color: var(--text);
     font: inherit;
-    font-size: 0.9rem;
     outline: none;
+    @include field-font(0.9rem);
 
     &:focus {
       border-color: var(--accent-mark);

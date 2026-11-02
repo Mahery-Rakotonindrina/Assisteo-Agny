@@ -16,6 +16,7 @@ import { ToastProvider } from "@/components/Toast";
 import { UpdateGate } from "@/components/UpdateGate";
 import { VehicleReminderKeeper } from "@/components/VehicleReminderKeeper";
 import { HomeReminderKeeper } from "@/components/HomeReminderKeeper";
+import { useKeyboardReveal } from "@/hooks/useKeyboardReveal";
 import { useNativeBootstrap } from "@/hooks/useNativeBootstrap";
 import { AccountProvider } from "@/lib/account/AccountProvider";
 import { SettingsProvider } from "@/lib/settings/SettingsProvider";
@@ -40,6 +41,7 @@ const instrumentSerif = Instrument_Serif({
 
 function Bootstrap() {
   useNativeBootstrap();
+  useKeyboardReveal();
   return null;
 }
 

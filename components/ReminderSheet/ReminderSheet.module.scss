@@ -19,6 +19,7 @@
   width: 100%;
   max-width: var(--app-width);
   max-height: 92vh;
+  max-height: 92dvh;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -145,8 +146,8 @@
     border: 1px solid var(--border);
     background: var(--surface);
     color: var(--text);
-    font-size: 1rem;
     outline: none;
+    @include field-font(1rem);
 
     &:focus {
       border-color: var(--accent-mark);
