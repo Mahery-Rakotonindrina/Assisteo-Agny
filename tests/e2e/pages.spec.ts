@@ -267,6 +267,74 @@ test("My pockets: two pockets, an expense from MVola, a move between them and a 
   await expect(page.getByTestId("expenses-total")).toHaveText(/^13\s000 Ar$/);
 });
 
+test("A pocket's sheet: its statement, renamed and retyped everywhere, a line opened, an empty one deleted", async ({ page }) => {
+  await prepare(page);
+  await page.route("**/api/plan", async (route) => {
+    const response = await route.fetch();
+    await route.fulfill({ response, json: { ...(await response.json()), plan: "unlimited", features: undefined } });
+  });
+  await page.goto("/expenses");
+  await page.getByRole("button", { name: /Où est ton argent \?/ }).click();
+  const setup = page.getByRole("dialog", { name: "Où est ton argent ?" });
+  await setup.getByLabel(/^Espèces : combien/).fill("45000");
+  await setup.getByRole("checkbox", { name: "MVola" }).check();
+  await setup.getByLabel(/^MVola : combien/).fill("230000");
+  await setup.getByRole("button", { name: "Enregistrer" }).click();
+  const pockets = page.getByTestId("pockets");
+  await expect(pockets).toHaveText(/^Espèces 45\s000 Ar · MVola 230\s000 Ar$/);
+
+  await page.getByRole("button", { name: "Ajouter une dépense" }).click();
+  await page.getByLabel("Montant", { exact: true }).fill("12000");
+  await page.getByLabel("Note", { exact: true }).fill("Taxi-be");
+  await page.getByRole("radio", { name: "MVola" }).click();
+  await page.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(pockets).toHaveText(/MVola 218\s000 Ar$/);
+
+  // MVola's sheet: the expense, the balance after it, and no "Supprimer" (archive it instead).
+  await page.getByRole("button", { name: "Voir mes poches" }).click();
+  const sheet = page.getByRole("dialog", { name: "Mes poches" });
+  await sheet.getByRole("button", { name: /^MVola/ }).click();
+  const detail = sheet.getByTestId("pocket-detail");
+  await expect(detail.getByTestId("pocket-name")).toHaveText("MVola");
+  await expect(detail.getByTestId("pocket-line")).toHaveCount(1);
+  await expect(detail.getByTestId("pocket-line-balance")).toHaveText(/^Solde : 218\s000 Ar$/);
+  await expect(detail.getByTestId("pocket-in-use")).toBeVisible();
+  await expect(detail.getByRole("button", { name: "Supprimer", exact: true })).toHaveCount(0);
+  await expect(detail.getByRole("button", { name: "Archiver" })).toBeVisible();
+
+  // "Modifier": a new name and type, shown at once everywhere.
+  await detail.getByRole("button", { name: "Modifier", exact: true }).click();
+  const form = page.getByRole("dialog", { name: "Modifier la poche" });
+  await form.getByLabel("Nom", { exact: true }).fill("Mon Orange");
+  await form.getByRole("radio", { name: "Orange Money" }).click();
+  await form.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(sheet.getByTestId("pocket-name")).toHaveText("Mon Orange");
+  await expect(sheet.getByTestId("pocket-detail")).toContainText("Orange Money");
+  await expect(pockets).toHaveText(/^Espèces 45\s000 Ar · Mon Orange 218\s000 Ar$/);
+
+  // A line opens its expense, paid with the renamed pocket.
+  await sheet.getByTestId("pocket-open").filter({ hasText: "Taxi-be" }).click();
+  await expect(sheet).toHaveCount(0);
+  const expenseForm = page.getByRole("dialog", { name: "Modifier" });
+  await expect(expenseForm.getByLabel("Note", { exact: true })).toHaveValue("Taxi-be");
+  await expect(expenseForm.getByRole("radio", { name: "Mon Orange" })).toBeChecked();
+  await expenseForm.getByRole("button", { name: "Annuler" }).click();
+
+  // An empty pocket is deleted for good.
+  await page.getByRole("button", { name: "Voir mes poches" }).click();
+  await sheet.getByRole("button", { name: "Ajouter une poche" }).click();
+  const add = page.getByRole("dialog", { name: "Ajouter une poche" });
+  await add.getByRole("radio", { name: "Banque" }).click();
+  await add.getByRole("button", { name: "Enregistrer" }).click();
+  await sheet.getByRole("button", { name: /^Banque/ }).click();
+  await expect(sheet.getByTestId("pocket-in-use")).toHaveCount(0);
+  await sheet.getByRole("button", { name: "Supprimer", exact: true }).click();
+  await sheet.getByRole("button", { name: "Oui, supprimer" }).click();
+  await expect(page.getByText("Poche supprimée")).toBeVisible();
+  await expect(sheet.getByRole("button", { name: /^Banque/ })).toHaveCount(0);
+  await expect(pockets).toHaveText(/^Espèces 45\s000 Ar · Mon Orange 218\s000 Ar$/);
+});
+
 test("My expenses: the forecast, a search over every month, and a result opened", async ({ page }) => {
   await prepare(page);
   await page.route("**/api/plan", async (route) => {

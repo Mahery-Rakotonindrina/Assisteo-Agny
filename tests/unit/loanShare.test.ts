@@ -265,7 +265,9 @@ describe("the share route", () => {
     const read = await call({ query: { t: token } });
     expect(read.statusCode).toBe(200);
     expect(Object.keys(read.body).sort()).toEqual(["snapshot", "updatedAt"]);
-    expect(JSON.stringify(read.body)).not.toContain("034");
+    // The whole number: "034" alone can be in a timestamp of the day.
+    expect(JSON.stringify(read.body)).not.toContain("034 12 345 67");
+    expect(read.body).not.toHaveProperty("snapshot.phone");
     expect(read.headers["X-Robots-Tag"]).toBe("noindex");
     expect(read.headers["Cache-Control"]).toBe("no-store");
 
