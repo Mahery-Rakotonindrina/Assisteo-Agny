@@ -140,7 +140,7 @@ describe("the token", () => {
     expect(shareTokenFrom(undefined)).toBeNull();
     expect(shareTokenFrom(token.slice(0, 10))).toBeNull();
     expect(shareTokenFrom(`${token}<script>`)).toBeNull();
-    expect(shareUrl("https://agny.mg/", token)).toBe(`https://agny.mg/pret?t=${token}`);
+    expect(shareUrl("https://agny.mg/", token)).toBe(`https://agny.mg/pret#t=${token}`);
   });
 });
 
@@ -357,7 +357,7 @@ describe("sharing on the device", () => {
     const token = newShareToken();
     state.answer = () => ({ token });
     const url = await loanSharing.create("rakoto", "Anna", [loan({})]);
-    expect(url).toContain(`/pret?t=${token}`);
+    expect(url).toContain(`/pret#t=${token}`);
     expect(await loanSharing.link("rakoto")).toBe(url);
     state.answer = () => ({ ok: true, found: true });
     await loanSharing.stop("rakoto");

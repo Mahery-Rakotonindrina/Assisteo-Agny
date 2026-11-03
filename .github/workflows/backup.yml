@@ -42,13 +42,16 @@ jobs:
             echo "run=true" >> "$GITHUB_OUTPUT"
           fi
 
-      # The code of develop, not master: a migration is pasted into production as
-      # soon as its feature reaches develop, so master may not know the newest
-      # tables yet (it would leave them out of the backup, and fail the restore).
+      # The code of master (the default branch), not develop: this job holds the
+      # production database URL and the passphrase, and anyone able to push to
+      # develop would otherwise run code of their choice with them. The cost: a
+      # migration pasted into production before its feature reaches master is
+      # not in the backup yet (the restore test then names the missing table
+      # and opens the issue): merge develop into master to settle it.
       - uses: actions/checkout@v7
         if: steps.check.outputs.run == 'true'
         with:
-          ref: develop
+          persist-credentials: false
 
       - uses: actions/setup-node@v7
         if: steps.check.outputs.run == 'true'

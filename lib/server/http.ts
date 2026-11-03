@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { installIdHeader, overrideHeaders, type ApiErrorBody, type ApiErrorCode } from "@/lib/ai/schema";
 import { allPlansHeader } from "@/lib/plans";
+import { ipPrefix } from "./ip";
 
 // Origins used by the Capacitor WebView (iOS, Android, live reload).
 const capacitorOrigins = ["capacitor://localhost", "https://localhost", "http://localhost"];
@@ -41,8 +42,9 @@ export function sendError(
   res.status(status).json(body);
 }
 
+/** The caller's address for the limits: an IPv6 one counts by its /64 prefix. */
 export function clientIp(req: NextApiRequest) {
   const forwarded = req.headers["x-forwarded-for"];
   const first = Array.isArray(forwarded) ? forwarded[0] : forwarded?.split(",")[0];
-  return first?.trim() || req.socket.remoteAddress || "unknown";
+  return ipPrefix(first?.trim() || req.socket?.remoteAddress || "unknown");
 }

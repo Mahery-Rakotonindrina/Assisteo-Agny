@@ -212,6 +212,7 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Alerte si le site tombe (contrôle toutes les 10 min, base et Redis compris, ticket GitHub qui te mentionne, fermé au retour)
 - [x] Test automatique de restauration des sauvegardes (chaque semaine sur la vraie sauvegarde, et à chaque envoi de code sur des données d'exemple)
 - [x] Double authentification pour l'admin (appli d'authentification + codes de secours)
+- [x] Corrections de l'audit de sécurité (essai Premium limité par personne, installation, IP et jour ; réglages sensibles de l'admin réservés au propriétaire ; e-mail confirmé obligatoire ; jetons de prêt hors des journaux ; CI et sauvegarde durcies)
 
 ## 16. Mes dépenses (offre Admin, en test)
 

@@ -16,8 +16,8 @@ const { issueAdminSession, verifyAdminSession, ADMIN_SESSION_MS } = await import
 const twoFactor = await import("@/lib/server/adminTwoFactor");
 const { guardAdmin } = await import("@/lib/server/adminAuth");
 
-function call(headers: Record<string, string>, options?: { machine?: boolean; ownerOnly?: boolean }) {
-  const req = { headers, socket: { remoteAddress: `10.0.0.${Math.floor(Math.random() * 250)}` } } as unknown as NextApiRequest;
+function call(headers: Record<string, string>, options?: { machine?: boolean; ownerOnly?: boolean; ownerWrites?: boolean }, method = "GET") {
+  const req = { headers, method, socket: { remoteAddress: `10.0.0.${Math.floor(Math.random() * 250)}` } } as unknown as NextApiRequest;
   const res = {
     statusCode: 200,
     status(code: number) {
@@ -155,5 +155,17 @@ describe("second factor of /admin", () => {
     expect(await twoFactor.twoFactorState()).toMatchObject({ enabled: false, recoveryLeft: 0 });
     expect((await call({ authorization: `Bearer ${during}` })).status).toBe(401);
     expect((await call({ authorization: `Bearer ${process.env.ADMIN_TOKEN}` })).ok).toBe(true);
+  });
+});
+
+describe("owner-only writes (app versions, plans)", () => {
+  it("lets an admin account read, but only the owner write", async () => {
+    const epoch = twoFactor.sessionEpoch(await twoFactor.twoFactorState());
+    const owner = `Bearer ${issueAdminSession(epoch).session}`;
+    const admin = `Bearer ${issueAdminSession(epoch, Date.now(), "admin@example.com").session}`;
+    const options = { ownerWrites: true };
+    expect(await call({ authorization: admin }, options, "GET")).toEqual({ ok: true, status: 200 });
+    expect(await call({ authorization: admin }, options, "PUT")).toEqual({ ok: false, status: 403 });
+    expect(await call({ authorization: owner }, options, "PUT")).toEqual({ ok: true, status: 200 });
   });
 });

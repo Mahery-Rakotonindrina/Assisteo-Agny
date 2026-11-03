@@ -7,7 +7,7 @@ import { sendError } from "@/lib/server/http";
 /** Admin-only: read or change the minimum / latest app versions. */
 export default async function handler(req: NextApiRequest, res: NextApiResponse<AppVersionConfig | unknown>) {
   // Also reached by the APK workflow (ADMIN_TOKEN + CRON_SECRET) to announce a new version.
-  const actor = await guardAdmin(req, res, { machine: true });
+  const actor = await guardAdmin(req, res, { machine: true, ownerWrites: true });
   if (!actor) return;
 
   if (req.method === "GET") return res.status(200).json(await getAppVersionConfig());

@@ -7,6 +7,10 @@ on:
     paths-ignore: ["**.md"]
   pull_request:
 
+# Read only: a test or a dependency can't write to the repository.
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true

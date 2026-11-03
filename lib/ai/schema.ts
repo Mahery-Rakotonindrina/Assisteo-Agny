@@ -699,7 +699,8 @@ export type HealthResponse = {
   status: "ok";
   ai: "live" | "demo";
   provider: AiProvider;
-  model: string;
+  /** Not sent any more (an older server did): the engine's model is not public. */
+  model?: string;
 };
 
 export type TrialState = { limit: number; used: number };

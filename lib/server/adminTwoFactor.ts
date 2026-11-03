@@ -42,11 +42,12 @@ async function write(value: Stored) {
   else memory = value;
 }
 
-export type TwoFactorState = { enabled: boolean; since: string | null; recoveryLeft: number };
+/** `known`: a state was stored (on or off); false when the key is missing, e.g. after Redis was wiped. */
+export type TwoFactorState = { enabled: boolean; since: string | null; recoveryLeft: number; known: boolean };
 
 export async function twoFactorState(): Promise<TwoFactorState> {
   const stored = await read();
-  return { enabled: Boolean(stored?.enabled), since: stored?.since ?? null, recoveryLeft: stored?.enabled ? stored.recovery.length : 0 };
+  return { enabled: Boolean(stored?.enabled), known: stored != null, since: stored?.since ?? null, recoveryLeft: stored?.enabled ? stored.recovery.length : 0 };
 }
 
 /** Changes whenever the second factor is turned on or off: it ends the sessions signed before. */

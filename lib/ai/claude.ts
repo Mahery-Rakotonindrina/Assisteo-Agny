@@ -363,7 +363,8 @@ function toAnalysisError(error: unknown, model: string): unknown {
     return new AnalysisError("unavailable", 404, `The model ${model} isn't available for this key.`);
   }
   if (error instanceof Anthropic.BadRequestError) {
-    return new AnalysisError("invalid_request", 400, error.message);
+    console.error("[claude] bad request:", error.message);
+    return new AnalysisError("invalid_request", 400, "The AI could not read this request.", error.message);
   }
   if (error instanceof Anthropic.AuthenticationError || error instanceof Anthropic.PermissionDeniedError) {
     return new AnalysisError("invalid_key", 401, "Claude rejected this API key.");
@@ -372,7 +373,8 @@ function toAnalysisError(error: unknown, model: string): unknown {
     return new AnalysisError("unavailable", 503, "Claude can't be reached right now.");
   }
   if (error instanceof Anthropic.APIError) {
-    return new AnalysisError("upstream_error", 502, `Claude API error ${error.status}: ${error.message}`);
+    console.error(`[claude] API error ${error.status}:`, error.message);
+    return new AnalysisError("upstream_error", 502, "The AI service had a problem, try again in a moment.", `Claude API error ${error.status}: ${error.message}`);
   }
   return error;
 }

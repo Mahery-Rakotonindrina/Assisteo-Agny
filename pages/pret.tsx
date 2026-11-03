@@ -6,7 +6,7 @@ import { Seo } from "@/components/Seo";
 import { useNow } from "@/hooks/useNow";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDate } from "@/lib/format";
-import { sharedAsLoan, shareTokenFrom, type LoanShareSnapshot, type SharedLoansResponse } from "@/lib/loanShare";
+import { sharedAsLoan, shareTokenFromAddress, type LoanShareSnapshot, type SharedLoansResponse } from "@/lib/loanShare";
 import { loanMoney, loanNextDue, loanRemaining, loanStatus, loanTotal, scheduleState } from "@/lib/loans";
 import { httpClient } from "@/services/httpClient";
 import styles from "@/styles/SharedLoan.module.scss";
@@ -16,7 +16,7 @@ type View = { kind: "loading" } | { kind: "missing" } | { kind: "gone" } | { kin
 
 /**
  * "Ce qu'il reste à rendre": the page a borrower opens from the link the
- * lender sent (/pret?t=<token>), without an account and read only. A static
+ * lender sent (/pret#t=<token>, or /pret?t=<token> for the links already sent), without an account and read only. A static
  * page that reads the token from the address (the APK's export has no
  * dynamic routes); the copy comes from pages/api/loans/share.ts. Kept out of
  * search results.
@@ -25,7 +25,6 @@ export default function SharedLoanPage() {
   const { t } = useTranslation();
   const router = useRouter();
   const [view, setView] = useState<View>({ kind: "loading" });
-  const token = router.isReady ? shareTokenFrom(router.query.t) : null;
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -33,6 +32,11 @@ export default function SharedLoanPage() {
     const show = (next: View) => {
       if (!cancelled) setView(next);
     };
+    // The token is in the fragment (#t=) of the new links, in the query (?t=) of the older ones.
+    const token = shareTokenFromAddress(window.location.search, window.location.hash);
+    // Out of the address bar once read: it is not left in the history, a screenshot or a shared link.
+    // Through the router (shallow, no reload): a bare history.replaceState was undone by Next putting the fragment back.
+    if (token) void router.replace(router.pathname, undefined, { shallow: true });
     if (!token) {
       // A link cut short (copied in part…): nothing to ask the server.
       queueMicrotask(() => show({ kind: "missing" }));
@@ -47,7 +51,9 @@ export default function SharedLoanPage() {
     return () => {
       cancelled = true;
     };
-  }, [router.isReady, token]);
+    // Read once, when the router is ready: replacing the address must not read it again.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router.isReady]);
 
   return (
     <>

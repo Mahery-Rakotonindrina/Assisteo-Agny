@@ -39,3 +39,11 @@ Dernier recours : dans la console Upstash (accessible depuis Vercel → Storage 
 ta base Redis), onglet Data Browser, supprime la clé `config:admin-2fa`. La double authentification
 est alors désactivée : connecte-toi avec le jeton seul, puis réactive-la.
 Change aussi `ADMIN_TOKEN` sur Vercel si tu crains qu’il ait fuité.
+
+Si la variable `ADMIN_2FA_REQUIRED=1` est posée sur Vercel, l’admin reste fermé quand les réglages de la
+double authentification sont introuvables (base Redis vidée ou changée), au lieu de s’ouvrir avec le jeton
+seul. Pour ce dernier recours, retire d’abord la variable, puis supprime la clé.
+
+Les réglages qui touchent tout le monde (versions et lien de l’APK, prix et instructions de paiement)
+ne se changent qu’avec le jeton du propriétaire, avec la double authentification quand elle est active :
+un compte administrateur peut les lire, pas les modifier.

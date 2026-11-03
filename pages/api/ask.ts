@@ -14,7 +14,7 @@ import { rateLimit } from "@/lib/server/rateLimit";
 import { reportError } from "@/lib/server/reportError";
 import { track } from "@/lib/server/stats";
 import { limitsFor, resolvePlan } from "@/lib/server/plan";
-import { countServerCall, releaseAsk, releasePlanAsk, releaseServerCall, reserveAsk, reservePlanAsk, reserveServerCall } from "@/lib/server/trialStore";
+import { countServerCall, releaseAsk, releasePlanAsk, releaseServerCall, reserveAsk, reserveAskIp, releaseAskIp, reservePlanAsk, reserveServerCall, reserveTrialAiCall, releaseTrialAiCall } from "@/lib/server/trialStore";
 
 export const config = {
   api: { bodyParser: { sizeLimit: "7mb" } },
@@ -50,7 +50,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   const override = readOverride(req.headers);
   if (override === "invalid") return sendError(res, 400, "invalid_request", "Invalid AI provider, model or key.");
 
-  const { account, current, features, quotas } = await resolvePlan(req);
+  const { account, current, features, quotas, onTrial } = await resolvePlan(req);
   if (override && !features.has("ownKey")) {
     return sendError(res, 403, "plan_required", "Your own AI key needs a subscription.");
   }
@@ -66,11 +66,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
   // On the server's key, a subscriber's questions draw on the plan's daily allowance...
   let planUser: string | null = null;
+  let trialAi = false;
+  let askIp: string | null = null;
   let usage: { used: number; limit: number } | undefined;
   if (!override && current.plan !== "free" && account) {
     const { questionsPerDay } = await limitsFor(current.plan, undefined, quotas, features);
     const booked = await reservePlanAsk(account.id, questionsPerDay);
     if (!booked) return sendError(res, 403, "ask_limit", "Today's questions of your plan are used up.");
+    if (onTrial) {
+      if (!(await reserveTrialAiCall())) {
+        await releasePlanAsk(account.id).catch(() => undefined);
+        return sendError(res, 503, "server_busy", "The trial's AI has reached today's limit: come back tomorrow.");
+      }
+      trialAi = true;
+    }
     await countServerCall();
     planUser = account.id;
     usage = booked;
@@ -85,12 +94,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     if (!booked) {
       return sendError(res, 403, "ask_limit", "Today's questions on the server's AI are used up.");
     }
+    // Fresh install ids don't bring the day's questions back: the IP has its own ceiling.
+    const ip = clientIp(req);
+    if (!(await reserveAskIp(ip))) {
+      await releaseAsk(id.data).catch(() => undefined);
+      return sendError(res, 403, "ask_limit", "Today's questions on the server's AI are used up.");
+    }
     usage = booked;
     if (!(await reserveServerCall())) {
-      await releaseAsk(id.data).catch(() => undefined);
+      await Promise.all([releaseAsk(id.data), releaseAskIp(ip)]).catch(() => undefined);
       return sendError(res, 503, "server_busy", "The free AI has reached today's limit: come back tomorrow.");
     }
     installId = id.data;
+    askIp = ip;
   }
 
   const abort = new AbortController();
@@ -104,9 +120,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     await track({ type: "question", ownKey: Boolean(override) }, statsDevice);
     return res.status(200).json({ answer, model, demo: false, ...(usage && { usage }) } satisfies AskResponse);
   } catch (error) {
-    if (installId) await Promise.all([releaseAsk(installId), releaseServerCall()]).catch(() => undefined);
-    if (planUser) await Promise.all([releasePlanAsk(planUser), releaseServerCall()]).catch(() => undefined);
+    // The caller hung up: the AI may already have been billed, so nothing is given back.
     if (abort.signal.aborted) return;
+    if (installId) await Promise.all([releaseAsk(installId), askIp && releaseAskIp(askIp), releaseServerCall()]).catch(() => undefined);
+    if (planUser) await Promise.all([releasePlanAsk(planUser), releaseServerCall(), trialAi && releaseTrialAiCall()]).catch(() => undefined);
     await track({ type: "error", route: "ask", code: error instanceof AnalysisError ? error.code : "upstream_error" }, statsDevice);
     if (error instanceof AnalysisError) {
       if (!override && error.code === "invalid_key") return sendError(res, 503, "unavailable", "The AI service is not configured correctly.");
