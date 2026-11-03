@@ -56,6 +56,10 @@ describe("Premium trial limits", () => {
   });
 
   it("allows one trial per install, and a few per IP", async () => {
+    const config = await getTrialConfig();
+    // Wide by default (shared mobile addresses); 3 here to reach the bound.
+    expect(config.trialStartsPerIp).toBe(20);
+    await setTrialConfig({ ...config, trialStartsPerIp: 3 });
     const phone = id();
     const ip = "198.51.100.10";
     expect(await reserveTrialStart({ installId: phone, ip })).toBeNull();
@@ -64,6 +68,7 @@ describe("Premium trial limits", () => {
     expect(await reserveTrialStart({ installId: id(), ip })).toBeNull();
     expect(await reserveTrialStart({ installId: id(), ip })).toBeNull();
     expect(await reserveTrialStart({ installId: id(), ip })).toBe("ip");
+    await setTrialConfig(config);
   });
 
   it("counts an IPv6 /64 as one address, and an older app (no install id) by IP", async () => {

@@ -24,7 +24,7 @@ export type TrialConfig = {
   dailyLimit: number;
   /** New Premium trials started per day, for every account together. 0 = none allowed. */
   trialStartsPerDay: number;
-  /** Premium trials started per IP (a /64 for IPv6) over 30 days. */
+  /** Premium trials started per IP (a /64 for IPv6) over 30 days. Mobile data in Madagascar puts many people behind one address: a wide bound, the e-mail and the device being the real checks. */
   trialStartsPerIp: number;
   /** AI calls made per day by accounts on a Premium trial, all together, on top of their own plan's limits. 0 = no cap. */
   trialAiPerDay: number;
@@ -36,7 +36,7 @@ const defaults: TrialConfig = {
   askLimit: Number(process.env.ASK_PER_DAY ?? 20),
   dailyLimit: Number(process.env.SERVER_DAILY_LIMIT ?? 200),
   trialStartsPerDay: Number(process.env.TRIAL_STARTS_PER_DAY ?? 30),
-  trialStartsPerIp: Number(process.env.TRIAL_STARTS_PER_IP ?? 3),
+  trialStartsPerIp: Number(process.env.TRIAL_STARTS_PER_IP ?? 20),
   trialAiPerDay: Number(process.env.TRIAL_AI_PER_DAY ?? 150),
 };
 const IP_WINDOW_S = 30 * 24 * 3600;
