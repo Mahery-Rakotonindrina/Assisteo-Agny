@@ -42,6 +42,7 @@ import { Logo } from "@/components/Logo";
 import { SegmentedControl } from "@/components/SegmentedControl";
 import { Seo } from "@/components/Seo";
 import { PlanBadge } from "@/components/PlanBadge";
+import { DataCopy } from "@/components/DataCopy";
 import { ScreenReset } from "@/components/ScreenReset";
 import { Toggle } from "@/components/Toggle";
 import { WebPushSettings } from "@/components/WebPushSettings";
@@ -228,6 +229,11 @@ export default function SettingsPage() {
           {/* Right after the data on a phone (same order, later in the page). */}
           <Group order={9} id="reset" title={t("settings.reset.section")}>
             <ScreenReset />
+          </Group>
+
+          {/* Right after "Remettre à zéro": a copy first, to keep. */}
+          <Group order={9} id="data-copy" title={t("settings.dataCopy.section")}>
+            <DataCopy />
           </Group>
         </div>
         <div className={styles.column}>

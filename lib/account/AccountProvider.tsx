@@ -39,6 +39,8 @@ type AccountContextValue = {
   email: string | null;
   syncStatus: SyncStatus;
   syncNow: () => void;
+  /** Syncs every screen now, history first (before a copy of one's data); never throws. */
+  syncAll: () => Promise<void>;
   signOut: () => Promise<void>;
   /** Deletes the account on the server, then wipes this device. Throws if the server refuses. */
   deleteAccount: () => Promise<void>;
@@ -207,10 +209,8 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     };
   }, [userId]);
 
-  const signOut = useCallback(async () => {
-    await unregisterPush().catch(() => undefined);
-    await sync.now()?.catch(() => undefined);
-    await sync.stop({ wipe: true });
+  /** Every screen's rows, now (the history apart: sync.now). */
+  const syncRows = useCallback(async () => {
     if (userId)
       await Promise.all([
         syncParcels(userId).catch(() => undefined),
@@ -224,6 +224,18 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         // Fails quietly before migration 0012.
         householdId ? syncHouseholdLoans(userId, householdId).catch(() => undefined) : undefined,
       ]);
+  }, [userId, householdId]);
+
+  const syncAll = useCallback(async () => {
+    await sync.now()?.catch(() => undefined);
+    await syncRows();
+  }, [syncRows]);
+
+  const signOut = useCallback(async () => {
+    await unregisterPush().catch(() => undefined);
+    await sync.now()?.catch(() => undefined);
+    await sync.stop({ wipe: true });
+    await syncRows();
     await parcelStore.wipe();
     await listStore.wipe();
     await vehicleStore.wipe();
@@ -238,7 +250,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await wipeReviews().catch(() => undefined);
     await aiKeyStore.clear({ fromSync: true });
     await signOutAccount();
-  }, [userId, householdId]);
+  }, [syncRows]);
 
   const deleteAccount = useCallback(async () => {
     // Stop pushing first so nothing is re-uploaded while the server deletes.
@@ -276,10 +288,11 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       email: session?.user.email ?? null,
       syncStatus,
       syncNow: () => void sync.now(),
+      syncAll,
       signOut,
       deleteAccount,
     }),
-    [session, signOut, deleteAccount, syncStatus],
+    [session, signOut, deleteAccount, syncStatus, syncAll],
   );
 
   return <AccountContext.Provider value={value}>{children}</AccountContext.Provider>;

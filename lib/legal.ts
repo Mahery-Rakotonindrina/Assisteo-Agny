@@ -10,7 +10,7 @@ export type LegalDocument = { title: string; intro: string; sections: LegalSecti
 export type LegalKind = "privacy" | "terms";
 
 /** Date of the last change, shown on both documents. */
-export const LEGAL_UPDATED_AT = "2026-10-08";
+export const LEGAL_UPDATED_AT = "2026-11-03";
 
 const privacyFr: LegalDocument = {
   title: "Politique de confidentialité",
@@ -87,7 +87,8 @@ const privacyFr: LegalDocument = {
           list: [
             "supprimer un scan, ou tout l’historique, depuis l’app ;",
             "supprimer ton compte et toutes ses données depuis Réglages → Compte → Supprimer mon compte ;",
-            "demander une copie de tes données ou poser une question en nous écrivant.",
+            "télécharger une copie de toutes tes données depuis Réglages → Télécharger une copie de mes données ;",
+            "poser une question, ou demander ce que l’app ne sait pas faire seule, en nous écrivant.",
           ],
         },
       ],
@@ -178,7 +179,8 @@ const privacyEn: LegalDocument = {
           list: [
             "delete a scan, or your whole history, from the app;",
             "delete your account and all its data from Settings → Account → Delete my account;",
-            "ask for a copy of your data or ask a question by writing to us.",
+            "download a copy of all your data from Settings → Download a copy of my data;",
+            "ask a question, or ask for what the app can’t do on its own, by writing to us.",
           ],
         },
       ],

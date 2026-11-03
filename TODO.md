@@ -127,7 +127,7 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Suppression du compte, données et photos comprises
 - [ ] Connexion par n° de téléphone (SMS) ou par Google
 - [ ] Partage familial (colis et listes partagés)
-- [ ] Télécharger une copie de toutes ses données
+- [x] Télécharger une copie de toutes ses données — Réglages, un ZIP (LISEZ-MOI, un JSON par écran, photos en option, compte.json avec un compte), toutes les offres
 
 ## 11. Offres et abonnements
 
