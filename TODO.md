@@ -20,7 +20,6 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Lecture des codes-barres et QR codes sur le téléphone, sans scan dépensé (lien, Wi-Fi, téléphone, contact…)
 - [x] File d'attente hors ligne : la photo part quand le réseau revient, avec notification du résultat
 - [x] Mode « économie de données » pour la 3G (auto, toujours, jamais) : photos ~2x plus légères
-- [ ] Version malgache
 - [x] Copier le texte lu, traduire un document (français, anglais, malgache, chinois)
 
 ## 2. Aliments
@@ -183,7 +182,6 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] État des autorisations (caméra, notifications)
 - [x] Moteur IA : IA Assisteo ou sa propre clé (Gemini, Claude, OpenAI, Mistral, Groq, OpenRouter, xAI, Together, autre), test de la clé, liste des modèles
 - [x] Effacer l'historique ; pages Confidentialité et Conditions ; présentation au premier lancement
-- [ ] Malgache
 - [x] Taille du texte — Petit, Normal, Grand, Très grand (Réglages → Apparence), propre à chaque appareil, appliquée dès l’ouverture de l’app
 - [x] Espace de stockage utilisé — total sur l’appareil et détail (photos, analyses, colis, listes, scans en attente, autres) ; « Alléger les photos » : seules les 10 dernières restent en grand
 - [x] Remettre un écran à zéro (Historique, Dépenses et revenus, Poches, Prêts, Colis) — fenêtre qui dit ce qui part (avec le compte) et ce qui reste, « Oui, tout effacer » ; effacé aussi sur les autres appareils ; jamais le foyer ; les lignes venues des scans et colis d’avant ne reviennent pas dans Dépenses ; liens de partage des prêts arrêtés d’abord (rien n’est effacé hors ligne)
