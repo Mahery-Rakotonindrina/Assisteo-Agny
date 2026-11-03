@@ -4,6 +4,7 @@ import { loanProofs, remoteFiles, withoutProof, withProof } from "@/lib/loanProo
 import { cappedRepayment, loanRemaining, MAX_INSTALLMENTS, type Installment, type Loan, type LoanDirection, type LoanInterest, type LoanProof, type Repayment } from "@/lib/loans";
 import { createId } from "./historyStore";
 import { loanProofStore } from "./loanProofStore";
+import { removeRecords } from "./storeRemoval";
 
 // "Prêts": what the user lent or borrowed, and the repayments. Local-first
 // like the garage; synced with the account (services/loanSync.ts). Always
@@ -228,6 +229,18 @@ export const loanStore = {
       await del(id, db());
       notify();
     }
+  },
+
+  /** "Remettre à zéro": every loan, its repayments and proofs (synced like any removal). */
+  async removeAll() {
+    const loans = (await values<Loan>(db())).filter((loan) => !loan.deletedAt);
+    const proofs = loans.flatMap((loan) => loanProofs(loan));
+    if (proofs.length > 0) {
+      await loanProofStore.queueRemoval(remoteFiles(proofs));
+      for (const proof of proofs) if (proof.kind === "photo") await loanProofStore.remove(proof.id);
+    }
+    await removeRecords(db(), loans, keepTombstones);
+    notify();
   },
 
   /** A household loan taken back (leaving the household): kept with its id, pushed at the next sync. */

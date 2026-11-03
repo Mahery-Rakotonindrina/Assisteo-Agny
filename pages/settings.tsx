@@ -28,7 +28,6 @@ import {
   SignalLow,
   Smartphone,
   Sun,
-  Trash2,
   Type,
   Vibrate,
   X,
@@ -43,6 +42,7 @@ import { Logo } from "@/components/Logo";
 import { SegmentedControl } from "@/components/SegmentedControl";
 import { Seo } from "@/components/Seo";
 import { PlanBadge } from "@/components/PlanBadge";
+import { ScreenReset } from "@/components/ScreenReset";
 import { Toggle } from "@/components/Toggle";
 import { WebPushSettings } from "@/components/WebPushSettings";
 import { useToast } from "@/components/Toast";
@@ -58,8 +58,6 @@ import { textSizes, useSettings, type TextSize, type ThemePreference } from "@/l
 import { accountsAvailable } from "@/lib/supabase";
 import { connectionIsSlow, isSavingData, type DataSaverPreference } from "@/services/dataSaver";
 import { isNative } from "@/services/device";
-import { historyStore } from "@/services/historyStore";
-import { keepParcelThumbnails } from "@/services/parcelLinking";
 import { compactOldPhotos, FULL_PHOTOS_KEPT, LIGHT_PHOTOS_KEPT } from "@/services/photoStorage";
 import { measureStorage, type StorageUsage } from "@/services/storageUsage";
 import {
@@ -90,7 +88,6 @@ export default function SettingsPage() {
   // The connection is only known in the browser: read after hydration, like `native` (else a slow
   // connection makes the first render differ from the prerendered HTML, React error #418).
   const savingNow = useSyncExternalStore(noSubscribe, dataSaverState, () => "off" as const);
-  const [confirmClear, setConfirmClear] = useState(false);
 
   // Re-read on return to the app: the user may have changed them in the OS settings.
   useEffect(() => {
@@ -151,18 +148,6 @@ export default function SettingsPage() {
       return;
     }
     await notify({ title: t("settings.testTitle"), body: t("settings.testBody") });
-  };
-
-  const clearHistory = async () => {
-    if (!confirmClear) {
-      setConfirmClear(true);
-      return;
-    }
-    // The parcels keep their own photo: they stay recognisable without their scans.
-    await keepParcelThumbnails().catch(() => undefined);
-    await historyStore.clear();
-    setConfirmClear(false);
-    toast(t("settings.cleared"));
   };
 
   const themeOptions: { value: ThemePreference; icon: ReactNode }[] = [
@@ -238,17 +223,11 @@ export default function SettingsPage() {
               />
             </Row>
             <StorageRows entries={entries.length} />
-            <div className={styles.rowAction}>
-              <Button
-                variant="danger"
-                icon={<Trash2 />}
-                onClick={() => void clearHistory()}
-                disabled={entries.length === 0}
-                block
-              >
-                {confirmClear ? t("settings.clearConfirm") : t("settings.clearHistory")}
-              </Button>
-            </div>
+          </Group>
+
+          {/* Right after the data on a phone (same order, later in the page). */}
+          <Group order={9} id="reset" title={t("settings.reset.section")}>
+            <ScreenReset />
           </Group>
         </div>
         <div className={styles.column}>

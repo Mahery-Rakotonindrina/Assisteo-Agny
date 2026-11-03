@@ -250,10 +250,32 @@ export type Tontine = Base & {
 /** "Keep my reselling apart from the household's budget": one record, like the budget. */
 export type ActivitySetting = Base & { kind: "activity"; separate: boolean };
 
-export type ExpenseRecord = ManualExpense | Income | Recurring | Budget | CustomCategory | Exclusion | Wallet | Transfer | Correction | WalletPick | SavingsGoal | Tontine | ActivitySetting;
+/**
+ * "Remettre à zéro" (Réglages, lib/screenReset.ts): the lines computed from
+ * the rest of the app (scans, parcels, the garage…) from before `at` are no
+ * longer shown. One record, like the budget; an older app ignores it.
+ */
+export type ResetMark = Base & { kind: "reset"; at: number };
+
+export type ExpenseRecord =
+  | ManualExpense
+  | Income
+  | Recurring
+  | Budget
+  | CustomCategory
+  | Exclusion
+  | Wallet
+  | Transfer
+  | Correction
+  | WalletPick
+  | SavingsGoal
+  | Tontine
+  | ActivitySetting
+  | ResetMark;
 
 export const BUDGET_ID = "budget";
 export const ACTIVITY_ID = "activity";
+export const RESET_ID = "reset";
 export const exclusionId = (sourceKey: string) => `exclusion:${sourceKey}`;
 export const walletPickId = (sourceKey: string) => `walletPick:${sourceKey}`;
 /** The arrival of a scanned move between one's own pockets, picked by the user. */

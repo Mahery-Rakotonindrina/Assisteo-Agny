@@ -30,10 +30,15 @@ vi.mock("@/lib/supabase", () => ({
   accountsAvailable: true,
   supabase: () => ({
     from: () => ({
-      select: () => Promise.resolve(server.fail ? { data: null, error: server.fail } : { data: server.rows.map((row) => ({ ...row })), error: null }),
-      upsert: (row: Record<string, unknown>) => {
+      select: () => ({
+        order: () => ({
+          range: (from: number, to: number) =>
+            Promise.resolve(server.fail ? { data: null, error: server.fail } : { data: server.rows.slice(from, to + 1).map((row) => ({ ...row })), error: null }),
+        }),
+      }),
+      upsert: (rows: Record<string, unknown> | Array<Record<string, unknown>>) => {
         if (server.fail) return Promise.resolve({ error: server.fail });
-        server.rows = [...server.rows.filter((other) => other.id !== row.id), row];
+        for (const row of [rows].flat()) server.rows = [...server.rows.filter((other) => other.id !== row.id), row];
         return Promise.resolve({ error: null });
       },
     }),
