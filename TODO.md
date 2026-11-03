@@ -186,6 +186,7 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [ ] Malgache
 - [x] Taille du texte — Petit, Normal, Grand, Très grand (Réglages → Apparence), propre à chaque appareil, appliquée dès l’ouverture de l’app
 - [x] Espace de stockage utilisé — total sur l’appareil et détail (photos, analyses, colis, listes, scans en attente, autres) ; « Alléger les photos » : seules les 10 dernières restent en grand
+- [x] Remettre un écran à zéro (Historique, Dépenses et revenus, Poches, Prêts, Colis) — fenêtre qui dit ce qui part (avec le compte) et ce qui reste, « Oui, tout effacer » ; effacé aussi sur les autres appareils ; jamais le foyer ; les lignes venues des scans et colis d’avant ne reviennent pas dans Dépenses ; liens de partage des prêts arrêtés d’abord (rien n’est effacé hors ligne)
 
 ## 14. Plateformes
 

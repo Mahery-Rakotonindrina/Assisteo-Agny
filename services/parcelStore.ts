@@ -4,6 +4,7 @@ import { encodeImage } from "@/lib/image";
 import { parcelScanHasNews, parcelsFor, type ParcelInfo } from "@/lib/parcels";
 import type { HistoryEntry } from "@/types/history";
 import { createId } from "./historyStore";
+import { removeRecords } from "./storeRemoval";
 
 // "Mes colis": parcels the user chose to follow. Each keeps the latest known
 // state plus a timeline of the statuses seen on successive screenshots.
@@ -237,6 +238,12 @@ export const parcelStore = {
       await del(id, db());
       notify();
     }
+  },
+
+  /** "Remettre à zéro": every parcel followed (synced like any removal; their scans stay). */
+  async removeAll() {
+    await removeRecords(db(), (await values<Parcel>(db())).filter((parcel) => !parcel.deletedAt), keepTombstones);
+    notify();
   },
 
   // ---- For the sync engine -----------------------------------------------------
