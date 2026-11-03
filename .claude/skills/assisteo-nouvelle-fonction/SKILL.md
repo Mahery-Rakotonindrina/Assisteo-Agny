@@ -25,7 +25,7 @@ L'app aide les gens à Madagascar à comprendre ce qu'ils photographient (docume
 | Composant | `components/Nom/Nom.tsx` + `Nom.module.scss` + `index.ts`. Styles ordinateur via le mixin `desktop` (`styles/_mixins.scss`) et `useIsDesktop`. L'app native garde toujours l'interface mobile. |
 | Logique côté appareil | `services/*.ts` (caméra, historique, file hors ligne, synchro…), et les hooks dans `hooks/`. |
 | API | `pages/api/*.ts`. Erreurs avec `sendError(res, status, code, message)` (`lib/server/http.ts`) ; rate limit, offre et Redis dans `lib/server/`. |
-| Textes | Jamais en dur : `locales/fr.json` (référence, **tutoiement**, ton simple) et `locales/en.json`, avec les mêmes clés et les mêmes `{placeholders}` (un test le vérifie). Langues dans `i18n.config.ts` ; le malgache est prévu. |
+| Textes | Jamais en dur : `locales/fr.json` (référence, **tutoiement**, ton simple) et `locales/en.json`, avec les mêmes clés et les mêmes `{placeholders}` (un test le vérifie). Langues dans `i18n.config.ts`. Pas de version malgache de l’app (décision du propriétaire, 2026-11-03). |
 | Montants | En ariary (`Ar`). Le paiement se fait en Mobile Money (MVola…). |
 
 ## Réserver une fonction à une offre
