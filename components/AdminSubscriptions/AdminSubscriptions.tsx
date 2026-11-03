@@ -6,6 +6,7 @@ import { AdminAccountCard } from "@/components/AdminAccountCard";
 import { Button } from "@/components/Button";
 import { PlanBadge, PlanIcon } from "@/components/PlanBadge";
 import { useToast } from "@/components/Toast";
+import { useSheetKeyboard } from "@/hooks/useSheetKeyboard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { adminPlanName, localName } from "@/lib/customPlans";
 import { formatAriary, formatDate, toDateInput } from "@/lib/format";
@@ -569,6 +570,7 @@ function SheetForm({
 }) {
   const { t, locale } = useTranslation();
   const [draft, setDraft] = useState(initial);
+  const backdrop = useSheetKeyboard();
   const [saving, setSaving] = useState(false);
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) => setDraft((current) => ({ ...current, [key]: value }));
   const editing = Boolean(draft.id);
@@ -641,7 +643,7 @@ function SheetForm({
   };
 
   return (
-    <motion.div className={styles.backdrop} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
+    <motion.div ref={backdrop} className={styles.backdrop} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
       <motion.form
         className={styles.sheet}
         data-plan={draft.plan}

@@ -3228,7 +3228,7 @@
       "toChoose": "à préciser",
       "correct": "Corriger le solde",
       "correctHint": "D’après l’app, il y a {amount}. Si ce n’est pas ça, écris le vrai montant : la différence est notée comme une correction, ni dépense ni revenu.",
-      "really": "Ton solde {name} est en vrai de…",
+      "really": "Combien as-tu vraiment sur {name} ?",
       "corrected": "Solde corrigé : {amount}",
       "correction": "Correction du solde",
       "makeDefault": "Mettre par défaut",
@@ -3314,7 +3314,12 @@
       "correctionRemove": "Supprimer cette correction",
       "correctionAsk": "Supprimer cette correction ? Le solde reviendra à ce qu’il était avant.",
       "correctionRemoved": "Correction supprimée",
-      "forgotHint": "Tu as oublié une dépense ou un revenu ? Ajoute-le plutôt : le solde se remettra juste tout seul."
+      "forgotHint": "Tu as oublié une dépense ou un revenu ? Ajoute-le plutôt : le solde se remettra juste tout seul.",
+      "hiddenBalance": "Solde masqué",
+      "hideBalances": "Masquer les soldes",
+      "showBalances": "Afficher les soldes",
+      "hideBalance": "Masquer son solde",
+      "showBalance": "Afficher son solde"
     },
     "forecast": {
       "left": "À ce rythme, il te restera environ {amount} le {day}.",

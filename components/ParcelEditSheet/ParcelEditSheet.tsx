@@ -5,6 +5,7 @@ import { Plus, Save, X } from "lucide-react";
 import { Button } from "@/components/Button";
 import { PlanBadge } from "@/components/PlanBadge";
 import { usePlan } from "@/hooks/usePlan";
+import { useSheetKeyboard } from "@/hooks/useSheetKeyboard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { toDateInput } from "@/lib/format";
 import { parcelStatuses, type ParcelStatus, type ShippingMode } from "@/lib/ai/schema";
@@ -49,6 +50,7 @@ export function ParcelEditSheet({ parcel, open, onClose, clients }: Props) {
 }
 
 function Form({ parcel, onClose, clients }: Omit<Props, "open">) {
+  const backdrop = useSheetKeyboard();
   const { t } = useTranslation();
   const { has, planFor, name: planName } = usePlan();
   const reseller = has("reseller");
@@ -117,7 +119,7 @@ function Form({ parcel, onClose, clients }: Omit<Props, "open">) {
   };
 
   return (
-    <motion.div className={styles.backdrop} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
+    <motion.div ref={backdrop} className={styles.backdrop} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
       <motion.form
         className={styles.sheet}
         role="dialog"

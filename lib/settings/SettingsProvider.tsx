@@ -2,6 +2,7 @@ import { Preferences } from "@capacitor/preferences";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { defaultLocale, locales, type Locale } from "@/i18n.config";
 import type { Allergen, Diet } from "@/lib/ai/schema";
+import { noMask, type BalanceMask } from "@/lib/balanceMask";
 import { defaultFoodGoals, type FoodGoals } from "@/lib/food";
 import { setDataSaverPreference, type DataSaverPreference } from "@/services/dataSaver";
 import { setHapticsEnabled } from "@/services/device";
@@ -36,6 +37,8 @@ export type Settings = {
   foodGoals: FoodGoals;
   /** The first-run permission walkthrough has been completed or skipped. */
   onboardingDone: boolean;
+  /** Pocket balances shown as stars: this device only (a matter of discretion), never synced. */
+  hiddenBalances: BalanceMask;
   /** Last change to the synced fields, to settle edits from two devices. */
   updatedAt: number;
 };
@@ -67,6 +70,7 @@ const defaults: Settings = {
   diets: [],
   foodGoals: defaultFoodGoals,
   onboardingDone: false,
+  hiddenBalances: noMask,
   updatedAt: 0,
 };
 

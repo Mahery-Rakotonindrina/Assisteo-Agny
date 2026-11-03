@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useId, useSyncExternalStore, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
+import { useSheetKeyboard } from "@/hooks/useSheetKeyboard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { spring } from "@/lib/motion";
 import styles from "./Expenses.module.scss";
@@ -33,6 +34,7 @@ export function ExpenseSheet({ open, title, onClose, wide, children }: Props) {
 function Sheet({ title, onClose, wide, children }: Omit<Props, "open">) {
   const { t } = useTranslation();
   const id = useId();
+  const backdrop = useSheetKeyboard();
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -43,7 +45,7 @@ function Sheet({ title, onClose, wide, children }: Omit<Props, "open">) {
   }, [onClose]);
 
   return (
-    <motion.div className={styles.backdrop} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
+    <motion.div ref={backdrop} className={styles.backdrop} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
       <motion.div
         className={styles.sheet}
         data-wide={wide || undefined}

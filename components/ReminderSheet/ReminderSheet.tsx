@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { Bell, BellOff, CalendarPlus, Repeat, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/Button";
 import { useNow } from "@/hooks/useNow";
+import { useSheetKeyboard } from "@/hooks/useSheetKeyboard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDateTime } from "@/lib/format";
 import { spring } from "@/lib/motion";
@@ -37,6 +38,7 @@ const repeats = [
 ] as const;
 
 export function ReminderSheet({ open, current, repeat: currentRepeat, suggestedHours, onSchedule, onCalendar, onCancelReminder, onClose }: ReminderSheetProps) {
+  const backdrop = useSheetKeyboard(open);
   const { t, locale } = useTranslation();
   const [now] = useState(() => Date.now());
   const initial = useMemo(() => new Date(current ?? now + (suggestedHours ?? 1) * 3_600_000), [current, now, suggestedHours]);
@@ -90,7 +92,7 @@ export function ReminderSheet({ open, current, repeat: currentRepeat, suggestedH
   return (
     <AnimatePresence>
       {open && (
-        <motion.div className={styles.backdrop} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
+        <motion.div ref={backdrop} className={styles.backdrop} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
           <motion.div
             className={styles.sheet}
             role="dialog"

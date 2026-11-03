@@ -3,12 +3,14 @@ import { ArrowDown, ArrowLeftRight, ArrowUp, Check, ChevronDown, ChevronRight, L
 import { Button } from "@/components/Button";
 import ex from "@/components/Expenses/Expenses.module.scss";
 import { WalletChips, walletIcons } from "@/components/Expenses/WalletChips";
+import { useBalanceMask } from "@/hooks/useBalanceMask";
 import { useTranslation } from "@/hooks/useTranslation";
 import { arrivalKey, type Wallet } from "@/lib/expenses";
 import { formatAriary, formatDate } from "@/lib/format";
 import { activeWallets, movedOrder, walletColors, type PocketMove, type WalletBook } from "@/lib/wallets";
 import { haptics } from "@/services/device";
 import { expenseStore } from "@/services/expenseStore";
+import { Masked } from "./Masked";
 import styles from "./Pockets.module.scss";
 
 type Props = {
@@ -32,6 +34,7 @@ export function PocketList({ book, pending, selectedId, onOpen, onTransfer, onAd
   const [showArchived, setShowArchived] = useState(false);
   const [showHow, setShowHow] = useState(false);
   const money = (value: number) => formatAriary(value, locale);
+  const mask = useBalanceMask();
   const { wallets, primary, byId } = book.context;
   const active = activeWallets(wallets);
   const archived = wallets.filter((wallet) => wallet.archived);
@@ -57,7 +60,7 @@ export function PocketList({ book, pending, selectedId, onOpen, onTransfer, onAd
             {wallet.id === primary?.id && <span className={ex.badge}>{t("expenses.pockets.default")}</span>}
           </span>
           <strong className={styles.balance} data-testid="wallet-balance" data-wallet={wallet.name} data-tone={balance < 0 ? "bad" : undefined}>
-            {money(balance)}
+            <Masked hidden={mask.hidden(wallet.id)}>{money(balance)}</Masked>
           </strong>
         </span>
       </>
@@ -94,7 +97,7 @@ export function PocketList({ book, pending, selectedId, onOpen, onTransfer, onAd
       <section className={styles.total} aria-label={t("expenses.pockets.allMoney")}>
         <small>{t("expenses.pockets.allMoney")}</small>
         <strong data-testid="pockets-all" data-tone={book.total < 0 ? "bad" : undefined}>
-          {money(book.total)}
+          <Masked hidden={mask.totalHidden(active.map((wallet) => wallet.id))}>{money(book.total)}</Masked>
         </strong>
         {/* Nothing looks lost: what was set aside left the pockets. */}
         {book.saved > 0 && (
