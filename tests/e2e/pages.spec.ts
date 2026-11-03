@@ -270,7 +270,7 @@ test("My pockets: from « Mes dépenses », the first pockets, a transfer with �
   await detail.getByRole("button", { name: "Corriger le solde" }).click();
   const correct = page.getByRole("dialog", { name: "Corriger le solde" });
   await expect(correct.getByRole("link", { name: "Ajouter une dépense" })).toHaveAttribute("href", /\/expenses\?add=expense&wallet=/);
-  await correct.getByLabel(/^Ton solde MVola est en vrai de/).fill("170000");
+  await correct.getByLabel(/^Combien as-tu vraiment sur MVola/).fill("170000");
   await correct.getByRole("button", { name: "Enregistrer" }).click();
   await expect(page.getByText(/^Solde corrigé : \+3\s000 Ar/)).toBeVisible();
   await expect(detail.getByTestId("pocket-balance")).toHaveText(/^170\s000 Ar$/);

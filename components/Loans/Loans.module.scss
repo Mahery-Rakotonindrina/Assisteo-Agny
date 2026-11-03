@@ -479,8 +479,6 @@
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  // Lifted above the on-screen keyboard (LoanSheet.tsx).
-  padding-bottom: var(--keyboard, 0px);
   background: rgba(0, 0, 0, 0.55);
   -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
@@ -493,8 +491,10 @@
 .sheet {
   width: 100%;
   max-width: 520px;
-  max-height: calc(92vh - var(--keyboard, 0px));
-  max-height: calc(92dvh - var(--keyboard, 0px));
+  max-height: 92vh;
+  // The visible part of the screen while a keyboard is open (hooks/useSheetKeyboard.ts).
+  max-height: calc(var(--viewport-height, 100dvh) * 0.92);
+  scroll-padding-bottom: 6rem;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   display: flex;

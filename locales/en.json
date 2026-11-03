@@ -3228,7 +3228,7 @@
       "toChoose": "to finish",
       "correct": "Correct the balance",
       "correctHint": "The app says {amount}. If that's not right, type the real amount: the difference is noted as a correction, neither an expense nor an income.",
-      "really": "Your {name} balance is really…",
+      "really": "How much is really on {name}?",
       "corrected": "Balance corrected: {amount}",
       "correction": "Balance correction",
       "makeDefault": "Make default",

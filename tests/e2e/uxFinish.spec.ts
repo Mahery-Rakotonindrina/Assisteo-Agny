@@ -69,8 +69,9 @@ test("adding an expense: « Enregistrer » shows without scrolling the sheet", a
   await expect(save).toBeVisible();
   // The fields are taller than the screen: the button stays at the bottom of what shows.
   expect(await sheet.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(true);
+  // Once the sheet has finished rising (60 px of spring).
+  await expect.poll(async () => (await box(save)).y + (await box(save)).height).toBeLessThanOrEqual(667);
   const button = await box(save);
-  expect(button.y + button.height).toBeLessThanOrEqual(667);
   expect(button.y).toBeGreaterThanOrEqual(0);
   await sheet.getByLabel("Montant", { exact: true }).fill("12500");
   await save.click();

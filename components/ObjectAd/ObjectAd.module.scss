@@ -50,6 +50,9 @@
   width: 100%;
   max-width: 560px;
   max-height: 92vh;
+  // The visible part of the screen while a keyboard is open (hooks/useSheetKeyboard.ts).
+  max-height: calc(var(--viewport-height, 100dvh) * 0.92);
+  scroll-padding-bottom: 6rem;
   overflow-y: auto;
   display: flex;
   flex-direction: column;

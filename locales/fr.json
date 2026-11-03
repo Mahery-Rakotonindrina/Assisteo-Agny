@@ -3228,7 +3228,7 @@
       "toChoose": "à préciser",
       "correct": "Corriger le solde",
       "correctHint": "D’après l’app, il y a {amount}. Si ce n’est pas ça, écris le vrai montant : la différence est notée comme une correction, ni dépense ni revenu.",
-      "really": "Ton solde {name} est en vrai de…",
+      "really": "Combien as-tu vraiment sur {name} ?",
       "corrected": "Solde corrigé : {amount}",
       "correction": "Correction du solde",
       "makeDefault": "Mettre par défaut",
