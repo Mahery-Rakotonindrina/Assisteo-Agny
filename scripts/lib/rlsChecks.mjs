@@ -9,6 +9,9 @@ import { randomUUID } from "node:crypto";
 
 export async function runRlsChecks(client) {
   const problems = [];
+  // Every table of the public schema has row security: without it, the app's public key reads (and may write) it.
+  const open = await client.query("select c.relname from pg_class c join pg_namespace n on n.oid = c.relnamespace where n.nspname = 'public' and c.relkind = 'r' and not c.relrowsecurity order by 1");
+  for (const { relname } of open.rows) problems.push(`${relname}: row level security is off (every table of the public schema needs it)`);
   const [anna, ben, carla] = [randomUUID(), randomUUID(), randomUUID()];
   for (const [id, email, name] of [
     [anna, "anna.rabe@example.com", "Anna Rabe"],
