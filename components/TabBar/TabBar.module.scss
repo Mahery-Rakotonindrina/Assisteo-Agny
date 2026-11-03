@@ -14,6 +14,13 @@
   @include desktop {
     display: none;
   }
+
+  // Six tabs (Admin) or larger text: narrower margins, more room for each label.
+  &[data-count="6"],
+  :global(html[data-text-size="large"]) &,
+  :global(html[data-text-size="xlarge"]) & {
+    padding-inline: 0.5rem;
+  }
 }
 
 .inner {
@@ -25,6 +32,13 @@
   padding: 0.45rem;
   border-radius: 28px;
   box-shadow: var(--shadow-lg);
+
+  .bar[data-count="6"] &,
+  :global(html[data-text-size="large"]) &,
+  :global(html[data-text-size="xlarge"]) & {
+    gap: 2px;
+    padding: 0.3rem;
+  }
 }
 
 .tab {
@@ -70,21 +84,22 @@
   }
 }
 
+// Every label stays whole: a long word breaks on two lines at its soft
+// hyphen ("Histo-rique") rather than being cut, and the size follows the tab.
 .label {
   position: relative;
   max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 0.74rem;
+  font-size: min(0.74rem, 22cqi);
   font-weight: 600;
+  line-height: 1.1;
   letter-spacing: 0.01em;
+  text-align: center;
+  hyphens: manual;
+  overflow-wrap: normal;
 
-  // Large text on a narrow phone: five labels must still fit side by side.
   :global(html[data-text-size="large"]) &,
-  :global(html[data-text-size="xlarge"]) & {
-    // "Historique" fits a 320 px phone too.
-    font-size: min(0.74rem, 3.3vw, 19.5cqi);
+  :global(html[data-text-size="xlarge"]) &,
+  .bar[data-count="6"] & {
     letter-spacing: 0;
   }
 }

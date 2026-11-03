@@ -16,6 +16,9 @@ export default defineConfig({
     baseURL: `http://localhost:${PORT}`,
     locale: "fr-FR",
     trace: "retain-on-failure",
+    // The offline worker (public/sw.js) would answer the pages before page.route() sees them:
+    // off, except in tests/e2e/offline.spec.ts.
+    serviceWorkers: "block",
     ...(ci ? {} : { channel: "msedge" }),
   },
   projects: [

@@ -1,12 +1,13 @@
-// Overridable by the page (smaller on short phones).
+// Overridable by the page (smaller on short phones), with the room the halo takes around it.
 $size: var(--orb-size, 176px);
+$halo: var(--orb-halo, 80px);
 
 .wrap {
   position: relative;
   display: grid;
   place-items: center;
-  width: calc(#{$size} + 80px);
-  height: calc(#{$size} + 80px);
+  width: calc(#{$size} + #{$halo});
+  height: calc(#{$size} + #{$halo});
 }
 
 .halo {

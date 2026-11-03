@@ -63,29 +63,41 @@
   }
 }
 
+// Demo mode: a slim line, its explanation folded.
 .demoBanner {
   display: flex;
-  gap: 0.75rem;
-  padding: 0.85rem 1rem;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0 0.85rem;
   border-radius: var(--radius-md);
   border: 1px solid color-mix(in srgb, var(--cat-food) 40%, transparent);
   background: color-mix(in srgb, var(--cat-food) 12%, transparent);
 
   svg {
     flex-shrink: 0;
-    margin-top: 0.1rem;
+    margin-top: 0.75rem;
     color: var(--cat-food);
   }
 
-  strong {
-    display: block;
-    font-size: 0.9rem;
+  details {
+    flex: 1;
+    min-width: 0;
+  }
+
+  summary {
+    display: flex;
+    align-items: center;
+    min-height: 2.75rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
   }
 
   p {
-    margin-top: 0.15rem;
+    padding-bottom: 0.75rem;
     font-size: 0.8rem;
     color: var(--text-muted);
+    overflow-wrap: anywhere;
   }
 }
 
@@ -385,6 +397,49 @@
 
   .orb {
     --orb-size: 140px;
+  }
+}
+
+// A short phone (667 px, an iPhone SE), with or without the demo banner:
+// "Importer une image" and "Plusieurs pages" still show without scrolling.
+@media (max-width: 1023px) and (max-height: 720px) {
+  .idle {
+    gap: 0.75rem;
+  }
+
+  .header {
+    padding-top: 0.25rem;
+  }
+
+  .greeting {
+    margin-bottom: 0.25rem;
+  }
+
+  .headline {
+    font-size: 1.75rem;
+  }
+
+  // The plan badge (a paid plan, Admin) closer to the title.
+  .trial {
+    margin-top: 0.5rem;
+  }
+
+  .modes {
+    gap: 0.5rem;
+  }
+
+  .orb {
+    --orb-size: 100px;
+    --orb-halo: 44px;
+    gap: 0;
+  }
+
+  .captureLabel {
+    margin: 0 0 0.25rem;
+  }
+
+  .multi {
+    margin-top: 0;
   }
 }
 
