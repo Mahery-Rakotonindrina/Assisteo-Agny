@@ -178,12 +178,13 @@ export default function ScanPage() {
               </motion.header>
 
               {aiStatus.status === "demo" && (
+                // One line: the details (for whoever runs the server) open on a tap.
                 <motion.div variants={rise} className={styles.demoBanner} role="note">
-                  <FlaskConical size={18} />
-                  <div>
-                    <strong>{t("scan.demoTitle")}</strong>
+                  <FlaskConical size={16} />
+                  <details>
+                    <summary>{t("scan.demoTitle")}</summary>
                     <p>{t("scan.demoBody")}</p>
-                  </div>
+                  </details>
                 </motion.div>
               )}
 

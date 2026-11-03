@@ -24,7 +24,15 @@
     "expenses": "Expenses",
     "inventory": "Home",
     "plants": "Plants",
-    "pockets": "Pockets"
+    "pockets": "Pockets",
+    "bar": {
+      "scan": "Scan",
+      "history": "His|tory",
+      "parcels": "Par|cels",
+      "lists": "Lists",
+      "settings": "Set|tings",
+      "admin": "Admin"
+    }
   },
   "scan": {
     "greeting": {
@@ -282,7 +290,7 @@
     "testBody": "Assisteo Agny can send you reminders.",
     "haptics": "Haptic feedback",
     "hapticsHint": "Light vibrations on actions.",
-    "data": "Data",
+    "data": "Mobile data",
     "storageTotal": "Space used: {size}",
     "storageMeasuring": "Measuring the space used…",
     "storageParts": {
@@ -514,7 +522,8 @@
     "parcelNotify": "Parcels: notify on the expected delivery day",
     "parcelNotifyHint": "A notification on the day a parcel should arrive.",
     "parcelNotifyHour": "Notification time",
-    "parcelNotifyHourHint": "Madagascar time"
+    "parcelNotifyHourHint": "Madagascar time",
+    "myData": "My data"
   },
   "notifications": {
     "readyTitle": "Analysis ready ✨",
@@ -3189,7 +3198,9 @@
       "auto": "Paid bills, ticked shopping, parcels and the garage are added on their own.",
       "step1": "Add what you earn (Income tab).",
       "step2": "Add your expenses, or take a photo of a receipt.",
-      "step3": "Set your budget."
+      "step3": "Set your budget.",
+      "done": "Got it",
+      "again": "How does it work?"
     },
     "counted": {
       "expense": "Counted in My expenses",

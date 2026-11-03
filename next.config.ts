@@ -82,7 +82,18 @@ const nextConfig: NextConfig = {
   // Static exports can't set headers (and the native app isn't served over HTTP).
   ...(!isMobileBuild && {
     async headers() {
-      return [{ source: "/(.*)", headers: securityHeaders }];
+      return [
+        { source: "/(.*)", headers: securityHeaders },
+        // The service worker (public/sw.js): always checked again, so a new build takes over at the next visit.
+        // Its scope is the whole site; worker-src 'self' above allows it.
+        {
+          source: "/sw.js",
+          headers: [
+            { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+            { key: "Service-Worker-Allowed", value: "/" },
+          ],
+        },
+      ];
     },
     // Search engines look for these at the root; the API routes build them.
     async rewrites() {

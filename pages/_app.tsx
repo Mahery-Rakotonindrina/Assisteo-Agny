@@ -1,5 +1,6 @@
 import type { AppProps } from "next/app";
 import Head from "next/head";
+import { useEffect } from "react";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import { MotionConfig } from "motion/react";
 import { AppShell } from "@/components/AppShell";
@@ -20,6 +21,7 @@ import { useKeyboardReveal } from "@/hooks/useKeyboardReveal";
 import { useNativeBootstrap } from "@/hooks/useNativeBootstrap";
 import { AccountProvider } from "@/lib/account/AccountProvider";
 import { SettingsProvider } from "@/lib/settings/SettingsProvider";
+import { startOffline } from "@/services/offline";
 import "@/styles/globals.scss";
 import "@/styles/planColors.scss";
 
@@ -43,6 +45,10 @@ const instrumentSerif = Instrument_Serif({
 function Bootstrap() {
   useNativeBootstrap();
   useKeyboardReveal();
+  // The site opens offline on the pages already seen (never in the Android app).
+  useEffect(() => {
+    void startOffline();
+  }, []);
   return null;
 }
 

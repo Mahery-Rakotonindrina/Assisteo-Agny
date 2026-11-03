@@ -32,9 +32,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             <motion.div
               key={toast.id}
               className={`${styles.toast} ${styles[toast.tone]}`}
-              initial={{ opacity: 0, y: 24, scale: 0.92 }}
+              initial={{ opacity: 0, y: -24, scale: 0.92 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 12, scale: 0.96, transition: { duration: 0.18 } }}
+              exit={{ opacity: 0, y: -12, scale: 0.96, transition: { duration: 0.18 } }}
               transition={spring}
               role="status"
             >

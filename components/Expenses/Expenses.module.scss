@@ -616,6 +616,38 @@
   }
 }
 
+// The welcome's title opens and folds its steps.
+.welcomeToggle {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  min-height: 2.75rem;
+  margin: -0.4rem 0;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+
+  > span {
+    min-width: 0;
+  }
+
+  svg {
+    flex: none;
+    color: var(--text-muted);
+    transition: transform 0.2s var(--ease-out);
+
+    &[data-open] {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+.welcomeAgain {
+  align-self: flex-start;
+  min-height: 2.75rem;
+}
+
 .close {
   flex: none;
   display: grid;
@@ -880,6 +912,19 @@
     background: none;
     border: 0;
     box-shadow: none;
+
+    // Its buttons ("Enregistrer", "Annuler") stay in view at the bottom of the
+    // sheet while the fields above scroll, above the phone's home bar.
+    > .row:last-child {
+      position: sticky;
+      bottom: 0;
+      z-index: 1;
+      margin-inline: -1.25rem;
+      margin-bottom: calc(-1.5rem - var(--safe-bottom));
+      padding: 0.75rem 1.25rem calc(1rem + var(--safe-bottom));
+      background: var(--bg-elevated);
+      border-top: 1px solid var(--border);
+    }
   }
 }
 

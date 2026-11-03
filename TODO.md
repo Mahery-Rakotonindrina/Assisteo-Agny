@@ -197,10 +197,11 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Safari sur iPhone : plus de zoom en touchant un champ, feuilles du bas qui tiennent avec la barre d'adresse et le clavier, listes déroulantes, dates et textes d'aide comme sur Android, barre d'onglets et boutons lisibles en très grand texte
 - [x] App Android signée, construite par GitHub à chaque mise en ligne
 - [x] Bandeau de mise à jour, mise à jour obligatoire possible
+- [x] Site hors ligne et finitions du tour des utilisateurs fictifs — le site s’ouvre sans internet sur les pages déjà visitées (pas dans l’app Android) ; libellés de la barre du bas entiers à 320 px en très grand texte ; « Enregistrer » toujours visible dans les fenêtres de Dépenses et Poches ; messages en haut de l’écran ; carte de bienvenue de Dépenses repliée avec « Compris » ; boutons du scan visibles sur un petit téléphone ; « Réordonner » en lien discret ; Réglages : partie « Mes données » (espace utilisé, copie, remise à zéro) plus haut ; /pret affiche son message d’erreur sur une réponse mal formée
 - [x] ⭐ Lien de téléchargement automatique de l'APK (GitHub Releases) et bouton « Télécharger l'app Android »
 - [ ] ⏸ En attente (propriétaire, 2026-11-03) : Publication sur le Play Store
-- [ ] Widget Android (prochain rappel, colis)
-- [ ] App iPhone native (App Store)
+- [ ] ⏸ En attente (propriétaire, 2026-11-03) : Widget Android (prochain rappel, colis)
+- [ ] ⏸ En attente (propriétaire, 2026-11-03) : App iPhone native (App Store)
 
 ## 15. Sécurité et fiabilité
 

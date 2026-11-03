@@ -24,7 +24,15 @@
     "expenses": "Dépenses",
     "inventory": "Maison",
     "plants": "Plantes",
-    "pockets": "Poches"
+    "pockets": "Poches",
+    "bar": {
+      "scan": "Scan|ner",
+      "history": "Histo|rique",
+      "parcels": "Colis",
+      "lists": "Listes",
+      "settings": "Ré|glages",
+      "admin": "Admin"
+    }
   },
   "scan": {
     "greeting": {
@@ -282,7 +290,7 @@
     "testBody": "Assisteo Agny peut t'envoyer des rappels.",
     "haptics": "Retour haptique",
     "hapticsHint": "Vibrations légères lors des actions.",
-    "data": "Données",
+    "data": "Données mobiles",
     "storageTotal": "Espace utilisé : {size}",
     "storageMeasuring": "Calcul de l’espace utilisé…",
     "storageParts": {
@@ -514,7 +522,8 @@
     "parcelNotify": "Colis : prévenir le jour de livraison prévue",
     "parcelNotifyHint": "Une notification le jour où un colis doit arriver.",
     "parcelNotifyHour": "Heure de la notification",
-    "parcelNotifyHourHint": "Heure de Madagascar"
+    "parcelNotifyHourHint": "Heure de Madagascar",
+    "myData": "Mes données"
   },
   "notifications": {
     "readyTitle": "Analyse prête ✨",
@@ -3189,7 +3198,9 @@
       "auto": "Les factures payées, les courses cochées, les colis et le garage s’ajoutent tout seuls.",
       "step1": "Ajoute ce que tu gagnes (onglet Revenus).",
       "step2": "Ajoute tes dépenses, ou prends un ticket en photo.",
-      "step3": "Fixe ton budget."
+      "step3": "Fixe ton budget.",
+      "done": "Compris",
+      "again": "Comment ça marche ?"
     },
     "counted": {
       "expense": "Compté dans Mes dépenses",

@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Logo } from "@/components/Logo";
 import { Seo } from "@/components/Seo";
 import { useNow } from "@/hooks/useNow";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDate } from "@/lib/format";
-import { sharedAsLoan, shareTokenFromAddress, type LoanShareSnapshot, type SharedLoansResponse } from "@/lib/loanShare";
+import { readSharedLoans, sharedAsLoan, shareTokenFromAddress, type LoanShareSnapshot } from "@/lib/loanShare";
 import { loanMoney, loanNextDue, loanRemaining, loanStatus, loanTotal, scheduleState } from "@/lib/loans";
 import { httpClient } from "@/services/httpClient";
 import styles from "@/styles/SharedLoan.module.scss";
@@ -45,8 +46,12 @@ export default function SharedLoanPage() {
       };
     }
     httpClient
-      .get<SharedLoansResponse>(`/api/loans/share?t=${encodeURIComponent(token)}`)
-      .then((response) => show({ kind: "shown", snapshot: response.snapshot }))
+      .get<unknown>(`/api/loans/share?t=${encodeURIComponent(token)}`)
+      .then((response) => {
+        // Checked before it is shown: a malformed answer is the error message, not a crash.
+        const snapshot = readSharedLoans(response);
+        show(snapshot ? { kind: "shown", snapshot } : { kind: "error" });
+      })
       .catch((error) => show({ kind: error instanceof ApiError && error.status === 404 ? "gone" : "error" }));
     return () => {
       cancelled = true;
@@ -70,7 +75,12 @@ export default function SharedLoanPage() {
         {view.kind === "missing" && <Notice title={t("loanShare.missing.title")} body={t("loanShare.missing.body")} testId="shared-loan-missing" />}
         {view.kind === "gone" && <Notice title={t("loanShare.gone.title")} body={t("loanShare.gone.body")} testId="shared-loan-gone" />}
         {view.kind === "error" && <Notice title={t("loanShare.error.title")} body={t("loanShare.error.body")} testId="shared-loan-error" />}
-        {view.kind === "shown" && <Summary snapshot={view.snapshot} />}
+        {view.kind === "shown" && (
+          // Whatever still fails to show: the same message, never "Application error".
+          <ErrorBoundary fallback={<Notice title={t("loanShare.error.title")} body={t("loanShare.error.body")} testId="shared-loan-error" />}>
+            <Summary snapshot={view.snapshot} />
+          </ErrorBoundary>
+        )}
         <footer className={styles.footer}>
           <span>{t("loanShare.sentWith")}</span>
           <Link href="/decouvrir">{t("loanShare.discover")}</Link>

@@ -157,20 +157,24 @@ export function PocketList({ book, pending, selectedId, onOpen, onTransfer, onAd
                 {t("expenses.pockets.transferShort")}
               </Button>
             )}
-            {active.length > 1 && (
-              <Button variant="secondary" icon={<ListOrdered />} onClick={() => setReordering(true)}>
-                {t("expenses.pockets.reorder")}
-              </Button>
-            )}
           </>
         )}
       </div>
       {reordering && <p className={ex.hint}>{t("expenses.pockets.orderHint")}</p>}
 
       <div className={styles.how}>
-        <button type="button" className={ex.linkButton} aria-expanded={showHow} onClick={() => setShowHow(!showHow)}>
-          {t("expenses.pockets.howTitle")}
-        </button>
+        <div className={styles.links}>
+          <button type="button" className={ex.linkButton} aria-expanded={showHow} onClick={() => setShowHow(!showHow)}>
+            {t("expenses.pockets.howTitle")}
+          </button>
+          {/* Rarely needed: a quiet link, "Virement" stays the one big button. */}
+          {!reordering && active.length > 1 && (
+            <button type="button" className={styles.quietLink} onClick={() => setReordering(true)}>
+              <ListOrdered size={16} aria-hidden />
+              {t("expenses.pockets.reorder")}
+            </button>
+          )}
+        </div>
         {showHow && (
           <ul data-testid="pockets-how">
             <li>{t("expenses.pockets.how1")}</li>

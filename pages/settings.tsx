@@ -201,6 +201,20 @@ export default function SettingsPage() {
             <PlanSettings />
           </Group>
 
+          {/* Everything kept on this device, together and high in the page: the room it takes, a copy, and resetting a screen. */}
+          <Group order={3} id="my-data" title={t("settings.myData")}>
+            <StorageRows entries={entries.length} />
+            {/* A copy first, to keep, before "Remettre à zéro". */}
+            <div className={styles.subsection} id="data-copy">
+              <h3>{t("settings.dataCopy.section")}</h3>
+              <DataCopy />
+            </div>
+            <div className={styles.subsection} id="reset">
+              <h3>{t("settings.reset.section")}</h3>
+              <ScreenReset />
+            </div>
+          </Group>
+
           <Group order={6} id="ai-engine" title={t("settings.aiEngine")}>
             <AiKeySettings requestOpen={section === "ai"} />
           </Group>
@@ -223,17 +237,6 @@ export default function SettingsPage() {
                 options={(["auto", "on", "off"] as const).map((value) => ({ value, label: t(`settings.dataSaverModes.${value}`) }))}
               />
             </Row>
-            <StorageRows entries={entries.length} />
-          </Group>
-
-          {/* Right after the data on a phone (same order, later in the page). */}
-          <Group order={9} id="reset" title={t("settings.reset.section")}>
-            <ScreenReset />
-          </Group>
-
-          {/* Right after "Remettre à zéro": a copy first, to keep. */}
-          <Group order={9} id="data-copy" title={t("settings.dataCopy.section")}>
-            <DataCopy />
           </Group>
         </div>
         <div className={styles.column}>

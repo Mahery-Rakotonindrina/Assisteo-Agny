@@ -50,6 +50,19 @@
   overflow: hidden;
 }
 
+// A part of a card with its own title ("Mes données": the copy, the reset).
+.subsection {
+  border-top: 1px solid var(--border);
+
+  > h3 {
+    margin: 0;
+    padding: 0.85rem 1rem 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    overflow-wrap: break-word;
+  }
+}
+
 .row {
   padding: 0.85rem 1rem;
 

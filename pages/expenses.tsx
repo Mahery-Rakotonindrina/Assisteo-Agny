@@ -1,9 +1,10 @@
 import { motion } from "motion/react";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
-import { AlertTriangle, CalendarSync, ChevronLeft, ChevronRight, History, PiggyBank, Receipt, User, Users, Wallet, X } from "lucide-react";
+import { AlertTriangle, CalendarSync, Check, ChevronDown, ChevronLeft, ChevronRight, History, PiggyBank, Receipt, User, Users, Wallet, X } from "lucide-react";
 import { BudgetPanel, HistoryPanel, HouseholdPanel, IncomePanel, MonthPanel, MonthReview, RecurringPanel } from "@/components/Expenses";
 import { Activity } from "@/components/Expenses/Activity";
+import { Button } from "@/components/Button";
 import styles from "@/components/Expenses/Expenses.module.scss";
 import { Savings } from "@/components/Expenses/Savings";
 import { ExpenseSearch } from "@/components/Expenses/Search";
@@ -225,8 +226,6 @@ function Expenses({ canRemind, reseller, joinCode }: { canRemind: boolean; resel
         <ExpenseSearch records={records} sources={sources} now={now} onPick={pickHit} />
       </motion.header>
 
-      <Welcome />
-
       <motion.div variants={rise} className={styles.viewSwitch}>
         <SegmentedControl
           ariaLabel={t("expenses.views.label")}
@@ -263,6 +262,8 @@ function Expenses({ canRemind, reseller, joinCode }: { canRemind: boolean; resel
               sources={allSources}
             />
           </motion.div>
+
+          <Welcome />
 
           <motion.div variants={rise} className={styles.tabs}>
             <SegmentedControl
@@ -419,25 +420,55 @@ function Forecast({ forecast }: { forecast: MonthForecast }) {
   );
 }
 
-/** The first visit: what to do, in 3 steps, until closed (remembered on the device, read once mounted). */
+/**
+ * What to do, in 3 steps, under the month's figures: folded to its title
+ * until opened, until "Compris" (remembered on the device, read once
+ * mounted); "Comment ça marche ?" shows it again.
+ */
 function Welcome() {
   const { t } = useTranslation();
-  const [closed, close] = useDismissed("expenses.welcome");
-  if (closed) return null;
+  const [closed, close, restore] = useDismissed("expenses.welcome");
+  const [open, setOpen] = useState(false);
+  if (closed) {
+    return (
+      <button
+        type="button"
+        className={`${styles.linkButton} ${styles.welcomeAgain}`}
+        onClick={() => {
+          setOpen(true);
+          restore();
+        }}
+      >
+        {t("expenses.welcome.again")}
+      </button>
+    );
+  }
   return (
-    <section className={styles.welcome} aria-labelledby="expenses-welcome">
+    <section className={styles.welcome} aria-labelledby="expenses-welcome" data-testid="expenses-welcome">
       <div className={styles.welcomeHead}>
-        <h2 id="expenses-welcome">{t("expenses.welcome.title")}</h2>
+        <h2 id="expenses-welcome">
+          <button type="button" className={styles.welcomeToggle} aria-expanded={open} onClick={() => setOpen(!open)}>
+            <span>{t("expenses.welcome.title")}</span>
+            <ChevronDown size={18} data-open={open || undefined} aria-hidden />
+          </button>
+        </h2>
         <button type="button" className={styles.close} onClick={close} aria-label={t("expenses.close")}>
           <X size={18} />
         </button>
       </div>
-      <p>{t("expenses.welcome.auto")}</p>
-      <ol>
-        <li>{t("expenses.welcome.step1")}</li>
-        <li>{t("expenses.welcome.step2")}</li>
-        <li>{t("expenses.welcome.step3")}</li>
-      </ol>
+      {open && (
+        <>
+          <p>{t("expenses.welcome.auto")}</p>
+          <ol>
+            <li>{t("expenses.welcome.step1")}</li>
+            <li>{t("expenses.welcome.step2")}</li>
+            <li>{t("expenses.welcome.step3")}</li>
+          </ol>
+          <Button icon={<Check />} onClick={close}>
+            {t("expenses.welcome.done")}
+          </Button>
+        </>
+      )}
     </section>
   );
 }

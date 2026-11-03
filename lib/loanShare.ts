@@ -91,6 +91,12 @@ export function shareTokenFromAddress(search: string, hash: string) {
 /** The link sent to the borrower: the token goes after "#", so it stays out of the logs. */
 export const shareUrl = (base: string, token: string) => `${base.replace(/\/$/, "")}/pret#t=${encodeURIComponent(token)}`;
 
+/** The server's answer to /pret: its copy when well formed, else null (the page then says it can't show it). */
+export function readSharedLoans(response: unknown): LoanShareSnapshot | null {
+  if (!response || typeof response !== "object") return null;
+  return acceptSnapshot((response as { snapshot?: unknown }).snapshot);
+}
+
 /** A copy as the server keeps it: checked, unknown fields dropped; null when malformed. */
 export function acceptSnapshot(value: unknown): LoanShareSnapshot | null {
   const parsed = LoanShareSnapshotSchema.safeParse(value);

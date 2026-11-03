@@ -92,6 +92,17 @@ test("the borrower's address loses the token, from #t= and from ?t=", async ({ p
   }
 });
 
+test("a malformed answer from the server shows the error message, not « Application error »", async ({ page }) => {
+  await prepare(page);
+  for (const json of [{ snapshot: { lender: "Anna", loans: "oops" } }, { snapshot: null }, [1, 2]]) {
+    await page.unroute("**/api/loans/share**");
+    await page.route("**/api/loans/share**", (route) => route.fulfill({ json }));
+    await page.goto(`/pret#t=${token}`);
+    await expect(page.getByTestId("shared-loan-error")).toContainText("Impossible d’afficher le récapitulatif");
+    await expect(page.getByText(/Application error/)).toHaveCount(0);
+  }
+});
+
 test("« Arrêter le partage »: the link says it is no longer active", async ({ page }) => {
   await asAdmin(page);
   const sent = await shareServer(page);
