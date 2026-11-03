@@ -16,6 +16,8 @@ export function useKeyboardReveal() {
       const field = document.activeElement;
       if (!(field instanceof HTMLElement)) return;
       if (!opensKeyboard(field.tagName, field.getAttribute("type"))) return;
+      // A sheet's own hook (useSheetKeyboard) keeps it above the sheet's buttons.
+      if (field.closest("[data-sheet-keyboard]")) return;
       const rect = field.getBoundingClientRect();
       if (hiddenByKeyboard(rect, viewport)) field.scrollIntoView({ block: "center", behavior: "smooth" });
     };

@@ -6,6 +6,7 @@ import { Copy, Megaphone, MessageCircle, PenLine, RefreshCw, Share2, Sparkles, T
 import { Button } from "@/components/Button";
 import { useToast } from "@/components/Toast";
 import { PLANS_HREF } from "@/components/Trial";
+import { useSheetKeyboard } from "@/hooks/useSheetKeyboard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { objectConditions, type ObjectCondition } from "@/lib/ai/schema";
 import { formatAriary } from "@/lib/format";
@@ -53,6 +54,7 @@ export function ObjectAdControls({ entry }: { entry: HistoryEntry }) {
 }
 
 function AdSheet({ entry, onClose }: { entry: HistoryEntry; onClose: () => void }) {
+  const backdrop = useSheetKeyboard();
   const { t, locale } = useTranslation();
   const toast = useToast();
   const [condition, setCondition] = useState<ObjectCondition>(entry.ad?.condition ?? guessCondition(entry.analysis));
@@ -116,7 +118,7 @@ function AdSheet({ entry, onClose }: { entry: HistoryEntry; onClose: () => void 
   };
 
   return (
-    <motion.div className={styles.backdrop} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
+    <motion.div ref={backdrop} className={styles.backdrop} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
       <motion.div
         className={styles.sheet}
         role="dialog"

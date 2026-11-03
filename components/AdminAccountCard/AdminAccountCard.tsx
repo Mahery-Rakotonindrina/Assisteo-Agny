@@ -7,6 +7,7 @@ import { PlanBadge } from "@/components/PlanBadge";
 import shared from "@/components/AdminSubscriptions/AdminSubscriptions.module.scss";
 import { useToast } from "@/components/Toast";
 import { useNow } from "@/hooks/useNow";
+import { useSheetKeyboard } from "@/hooks/useSheetKeyboard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { localName } from "@/lib/customPlans";
 import { formatDate, formatNumber, toDateInput } from "@/lib/format";
@@ -52,6 +53,7 @@ export function AdminAccountCard({ token, email, onClose }: { token: string; ema
 }
 
 function CardSheet({ token, email, onClose }: { token: string; email: string; onClose: () => void }) {
+  const backdrop = useSheetKeyboard();
   const { t, locale } = useTranslation();
   const toast = useToast();
   const now = useNow();
@@ -140,7 +142,7 @@ function CardSheet({ token, email, onClose }: { token: string; email: string; on
   };
 
   return (
-    <motion.div className={shared.backdrop} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
+    <motion.div ref={backdrop} className={shared.backdrop} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
       <motion.div
         className={`${shared.sheet} ${shared.sheetPadded}`}
         data-plan={card?.plan === "free" ? undefined : (card?.customPlan?.id ?? card?.plan)}

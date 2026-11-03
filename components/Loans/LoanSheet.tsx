@@ -6,6 +6,7 @@ import { Button } from "@/components/Button";
 import { WalletChips, type PocketChoice } from "@/components/Expenses/WalletChips";
 import { useToast } from "@/components/Toast";
 import { useNow } from "@/hooks/useNow";
+import { useSheetKeyboard } from "@/hooks/useSheetKeyboard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDate, startOfDay, toDateInput } from "@/lib/format";
 import { contactPerson, type PickedContact } from "@/lib/contactPick";
@@ -55,32 +56,11 @@ function pickedAt(day: string) {
   return at + 12 * 60 * 60 * 1000;
 }
 
-/**
- * The on-screen keyboard's height, as `--keyboard` on the element: a phone
- * browser (Safari above all) keeps the page's height when the keyboard opens,
- * so the sheet is lifted above it and "Enregistrer" stays in sight.
- */
-function useKeyboardInset(open: boolean) {
-  const ref = useRef<HTMLDivElement | null>(null);
-  useEffect(() => {
-    const viewport = typeof window !== "undefined" ? window.visualViewport : null;
-    if (!open || !viewport) return;
-    const update = () => ref.current?.style.setProperty("--keyboard", `${Math.max(0, Math.round(window.innerHeight - viewport.height - viewport.offsetTop))}px`);
-    viewport.addEventListener("resize", update);
-    viewport.addEventListener("scroll", update);
-    return () => {
-      viewport.removeEventListener("resize", update);
-      viewport.removeEventListener("scroll", update);
-    };
-  }, [open]);
-  return ref;
-}
-
 /** A bottom sheet (a centred card on a computer), over the page. */
 export function Sheet({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: ReactNode }) {
   const { t } = useTranslation();
   const mounted = useSyncExternalStore(noSubscribe, () => true, () => false);
-  const backdrop = useKeyboardInset(open);
+  const backdrop = useSheetKeyboard(open);
   if (!mounted) return null;
   return createPortal(
     <AnimatePresence>

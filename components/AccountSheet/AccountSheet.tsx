@@ -4,6 +4,7 @@ import { ArrowLeft, Cloud, Loader2, Mail, X } from "lucide-react";
 import { Button } from "@/components/Button";
 import { LegalConsent } from "@/components/LegalConsent";
 import { useToast } from "@/components/Toast";
+import { useSheetKeyboard } from "@/hooks/useSheetKeyboard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { easeOut, spring } from "@/lib/motion";
 import { sendSignInCode, verifySignInCode, type SignInError } from "@/services/account";
@@ -28,6 +29,7 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** Passwordless sign-in: e-mail, then the one-time code received by e-mail. */
 export function AccountSheet({ open, onClose }: AccountSheetProps) {
+  const backdrop = useSheetKeyboard(open);
   const { t } = useTranslation();
   const toast = useToast();
   const [step, setStep] = useState<"email" | "code">("email");
@@ -99,6 +101,7 @@ export function AccountSheet({ open, onClose }: AccountSheetProps) {
     <AnimatePresence>
       {open && (
         <motion.div
+          ref={backdrop}
           className={styles.backdrop}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
