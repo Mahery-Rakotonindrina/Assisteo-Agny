@@ -1,19 +1,22 @@
 import Link from "next/link";
 import { useState } from "react";
-import { Archive, ArchiveRestore, ArrowLeft, ArrowLeftRight, ChevronRight, Ellipsis, Pencil, Scale, Star, Trash2, Wallet as WalletIcon } from "lucide-react";
+import { Archive, ArchiveRestore, ArrowLeft, ArrowLeftRight, ChevronRight, Ellipsis, Eye, EyeOff, Pencil, Scale, Star, Trash2, Wallet as WalletIcon } from "lucide-react";
 import { Button } from "@/components/Button";
 import ex from "@/components/Expenses/Expenses.module.scss";
 import { ExpenseSheet } from "@/components/Expenses/ExpenseSheet";
 import { walletIcons, useWalletTypeName } from "@/components/Expenses/WalletChips";
 import { useToast } from "@/components/Toast";
+import { useBalanceMask } from "@/hooks/useBalanceMask";
 import { useExpenseLabels } from "@/hooks/useExpenseLabels";
 import { useTranslation } from "@/hooks/useTranslation";
 import { monthStart, type ExpenseRecord, type Wallet } from "@/lib/expenses";
+import { BALANCE_MASK } from "@/lib/balanceMask";
 import { formatAriary, formatDate, formatMonthYear } from "@/lib/format";
 import type { Loan } from "@/lib/loans";
 import { activeWallets, correctionId, movementTarget, pocketStatement, walletColors, walletInUse, type Movement, type StatementLine, type WalletBook } from "@/lib/wallets";
 import { haptics } from "@/services/device";
 import { expenseStore } from "@/services/expenseStore";
+import { Masked } from "./Masked";
 import styles from "./Pockets.module.scss";
 
 type Props = {
@@ -45,6 +48,8 @@ export function PocketDetail({ book, records, loans, wallet, onBack, onTransfer,
   // A correction's line, opened in its window.
   const [correction, setCorrection] = useState<StatementLine | null>(null);
   const money = (value: number) => formatAriary(value, locale);
+  const mask = useBalanceMask();
+  const balanceHidden = mask.hidden(wallet.id);
   const signed = (value: number) => `${value > 0 ? "+" : "−"}${money(Math.abs(value))}`;
   const { wallets, primary } = book.context;
   const balance = book.balances.get(wallet.id) ?? 0;
@@ -76,7 +81,11 @@ export function PocketDetail({ book, records, loans, wallet, onBack, onTransfer,
         </span>
         <span className={ex.statementAmount}>
           <strong data-tone={item.amountMga < 0 ? "out" : "in"}>{signed(item.amountMga)}</strong>
-          <small data-testid="pocket-line-balance">{t("expenses.pockets.balanceAfter", { amount: money(item.balanceMga) })}</small>
+          <small data-testid="pocket-line-balance">
+            <Masked hidden={balanceHidden} masked={t("expenses.pockets.balanceAfter", { amount: BALANCE_MASK })}>
+              {t("expenses.pockets.balanceAfter", { amount: money(item.balanceMga) })}
+            </Masked>
+          </small>
         </span>
       </>
     );
@@ -123,7 +132,7 @@ export function PocketDetail({ book, records, loans, wallet, onBack, onTransfer,
         </div>
         <small>{t("expenses.pockets.balanceNow")}</small>
         <strong className={styles.bigBalance} data-testid="pocket-balance" data-tone={balance < 0 ? "bad" : undefined}>
-          {money(balance)}
+          <Masked hidden={balanceHidden}>{money(balance)}</Masked>
         </strong>
       </section>
 
@@ -153,7 +162,10 @@ export function PocketDetail({ book, records, loans, wallet, onBack, onTransfer,
           </div>
         ))}
         <p className={ex.hint} data-testid="pocket-start">
-          {t("expenses.pockets.startLine")} : {t("expenses.pockets.since", { amount: money(wallet.startMga), date: formatDate(wallet.startAt, locale) })}
+          {t("expenses.pockets.startLine")} :{" "}
+          <Masked hidden={balanceHidden} masked={t("expenses.pockets.since", { amount: BALANCE_MASK, date: formatDate(wallet.startAt, locale) })}>
+            {t("expenses.pockets.since", { amount: money(wallet.startMga), date: formatDate(wallet.startAt, locale) })}
+          </Masked>
         </p>
       </section>
 
@@ -167,6 +179,8 @@ export function PocketDetail({ book, records, loans, wallet, onBack, onTransfer,
             wallet={wallet}
             isPrimary={wallet.id === primary?.id}
             used={walletInUse(records, loans, book, wallet.id)}
+            balanceHidden={balanceHidden}
+            onToggleBalance={() => mask.flipOne(wallet.id, wallets.map((item) => item.id))}
             onEdit={() => {
               setMore(false);
               onEdit();
@@ -234,10 +248,10 @@ function CorrectionView({ line, walletName, onDone }: { line: StatementLine; wal
   );
 }
 
-type MoreProps = { wallet: Wallet; isPrimary: boolean; used: boolean; onEdit: () => void; onDone: () => void; onRemoved: () => void };
+type MoreProps = { wallet: Wallet; isPrimary: boolean; used: boolean; balanceHidden: boolean; onToggleBalance: () => void; onEdit: () => void; onDone: () => void; onRemoved: () => void };
 
 /** "Plus": big lines to edit the pocket, make it the default one, archive it or remove it (only when nothing uses it). */
-function MoreActions({ wallet, isPrimary, used, onEdit, onDone, onRemoved }: MoreProps) {
+function MoreActions({ wallet, isPrimary, used, balanceHidden, onToggleBalance, onEdit, onDone, onRemoved }: MoreProps) {
   const { t } = useTranslation();
   const toast = useToast();
   const [asking, setAsking] = useState(false);
@@ -279,6 +293,22 @@ function MoreActions({ wallet, isPrimary, used, onEdit, onDone, onRemoved }: Mor
             <span>
               <strong>{t("expenses.pockets.edit")}</strong>
               <small>{t("expenses.pockets.editHint")}</small>
+            </span>
+          </button>
+        </li>
+        <li>
+          <button
+            type="button"
+            data-testid="pocket-toggle-balance"
+            onClick={() => {
+              haptics.tap();
+              onToggleBalance();
+              onDone();
+            }}
+          >
+            {balanceHidden ? <Eye size={20} aria-hidden /> : <EyeOff size={20} aria-hidden />}
+            <span>
+              <strong>{t(balanceHidden ? "expenses.pockets.showBalance" : "expenses.pockets.hideBalance")}</strong>
             </span>
           </button>
         </li>

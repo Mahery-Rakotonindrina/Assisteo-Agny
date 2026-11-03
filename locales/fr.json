@@ -3314,7 +3314,12 @@
       "correctionRemove": "Supprimer cette correction",
       "correctionAsk": "Supprimer cette correction ? Le solde reviendra à ce qu’il était avant.",
       "correctionRemoved": "Correction supprimée",
-      "forgotHint": "Tu as oublié une dépense ou un revenu ? Ajoute-le plutôt : le solde se remettra juste tout seul."
+      "forgotHint": "Tu as oublié une dépense ou un revenu ? Ajoute-le plutôt : le solde se remettra juste tout seul.",
+      "hiddenBalance": "Solde masqué",
+      "hideBalances": "Masquer les soldes",
+      "showBalances": "Afficher les soldes",
+      "hideBalance": "Masquer son solde",
+      "showBalance": "Afficher son solde"
     },
     "forecast": {
       "left": "À ce rythme, il te restera environ {amount} le {day}.",
