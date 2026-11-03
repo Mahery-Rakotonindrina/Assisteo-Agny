@@ -78,8 +78,24 @@ export function shareTokenFrom(value: string | string[] | undefined) {
   return isShareToken(token) ? token : null;
 }
 
-/** The link sent to the borrower. */
-export const shareUrl = (base: string, token: string) => `${base.replace(/\/$/, "")}/pret?t=${encodeURIComponent(token)}`;
+/**
+ * The token of the page's address: "#t=" (the links made now: a fragment never
+ * reaches a server, a log or an error report) or "?t=" (the links already sent).
+ */
+export function shareTokenFromAddress(search: string, hash: string) {
+  const fromHash = new URLSearchParams(hash.replace(/^#/, "")).get("t");
+  const fromQuery = new URLSearchParams(search).get("t");
+  return shareTokenFrom(fromHash ?? undefined) ?? shareTokenFrom(fromQuery ?? undefined);
+}
+
+/** The link sent to the borrower: the token goes after "#", so it stays out of the logs. */
+export const shareUrl = (base: string, token: string) => `${base.replace(/\/$/, "")}/pret#t=${encodeURIComponent(token)}`;
+
+/** The server's answer to /pret: its copy when well formed, else null (the page then says it can't show it). */
+export function readSharedLoans(response: unknown): LoanShareSnapshot | null {
+  if (!response || typeof response !== "object") return null;
+  return acceptSnapshot((response as { snapshot?: unknown }).snapshot);
+}
 
 /** A copy as the server keeps it: checked, unknown fields dropped; null when malformed. */
 export function acceptSnapshot(value: unknown): LoanShareSnapshot | null {

@@ -29,6 +29,17 @@ export function trialEligible(rows: Array<Pick<Subscription, "plan" | "paymentMe
   return !rows.some((row) => row.paymentMethod === "trial" || rankOf(row.plan, created) >= planRank.premium);
 }
 
+/**
+ * The e-mail the trial is counted on: lower case, without a "+tag", and for
+ * Gmail without dots, so that moi+1@gmail.com and m.oi@gmail.com are one person.
+ */
+export function normalizeTrialEmail(email: string) {
+  const [local = "", rawDomain = ""] = email.trim().toLowerCase().split("@");
+  const domain = rawDomain === "googlemail.com" ? "gmail.com" : rawDomain;
+  const base = local.split("+")[0] || local;
+  return `${domain === "gmail.com" ? base.split(".").join("") : base}@${domain}`;
+}
+
 /** True when the e-mail has paid for something (an amount above 0). */
 export const hasPaid = (rows: Array<Pick<Subscription, "amountMga">>) => rows.some((row) => (row.amountMga ?? 0) > 0);
 

@@ -197,7 +197,8 @@ if (file === "--sample") {
     process.exit(1);
   }
 }
-console.log(`Backup from ${data.createdAt}: ${Object.entries(data.tables).map(([table, rows]) => `${table} ${rows.length}`).join(", ")}`);
+// No row count per table: this log is public on a public repository.
+console.log(`Backup from ${data.createdAt}: ${Object.keys(data.tables).length} tables.`);
 
 const client = await connect(url);
 try {

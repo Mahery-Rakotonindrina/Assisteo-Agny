@@ -20,7 +20,6 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Lecture des codes-barres et QR codes sur le téléphone, sans scan dépensé (lien, Wi-Fi, téléphone, contact…)
 - [x] File d'attente hors ligne : la photo part quand le réseau revient, avec notification du résultat
 - [x] Mode « économie de données » pour la 3G (auto, toujours, jamais) : photos ~2x plus légères
-- [ ] Version malgache
 - [x] Copier le texte lu, traduire un document (français, anglais, malgache, chinois)
 
 ## 2. Aliments
@@ -127,7 +126,7 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Suppression du compte, données et photos comprises
 - [ ] Connexion par n° de téléphone (SMS) ou par Google
 - [ ] Partage familial (colis et listes partagés)
-- [ ] Télécharger une copie de toutes ses données
+- [x] Télécharger une copie de toutes ses données — Réglages, un ZIP (LISEZ-MOI, un JSON par écran, photos en option, compte.json avec un compte), toutes les offres
 
 ## 11. Offres et abonnements
 
@@ -140,10 +139,10 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Écran de bienvenue avec confettis, bandeau 3 jours avant la fin et à la fin
 - [x] Couleurs propres à chaque offre (badges, fond, bouton de scan)
 - [x] Pas de renouvellement automatique
-- [ ] Paiement Mobile Money dans l'app (MVola…), avec activation automatique
+- [ ] ⏸ En attente (propriétaire, 2026-11-03) : Paiement Mobile Money dans l'app (MVola…), avec activation automatique
 - [x] Codes promo, parrainage (1 mois offert) — codes créés dans l'Admin (accès offert ou réduction), « J'ai un code » sur la page Offres, mois offert au parrain au premier paiement du filleul
 - [x] Offre annuelle moins chère, Premium à l'essai 7 jours — prix annuel réglable (10 mois par défaut), essai une seule fois par compte
-- [ ] Reçu de paiement en PDF
+- [ ] ⏸ En attente avec le paiement Mobile Money : Reçu de paiement en PDF
 - [x] Places famille réellement gérées dans Premium — l’abonné ajoute ou retire des proches par e-mail depuis « Mon offre » (4 places en Premium et Pro, réglables dans Admin → Offres) ; migration 0016 à coller
 
 ## 12. Administration
@@ -183,7 +182,6 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] État des autorisations (caméra, notifications)
 - [x] Moteur IA : IA Assisteo ou sa propre clé (Gemini, Claude, OpenAI, Mistral, Groq, OpenRouter, xAI, Together, autre), test de la clé, liste des modèles
 - [x] Effacer l'historique ; pages Confidentialité et Conditions ; présentation au premier lancement
-- [ ] Malgache
 - [x] Taille du texte — Petit, Normal, Grand, Très grand (Réglages → Apparence), propre à chaque appareil, appliquée dès l’ouverture de l’app
 - [x] Espace de stockage utilisé — total sur l’appareil et détail (photos, analyses, colis, listes, scans en attente, autres) ; « Alléger les photos » : seules les 10 dernières restent en grand
 - [x] Remettre un écran à zéro (Historique, Dépenses et revenus, Poches, Prêts, Colis) — fenêtre qui dit ce qui part (avec le compte) et ce qui reste, « Oui, tout effacer » ; effacé aussi sur les autres appareils ; jamais le foyer ; les lignes venues des scans et colis d’avant ne reviennent pas dans Dépenses ; liens de partage des prêts arrêtés d’abord (rien n’est effacé hors ligne)
@@ -197,10 +195,11 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Safari sur iPhone : plus de zoom en touchant un champ, feuilles du bas qui tiennent avec la barre d'adresse et le clavier, listes déroulantes, dates et textes d'aide comme sur Android, barre d'onglets et boutons lisibles en très grand texte
 - [x] App Android signée, construite par GitHub à chaque mise en ligne
 - [x] Bandeau de mise à jour, mise à jour obligatoire possible
+- [x] Site hors ligne et finitions du tour des utilisateurs fictifs — le site s’ouvre sans internet sur les pages déjà visitées (pas dans l’app Android) ; libellés de la barre du bas entiers à 320 px en très grand texte ; « Enregistrer » toujours visible dans les fenêtres de Dépenses et Poches ; messages en haut de l’écran ; carte de bienvenue de Dépenses repliée avec « Compris » ; boutons du scan visibles sur un petit téléphone ; « Réordonner » en lien discret ; Réglages : partie « Mes données » (espace utilisé, copie, remise à zéro) plus haut ; /pret affiche son message d’erreur sur une réponse mal formée
 - [x] ⭐ Lien de téléchargement automatique de l'APK (GitHub Releases) et bouton « Télécharger l'app Android »
-- [ ] Publication sur le Play Store
-- [ ] Widget Android (prochain rappel, colis)
-- [ ] App iPhone native (App Store)
+- [ ] ⏸ En attente (propriétaire, 2026-11-03) : Publication sur le Play Store
+- [ ] ⏸ En attente (propriétaire, 2026-11-03) : Widget Android (prochain rappel, colis)
+- [ ] ⏸ En attente (propriétaire, 2026-11-03) : App iPhone native (App Store)
 
 ## 15. Sécurité et fiabilité
 
@@ -212,6 +211,7 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Alerte si le site tombe (contrôle toutes les 10 min, base et Redis compris, ticket GitHub qui te mentionne, fermé au retour)
 - [x] Test automatique de restauration des sauvegardes (chaque semaine sur la vraie sauvegarde, et à chaque envoi de code sur des données d'exemple)
 - [x] Double authentification pour l'admin (appli d'authentification + codes de secours)
+- [x] Corrections de l'audit de sécurité (essai Premium limité par personne, installation, IP et jour ; réglages sensibles de l'admin réservés au propriétaire ; e-mail confirmé obligatoire ; jetons de prêt hors des journaux ; CI et sauvegarde durcies)
 
 ## 16. Mes dépenses (offre Admin, en test)
 

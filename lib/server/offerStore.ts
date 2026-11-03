@@ -1,4 +1,4 @@
-import type { PromoCode, PromoWithUses } from "@/lib/offers";
+import { normalizeTrialEmail, type PromoCode, type PromoWithUses } from "@/lib/offers";
 import { redis } from "./redis";
 
 // What the promo codes, the discounts, the referrals and the Premium trial
@@ -152,7 +152,14 @@ export const unmarkRewarded = (email: string) => delValue(rewardedKey(email));
 
 // ---- Premium trial ------------------------------------------------------------
 
-/** A lock against a double tap: true the first time for this e-mail. */
-export const claimTrial = (email: string) => setOnce(trialKey(email), "1");
-export const trialClaimed = async (email: string) => (await getValue<string>(trialKey(email))) !== null;
-export const releaseTrial =(email: string) => delValue(trialKey(email));
+/**
+ * A lock against a double tap and against variants of one address
+ * (moi+1@gmail.com, m.oi@gmail.com): true the first time for this person.
+ */
+export const claimTrial = (email: string) => setOnce(trialKey(normalizeTrialEmail(email)), "1");
+/** Taken already: under the person's normalized address, or under the plain one (trials claimed before the normalization). */
+export const trialClaimed = async (email: string) => {
+  const [plain, person] = await Promise.all([getValue<string>(trialKey(email.toLowerCase())), getValue<string>(trialKey(normalizeTrialEmail(email)))]);
+  return plain !== null || person !== null;
+};
+export const releaseTrial = (email: string) => delValue(trialKey(normalizeTrialEmail(email)));

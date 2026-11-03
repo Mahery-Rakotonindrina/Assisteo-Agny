@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex" />
+    <title>Assisteo Agny · Hors ligne</title>
+    <link rel="icon" href="/favicon.ico" />
+    <!-- Shown by public/sw.js when there is no internet and this page was never opened here. -->
+    <style>
+      :root {
+        color-scheme: dark light;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 1.5rem;
+        box-sizing: border-box;
+        background: #0b0c10;
+        color: #f4f5f0;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        line-height: 1.5;
+        text-align: center;
+      }
+      main {
+        max-width: 26rem;
+      }
+      h1 {
+        margin: 0 0 0.5rem;
+        font-size: 1.5rem;
+      }
+      p {
+        margin: 0 0 1rem;
+        color: #b8bcc6;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.75rem;
+        margin-top: 1.5rem;
+      }
+      button,
+      a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 2.75rem;
+        padding: 0 1.25rem;
+        border-radius: 999px;
+        border: 0;
+        font: inherit;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      button {
+        background: #c6ff4d;
+        color: #0b0c10;
+      }
+      a {
+        background: #23262e;
+        color: #f4f5f0;
+      }
+      .en {
+        margin-top: 2rem;
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Tu es hors ligne</h1>
+      <p>Cette page n’a pas encore été ouverte sur cet appareil. Les écrans déjà visités s’ouvrent sans internet, avec tes données.</p>
+      <div class="actions">
+        <button type="button" onclick="location.reload()">Réessayer</button>
+        <a href="/">Accueil</a>
+      </div>
+      <p class="en" lang="en">You are offline. This page was never opened on this device: the screens you already visited open without internet.</p>
+    </main>
+  </body>
+</html>

@@ -11,6 +11,11 @@
 # - secret ADMIN_TOKEN (optional, the server's admin token): the new version and
 #   its link are then set in Admin → "Versions de l'app", so installed apps
 #   offer the update by themselves.
+#
+# Two jobs, so that the token able to write releases never meets code from
+# the dependencies: "apk" (npm ci, build, signing key; read-only token) hands
+# the APK over as an artifact, "publish" (write token, no npm, no checkout)
+# only uploads it.
 name: Android APK
 
 on:
@@ -19,12 +24,17 @@ on:
     branches: [master, main]
     paths-ignore: ["**.md"]
 
+# Nothing may write by default: each job asks for what it needs.
+permissions:
+  contents: read
+
 jobs:
   apk:
     runs-on: ubuntu-latest
     permissions:
-      # Publish the APK as a release.
-      contents: write
+      contents: read
+    outputs:
+      release: ${{ steps.signing.outputs.release }}
     env:
       ANDROID_VERSION_CODE: ${{ github.run_number }}
       ANDROID_VERSION_NAME: 1.0.${{ github.run_number }}
@@ -47,6 +57,9 @@ jobs:
           echo "API OK: $(cat health.json)"
 
       - uses: actions/checkout@v7
+        with:
+          # The token is not left in .git for the build scripts to read.
+          persist-credentials: false
 
       - uses: actions/setup-node@v7
         with:
@@ -88,7 +101,9 @@ jobs:
 
       - run: npx cap sync android
 
-      - name: Restore signing key
+      # Only says whether there is a signing key: it is written to disk in the
+      # signing step alone, and removed when that step ends.
+      - name: Check for a signing key
         id: signing
         env:
           KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
@@ -98,18 +113,20 @@ jobs:
             echo "release=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.p12"
-          echo "ANDROID_KEYSTORE_FILE=$RUNNER_TEMP/release.p12" >> "$GITHUB_ENV"
           echo "release=true" >> "$GITHUB_OUTPUT"
 
       - name: Build signed release (APK + AAB)
         if: steps.signing.outputs.release == 'true'
         working-directory: android
         env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
+          echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.p12"
+          trap 'rm -f "$RUNNER_TEMP/release.p12"' EXIT
+          export ANDROID_KEYSTORE_FILE="$RUNNER_TEMP/release.p12"
           chmod +x gradlew
           ./gradlew assembleRelease bundleRelease --no-daemon
           ls -la app/build/outputs/apk/release/
@@ -146,10 +163,26 @@ jobs:
           path: dist/*.aab
           retention-days: 30
 
+  # No npm, no checkout: only the artifact of the job above and the write token.
+  publish:
+    needs: apk
+    if: needs.apk.outputs.release == 'true' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      # To download the artifact of this run.
+      actions: read
+    env:
+      ANDROID_VERSION_NAME: 1.0.${{ github.run_number }}
+    steps:
+      - name: Get the signed APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --name assisteo-agny-android --dir dist
+
       # The APK under its version and under a fixed name: the "latest" link
       # always gives the newest signed build.
       - name: Publish the APK as a release
-        if: steps.signing.outputs.release == 'true' && github.event_name == 'push'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -167,7 +200,6 @@ jobs:
       # With the admin's two-factor authentication on, the CRON_SECRET (already
       # set for the reminders) must come with the token.
       - name: Announce the version to the installed apps
-        if: steps.signing.outputs.release == 'true' && github.event_name == 'push'
         env:
           ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}

@@ -1,0 +1,109 @@
+@use "../../styles/mixins" as *;
+
+// "Télécharger une copie de mes données" in Réglages.
+
+.copy {
+  display: flex;
+  flex-direction: column;
+}
+
+.intro {
+  margin: 0;
+  padding: 0.85rem 1rem 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  overflow-wrap: break-word;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-height: 44px;
+  padding: 0.85rem 1rem;
+}
+
+.icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  color: var(--accent-text);
+
+  svg {
+    width: 1.05rem;
+    height: 1.05rem;
+  }
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  font-weight: 500;
+  overflow-wrap: break-word;
+
+  small {
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: var(--text-muted);
+  }
+}
+
+// "Voir la taille": a link-like button, still 44 px tall to tap.
+.measure {
+  align-self: flex-start;
+  min-height: 44px;
+  margin: -0.6rem 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent-text);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--accent-mark);
+    outline-offset: 2px;
+  }
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0 1rem 1rem;
+}
+
+.progress {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  margin: 0;
+  font-weight: 500;
+}
+
+.spin {
+  flex-shrink: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+  animation: spin 0.9s linear infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

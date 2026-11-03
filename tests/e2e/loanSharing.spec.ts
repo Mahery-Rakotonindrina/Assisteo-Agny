@@ -79,6 +79,30 @@ test("a lender shares what is left, and the borrower opens it without an account
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex");
 });
 
+test("the borrower's address loses the token, from #t= and from ?t=", async ({ page }) => {
+  await prepare(page);
+  const snapshot = { v: 1, lender: "Anna", borrower: "Rakoto", updatedAt: Date.now(), loans: [{ amountMga: 50000, interestMga: 0, at: Date.now(), repayments: [] }] };
+  await page.route("**/api/loans/share**", (route) => route.fulfill({ json: { snapshot, updatedAt: new Date().toISOString() } }));
+  for (const address of [`/pret#t=${token}`, `/pret?t=${token}`]) {
+    await page.goto(address);
+    await expect(page.getByTestId("shared-loan-left")).toBeVisible();
+    // The page read the token (it is shown), and the bar no longer has it.
+    await expect(page).toHaveURL(/\/pret$/);
+    expect(page.url()).not.toContain(token);
+  }
+});
+
+test("a malformed answer from the server shows the error message, not « Application error »", async ({ page }) => {
+  await prepare(page);
+  for (const json of [{ snapshot: { lender: "Anna", loans: "oops" } }, { snapshot: null }, [1, 2]]) {
+    await page.unroute("**/api/loans/share**");
+    await page.route("**/api/loans/share**", (route) => route.fulfill({ json }));
+    await page.goto(`/pret#t=${token}`);
+    await expect(page.getByTestId("shared-loan-error")).toContainText("Impossible d’afficher le récapitulatif");
+    await expect(page.getByText(/Application error/)).toHaveCount(0);
+  }
+});
+
 test("« Arrêter le partage »: the link says it is no longer active", async ({ page }) => {
   await asAdmin(page);
   const sent = await shareServer(page);

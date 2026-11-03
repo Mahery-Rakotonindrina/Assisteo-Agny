@@ -2,14 +2,14 @@ import { Capacitor } from "@capacitor/core";
 import { base64UrlToBytes, isIosDevice } from "@/lib/webPush";
 import { authHeaders } from "./account";
 import { httpClient } from "./httpClient";
+import { serviceWorkerUrl } from "./offline";
 import { getInstallId } from "./trial";
 import { setPushTakeover } from "./webPushTakeover";
 
 // Reminders by Web Push on the site (an iPhone home screen, browsers): the
-// service worker (public/sw.js) is only registered when the user taps the
-// button in the settings, never in the Android app (it has FCM, services/push.ts).
-
-const SW_URL = "/sw.js";
+// service worker (public/sw.js, also registered for offline use by
+// services/offline.ts) is subscribed when the user taps the button in the
+// settings, never in the Android app (it has FCM, services/push.ts).
 
 export type WebPushStatus = {
   /** The server's VAPID public key; null when Web Push is off (no keys, accounts or demo). */
@@ -81,7 +81,7 @@ export async function subscribeWebPush(publicKey: string): Promise<SubscribeOutc
   if (permission !== "granted") return "denied";
   let subscription: PushSubscription | null = null;
   try {
-    await navigator.serviceWorker.register(SW_URL, { scope: "/" });
+    await navigator.serviceWorker.register(serviceWorkerUrl(), { scope: "/" });
     const registration = await navigator.serviceWorker.ready;
     subscription =
       (await registration.pushManager.getSubscription()) ??

@@ -1,9 +1,11 @@
 @use "../../styles/mixins" as *;
 
+// At the top of the screen: a message never covers the buttons, which sit
+// low (the tab bar, a sheet's "Enregistrer", "Virement"…). Taps go through it.
 .viewport {
   position: fixed;
   left: 50%;
-  bottom: calc(var(--tabbar-height) + var(--safe-bottom) + 1.25rem);
+  top: calc(var(--safe-top) + 0.75rem);
   z-index: 60;
   width: min(calc(100% - 2rem), calc(var(--app-width) - 2rem));
   transform: translateX(-50%);
@@ -14,7 +16,7 @@
   // Centre over the content area, right of the 272px sidebar.
   @include desktop {
     left: calc(50% + 136px);
-    bottom: 2rem;
+    top: 1.5rem;
   }
 }
 
@@ -24,7 +26,9 @@
   align-items: center;
   gap: 0.6rem;
   padding: 0.75rem 1.1rem;
+  max-width: 100%;
   border-radius: var(--radius-pill);
+  overflow-wrap: break-word;
   font-size: 0.9rem;
   font-weight: 500;
   box-shadow: var(--shadow-lg);

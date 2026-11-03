@@ -68,9 +68,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     if (usage) await track({ type: "ai", kind: "plant", model, ...usage });
     return res.status(200).json({ diagnosis, model, demo: false, quota } satisfies PlantDiagnosisResponse);
   } catch (error) {
-    // A failed or cancelled diagnosis gives the month's scan back.
-    await Promise.all([releasePlanScan(account.id), releaseServerCall()]).catch(() => undefined);
+    // The caller hung up: the AI may already have been billed, so nothing is given back.
     if (abort.signal.aborted) return;
+    // A diagnosis that failed on the provider's side gives the month's scan back.
+    await Promise.all([releasePlanScan(account.id), releaseServerCall()]).catch(() => undefined);
     await track({ type: "error", route: "plant-diagnosis", code: error instanceof AnalysisError ? error.code : "upstream_error" });
     if (error instanceof AnalysisError) {
       if (error.code === "invalid_key") return sendError(res, 503, "unavailable", "The AI service is not configured correctly.");

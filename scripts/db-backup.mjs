@@ -34,7 +34,5 @@ const outDir = process.argv[2] ?? "backups";
 mkdirSync(outDir, { recursive: true });
 const path = join(outDir, `assisteo-backup-${data.createdAt.slice(0, 10)}.agny`);
 writeFileSync(path, file);
-const counts = Object.entries(data.tables)
-  .map(([table, rows]) => `${table}: ${rows.length}`)
-  .join(", ");
-console.log(`Backup written to ${path} (${Math.round(file.length / 1024)} KB) — ${counts}`);
+// The log of a public repository: no row count per table (it says how many users and what they use).
+console.log(`Backup written to ${path} (${Math.round(file.length / 1024)} KB), ${Object.keys(data.tables).length} tables.`);

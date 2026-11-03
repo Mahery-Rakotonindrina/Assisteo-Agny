@@ -1,5 +1,6 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { NextApiRequest } from "next";
+import { emailConfirmed } from "./emailConfirmed";
 
 // Server-side Supabase access. The service role bypasses Row Level Security,
 // so it is only used for tables clients may not touch (encrypted AI keys),
@@ -22,7 +23,18 @@ export async function verifyUser(req: NextApiRequest): Promise<string | null> {
   return (await verifyAccount(req))?.id ?? null;
 }
 
-/** The signed-in user (id and e-mail) from the session token, or null. */
+/** True when Supabase Auth confirmed this user's e-mail. */
+async function lookupConfirmed(userId: string) {
+  const { data, error } = await supabaseAdmin().auth.admin.getUserById(userId);
+  if (error) throw error;
+  return Boolean(data.user?.email_confirmed_at);
+}
+
+/**
+ * The signed-in user (id and e-mail) from the session token, or null. The
+ * e-mail is null while it is not confirmed: no plan, seat or admin goes to an
+ * address nobody proved to own.
+ */
 export async function verifyAccount(req: NextApiRequest): Promise<{ id: string; email: string | null } | null> {
   const token = req.headers.authorization?.match(/^Bearer\s+(.+)$/i)?.[1];
   if (!token || !accountsEnabled) return null;
@@ -31,5 +43,6 @@ export async function verifyAccount(req: NextApiRequest): Promise<{ id: string; 
   const sub = data?.claims?.sub;
   const email = data?.claims?.email;
   if (error || typeof sub !== "string") return null;
-  return { id: sub, email: typeof email === "string" && email ? email.toLowerCase() : null };
+  if (typeof email !== "string" || !email) return { id: sub, email: null };
+  return { id: sub, email: (await emailConfirmed(sub, lookupConfirmed)) ? email.toLowerCase() : null };
 }

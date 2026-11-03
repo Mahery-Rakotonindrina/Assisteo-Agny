@@ -24,7 +24,7 @@ const subscribe = (listener: () => void) => {
   };
 };
 
-/** Whether the tip `key` was closed (true until read), and how to close it. */
+/** Whether the tip `key` was closed (true until read), how to close it, and how to show it again. */
 export function useDismissed(key: string) {
   const dismissed = useSyncExternalStore(
     subscribe,
@@ -40,5 +40,14 @@ export function useDismissed(key: string) {
     }
     listeners.forEach((listener) => listener());
   }, [key]);
-  return [dismissed, dismiss] as const;
+  const restore = useCallback(() => {
+    memory.delete(key);
+    try {
+      localStorage.removeItem(storageKey(key));
+    } catch {
+      // Nothing was stored.
+    }
+    listeners.forEach((listener) => listener());
+  }, [key]);
+  return [dismissed, dismiss, restore] as const;
 }

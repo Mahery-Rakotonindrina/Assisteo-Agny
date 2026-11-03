@@ -1,7 +1,7 @@
 import "fake-indexeddb/auto";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { acceptSnapshot, isShareToken, sameSnapshot, sharedAsLoan, shareSnapshot, shareTokenFrom, shareUrl, type LoanShareSnapshot } from "@/lib/loanShare";
+import { acceptSnapshot, isShareToken, readSharedLoans, sameSnapshot, sharedAsLoan, shareSnapshot, shareTokenFrom, shareUrl, type LoanShareSnapshot } from "@/lib/loanShare";
 import { loanRemaining, type Loan } from "@/lib/loans";
 import { hashShareToken, newShareToken } from "@/lib/server/loanShares";
 import { resetMissing } from "@/lib/server/schemaMissing";
@@ -140,7 +140,7 @@ describe("the token", () => {
     expect(shareTokenFrom(undefined)).toBeNull();
     expect(shareTokenFrom(token.slice(0, 10))).toBeNull();
     expect(shareTokenFrom(`${token}<script>`)).toBeNull();
-    expect(shareUrl("https://agny.mg/", token)).toBe(`https://agny.mg/pret?t=${token}`);
+    expect(shareUrl("https://agny.mg/", token)).toBe(`https://agny.mg/pret#t=${token}`);
   });
 });
 
@@ -200,6 +200,13 @@ describe("the frozen copy", () => {
     expect(acceptSnapshot({ ...snapshot, loans: [] })).toBeNull();
     expect(acceptSnapshot({ ...snapshot, lender: "" })).toBeNull();
     expect(acceptSnapshot({ ...snapshot, loans: [{ ...snapshot.loans[0], amountMga: -1 }] })).toBeNull();
+  });
+
+  it("reads the page /pret is sent: its copy, or null when the answer is malformed", () => {
+    const snapshot = shareSnapshot(others, "rakoto", "Anna", at)!;
+    expect(readSharedLoans({ snapshot, updatedAt: "2026-10-01" })).toEqual(snapshot);
+    for (const bad of [null, "oops", 42, [], {}, { snapshot: null }, { snapshot: { lender: "Anna" } }, { snapshot: { ...snapshot, loans: "x" } }])
+      expect(readSharedLoans(bad)).toBeNull();
   });
 
   it("tells the same content apart from a change, whatever its time", () => {
@@ -357,7 +364,7 @@ describe("sharing on the device", () => {
     const token = newShareToken();
     state.answer = () => ({ token });
     const url = await loanSharing.create("rakoto", "Anna", [loan({})]);
-    expect(url).toContain(`/pret?t=${token}`);
+    expect(url).toContain(`/pret#t=${token}`);
     expect(await loanSharing.link("rakoto")).toBe(url);
     state.answer = () => ({ ok: true, found: true });
     await loanSharing.stop("rakoto");

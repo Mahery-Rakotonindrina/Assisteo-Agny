@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { activeModel, activeProvider } from "@/lib/ai/provider";
+import { activeProvider } from "@/lib/ai/provider";
 import type { HealthResponse } from "@/lib/ai/schema";
 import { applyCors, clientIp, sendError } from "@/lib/server/http";
 import { rateLimit } from "@/lib/server/rateLimit";
@@ -36,7 +36,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   if (applyCors(req, res, ["GET"])) return;
   if (req.method !== "GET") return sendError(res, 405, "method_not_allowed", "Use GET.");
 
-  const base = { ai: activeProvider === "demo" ? "demo" : "live", provider: activeProvider, model: activeModel } as const;
+  // The model is not told to the public (it helps whoever probes the server); the app only shows the engine's name.
+  const base = { ai: activeProvider === "demo" ? "demo" : "live", provider: activeProvider } as const;
   if (req.query.deep === undefined) return res.status(200).json({ status: "ok", ...base } satisfies HealthResponse);
 
   res.setHeader("Cache-Control", "no-store");

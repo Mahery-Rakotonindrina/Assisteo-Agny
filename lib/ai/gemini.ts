@@ -423,7 +423,8 @@ function toAnalysisError(error: unknown): unknown {
     return new AnalysisError("invalid_key", 401, "Gemini rejected this API key.");
   }
   if (error.status === 400) {
-    return new AnalysisError("invalid_request", 400, error.message);
+    console.error("[gemini] bad request:", error.message);
+    return new AnalysisError("invalid_request", 400, "The AI could not read this request.", error.message);
   }
   if (error.status === 503 || error.status === 504) {
     return new AnalysisError("unavailable", 503, "Gemini is overloaded right now, try again in a moment.");
@@ -434,7 +435,8 @@ function toAnalysisError(error: unknown): unknown {
   if (error.status === 404) {
     return new AnalysisError("unavailable", 404, "This Gemini model isn't available for this key.");
   }
-  return new AnalysisError("upstream_error", 502, `Gemini API error ${error.status}: ${error.message}`);
+  console.error(`[gemini] API error ${error.status}:`, error.message);
+  return new AnalysisError("upstream_error", 502, "The AI service had a problem, try again in a moment.", `Gemini API error ${error.status}: ${error.message}`);
 }
 
 /** Thinking tokens are billed as output. */

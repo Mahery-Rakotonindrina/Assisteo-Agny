@@ -24,7 +24,15 @@
     "expenses": "Expenses",
     "inventory": "Home",
     "plants": "Plants",
-    "pockets": "Pockets"
+    "pockets": "Pockets",
+    "bar": {
+      "scan": "Scan",
+      "history": "His|tory",
+      "parcels": "Par|cels",
+      "lists": "Lists",
+      "settings": "Set|tings",
+      "admin": "Admin"
+    }
   },
   "scan": {
     "greeting": {
@@ -282,7 +290,7 @@
     "testBody": "Assisteo Agny can send you reminders.",
     "haptics": "Haptic feedback",
     "hapticsHint": "Light vibrations on actions.",
-    "data": "Data",
+    "data": "Mobile data",
     "storageTotal": "Space used: {size}",
     "storageMeasuring": "Measuring the space used…",
     "storageParts": {
@@ -374,6 +382,59 @@
       "offline": "No connection: the share links couldn't be stopped. Nothing is erased, try again online.",
       "failed": "Erasing didn't work. Try again."
     },
+    "dataCopy": {
+      "section": "Copy of my data",
+      "title": "Download a copy of my data",
+      "intro": "A ZIP file with everything you put in the app: scans, expenses, loans, parcels, lists, plants, home, settings… Keep it somewhere safe: it holds your personal information.",
+      "introAccount": "The app syncs first, then adds what only your account knows: your plan and your subscriptions.",
+      "introDevice": "Without an account, the file holds what is on this device.",
+      "photos": "With the photos",
+      "photosSize": "about {size}",
+      "photosNone": "no photos",
+      "photosSizeAsk": "Show the size",
+      "measuring": "measuring…",
+      "download": "Download the copy",
+      "cancel": "Cancel",
+      "steps": {
+        "sync": "Syncing…",
+        "account": "Reading your account…",
+        "device": "Reading this device…",
+        "zip": "Preparing the file…",
+        "save": "Saving…"
+      },
+      "done": "Your copy is ready. Keep it somewhere safe.",
+      "cancelled": "Copy cancelled",
+      "failed": "The copy couldn’t be prepared. Try again.",
+      "offline": "No connection: one is needed to add your account’s data.",
+      "accountMissing": "Copy made without your account’s information: no connection. Make it again online to get it.",
+      "fileTitle": "My Assisteo data",
+      "readme": {
+        "title": "Assisteo Agny: a copy of your data",
+        "made": "Made on {date}.",
+        "signedIn": "It holds what is on your device and what your account keeps on the server (compte.json).",
+        "signedOut": "You weren’t signed in to an account: it only holds what was on this device.",
+        "accountMissing": "You were signed in, but without an Internet connection: the account’s information (compte.json: plan, subscriptions…) is missing. Make the copy again online to get it.",
+        "filesTitle": "The files:",
+        "files": {
+          "historique": "your scans (photos, answers, reminders, papers, bills, food journal, ads)",
+          "en-attente": "scans taken offline, not sent yet",
+          "depenses": "your expenses, incomes, pockets, transfers, corrections, budgets, savings, tontines, regular items and categories, then the month reviews",
+          "prets": "your loans, the people, the repayments, the proof photos and the share links (without their secret code)",
+          "colis": "the parcels you follow",
+          "listes": "your shopping lists and other lists",
+          "garage": "your vehicles, their servicing and fill-ups",
+          "maison": "your home inventory",
+          "plantes": "your plants and their check-ups",
+          "foyer": "your household: its name, your role, and only the lines you wrote",
+          "reglages": "your settings",
+          "compte": "your account: your e-mail, your plan, your subscriptions, the codes used, the family seats, the share links and the devices that get reminders"
+        },
+        "photosIn": "the photos, by screen; the JSON files give the path of each",
+        "photosOut": "no photos in this copy (“With the photos” unticked)",
+        "format": "Dates use the international format (YYYY-MM-DD), amounts are in ariary.",
+        "safe": "This file holds your personal information: keep it somewhere safe and only share it with people you trust."
+      }
+    },
     "about": "About",
     "aiStatus": "AI engine",
     "aiLive": "Connected",
@@ -461,7 +522,8 @@
     "parcelNotify": "Parcels: notify on the expected delivery day",
     "parcelNotifyHint": "A notification on the day a parcel should arrive.",
     "parcelNotifyHour": "Notification time",
-    "parcelNotifyHourHint": "Madagascar time"
+    "parcelNotifyHourHint": "Madagascar time",
+    "myData": "My data"
   },
   "notifications": {
     "readyTitle": "Analysis ready ✨",
@@ -3136,7 +3198,9 @@
       "auto": "Paid bills, ticked shopping, parcels and the garage are added on their own.",
       "step1": "Add what you earn (Income tab).",
       "step2": "Add your expenses, or take a photo of a receipt.",
-      "step3": "Set your budget."
+      "step3": "Set your budget.",
+      "done": "Got it",
+      "again": "How does it work?"
     },
     "counted": {
       "expense": "Counted in My expenses",

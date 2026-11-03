@@ -19,15 +19,19 @@ const tabs = [
 /** Shown to administrators (full access) only; the page still asks for the token. */
 const adminTab = { href: "/admin", key: "admin", Icon: ShieldCheck } as const;
 
+/** A bar label, with "|" where a long word may break (a soft hyphen) on a narrow phone. */
+const barLabel = (label: string) => label.replaceAll("|", "\u00AD");
+
 export function TabBar() {
   const { pathname } = useRouter();
   const { t } = useTranslation();
   const { isAdmin } = usePlan();
+  const shown = isAdmin ? [...tabs, adminTab] : tabs;
 
   return (
-    <nav className={styles.bar} aria-label="Main">
+    <nav className={styles.bar} aria-label="Main" data-count={shown.length}>
       <div className={styles.inner}>
-        {(isAdmin ? [...tabs, adminTab] : tabs).map(({ href, key, Icon }) => {
+        {shown.map(({ href, key, Icon }) => {
           const active = pathname === href;
           return (
             <Link
@@ -35,13 +39,14 @@ export function TabBar() {
               href={href}
               className={`${styles.tab} ${active ? styles.active : ""}`}
               aria-current={active ? "page" : undefined}
+              aria-label={t(`nav.${key}`)}
               onClick={() => !active && haptics.tap()}
             >
               {active && <motion.span layoutId="tab-pill" className={styles.pill} transition={spring} />}
               <motion.span className={styles.icon} animate={{ scale: active ? 1.08 : 1 }} transition={spring}>
                 <Icon size={20} strokeWidth={active ? 2.4 : 2} />
               </motion.span>
-              <span className={styles.label}>{t(`nav.${key}`)}</span>
+              <span className={styles.label}>{barLabel(t(`nav.bar.${key}`))}</span>
             </Link>
           );
         })}

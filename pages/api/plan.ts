@@ -3,11 +3,12 @@ import { activeProvider } from "@/lib/ai/provider";
 import { InstallIdSchema, installIdHeader } from "@/lib/ai/schema";
 import { referralCodeFor, trialEligible } from "@/lib/offers";
 import { allPlansHeader, customPlanInfo, customPlanOf, featureFromConfig, planFeatureList, planFeatures, soldPlans, subscriptionPayments, type CustomPlan, type PlanResponse, type PlansConfig } from "@/lib/plans";
-import { applyCors, sendError } from "@/lib/server/http";
+import { applyCors, clientIp, sendError } from "@/lib/server/http";
 import { limitsFor, resolvePlan } from "@/lib/server/plan";
 import { registerReferralCode, trialClaimed } from "@/lib/server/offerStore";
 import { pendingDiscount } from "@/lib/server/offers";
 import { getPlansConfig } from "@/lib/server/planConfig";
+import { rateLimit } from "@/lib/server/rateLimit";
 import { reportError } from "@/lib/server/reportError";
 import { subscriptionsForEmail } from "@/lib/server/subscriptions";
 import { getAskUsage, getPlanUsage, getTrialUsage } from "@/lib/server/trialStore";
@@ -22,6 +23,13 @@ import { getAskUsage, getPlanUsage, getTrialUsage } from "@/lib/server/trialStor
 export default async function handler(req: NextApiRequest, res: NextApiResponse<PlanResponse | unknown>) {
   if (applyCors(req, res, ["GET"])) return;
   if (req.method !== "GET") return sendError(res, 405, "method_not_allowed", "Use GET.");
+
+  // Generous (a shared connection is common), but a script can't read it in a loop.
+  const limit = await rateLimit(`plan:${clientIp(req)}`, 120, 60_000);
+  if (!limit.ok) {
+    res.setHeader("Retry-After", String(limit.retryAfterS));
+    return sendError(res, 429, "rate_limited", "Too many requests.");
+  }
 
   const installId = InstallIdSchema.safeParse(req.headers[installIdHeader]).data ?? null;
   const config = await getPlansConfig();

@@ -24,7 +24,15 @@
     "expenses": "Dépenses",
     "inventory": "Maison",
     "plants": "Plantes",
-    "pockets": "Poches"
+    "pockets": "Poches",
+    "bar": {
+      "scan": "Scan|ner",
+      "history": "Histo|rique",
+      "parcels": "Colis",
+      "lists": "Listes",
+      "settings": "Ré|glages",
+      "admin": "Admin"
+    }
   },
   "scan": {
     "greeting": {
@@ -282,7 +290,7 @@
     "testBody": "Assisteo Agny peut t'envoyer des rappels.",
     "haptics": "Retour haptique",
     "hapticsHint": "Vibrations légères lors des actions.",
-    "data": "Données",
+    "data": "Données mobiles",
     "storageTotal": "Espace utilisé : {size}",
     "storageMeasuring": "Calcul de l’espace utilisé…",
     "storageParts": {
@@ -374,6 +382,59 @@
       "offline": "Pas de connexion : les liens de partage n’ont pas pu être arrêtés. Rien n’est effacé, réessaie avec internet.",
       "failed": "L’effacement n’a pas abouti. Réessaie."
     },
+    "dataCopy": {
+      "section": "Copie de mes données",
+      "title": "Télécharger une copie de mes données",
+      "intro": "Un fichier ZIP avec tout ce que tu as mis dans l’app : analyses, dépenses, prêts, colis, listes, plantes, maison, réglages… Garde-le en lieu sûr : il contient tes informations personnelles.",
+      "introAccount": "L’app se synchronise d’abord, puis ajoute ce que seul ton compte connaît : ton offre et tes abonnements.",
+      "introDevice": "Sans compte, le fichier contient ce qui est sur cet appareil.",
+      "photos": "Avec les photos",
+      "photosSize": "environ {size}",
+      "photosNone": "aucune photo",
+      "photosSizeAsk": "Voir la taille",
+      "measuring": "calcul…",
+      "download": "Télécharger la copie",
+      "cancel": "Annuler",
+      "steps": {
+        "sync": "Synchronisation…",
+        "account": "Lecture de ton compte…",
+        "device": "Lecture de cet appareil…",
+        "zip": "Préparation du fichier…",
+        "save": "Enregistrement…"
+      },
+      "done": "Ta copie est prête. Garde-la en lieu sûr.",
+      "cancelled": "Copie annulée",
+      "failed": "La copie n’a pas pu être préparée. Réessaie.",
+      "offline": "Pas de connexion : il en faut une pour ajouter les données de ton compte.",
+      "accountMissing": "Copie faite sans les informations de ton compte : pas de connexion. Refais-la en ligne pour les avoir.",
+      "fileTitle": "Mes données Assisteo",
+      "readme": {
+        "title": "Assisteo Agny : copie de tes données",
+        "made": "Faite le {date}.",
+        "signedIn": "Elle contient ce qui est sur ton appareil et ce que ton compte garde sur le serveur (compte.json).",
+        "signedOut": "Tu n’étais pas connecté à un compte : elle contient seulement ce qui était sur cet appareil.",
+        "accountMissing": "Tu étais connecté à ton compte, mais sans connexion à Internet : les informations du compte (compte.json : offre, abonnements…) manquent. Refais la copie en ligne pour les avoir.",
+        "filesTitle": "Les fichiers :",
+        "files": {
+          "historique": "tes analyses (photos, réponses, rappels, papiers, factures, journal des repas, annonces)",
+          "en-attente": "les analyses prises sans connexion, pas encore envoyées",
+          "depenses": "tes dépenses, revenus, poches, virements, corrections, budgets, épargnes, tontines, dépenses régulières et catégories, puis les bilans du mois",
+          "prets": "tes prêts, les personnes, les remboursements, les photos des preuves et les liens de partage (sans leur code secret)",
+          "colis": "les colis que tu suis",
+          "listes": "tes listes de courses et autres listes",
+          "garage": "tes véhicules, leurs entretiens et leurs pleins",
+          "maison": "l’inventaire de ta maison",
+          "plantes": "tes plantes et leurs diagnostics",
+          "foyer": "ton foyer : son nom, ton rôle, et seulement les lignes que tu as écrites",
+          "reglages": "tes réglages",
+          "compte": "ton compte : ton e-mail, ton offre, tes abonnements, les codes utilisés, les places famille, les liens de partage et les appareils qui reçoivent les rappels"
+        },
+        "photosIn": "les photos, rangées par écran ; les fichiers JSON indiquent le chemin de chacune",
+        "photosOut": "pas de photos dans cette copie (case « Avec les photos » décochée)",
+        "format": "Les dates sont au format international (AAAA-MM-JJ), les montants en ariary.",
+        "safe": "Ce fichier contient tes informations personnelles : garde-le en lieu sûr et ne le partage qu’avec des personnes de confiance."
+      }
+    },
     "about": "À propos",
     "aiStatus": "Moteur IA",
     "aiLive": "Connecté",
@@ -461,7 +522,8 @@
     "parcelNotify": "Colis : prévenir le jour de livraison prévue",
     "parcelNotifyHint": "Une notification le jour où un colis doit arriver.",
     "parcelNotifyHour": "Heure de la notification",
-    "parcelNotifyHourHint": "Heure de Madagascar"
+    "parcelNotifyHourHint": "Heure de Madagascar",
+    "myData": "Mes données"
   },
   "notifications": {
     "readyTitle": "Analyse prête ✨",
@@ -3136,7 +3198,9 @@
       "auto": "Les factures payées, les courses cochées, les colis et le garage s’ajoutent tout seuls.",
       "step1": "Ajoute ce que tu gagnes (onglet Revenus).",
       "step2": "Ajoute tes dépenses, ou prends un ticket en photo.",
-      "step3": "Fixe ton budget."
+      "step3": "Fixe ton budget.",
+      "done": "Compris",
+      "again": "Comment ça marche ?"
     },
     "counted": {
       "expense": "Compté dans Mes dépenses",

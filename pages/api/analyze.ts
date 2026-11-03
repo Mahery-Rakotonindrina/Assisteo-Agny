@@ -13,10 +13,12 @@ import {
   releasePlanDeep,
   releasePlanScan,
   releaseServerCall,
+  releaseTrialAiCall,
   releaseTrialScan,
   reservePlanDeep,
   reservePlanScan,
   reserveServerCall,
+  reserveTrialAiCall,
   reserveTrialScan,
   type TrialSubject,
 } from "@/lib/server/trialStore";
@@ -70,7 +72,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   }
 
   // The plan comes from the signed-in account's subscriptions (free when signed out).
-  const { account, current, features, quotas } = await resolvePlan(req);
+  const { account, current, features, quotas, onTrial } = await resolvePlan(req);
   if (override && !features.has("ownKey")) {
     return sendError(res, 403, "plan_required", "Your own AI key needs a subscription.");
   }
@@ -87,6 +89,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   // Without their own key, a subscriber spends one of the month's scans...
   let quota: (TrialState & { userId: string }) | null = null;
   let deepQuota: TrialState | null = null;
+  let trialAi = false;
   if (!override && current.plan !== "free" && account) {
     const { scans, deepPerMonth } = await limitsFor(current.plan, undefined, quotas, features);
     const usage = await reservePlanScan(account.id, scans);
@@ -102,6 +105,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         await track({ type: "error", route: "analyze", code: "deep_limit" }, statsDevice);
         return sendError(res, 403, "deep_limit", "This month's deep analyses are used up.");
       }
+    }
+    // A Premium trial's calls share a daily cap of their own (an account is free to make).
+    if (onTrial) {
+      if (!(await reserveTrialAiCall())) {
+        await Promise.all([releasePlanScan(account.id), deepQuota && releasePlanDeep(account.id)]).catch(() => undefined);
+        await track({ type: "error", route: "analyze", code: "server_busy" }, statsDevice);
+        return sendError(res, 503, "server_busy", "The trial's AI has reached today's limit: come back tomorrow.");
+      }
+      trialAi = true;
     }
     // Subscribers are counted in the daily total but never turned away by it.
     await countServerCall();
@@ -171,10 +183,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       },
     } satisfies AnalyzeResponse);
   } catch (error) {
-    // A failed or cancelled analysis doesn't consume a trial scan.
-    if (trial) await Promise.all([releaseTrialScan(trial.subject, trial.ip), releaseServerCall(), freeDeep && releasePlanDeep(freeDeep)]).catch(() => undefined);
-    if (quota) await Promise.all([releasePlanScan(quota.userId), releaseServerCall(), deepQuota && releasePlanDeep(quota.userId)]).catch(() => undefined);
+    // The caller hung up: the AI may already have been billed, so nothing is given back.
     if (abort.signal.aborted) return;
+    // A failure on the provider's side doesn't consume a trial scan.
+    if (trial) await Promise.all([releaseTrialScan(trial.subject, trial.ip), releaseServerCall(), freeDeep && releasePlanDeep(freeDeep)]).catch(() => undefined);
+    if (quota) await Promise.all([releasePlanScan(quota.userId), releaseServerCall(), deepQuota && releasePlanDeep(quota.userId), trialAi && releaseTrialAiCall()]).catch(() => undefined);
     await track({ type: "error", route: "analyze", code: error instanceof AnalysisError ? error.code : "upstream_error" }, statsDevice);
     const engine = override ? `user-${override.provider}` : activeProvider;
     // The bigger model refused on the server's key (no quota or billing for it, model gone): ours to fix.
@@ -199,6 +212,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     }
     console.error(`[analyze:${engine}] unexpected`, error instanceof Error ? error.message : error);
     await reportError(error, { route: "analyze", engine, kind: "unexpected" });
-    return sendError(res, 500, "upstream_error", `Something went wrong (${activeModel}).`);
+    return sendError(res, 500, "upstream_error", "Something went wrong.");
   }
 }

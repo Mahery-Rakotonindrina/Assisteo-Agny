@@ -33,13 +33,15 @@ export async function isAdminAccount(email: string) {
  * while the second factor is off; once it is on, only with `machine` and the
  * CRON_SECRET in "X-Cron-Secret" (the GitHub workflow that announces a new
  * APK). An admin's session stops working as soon as their admin plan ends.
- * `ownerOnly`: refused to the other admins. Sends the error and returns
+ * `ownerOnly`: refused to the other admins. `ownerWrites`: only the reads (GET)
+ * are open to the other admins. With ADMIN_2FA_REQUIRED=1 a lost second factor
+ * closes the admin instead of opening it. Sends the error and returns
  * null when the request must stop, else who is acting.
  */
 export async function guardAdmin(
   req: NextApiRequest,
   res: NextApiResponse,
-  { machine = false, ownerOnly = false } = {},
+  { machine = false, ownerOnly = false, ownerWrites = false } = {},
 ): Promise<AdminActor | null> {
   if (!process.env.ADMIN_TOKEN) {
     sendError(res, 503, "unavailable", "Admin is disabled: set ADMIN_TOKEN on the server.");
@@ -57,6 +59,11 @@ export async function guardAdmin(
     sendError(res, 503, "unavailable", "Admin settings are unreachable, try again.");
     return null;
   }
+  // Fail closed: with ADMIN_2FA_REQUIRED=1, a second factor that vanished (Redis wiped) is not "off".
+  if (process.env.ADMIN_2FA_REQUIRED === "1" && !state.enabled && !state.known) {
+    sendError(res, 503, "unavailable", "Admin is closed: the second factor is required but not found.");
+    return null;
+  }
   let actor: AdminActor | null = null;
   if (given && isAdminSession(given)) {
     const id = verifyAdminSession(given, sessionEpoch(state));
@@ -70,7 +77,7 @@ export async function guardAdmin(
     sendError(res, 401, "invalid_key", "Invalid admin token or expired session.");
     return null;
   }
-  if (ownerOnly && !actor.owner) {
+  if ((ownerOnly || (ownerWrites && req.method !== "GET")) && !actor.owner) {
     sendError(res, 403, "owner_only", "Only the owner can do this.");
     return null;
   }

@@ -3,12 +3,13 @@ import type { TrialResponse } from "@/pages/api/offers/trial";
 import { authHeaders } from "./account";
 import { httpClient } from "./httpClient";
 import { planStore } from "./plan";
+import { installIdHeaders } from "./trial";
 
 // The offers page's actions for a signed-in account: the Premium trial and
 // "I have a code". The server decides; the plan is then fetched again.
 
 export async function startPremiumTrial() {
-  const result = await httpClient.post<TrialResponse>("/api/offers/trial", {}, { headers: await authHeaders() });
+  const result = await httpClient.post<TrialResponse>("/api/offers/trial", {}, { headers: await installIdHeaders() });
   await planStore.refresh();
   return result;
 }
