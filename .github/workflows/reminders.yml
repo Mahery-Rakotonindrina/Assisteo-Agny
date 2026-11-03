@@ -30,7 +30,8 @@ jobs:
           fi
           status=$(curl -s -o result.json -w "%{http_code}" --max-time 90 \
             -H "Authorization: Bearer $CRON_SECRET" "$API_URL/api/cron/reminders")
-          cat result.json; echo
+          # The public log keeps no counts (who is reminded, how many): only the status.
+          echo "Reminder cron answered HTTP $status"
           [ "$status" = "200" ] || { echo "::error::Reminder cron answered HTTP $status"; exit 1; }
 
       # Subscribers whose plan ends in three days, today, or has just ended.
@@ -42,5 +43,5 @@ jobs:
           if [ -z "$CRON_SECRET" ] || [ -z "$API_URL" ]; then exit 0; fi
           status=$(curl -s -o result.json -w "%{http_code}" --max-time 90 \
             -H "Authorization: Bearer $CRON_SECRET" "$API_URL/api/cron/plan-reminders")
-          cat result.json; echo
+          echo "Plan reminder cron answered HTTP $status"
           [ "$status" = "200" ] || { echo "::error::Plan reminder cron answered HTTP $status"; exit 1; }

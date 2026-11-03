@@ -6,13 +6,24 @@ import { redis } from "./redis";
 // incompatible change (a new API address, a breaking response) can force old
 // APKs to update instead of failing in confusing ways.
 
+/** Only the project's own GitHub releases: the link tells people where to get the APK. */
+export const RELEASES_PREFIX = "https://github.com/Mahery-Rakotonindrina/Assisteo-Agny/releases/";
+export function isReleaseUrl(url: string) {
+  if (url === "") return true;
+  try {
+    return url.startsWith(RELEASES_PREFIX) && new URL(url).origin === "https://github.com" && !url.includes("..");
+  } catch {
+    return false;
+  }
+}
+
 export const AppVersionConfigSchema = z.object({
   /** Installed versions below this one are blocked until they update. Empty = none. */
   minimum: z.string().regex(/^(\d+(\.\d+){0,2})?$/),
   /** Newest published version: older installs get a gentle "update available". Empty = unknown. */
   latest: z.string().regex(/^(\d+(\.\d+){0,2})?$/),
   /** Where the new APK can be downloaded. */
-  downloadUrl: z.url({ protocol: /^https$/ }).or(z.literal("")),
+  downloadUrl: z.string().refine(isReleaseUrl, "The link must be a release of the project on GitHub."),
 });
 
 export type AppVersionConfig = z.infer<typeof AppVersionConfigSchema>;

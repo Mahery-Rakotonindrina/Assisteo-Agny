@@ -6,6 +6,8 @@ export class AnalysisError extends Error {
     public code: Exclude<ApiErrorCode, "method_not_allowed">,
     public status: number,
     message: string,
+    /** What the provider really said: for the logs and the own-key check, never for the client of the server's key. */
+    public detail?: string,
   ) {
     super(message);
     this.name = "AnalysisError";
@@ -22,7 +24,7 @@ export function toVerifyFailure(error: unknown): { reason: VerifyFailure; detail
   // Temporary capacity problems at the provider: the key itself is not at fault.
   if (error.code === "unavailable" && (error.status === 503 || error.status === 504)) return { reason: "overloaded" };
   // URL checks and provider 400s carry a message worth showing as-is.
-  if (error.code === "invalid_request") return { reason: "bad_url", detail: error.message };
-  if (error.code === "unavailable") return { reason: "bad_url", detail: error.message };
-  return { reason: "error", detail: error.message };
+  if (error.code === "invalid_request") return { reason: "bad_url", detail: error.detail ?? error.message };
+  if (error.code === "unavailable") return { reason: "bad_url", detail: error.detail ?? error.message };
+  return { reason: "error", detail: error.detail ?? error.message };
 }

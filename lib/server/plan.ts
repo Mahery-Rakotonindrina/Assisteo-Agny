@@ -25,6 +25,8 @@ export type ResolvedPlan = {
   grants: Array<{ feature: PlanFeature; endsAt: string }>;
   /** The plan comes from a family seat (better than the account's own): who offers it and until when; null otherwise. */
   seat: { owner: string; ownerEmail: string; endsAt: number | null } | null;
+  /** The running plan is a Premium trial (its calls share a daily AI cap of their own). */
+  onTrial: boolean;
 };
 
 /**
@@ -47,7 +49,7 @@ export async function resolvePlan(req: NextApiRequest, config?: PlansConfig): Pr
   const running = [...runningGrants(grants, now)].filter(([feature]) => features.has(feature)).map(([feature, endsAt]) => ({ feature, endsAt }));
   const quotas = createdQuotas(plans, custom, access.subscription?.quotas);
   const seatInfo = fromSeat ? { owner: seat.owner, ownerEmail: seat.ownerEmail, endsAt: seat.access.current.endsAt } : null;
-  return { account, current: access.current, features, quotas, grants: running, customPlan: customPlanOf(plans, custom), seat: seatInfo };
+  return { account, current: access.current, features, quotas, grants: running, customPlan: customPlanOf(plans, custom), seat: seatInfo, onTrial: access.subscription?.paymentMethod === "trial" };
 }
 
 /**

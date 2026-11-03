@@ -9,7 +9,7 @@ import { limitsFor, resolvePlan } from "@/lib/server/plan";
 import { rateLimit } from "@/lib/server/rateLimit";
 import { reportError } from "@/lib/server/reportError";
 import { track } from "@/lib/server/stats";
-import { countServerCall, releaseAsk, releasePlanAsk, releaseServerCall, reserveAsk, reservePlanAsk, reserveServerCall } from "@/lib/server/trialStore";
+import { countServerCall, releaseAsk, releasePlanAsk, releaseServerCall, reserveAsk, reserveAskIp, releaseAskIp, reservePlanAsk, reserveServerCall, reserveTrialAiCall, releaseTrialAiCall } from "@/lib/server/trialStore";
 
 export const config = {
   api: { bodyParser: { sizeLimit: "7mb" } },
@@ -49,16 +49,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   }
 
   const statsDevice = InstallIdSchema.safeParse(req.headers[installIdHeader]).data ?? null;
-  const { account, current, features, quotas } = await resolvePlan(req);
+  const { account, current, features, quotas, onTrial } = await resolvePlan(req);
 
   // A subscriber's ad draws on the plan's daily questions...
   let planUser: string | null = null;
   let installId: string | null = null;
+  let trialAi = false;
+  let askIp: string | null = null;
   let usage: ObjectAdResponse["usage"];
   if (current.plan !== "free" && account) {
     const { questionsPerDay } = await limitsFor(current.plan, undefined, quotas, features);
     const booked = await reservePlanAsk(account.id, questionsPerDay);
     if (!booked) return sendError(res, 403, "ask_limit", "Today's questions of your plan are used up.");
+    if (onTrial) {
+      if (!(await reserveTrialAiCall())) {
+        await releasePlanAsk(account.id).catch(() => undefined);
+        return sendError(res, 503, "server_busy", "The trial's AI has reached today's limit: come back tomorrow.");
+      }
+      trialAi = true;
+    }
     await countServerCall();
     planUser = account.id;
     usage = booked;
@@ -68,11 +77,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     if (!id.success) return sendError(res, 400, "invalid_request", "Missing install id: update the app.");
     const booked = await reserveAsk(id.data);
     if (!booked) return sendError(res, 403, "ask_limit", "Today's questions on the server's AI are used up.");
-    if (!(await reserveServerCall())) {
+    // Fresh install ids don't bring the day's questions back: the IP has its own ceiling.
+    const ip = clientIp(req);
+    if (!(await reserveAskIp(ip))) {
       await releaseAsk(id.data).catch(() => undefined);
+      return sendError(res, 403, "ask_limit", "Today's questions on the server's AI are used up.");
+    }
+    if (!(await reserveServerCall())) {
+      await Promise.all([releaseAsk(id.data), releaseAskIp(ip)]).catch(() => undefined);
       return sendError(res, 503, "server_busy", "The free AI has reached today's limit: come back tomorrow.");
     }
     installId = id.data;
+    askIp = ip;
     usage = booked;
   }
 
@@ -87,10 +103,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     await track({ type: "question", ownKey: false }, statsDevice);
     return res.status(200).json({ ad: tidyAd(ad), model, demo: false, usage } satisfies ObjectAdResponse);
   } catch (error) {
-    // A failed or cancelled ad gives the day's question back.
-    if (installId) await Promise.all([releaseAsk(installId), releaseServerCall()]).catch(() => undefined);
-    if (planUser) await Promise.all([releasePlanAsk(planUser), releaseServerCall()]).catch(() => undefined);
+    // The caller hung up: the AI may already have been billed, so nothing is given back.
     if (abort.signal.aborted) return;
+    // An ad that failed on the provider's side gives the day's question back.
+    if (installId) await Promise.all([releaseAsk(installId), askIp && releaseAskIp(askIp), releaseServerCall()]).catch(() => undefined);
+    if (planUser) await Promise.all([releasePlanAsk(planUser), releaseServerCall(), trialAi && releaseTrialAiCall()]).catch(() => undefined);
     await track({ type: "error", route: "object-ad", code: error instanceof AnalysisError ? error.code : "upstream_error" }, statsDevice);
     if (error instanceof AnalysisError) {
       if (error.code === "invalid_key") return sendError(res, 503, "unavailable", "The AI service is not configured correctly.");

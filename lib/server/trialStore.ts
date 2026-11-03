@@ -22,6 +22,12 @@ export type TrialConfig = {
    * user together. Keeps the shared AI quota or bill under control. 0 = no cap.
    */
   dailyLimit: number;
+  /** New Premium trials started per day, for every account together. 0 = none allowed. */
+  trialStartsPerDay: number;
+  /** Premium trials started per IP (a /64 for IPv6) over 30 days. Mobile data in Madagascar puts many people behind one address: a wide bound, the e-mail and the device being the real checks. */
+  trialStartsPerIp: number;
+  /** AI calls made per day by accounts on a Premium trial, all together, on top of their own plan's limits. 0 = no cap. */
+  trialAiPerDay: number;
 };
 
 const defaults: TrialConfig = {
@@ -29,8 +35,13 @@ const defaults: TrialConfig = {
   ipLimit: Number(process.env.TRIAL_SCANS_PER_IP ?? 20),
   askLimit: Number(process.env.ASK_PER_DAY ?? 20),
   dailyLimit: Number(process.env.SERVER_DAILY_LIMIT ?? 200),
+  trialStartsPerDay: Number(process.env.TRIAL_STARTS_PER_DAY ?? 30),
+  trialStartsPerIp: Number(process.env.TRIAL_STARTS_PER_IP ?? 20),
+  trialAiPerDay: Number(process.env.TRIAL_AI_PER_DAY ?? 150),
 };
 const IP_WINDOW_S = 30 * 24 * 3600;
+// A forgotten install stops costing a Redis key after this long.
+const INSTALL_TTL_S = 400 * 24 * 3600;
 const CONFIG_KEY = "config:trial";
 
 type Store = {
@@ -134,14 +145,14 @@ export async function getTrialUsage({ installId, userId }: TrialSubject) {
  */
 export async function reserveTrialScan({ installId, userId }: TrialSubject, ip: string) {
   const { limit, ipLimit } = await getTrialConfig();
-  const used = await store.incr(installKey(installId));
+  const used = await store.incr(installKey(installId), INSTALL_TTL_S);
   if (used > limit) {
     await store.decr(installKey(installId));
     return null;
   }
   let accountUsed = 0;
   if (userId) {
-    accountUsed = await store.incr(userKey(userId));
+    accountUsed = await store.incr(userKey(userId), INSTALL_TTL_S);
     // Scans made on this device before signing in count for the account too.
     if (accountUsed < used) accountUsed = await store.incrBy(userKey(userId), used - accountUsed);
     if (accountUsed > limit) {
@@ -158,7 +169,10 @@ export async function reserveTrialScan({ installId, userId }: TrialSubject, ip: 
 }
 
 // Questions about a scan: a daily allowance per install, reset at midnight UTC.
-const askKey = (installId: string) => `ask:${installId}:${new Date().toISOString().slice(0, 10)}`;
+const today = () => new Date().toISOString().slice(0, 10);
+const askKey = (installId: string) => `ask:${installId}:${today()}`;
+// The same, per IP, so that fresh install ids don't bring the allowance back.
+const askIpKey = (ip: string) => `ask:ip:${ip}:${today()}`;
 
 /** Books one follow-up question; null when today's allowance is used up. */
 export async function reserveAsk(installId: string) {
@@ -175,12 +189,33 @@ export async function releaseAsk(installId: string) {
   await store.decr(askKey(installId));
 }
 
+/**
+ * Books one question or ad against the IP's day (a /64 for IPv6): the install
+ * allowance alone is dodged with random install ids. The ceiling is the
+ * install's allowance times `ASK_IP_FACTOR` (5 by default: a shared connection
+ * is common). Null when used up; give it back with releaseAskIp.
+ */
+export async function reserveAskIp(ip: string) {
+  const { askLimit } = await getTrialConfig();
+  const limit = askLimit * Number(process.env.ASK_IP_FACTOR ?? 5);
+  const used = await store.incr(askIpKey(ip), 2 * 24 * 3600);
+  if (limit > 0 && used > limit) {
+    await store.decr(askIpKey(ip));
+    return null;
+  }
+  return { used, limit };
+}
+
+export async function releaseAskIp(ip: string) {
+  await store.decr(askIpKey(ip));
+}
+
 export async function releaseTrialScan({ installId, userId }: TrialSubject, ip: string) {
   await Promise.all([store.decr(installKey(installId)), store.decr(ipKey(ip)), userId ? store.decr(userKey(userId)) : null]);
 }
 
 // Every call on the server's key, all users together, reset at midnight UTC.
-const dayKey = () => `server:day:${new Date().toISOString().slice(0, 10)}`;
+const dayKey = () => `server:day:${today()}`;
 
 /** Requests made on the server's key today. */
 export async function getServerUsage() {
@@ -240,4 +275,63 @@ export const releasePlanDeep = (userId: string) => store.decr(monthDeepKey(userI
 /** Books one call on the server's key for a subscriber: counted, never refused by the daily cap. */
 export async function countServerCall() {
   await store.incr(dayKey(), 2 * 24 * 3600);
+}
+
+// ---- Premium trial: starts and AI use --------------------------------------------
+// The e-mail alone is not enough (an address is free to make): a trial also
+// counts per install, per IP and per day, and its AI calls have a daily cap of their own.
+
+const startInstallKey = (installId: string) => `trial:start:install:${installId}`;
+const startIpKey = (ip: string) => `trial:start:ip:${ip}`;
+const startDayKey = () => `trial:start:day:${today()}`;
+const trialAiKey = () => `trial:ai:day:${today()}`;
+
+export type TrialStartRefusal = "install" | "ip" | "day";
+export type TrialStartSubject = { installId: string | null; ip: string };
+
+/**
+ * Books the start of a Premium trial for this install (once), this IP (a few
+ * over 30 days) and today (a global cap). Returns null when booked, else why
+ * it was refused; nothing stays booked on a refusal. An older app sends no
+ * install id: then only the IP and the day count.
+ */
+export async function reserveTrialStart({ installId, ip }: TrialStartSubject): Promise<TrialStartRefusal | null> {
+  const { trialStartsPerDay, trialStartsPerIp } = await getTrialConfig();
+  const done: string[] = [];
+  const refuse = async (reason: TrialStartRefusal) => {
+    await Promise.all(done.map((key) => store.decr(key)));
+    return reason;
+  };
+  if (installId) {
+    const used = await store.incr(startInstallKey(installId), INSTALL_TTL_S);
+    done.push(startInstallKey(installId));
+    if (used > 1) return refuse("install");
+  }
+  const ipUsed = await store.incr(startIpKey(ip), IP_WINDOW_S);
+  done.push(startIpKey(ip));
+  if (ipUsed > trialStartsPerIp) return refuse("ip");
+  const dayUsed = await store.incr(startDayKey(), 2 * 24 * 3600);
+  done.push(startDayKey());
+  if (dayUsed > trialStartsPerDay) return refuse("day");
+  return null;
+}
+
+/** Gives back a booked start (the trial could not be created). */
+export async function releaseTrialStart({ installId, ip }: TrialStartSubject) {
+  await Promise.all([installId ? store.decr(startInstallKey(installId)) : null, store.decr(startIpKey(ip)), store.decr(startDayKey())]);
+}
+
+/** Books one AI call of an account on a Premium trial against the trial's own day cap; false once reached. */
+export async function reserveTrialAiCall() {
+  const { trialAiPerDay } = await getTrialConfig();
+  const used = await store.incr(trialAiKey(), 2 * 24 * 3600);
+  if (trialAiPerDay > 0 && used > trialAiPerDay) {
+    await store.decr(trialAiKey());
+    return false;
+  }
+  return true;
+}
+
+export async function releaseTrialAiCall() {
+  await store.decr(trialAiKey());
 }

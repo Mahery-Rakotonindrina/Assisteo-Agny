@@ -7,7 +7,7 @@ import { getPlansConfig, keepSeats, PlansConfigSchema, setPlansConfig } from "@/
 
 /** Admin-only: read or change the plans' prices, limits and payment instructions. */
 export default async function handler(req: NextApiRequest, res: NextApiResponse<PlansConfig | unknown>) {
-  const actor = await guardAdmin(req, res);
+  const actor = await guardAdmin(req, res, { ownerWrites: true });
   if (!actor) return;
   if (req.method === "GET") return res.status(200).json(await getPlansConfig());
   if (req.method === "PUT") {
