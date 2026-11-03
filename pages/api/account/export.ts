@@ -18,10 +18,9 @@ import {
   type SubscriptionRow,
 } from "@/lib/accountExport";
 import { maskEmail } from "@/lib/household";
-import { activePlan } from "@/lib/plans";
 import { applyCors, clientIp, sendError } from "@/lib/server/http";
 import { getDiscount, parentOf, trialClaimed } from "@/lib/server/offerStore";
-import { getPlansConfig } from "@/lib/server/planConfig";
+import { resolvePlan, type ResolvedPlan } from "@/lib/server/plan";
 import { rateLimit } from "@/lib/server/rateLimit";
 import { reportError } from "@/lib/server/reportError";
 import { accountsEnabled, supabaseAdmin, verifyAccount } from "@/lib/server/supabaseAdmin";
@@ -52,9 +51,19 @@ async function rows<T>(table: string, columns: string, filters: Filter[]): Promi
 
 const alive = <T extends { deleted_at: string | null }>(list: T[]) => list.filter((row) => !row.deleted_at);
 
-export async function accountExport(account: { id: string; email: string }, now = Date.now()): Promise<AccountExport> {
+/** The plan as the app gets it (resolvePlan): a family seat's when it wins, with who offers it (masked e-mail when no name). */
+export function exportPlan({ current, customPlan, seat }: Pick<ResolvedPlan, "current" | "customPlan" | "seat">): AccountExport["plan"] {
+  return {
+    current: current.custom ?? current.plan,
+    customPlan: customPlan?.name ?? null,
+    endsAt: isoDate(current.endsAt),
+    from: seat ? "familySeat" : "own",
+    offeredBy: seat ? (seat.owner === seat.ownerEmail ? maskEmail(seat.ownerEmail) : seat.owner) : null,
+  };
+}
+
+export async function accountExport(account: { id: string; email: string }, plan: Pick<ResolvedPlan, "current" | "customPlan" | "seat">, now = Date.now()): Promise<AccountExport> {
   const { id, email } = account;
-  const config = await getPlansConfig().catch(() => null);
   const [subscriptions, grants, given, received, members, shares, devices, trial, discount, parent] = await Promise.all([
     rows<SubscriptionRow>("subscriptions", "plan, starts_at, ends_at, amount_mga, payment_method, payment_ref, created_at", [["email", email]]),
     rows<GrantRow>("feature_grants", "feature, starts_at, ends_at", [["email", email]]),
@@ -89,17 +98,10 @@ export async function accountExport(account: { id: string; email: string }, now 
     };
   }
 
-  const current = activePlan(
-    subscriptions.map((row) => ({ plan: row.plan, startsAt: row.starts_at, endsAt: row.ends_at })) as Parameters<typeof activePlan>[0],
-    now,
-    config?.customPlans ?? [],
-  );
-  const custom = current.custom ? config?.customPlans.find((plan) => plan.id === current.custom) : undefined;
-
   return {
     email,
     exportedAt: new Date(now).toISOString(),
-    plan: { current: current.plan, customPlan: custom?.name ?? null, endsAt: isoDate(current.endsAt) },
+    plan: exportPlan(plan),
     subscriptions: subscriptions.map(exportSubscription),
     featureGrants: grants.map(exportGrant),
     offers: {
@@ -130,7 +132,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
   res.setHeader("Cache-Control", "no-store");
   try {
-    return res.status(200).json(await accountExport({ id: account.id, email: account.email.toLowerCase() }));
+    const plan = await resolvePlan(req);
+    return res.status(200).json(await accountExport({ id: account.id, email: account.email.toLowerCase() }, plan));
   } catch (error) {
     await reportError(error, { route: "account-export" });
     return sendError(res, 500, "upstream_error", "Something went wrong.");

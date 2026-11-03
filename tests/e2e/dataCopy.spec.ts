@@ -62,6 +62,9 @@ test("the copy of my data downloads as a ZIP, with or without the photos", async
   await card.scrollIntoViewIfNeeded();
   await expect(card.getByText(/Garde-le en lieu sûr/)).toBeVisible();
   await expect(card.getByText("Sans compte, le fichier contient ce qui est sur cet appareil.")).toBeVisible();
+  // The photos' size only when asked (it reads every photo).
+  await expect(page.getByTestId("data-copy-size")).toHaveCount(0);
+  await card.getByTestId("data-copy-measure").click();
   await expect(page.getByTestId("data-copy-size")).toHaveText(/^environ \d+ Ko$/);
   const toggle = card.getByRole("switch", { name: "Avec les photos" });
   await expect(toggle).toHaveAttribute("aria-checked", "true");

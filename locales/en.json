@@ -383,6 +383,7 @@
       "photos": "With the photos",
       "photosSize": "about {size}",
       "photosNone": "no photos",
+      "photosSizeAsk": "Show the size",
       "measuring": "measuring…",
       "download": "Download the copy",
       "cancel": "Cancel",
@@ -397,12 +398,14 @@
       "cancelled": "Copy cancelled",
       "failed": "The copy couldn’t be prepared. Try again.",
       "offline": "No connection: one is needed to add your account’s data.",
+      "accountMissing": "Copy made without your account’s information: no connection. Make it again online to get it.",
       "fileTitle": "My Assisteo data",
       "readme": {
         "title": "Assisteo Agny: a copy of your data",
         "made": "Made on {date}.",
         "signedIn": "It holds what is on your device and what your account keeps on the server (compte.json).",
         "signedOut": "You weren’t signed in to an account: it only holds what was on this device.",
+        "accountMissing": "You were signed in, but without an Internet connection: the account’s information (compte.json: plan, subscriptions…) is missing. Make the copy again online to get it.",
         "filesTitle": "The files:",
         "files": {
           "historique": "your scans (photos, answers, reminders, papers, bills, food journal, ads)",

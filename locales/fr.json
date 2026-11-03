@@ -383,6 +383,7 @@
       "photos": "Avec les photos",
       "photosSize": "environ {size}",
       "photosNone": "aucune photo",
+      "photosSizeAsk": "Voir la taille",
       "measuring": "calcul…",
       "download": "Télécharger la copie",
       "cancel": "Annuler",
@@ -397,12 +398,14 @@
       "cancelled": "Copie annulée",
       "failed": "La copie n’a pas pu être préparée. Réessaie.",
       "offline": "Pas de connexion : il en faut une pour ajouter les données de ton compte.",
+      "accountMissing": "Copie faite sans les informations de ton compte : pas de connexion. Refais-la en ligne pour les avoir.",
       "fileTitle": "Mes données Assisteo",
       "readme": {
         "title": "Assisteo Agny : copie de tes données",
         "made": "Faite le {date}.",
         "signedIn": "Elle contient ce qui est sur ton appareil et ce que ton compte garde sur le serveur (compte.json).",
         "signedOut": "Tu n’étais pas connecté à un compte : elle contient seulement ce qui était sur cet appareil.",
+        "accountMissing": "Tu étais connecté à ton compte, mais sans connexion à Internet : les informations du compte (compte.json : offre, abonnements…) manquent. Refais la copie en ligne pour les avoir.",
         "filesTitle": "Les fichiers :",
         "files": {
           "historique": "tes analyses (photos, réponses, rappels, papiers, factures, journal des repas, annonces)",

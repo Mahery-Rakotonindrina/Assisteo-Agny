@@ -77,7 +77,7 @@ const local = (databases: Partial<Record<ExportDatabase, unknown[]>>, settings: 
 const account: AccountExport = {
   email: "rado@example.mg",
   exportedAt: "2026-11-03T08:00:00.000Z",
-  plan: { current: "premium", customPlan: null, endsAt: "2026-12-01T00:00:00.000Z" },
+  plan: { current: "premium", customPlan: null, endsAt: "2026-12-01T00:00:00.000Z", from: "own", offeredBy: null },
   subscriptions: [],
   featureGrants: [],
   offers: { trialUsed: true, pendingDiscount: null, referredBy: null },
@@ -172,6 +172,10 @@ describe("the copy", () => {
     const signedIn = readme(["historique", "compte"], { withPhotos: true, signedIn: true, t, date: "3 nov. 2026" });
     expect(signedIn).toContain(fr.settings.dataCopy.readme.signedIn);
     expect(signedIn).toContain(`- compte.json : ${fr.settings.dataCopy.readme.files.compte}`);
+    // Signed in, but compte.json couldn't be had (offline).
+    const missing = readme(["historique"], { withPhotos: true, signedIn: true, t, date: "3 nov. 2026" });
+    expect(missing).toContain(fr.settings.dataCopy.readme.accountMissing);
+    expect(missing).not.toContain(fr.settings.dataCopy.readme.signedIn);
   });
 
   it("is named after the day", () => {
@@ -190,7 +194,7 @@ describe("the ZIP", () => {
       const run = (withPhotos: boolean, signedIn: boolean) =>
         downloadDataCopy({ withPhotos, settings: {}, signedIn, syncAll, texts: { t, date: "3 nov. 2026", title: "x" }, onStep: (step) => steps.push(step), now: new Date(2026, 10, 3).getTime() });
 
-      expect(await run(true, true)).toBe("downloaded");
+      expect(await run(true, true)).toEqual({ outcome: "downloaded", accountMissing: false });
       expect(syncAll).toHaveBeenCalledOnce();
       expect(steps).toEqual(["sync", "account", "device", "zip", "save"]);
       expect(String(fetchMock.mock.calls[0]?.[0])).toContain("/api/account/export");
@@ -204,6 +208,20 @@ describe("the ZIP", () => {
       expect(Object.keys(light.files).some((path) => path.startsWith("photos/"))).toBe(false);
       expect(light.file("compte.json")).toBeNull();
       expect(syncAll).toHaveBeenCalledOnce();
+
+      // Signed in but offline: the device's part still comes, without compte.json, and says so.
+      fetchMock.mockImplementation(async () => {
+        throw new TypeError("Failed to fetch");
+      });
+      expect(await run(false, true)).toEqual({ outcome: "downloaded", accountMissing: true });
+      const offline = await JSZip.loadAsync(shared.files.at(-1)!.bytes);
+      expect(offline.file("compte.json")).toBeNull();
+      expect(offline.file("historique.json")).not.toBeNull();
+      expect(await offline.file("LISEZ-MOI.txt")!.async("string")).toContain(fr.settings.dataCopy.readme.accountMissing);
+
+      // Another refusal (the server failing) stops the copy rather than leave the account out.
+      fetchMock.mockImplementation(async () => new Response("{}", { status: 500 }));
+      await expect(run(false, true)).rejects.toThrow();
     } finally {
       vi.unstubAllGlobals();
     }

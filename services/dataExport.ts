@@ -2,6 +2,7 @@ import { createStore, values } from "idb-keyval";
 import type { AccountExport } from "@/lib/accountExport";
 import { buildDataCopy, copyFileName, EXPORT_DATABASES, type CopyOptions, type ExportDatabase, type LocalData } from "@/lib/dataExport";
 import type { ForeignCurrency } from "@/lib/money";
+import { ApiError } from "@/types/api";
 import { authHeaders } from "./account";
 import { eveningSetting } from "./eveningReminder";
 import { shareFile } from "./fileShare";
@@ -56,9 +57,10 @@ export class CopyCancelled extends Error {
 
 /**
  * Makes the ZIP and hands it over. Signed in: a sync first, then the
- * account's part (a failure stops the copy rather than leave it out
- * silently). `onStep` tells the screen where it is; `signal` stops it
- * before the file is handed over.
+ * account's part. Offline, the copy goes without it (`accountMissing`, said
+ * in LISEZ-MOI and by the screen); another refusal stops the copy.
+ * `onStep` tells the screen where it is; `signal` stops it before the
+ * file is handed over.
  */
 export async function downloadDataCopy(options: {
   withPhotos: boolean;
@@ -80,7 +82,11 @@ export async function downloadDataCopy(options: {
     await options.syncAll();
     check();
     onStep?.("account");
-    account = await fetchAccountExport(signal);
+    account = await fetchAccountExport(signal).catch((error: unknown) => {
+      // No network (fetch failed): the device's part still comes.
+      if (error instanceof ApiError && error.status === 0) return null;
+      throw error;
+    });
     check();
   }
   onStep?.("device");
@@ -96,5 +102,6 @@ export async function downloadDataCopy(options: {
   const bytes = await zip.generateAsync({ type: "arraybuffer", compression: "DEFLATE", compressionOptions: { level: 6 } });
   check();
   onStep?.("save");
-  return shareFile(copyFileName(now), bytes, "application/zip", texts.title);
+  const outcome = await shareFile(copyFileName(now), bytes, "application/zip", texts.title);
+  return { outcome, accountMissing: signedIn && !account };
 }

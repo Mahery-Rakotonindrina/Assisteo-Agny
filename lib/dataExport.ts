@@ -212,15 +212,17 @@ export function photosSize(data: LocalData) {
 
 type Translate = (key: string, params?: Record<string, string | number>) => string;
 
+/** `account` null while signed in: the server couldn't be reached (offline), the copy is made without compte.json and says so. */
 export type CopyOptions = { withPhotos: boolean; account: AccountExport | null; signedIn: boolean; t: Translate; date: string };
 
 /** LISEZ-MOI.txt: what the copy is, when it was made, and what each file holds. */
 export function readme(present: readonly CopyFile[], { withPhotos, signedIn, t, date }: Pick<CopyOptions, "withPhotos" | "signedIn" | "t" | "date">) {
+  const account = !signedIn ? "signedOut" : present.includes("compte") ? "signedIn" : "accountMissing";
   const lines = [
     t("settings.dataCopy.readme.title"),
     "",
     t("settings.dataCopy.readme.made", { date }),
-    t(signedIn ? "settings.dataCopy.readme.signedIn" : "settings.dataCopy.readme.signedOut"),
+    t(`settings.dataCopy.readme.${account}`),
     "",
     t("settings.dataCopy.readme.filesTitle"),
     ...present.map((file) => `- ${file}.json : ${t(`settings.dataCopy.readme.files.${file}`)}`),

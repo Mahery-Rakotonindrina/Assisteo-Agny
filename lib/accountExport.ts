@@ -8,7 +8,8 @@ import { maskEmail } from "./household";
 export type AccountExport = {
   email: string;
   exportedAt: string;
-  plan: { current: string; customPlan: { fr: string; en: string } | null; endsAt: string | null };
+  /** The plan the account has now, as the app gets it: its own, or a family seat's ("offeredBy": a name or a masked e-mail). */
+  plan: { current: string; customPlan: { fr: string; en: string } | null; endsAt: string | null; from: "own" | "familySeat"; offeredBy: string | null };
   subscriptions: Array<{ plan: string; startsAt: string; endsAt: string | null; amountMga: number | null; paymentMethod: string | null; paymentRef: string | null; recordedAt: string }>;
   /** Features given for a while from the Admin (without its note nor who gave them). */
   featureGrants: Array<{ feature: string; startsAt: string; endsAt: string }>;

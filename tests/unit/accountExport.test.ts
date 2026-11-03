@@ -8,8 +8,11 @@ const db = vi.hoisted(() => ({
   account: null as { id: string; email: string | null } | null,
   tables: {} as Record<string, Array<Record<string, unknown>>>,
   reads: [] as Array<{ table: string; columns: string; filters: Array<[string, unknown]> }>,
+  // What resolvePlan gives (its own tests cover the seats and subscriptions).
+  plan: { current: { plan: "premium", endsAt: Date.UTC(2027, 9, 1) }, customPlan: null, seat: null } as { current: { plan: string; endsAt: number | null; custom?: string | null }; customPlan: null; seat: { owner: string; ownerEmail: string; endsAt: number | null } | null },
 }));
 vi.mock("@/lib/server/redis", () => ({ redis: null }));
+vi.mock("@/lib/server/plan", () => ({ resolvePlan: async () => db.plan }));
 vi.mock("@/lib/server/supabaseAdmin", () => ({
   accountsEnabled: true,
   verifyAccount: async () => db.account,
@@ -120,7 +123,7 @@ describe("GET /api/account/export", () => {
     const body = res.body as Record<string, unknown>;
     expect(body).toMatchObject({
       email: me.email,
-      plan: { current: "premium", endsAt: "2027-10-01T00:00:00.000Z" },
+      plan: { current: "premium", endsAt: "2027-10-01T00:00:00.000Z", from: "own", offeredBy: null },
       subscriptions: [{ plan: "premium", amountMga: 50000, paymentMethod: "mvola", paymentRef: "MP123" }],
       featureGrants: [{ feature: "loans", startsAt: "2026-10-01T00:00:00.000Z", endsAt: "2026-12-01T00:00:00.000Z" }],
       offers: { trialUsed: true, pendingDiscount: { code: "BIENVENUE", percent: 20 }, referredBy: "pa…@gmail.com" },
@@ -141,6 +144,14 @@ describe("GET /api/account/export", () => {
       if (read.table.startsWith("household_") && read.table !== "household_members") expect(read.filters).toContainEqual(["user_id", me.id]);
       expect(read.columns).not.toMatch(/token|note|snapshot|scheduled|device_id/);
     }
+  });
+
+  it("gives the plan the account really has, a family seat's with who offers it", async () => {
+    db.account = me;
+    db.plan = { current: { plan: "pro", endsAt: null }, customPlan: null, seat: { owner: "boss@example.mg", ownerEmail: "boss@example.mg", endsAt: null } };
+    expect(((await call()).body as { plan: unknown }).plan).toEqual({ current: "pro", customPlan: null, endsAt: null, from: "familySeat", offeredBy: "bo…@example.mg" });
+    db.plan = { ...db.plan, seat: { owner: "Boss", ownerEmail: "boss@example.mg", endsAt: null } };
+    expect(((await call()).body as { plan: { offeredBy: string } }).plan.offeredBy).toBe("Boss");
   });
 
   it("gives the seat received with the owner's name or masked e-mail", async () => {

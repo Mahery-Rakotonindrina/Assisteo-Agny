@@ -54,6 +54,27 @@
   }
 }
 
+// "Voir la taille": a link-like button, still 44 px tall to tap.
+.measure {
+  align-self: flex-start;
+  min-height: 44px;
+  margin: -0.6rem 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent-text);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--accent-mark);
+    outline-offset: 2px;
+  }
+}
+
 .actions {
   display: flex;
   flex-direction: column;

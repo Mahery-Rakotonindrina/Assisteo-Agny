@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Download, Image as ImageIcon, LoaderCircle, X } from "lucide-react";
 import { Button } from "@/components/Button";
 import { useToast } from "@/components/Toast";
@@ -23,21 +23,32 @@ export function DataCopy() {
   const { settings } = useSettings();
   const { session, syncAll } = useAccount();
   const [withPhotos, setWithPhotos] = useState(true);
-  // The photos' weight, measured once shown (null while measuring).
-  const [size, setSize] = useState<number | null>(null);
+  // The photos' weight: reading it loads every photo, so only when asked
+  // ("Voir la taille", or the switch turned on), never on opening Réglages.
+  const [size, setSize] = useState<number | "unknown" | "measuring">("unknown");
   const [step, setStep] = useState<CopyStep | null>(null);
   const abort = useRef<AbortController | null>(null);
+  const mounted = useRef(true);
 
   useEffect(() => {
-    let alive = true;
-    readDevice({})
-      .then((data) => alive && setSize(photosSize(data)))
-      .catch(() => alive && setSize(0));
+    mounted.current = true;
     return () => {
-      alive = false;
+      mounted.current = false;
       abort.current?.abort();
     };
   }, []);
+
+  const measure = useCallback(() => {
+    setSize("measuring");
+    readDevice({})
+      .then((data) => mounted.current && setSize(photosSize(data)))
+      .catch(() => mounted.current && setSize("unknown"));
+  }, []);
+
+  const switchPhotos = (on: boolean) => {
+    setWithPhotos(on);
+    if (on && size === "unknown") measure();
+  };
 
   const start = async () => {
     const controller = new AbortController();
@@ -45,7 +56,7 @@ export function DataCopy() {
     setStep(session ? "sync" : "device");
     try {
       const now = Date.now();
-      const outcome = await downloadDataCopy({
+      const { outcome, accountMissing } = await downloadDataCopy({
         withPhotos,
         settings: { ...settings },
         signedIn: Boolean(session),
@@ -55,7 +66,9 @@ export function DataCopy() {
         signal: controller.signal,
         now,
       });
-      toast(outcome === "cancelled" ? t("settings.dataCopy.cancelled") : t("settings.dataCopy.done"));
+      if (outcome === "cancelled") toast(t("settings.dataCopy.cancelled"));
+      else if (accountMissing) toast(t("settings.dataCopy.accountMissing"), "error");
+      else toast(t("settings.dataCopy.done"));
     } catch (error) {
       if (error instanceof CopyCancelled || (error instanceof DOMException && error.name === "AbortError")) toast(t("settings.dataCopy.cancelled"));
       else toast(t(error instanceof ApiError && error.status === 0 ? "settings.dataCopy.offline" : "settings.dataCopy.failed"), "error");
@@ -65,7 +78,8 @@ export function DataCopy() {
     }
   };
 
-  const sizeText = size === null ? t("settings.dataCopy.measuring") : size > 0 ? t("settings.dataCopy.photosSize", { size: formatBytes(size, locale) }) : t("settings.dataCopy.photosNone");
+  const sizeText =
+    size === "measuring" ? t("settings.dataCopy.measuring") : size === "unknown" ? null : size > 0 ? t("settings.dataCopy.photosSize", { size: formatBytes(size, locale) }) : t("settings.dataCopy.photosNone");
 
   return (
     <div className={styles.copy} data-testid="data-copy">
@@ -77,9 +91,15 @@ export function DataCopy() {
         </span>
         <span className={styles.text}>
           <span>{t("settings.dataCopy.photos")}</span>
-          <small data-testid="data-copy-size">{sizeText}</small>
+          {sizeText === null ? (
+            <button type="button" className={styles.measure} onClick={measure} data-testid="data-copy-measure">
+              {t("settings.dataCopy.photosSizeAsk")}
+            </button>
+          ) : (
+            <small data-testid="data-copy-size">{sizeText}</small>
+          )}
         </span>
-        <Toggle checked={withPhotos} onChange={setWithPhotos} label={t("settings.dataCopy.photos")} disabled={step !== null} />
+        <Toggle checked={withPhotos} onChange={switchPhotos} label={t("settings.dataCopy.photos")} disabled={step !== null} />
       </div>
       <div className={styles.actions}>
         {step === null ? (
