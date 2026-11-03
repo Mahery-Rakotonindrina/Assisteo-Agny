@@ -381,6 +381,8 @@
     gap: 0.3rem;
     font-size: 0.8rem;
     color: var(--text-muted);
+    // A long label (a pocket's name in it) goes on the next line, never cut.
+    overflow-wrap: break-word;
   }
 
   select,
@@ -886,12 +888,22 @@
   width: 100%;
   max-width: 560px;
   max-height: 92vh;
-  max-height: 92dvh;
+  // The visible part of the screen while a keyboard is open (hooks/useSheetKeyboard.ts).
+  max-height: calc(var(--viewport-height, 100dvh) * 0.92);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
   padding: 1rem 1.25rem calc(1.5rem + var(--safe-bottom));
+  // A field reached with Tab or "Suivant" stops above the sticky buttons.
+  scroll-padding-bottom: 6rem;
+
+  // With sticky buttons, they carry the bottom padding: a sticky element stops
+  // at the padding's edge (Chrome and Safari alike), so it covered the last
+  // field by the padding's height.
+  &:has(.form > .row:last-child) {
+    padding-bottom: 0;
+  }
   border-radius: 28px 28px 0 0;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
@@ -920,7 +932,6 @@
       bottom: 0;
       z-index: 1;
       margin-inline: -1.25rem;
-      margin-bottom: calc(-1.5rem - var(--safe-bottom));
       padding: 0.75rem 1.25rem calc(1rem + var(--safe-bottom));
       background: var(--bg-elevated);
       border-top: 1px solid var(--border);
