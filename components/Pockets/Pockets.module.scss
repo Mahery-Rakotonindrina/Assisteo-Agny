@@ -2,6 +2,16 @@
 
 // "Mes poches": the screen (the list, a pocket's sheet), and its summary under "Il te reste".
 
+// A hidden balance: the stars show, a screen reader hears "Solde masqué".
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
 .page {
   display: flex;
   flex-direction: column;
@@ -15,6 +25,7 @@
 }
 
 .header {
+  position: relative;
   padding-top: 1.25rem;
 
   @include desktop {
@@ -22,6 +33,8 @@
   }
 
   h1 {
+    // Room for the eye.
+    padding-right: 3.25rem;
     @include display(2.6rem);
     display: flex;
     align-items: center;
@@ -189,6 +202,24 @@
 
   > span {
     margin-right: 0;
+  }
+}
+
+// The eye: every balance hidden, or shown again.
+.eye {
+  position: absolute;
+  top: 1.25rem;
+  right: 0;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  background: var(--surface-strong);
+  color: var(--text);
+
+  @include desktop {
+    top: 0;
   }
 }
 

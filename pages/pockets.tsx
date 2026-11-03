@@ -2,12 +2,13 @@ import { motion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { WalletCards } from "lucide-react";
+import { Eye, EyeOff, WalletCards } from "lucide-react";
 import { ExpenseSheet } from "@/components/Expenses/ExpenseSheet";
 import { AddForm, CorrectForm, EditForm, PocketDetail, PocketList, SetupForm, TransferForm, type TransferPreset } from "@/components/Pockets";
 import styles from "@/components/Pockets/Pockets.module.scss";
 import { Seo } from "@/components/Seo";
 import { useExpenses } from "@/hooks/useExpenses";
+import { useBalanceMask } from "@/hooks/useBalanceMask";
 import { useExpenseSources } from "@/hooks/useExpenseSources";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import { useNow } from "@/hooks/useNow";
@@ -64,6 +65,9 @@ function Pockets() {
   const [preset, setPreset] = useState<TransferPreset>({});
   const { wallets, byId, primary } = book.context;
   const active = activeWallets(wallets);
+  const mask = useBalanceMask();
+  const activeIds = active.map((wallet) => wallet.id);
+  const eyeClosed = mask.allHidden(activeIds);
   const pending = wallets.length > 0 ? pendingMoves(book, now) : [];
 
   const askedId = typeof router.query.id === "string" ? router.query.id : null;
@@ -122,6 +126,11 @@ function Pockets() {
         <h1>
           <WalletCards size={28} aria-hidden /> {t("expenses.pockets.title")}
         </h1>
+        {wallets.length > 0 && (
+          <button type="button" className={styles.eye} onClick={() => mask.flipAll(activeIds)} aria-label={t(eyeClosed ? "expenses.pockets.showBalances" : "expenses.pockets.hideBalances")} data-testid="pockets-eye">
+            {eyeClosed ? <EyeOff size={22} aria-hidden /> : <Eye size={22} aria-hidden />}
+          </button>
+        )}
         <p>
           {t("expenses.pockets.subtitle")} <Link href="/expenses">{t("expenses.pockets.toExpenses")}</Link>
         </p>

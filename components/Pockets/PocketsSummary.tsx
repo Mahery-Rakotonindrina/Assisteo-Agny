@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { ChevronRight, Wallet as WalletIcon } from "lucide-react";
 import ex from "@/components/Expenses/Expenses.module.scss";
+import { useBalanceMask } from "@/hooks/useBalanceMask";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatAriary } from "@/lib/format";
 import { activeWallets, pendingMoves, pocketPreview, type WalletBook } from "@/lib/wallets";
+import { Masked } from "./Masked";
 import styles from "./Pockets.module.scss";
 
 /**
@@ -14,6 +16,7 @@ import styles from "./Pockets.module.scss";
 export function PocketsSummary({ book, now }: { book: WalletBook; now: number }) {
   const { t, locale } = useTranslation();
   const money = (value: number) => formatAriary(value, locale);
+  const mask = useBalanceMask();
   const { wallets } = book.context;
   if (wallets.length === 0)
     return (
@@ -31,14 +34,17 @@ export function PocketsSummary({ book, now }: { book: WalletBook; now: number })
       <WalletIcon size={18} aria-hidden />
       <span className={styles.summaryText}>
         <span>
-          {t("expenses.pockets.inPockets")} <strong data-testid="pockets-total">{money(book.total)}</strong>
+          {t("expenses.pockets.inPockets")} <strong data-testid="pockets-total">
+            <Masked hidden={mask.totalHidden(activeWallets(wallets).map((item) => item.id))}>{money(book.total)}</Masked>
+          </strong>
         </span>
         <span className={styles.summaryRows}>
           {shown.map((wallet) => {
             const balance = book.balances.get(wallet.id) ?? 0;
             return (
               <span key={wallet.id} className={styles.summaryRow} data-testid="pockets-row">
-                <span>{wallet.name}</span> <strong data-tone={balance < 0 ? "bad" : undefined}>{money(balance)}</strong>
+                <span>{wallet.name}</span> <strong data-tone={balance < 0 ? "bad" : undefined}><Masked hidden={mask.hidden(wallet.id)}>{money(balance)}</Masked>
+                </strong>
               </span>
             );
           })}
