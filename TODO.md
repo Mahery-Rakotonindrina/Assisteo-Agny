@@ -286,11 +286,15 @@ L’argent prêté ou emprunté, par personne. Ni dépense ni revenu : rien n’
 - [x] Après le scan d’une liste, toucher n’importe où sur la carte ouvre la liste (plus seulement « Ouvrir »)
 - [x] Listes (ex. courses) : en modifiant un article sur téléphone, le texte a toute la largeur (la quantité, le prix et ✓ passent dessous)
 
-## 19. À discuter (relevé en chemin, 2026-11-04)
+## 19. Relevé en chemin (2026-11-04), fait le même jour
 
-- [ ] Même chose que pour les listes : après le scan d’un colis suivi, toute la note « Ce colis est dans ta liste » mène au colis ; après une recette, toute la ligne « Liste de courses créée » ouvre la liste
-- [ ] Téléphone de 320 × 568 px (premier iPhone SE) en « Très grand » : « Importer une image » et « Plusieurs pages » restent sous la barre
-- [ ] App Android : vérifier sur un téléphone que le clavier ne cache pas le champ dans « Corriger le solde » ; sinon, ajouter le module clavier de Capacitor
-- [ ] Essai Premium : quand le nombre d’essais du jour est atteint, un message clair (« Reviens demain ») au lieu de l’erreur générique
-- [ ] Sécurité, points de l’audit laissés de côté : sauvegarde Android des données (`allowBackup`), CSP plus stricte (par nonce), code par e-mail avant de supprimer le compte, invitation à accepter pour les places famille, remboursements dans le foyer, quota de stockage des photos
-- [ ] Sécurité, migration 0019 : les places famille ne se lisent qu’avec un e-mail confirmé (faible urgence, le serveur le vérifie déjà)
+- [x] Notes entières cliquables : après le scan d’un colis suivi, toute la note mène au colis (ouvert, recherche et filtres vidés) ; après une recette, toute la ligne « Ingrédients dans … » ouvre la liste
+- [x] Téléphone de 320 × 568 px en « Très grand » : « Importer une image » et « Plusieurs pages » visibles sans défiler (aussi avec le bandeau démo ou « Se connecter »)
+- [x] App Android : le clavier réduit la vue (`adjustResize`, Capacitor 8 s’occupe du reste) — à confirmer sur un téléphone dans « Corriger le solde »
+- [x] Essais Premium du jour épuisés : « Beaucoup d’essais ont commencé aujourd’hui : reviens demain pour lancer le tien. »
+- [x] Sauvegarde Android gardée (historique, dépenses, colis, réglages) mais sans les secrets (session, clé IA, identifiant d’installation) — il faut se reconnecter après une réinstallation
+- [x] CSP plus stricte : plus aucun script en ligne permis sur le site (empreinte pour le script de démarrage, `next-boot.js` pour la liste de Turbopack, page hors ligne sans script)
+- [x] Places famille : une invitation à accepter (fenêtre « … t’invite dans sa famille » avec Accepter, Refuser, Plus tard ; aussi dans « Mon offre ») ; les places déjà là restent acceptées ; lues seulement avec un e-mail confirmé (migration 0019)
+- [x] Supprimer son compte demande un code reçu par e-mail (moins de 5 min) ; un ancien APK est invité à se mettre à jour
+- [x] Foyer : le prêteur peut retirer un remboursement noté par un autre membre sur son prêt (migration 0021) ; aucune autre faille trouvée
+- [x] Photos : 100 Mo par compte et 2 Mo par fichier (migration 0020) ; au-delà, le scan reste sur l’appareil et Réglages → Compte le dit
