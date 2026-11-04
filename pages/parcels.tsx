@@ -95,6 +95,19 @@ export default function ParcelsPage() {
   const [picked, setPicked] = useState<string | null | undefined>(undefined);
   const openId = picked === undefined ? opened : picked;
   const toggle = (id: string) => setPicked(openId === id ? null : id);
+  // Another parcel asked for (this page already shown, a search or a filter
+  // on): the list goes back to every parcel, so that one is always in sight.
+  const [shownFor, setShownFor] = useState(opened);
+  if (opened !== shownFor) {
+    setShownFor(opened);
+    setPicked(undefined);
+    if (opened) {
+      setQuery("");
+      setClientFilter(null);
+      setShipping("all");
+      setView("parcels");
+    }
+  }
   const showClients = reseller && view === "clients";
   const toast = useToast();
   const periodParcels = parcels.filter((parcel) => inPeriod(parcel, period, now, range));

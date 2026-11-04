@@ -46,7 +46,24 @@ test("the note of a followed parcel opens it in « Mes colis »", async ({ page 
   // Without the toast (at the top of the screen) over the note.
   await expect(page.getByRole("status")).toHaveCount(0, { timeout: 6_000 });
   await tapAside(note, /\/parcels\?open=/);
-  await expect(page.getByRole("button", { name: /Casque moto/ })).toHaveAttribute("aria-expanded", "true");
+  const row = page.getByRole("button", { name: /Casque moto/ });
+  await expect(row).toHaveAttribute("aria-expanded", "true");
+
+  // Asked for again while the list hides it (closed, a search that finds nothing):
+  // the search goes and the parcel shows, open.
+  const opened = new URL(page.url()).pathname + new URL(page.url()).search;
+  await row.click();
+  await expect(row).toHaveAttribute("aria-expanded", "false");
+  await page.getByRole("searchbox").fill("rien de tel");
+  await expect(row).toHaveCount(0);
+  await page.evaluate(async (url) => {
+    const { router } = (window as unknown as { next: { router: { push: (url: string) => Promise<boolean> } } }).next;
+    await router.push("/parcels");
+    await router.push(url);
+  }, opened);
+  await expect(page).toHaveURL(/\/parcels\?open=/);
+  await expect(page.getByRole("searchbox")).toHaveValue("");
+  await expect(row).toHaveAttribute("aria-expanded", "true");
 });
 
 test("the line « Ingrédients dans … » opens the shopping list", async ({ page }) => {
