@@ -223,7 +223,11 @@ async function pushEntry(uid: string, entry: HistoryEntry) {
       .from(BUCKET)
       .upload(remote.preview, await dataUrlToBlob(entry.thumbnail), { contentType: "image/jpeg", upsert: true });
     if (error) throw error;
+    // A smaller photo frees space: uploads may be tried again.
+    storageQuota.accepted();
   }
+  // Storage refused a photo already (full): not sent again until the app is reopened or space is freed (a data cost for nothing).
+  if (!remote && storageQuota.isFull()) return;
   if (!remote) {
     const folder = `${uid}/${entry.id}`;
     remote = { preview: `${folder}/preview.jpg`, thumbnail: `${folder}/thumbnail.jpg` };

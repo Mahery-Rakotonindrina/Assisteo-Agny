@@ -232,6 +232,18 @@ try {
   await client.query("commit");
 
   problems.push(...compareData(data, await exportData(client), { exact: true }));
+
+  // A backup from before migration 0019 has no accepted_at: its seats come back accepted, not as invitations.
+  await client.query("begin");
+  try {
+    const [owner] = data.tables["auth.users"];
+    const legacy = { id: randomUUID(), owner_id: owner.id, owner_email: owner.email, owner_name: null, member_email: "ancienne.sauvegarde@example.com", created_at: new Date().toISOString() };
+    await restoreData(client, { tables: { family_seats: [legacy] } });
+    const { rows } = await client.query("select accepted_at from public.family_seats where id = $1", [legacy.id]);
+    if (rows[0]?.accepted_at === null || rows[0] === undefined) problems.push("family_seats: a seat saved before migration 0019 came back as a waiting invitation");
+  } finally {
+    await client.query("rollback");
+  }
 } catch (error) {
   problems.push(error.message);
 } finally {

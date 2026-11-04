@@ -30,7 +30,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     return sendError(res, 405, "method_not_allowed", "Use GET or POST.");
   }
 
-  const burst = await rateLimit(`family-seats:${clientIp(req)}`, 30, 60_000);
+  // Reads are cheap and the invitation window asks at every opening (a shared mobile address may have many): as /api/plan.
+  const burst = await rateLimit(`family-seats:${req.method}:${clientIp(req)}`, req.method === "GET" ? 120 : 30, 60_000);
   if (!burst.ok) return sendError(res, 429, "rate_limited", "Too many requests, try again in a moment.");
   if (!accountsEnabled) return sendError(res, 503, "unavailable", "Accounts are not configured.");
 

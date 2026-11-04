@@ -466,6 +466,15 @@ export async function runRlsChecks(client) {
   await server(photoSql, [`${anna}/s1/preview.jpg`, { size: limit }]);
   await refused("an account at its quota can't add a photo", () => tryUser(anna, photoSql, [`${anna}/s2/preview.jpg`, { size: 150000 }]), /row-level security/);
   await check("an account at its quota can still write over a photo it has (shrinking frees space)", async () => ((await tryUser(anna, photoSql + " returning id", [`${anna}/s1/preview.jpg`, { size: 20000 }])).length === 1 ? null : "refused"));
+  // Writing over a file changes its size: empty files grown one by one would get round a check on adding only.
+  const growSql = "update storage.objects set metadata = $1 where bucket_id = 'scans' and name = $2 returning id";
+  await server(photoSql, [`${anna}/e1/preview.jpg`, { size: 0 }]);
+  await refused("an account at its quota can't grow a file by writing over it", () => tryUser(anna, growSql, [{ size: 2097152 }, `${anna}/e1/preview.jpg`]), /row-level security/);
+  await check("a file may shrink or stay the same size at the quota", async () => ((await tryUser(anna, growSql, [{ size: 0 }, `${anna}/e1/preview.jpg`])).length === 1 ? null : "refused"));
+  await check("an account adds an empty file", async () => ((await tryUser(ben, "insert into storage.objects (bucket_id, name, metadata) values ('scans', $1, $2) returning id", [`${ben}/g1/preview.jpg`, { size: 0 }])).length === 1 ? null : "refused"));
+  await server(photoSql, [`${ben}/g1/preview.jpg`, { size: 0 }]);
+  await check("a file grows within the quota, up to it", async () => ((await tryUser(ben, growSql, [{ size: 2097152 }, `${ben}/g1/preview.jpg`])).length === 1 ? null : "refused"));
+  await refused("a file can't grow past the quota by itself", () => tryUser(ben, growSql, [{ size: limit + 1 }, `${ben}/g1/preview.jpg`]), /row-level security/);
   await check("another account has its own quota", async () => ((await tryUser(ben, photoSql + " returning id", [`${ben}/s1/preview.jpg`, { size: 150000 }])).length === 1 ? null : "refused"));
   await refused("a photo goes in one's own folder only", () => tryUser(ben, photoSql, [`${anna}/s3/preview.jpg`, { size: 1 }]), /row-level security/);
   await refused("a visitor can't call photo_quota_ok()", () => tryVisitor("select public.photo_quota_ok('x/y.jpg')"), /permission denied/);

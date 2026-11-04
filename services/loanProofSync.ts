@@ -56,6 +56,8 @@ async function pushPhotos(uid: string) {
     for (const proof of proofsToUpload(loan)) {
       const image = await loanProofStore.get(proof.id);
       if (!image) continue;
+      // Storage refused a photo already (full): not sent again until the app is reopened or space is freed.
+      if (storageQuota.isFull()) continue;
       const paths = proofPaths(uid, loan.id, proof.id);
       const uploads = await Promise.all([
         supabase().storage.from(BUCKET).upload(paths.preview, await dataUrlToBlob(image.preview), { contentType: "image/jpeg", upsert: true }),
