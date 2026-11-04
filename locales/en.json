@@ -3867,5 +3867,20 @@
     "step1": "In Safari, tap the Share button (the square with an arrow).",
     "step2": "Choose “Add to Home Screen”, then “Add”.",
     "step3": "Open Assisteo from its new icon and come back here."
+  },
+  "parcelWhatsapp": {
+    "button": "Send the status to the client",
+    "phone": "Client's WhatsApp number",
+    "phoneHint": "To send them their parcels' status straight on WhatsApp. Kept for their other parcels.",
+    "greeting": "Hello {name},",
+    "greetingNoName": "Hello,",
+    "status": "Parcel “{title}”: {status}.",
+    "atForwarder": "delivered to the forwarder, not here yet",
+    "tracking": "Tracking number: {number}",
+    "due": "Left to pay: {amount}",
+    "allPaid": "Everything is paid, thank you!",
+    "shareTitle": "Parcel “{title}”",
+    "copied": "Message copied: paste it in the client's chat",
+    "failed": "Couldn't share the message"
   }
 }

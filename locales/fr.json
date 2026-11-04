@@ -3867,5 +3867,20 @@
     "step1": "Dans Safari, touche le bouton Partager (le carré avec une flèche).",
     "step2": "Choisis « Sur l’écran d’accueil », puis « Ajouter ».",
     "step3": "Ouvre Assisteo depuis sa nouvelle icône et reviens ici."
+  },
+  "parcelWhatsapp": {
+    "button": "Envoyer le statut au client",
+    "phone": "Numéro WhatsApp du client",
+    "phoneHint": "Pour lui envoyer le statut de ses colis directement sur WhatsApp. Retenu pour ses autres colis.",
+    "greeting": "Bonjour {name},",
+    "greetingNoName": "Bonjour,",
+    "status": "Colis « {title} » : {status}.",
+    "atForwarder": "livré chez le transitaire, pas encore arrivé ici",
+    "tracking": "N° de suivi : {number}",
+    "due": "Reste à payer : {amount}",
+    "allPaid": "Tout est payé, merci !",
+    "shareTitle": "Colis « {title} »",
+    "copied": "Message copié : colle-le dans la conversation du client",
+    "failed": "Impossible de partager le message"
   }
 }
