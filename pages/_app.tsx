@@ -21,6 +21,7 @@ import { useKeyboardReveal } from "@/hooks/useKeyboardReveal";
 import { useNativeBootstrap } from "@/hooks/useNativeBootstrap";
 import { AccountProvider } from "@/lib/account/AccountProvider";
 import { SettingsProvider } from "@/lib/settings/SettingsProvider";
+import { trackScreens } from "@/services/lastScreen";
 import { startOffline } from "@/services/offline";
 import "@/styles/globals.scss";
 import "@/styles/planColors.scss";
@@ -49,6 +50,8 @@ function Bootstrap() {
   useEffect(() => {
     void startOffline();
   }, []);
+  // Remembered for the feedback form: which screen the person came from.
+  useEffect(() => trackScreens(), []);
   return null;
 }
 
