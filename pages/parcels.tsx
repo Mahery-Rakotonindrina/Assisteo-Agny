@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { AnimatePresence, motion } from "motion/react";
 import { useDeferredValue, useEffect, useRef, useState } from "react";
 import {
+  Boxes,
   CalendarClock,
   Check,
   ChevronDown,
@@ -27,6 +28,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { ParcelClients } from "@/components/ParcelClients";
 import { ParcelCosts } from "@/components/ParcelCosts";
 import { ParcelEditSheet } from "@/components/ParcelEditSheet";
+import { ParcelLots } from "@/components/ParcelLots";
 import { SegmentedControl } from "@/components/SegmentedControl";
 import { Seo } from "@/components/Seo";
 import { useToast } from "@/components/Toast";
@@ -82,7 +84,7 @@ export default function ParcelsPage() {
   // Pro: the parcels by client, over a period, and one client's parcels.
   const reseller = usePlan().has("reseller");
   const now = useNow(60_000);
-  const [view, setView] = useState<"parcels" | "clients">("parcels");
+  const [view, setView] = useState<"parcels" | "clients" | "lots">("parcels");
   const [period, setPeriod] = useState<Period>("month");
   // Chosen days: this month so far, to start with.
   const [range, setRange] = useState<DayRange>(thisMonthSoFar);
@@ -109,6 +111,9 @@ export default function ParcelsPage() {
     }
   }
   const showClients = reseller && view === "clients";
+  // Pro: the shipments (lots, containers) and their parcels.
+  const showLots = reseller && view === "lots";
+  const showList = !showClients && !showLots;
   const toast = useToast();
   const periodParcels = parcels.filter((parcel) => inPeriod(parcel, period, now, range));
 
@@ -217,6 +222,8 @@ export default function ParcelsPage() {
       ...parcel.timeline.flatMap((item) => [item.event?.description, item.event?.location, item.event?.at]),
       parcel.priceMga,
       ...(parcel.fees ?? []).flatMap((fee) => [fee.label, fee.amountMga]),
+      parcel.lot?.name,
+      parcel.freight?.forwarder,
       parcel.salePriceMga,
       parcel.paidMga,
       total || null,
@@ -269,6 +276,7 @@ export default function ParcelsPage() {
                   options={[
                     { value: "parcels", label: t("parcels.clients.parcelsTab"), icon: <Package size={16} /> },
                     { value: "clients", label: t("parcels.clients.clientsTab"), icon: <Users size={16} /> },
+                    { value: "lots", label: t("parcelLots.tab"), icon: <Boxes size={16} /> },
                   ]}
                 />
               </motion.div>
@@ -300,13 +308,18 @@ export default function ParcelsPage() {
                 />
               </motion.div>
             )}
-            {!showClients && clientFilter && (
+            {showLots && (
+              <motion.div variants={rise}>
+                <ParcelLots parcels={parcels} />
+              </motion.div>
+            )}
+            {showList && clientFilter && (
               <motion.button variants={rise} type="button" className={styles.clientFilter} onClick={() => setClientFilter(null)}>
                 <UserRound size={14} /> {clientFilter.name ? t("parcels.forClient", { name: clientFilter.name }) : t("parcels.clients.none")}
                 <X size={14} aria-label={t("parcels.clearSearch")} />
               </motion.button>
             )}
-            {!showClients && parcels.length > 0 && (
+            {showList && parcels.length > 0 && (
               <motion.label variants={rise} className={styles.search}>
                 <Search size={18} />
                 <input
@@ -323,7 +336,7 @@ export default function ParcelsPage() {
                 )}
               </motion.label>
             )}
-            {!showClients && shippingModes.some((mode) => shippingCounts[mode] > 0) && (
+            {showList && shippingModes.some((mode) => shippingCounts[mode] > 0) && (
               <motion.div variants={rise} className={styles.shippingFilter} role="group" aria-label={t("parcel.shipping.label")}>
                 <button type="button" aria-pressed={shipping === "all"} onClick={() => setShipping("all")}>
                   {t("parcel.shipping.all")}
@@ -340,9 +353,9 @@ export default function ParcelsPage() {
                 })}
               </motion.div>
             )}
-            {!showClients && (deferredQuery || clientFilter || shipping !== "all") && visible.length === 0 && <p className={styles.noMatch}>{t("parcels.noMatch")}</p>}
-            {!showClients && deferredQuery && visible.length > 0 && <p className={styles.matchCount}>{t("parcels.matchCount", { count: visible.length })}</p>}
-            {!showClients && ongoing.length > 0 && (
+            {showList && (deferredQuery || clientFilter || shipping !== "all") && visible.length === 0 && <p className={styles.noMatch}>{t("parcels.noMatch")}</p>}
+            {showList && deferredQuery && visible.length > 0 && <p className={styles.matchCount}>{t("parcels.matchCount", { count: visible.length })}</p>}
+            {showList && ongoing.length > 0 && (
               <motion.section variants={rise} className={styles.group}>
                 <h2>{t("parcels.ongoing")}</h2>
                 {ongoing.map((parcel) => (
@@ -360,7 +373,7 @@ export default function ParcelsPage() {
                 ))}
               </motion.section>
             )}
-            {!showClients && received.length > 0 && (
+            {showList && received.length > 0 && (
               <motion.section variants={rise} className={styles.group}>
                 <h2>{t("parcels.received")}</h2>
                 {received.map((parcel) => (
@@ -467,6 +480,11 @@ function ParcelRow({ parcel, thumbnail, clients, hasScan, reseller, received = f
           {parcel.client && (
             <span className={styles.client}>
               <UserRound size={12} /> {t("parcels.forClient", { name: parcel.client })}
+            </span>
+          )}
+          {reseller && parcel.lot && (
+            <span className={styles.client}>
+              <Boxes size={12} /> {t("parcelLots.badge", { name: parcel.lot.name })}
             </span>
           )}
           <span className={styles.status}>{statusText}</span>

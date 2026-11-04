@@ -1,14 +1,18 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowDown, ExternalLink, Plus, X } from "lucide-react";
+import { ArrowDown, ExternalLink, Plus, Scale, X } from "lucide-react";
 import { CountedLink } from "@/components/Expenses/CountedLink";
 import { PlanLock } from "@/components/PlanLock";
 import { SegmentedControl } from "@/components/SegmentedControl";
+import { useParcels } from "@/hooks/useParcels";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { isForResale, saleKey, soldOn } from "@/lib/expenses";
 import type { AnyPlanId } from "@/lib/plans";
 import { formatAriary, formatDecimal } from "@/lib/format";
 import { currencySymbols, parseForeignAmount, type ForeignAmount } from "@/lib/money";
+import { freightMga, freightMode, isFreightFee, knownForwarders, parseWeight, rememberedRate, withFreightFee, type ParcelFreight } from "@/lib/parcelLots";
+import { shippingModeOf } from "@/lib/parcels";
+import type { ShippingMode } from "@/lib/ai/schema";
 import { createId } from "@/services/historyStore";
 import { marketRate, ownRate, rememberOwnRate } from "@/services/fx";
 import { parcelDueMga, parcelProfitMga, parcelStore, parcelTotalMga, type Parcel, type ParcelFee } from "@/services/parcelStore";
@@ -50,21 +54,48 @@ function Costs({ parcel, reseller, resellerFrom }: { parcel: Parcel; reseller: b
   const { t, locale } = useTranslation();
   const { name: planName } = usePlan();
   const [price, setPrice] = useState(parcel.priceMga ? String(parcel.priceMga) : "");
-  const [fees, setFees] = useState<DraftFee[]>(() => (parcel.fees ?? []).map((fee) => ({ id: fee.id, label: fee.label, amount: fee.amountMga ? String(fee.amountMga) : "" })));
+  // The freight by the kilo has its own fields (resellers), not a fee line.
+  const [fees, setFees] = useState<DraftFee[]>(() =>
+    (parcel.fees ?? []).filter((fee) => !isFreightFee(fee)).map((fee) => ({ id: fee.id, label: fee.label, amount: fee.amountMga ? String(fee.amountMga) : "" })),
+  );
+  const [freight, setFreight] = useState<DraftFreight>(() => ({
+    forwarder: parcel.freight?.forwarder ?? "",
+    weight: parcel.freight?.weightKg ? String(parcel.freight.weightKg).replace(".", locale === "fr" ? "," : ".") : "",
+    rate: parcel.freight?.rateMga ? String(parcel.freight.rateMga) : "",
+  }));
   const edited = useRef(false);
   const focusFee = useRef<string | null>(null);
+
+  // A change not saved yet: saved at once when the parcel is closed.
+  const pending = useRef<(() => void) | null>(null);
+  useEffect(() => () => pending.current?.(), []);
 
   // Save a moment after the last keystroke (only once the user changed something).
   useEffect(() => {
     if (!edited.current) return;
-    const timer = setTimeout(() => {
+    const save = () => {
+      pending.current = null;
       const kept: ParcelFee[] = fees
         .filter((fee) => fee.label.trim() || toAmount(fee.amount) > 0)
         .map((fee) => ({ id: fee.id, label: fee.label.trim(), amountMga: toAmount(fee.amount) }));
-      void parcelStore.setCosts(parcel.id, { priceMga: price ? toAmount(price) : undefined, fees: kept });
-    }, 600);
+      if (!reseller) {
+        // Without the reseller tools, the freight by the kilo already counted stays as it is.
+        void parcelStore.setCosts(parcel.id, { priceMga: price ? toAmount(price) : undefined, fees: kept });
+        return;
+      }
+      const next = draftFreight(freight, freightMode(parcel, shippingModeOf(parcel).mode));
+      void parcelStore.setCosts(parcel.id, {
+        priceMga: price ? toAmount(price) : undefined,
+        fees: withFreightFee(kept, next, next ? t("parcelLots.freightFee", { weight: formatDecimal(next.weightKg, locale), rate: formatAriary(next.rateMga, locale) }) : ""),
+        freight: next,
+      });
+    };
+    pending.current = save;
+    const timer = setTimeout(save, 600);
     return () => clearTimeout(timer);
-  }, [price, fees, parcel.id]);
+    // t and locale only word the freight fee.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [price, fees, freight, reseller, parcel.id]);
 
   const change = (update: () => void) => {
     edited.current = true;
@@ -79,8 +110,11 @@ function Costs({ parcel, reseller, resellerFrom }: { parcel: Parcel; reseller: b
 
   // A price paid in yuan, dollars or euros on the shop: convert it.
   const foreign = parseForeignAmount(parcel.info.total);
-  const feesTotal = fees.reduce((total, fee) => total + toAmount(fee.amount), 0);
-  const total = parcelTotalMga({ priceMga: toAmount(price), fees: fees.map((fee) => ({ id: fee.id, label: fee.label, amountMga: toAmount(fee.amount) })) });
+  // The freight counted: typed here (resellers), else the one already saved.
+  const keptFreight = (parcel.fees ?? []).find(isFreightFee);
+  const freightAmount = reseller ? freightMga(draftFreight(freight)) : (keptFreight?.amountMga ?? 0);
+  const feesTotal = fees.reduce((total, fee) => total + toAmount(fee.amount), 0) + freightAmount;
+  const total = parcelTotalMga({ priceMga: toAmount(price), fees: fees.map((fee) => ({ id: fee.id, label: fee.label, amountMga: toAmount(fee.amount) })) }) + freightAmount;
 
   return (
     <div className={styles.costs}>
@@ -101,6 +135,17 @@ function Costs({ parcel, reseller, resellerFrom }: { parcel: Parcel; reseller: b
         </span>
       </label>
       {foreign && <Convert foreign={foreign} onApply={(amount) => change(() => setPrice(String(amount)))} />}
+
+      {reseller ? (
+        <FreightFields parcel={parcel} value={freight} onChange={(next) => change(() => setFreight(next))} />
+      ) : (
+        keptFreight && (
+          <div className={styles.row}>
+            <span className={styles.label}>{keptFreight.label}</span>
+            <strong>{formatAriary(keptFreight.amountMga, locale)}</strong>
+          </div>
+        )
+      )}
 
       {fees.map((fee) => (
         <div key={fee.id} className={styles.row}>
@@ -159,7 +204,88 @@ function Costs({ parcel, reseller, resellerFrom }: { parcel: Parcel; reseller: b
       </div>
       {parcelTotalMga(parcel) > 0 && <CountedLink sourceKey={`parcel:${parcel.id}`} at={parcel.createdAt} resaleAt={reseller && isForResale(parcel) ? soldOn(parcel) : undefined} />}
 
-      {reseller ? <Sale parcel={parcel} total={total} /> : <PlanLock plan={resellerFrom} text={t("parcels.sale.locked", { plan: planName(resellerFrom ?? "pro") })} />}
+      {reseller ? <Sale parcel={parcel} total={total} /> : <PlanLock plan={resellerFrom} text={t("parcelLots.locked", { plan: planName(resellerFrom ?? "pro") })} />}
+    </div>
+  );
+}
+
+type DraftFreight = { forwarder: string; weight: string; rate: string };
+
+/** The typed freight, or null when it counts nothing. */
+function draftFreight(draft: DraftFreight, mode?: ShippingMode): ParcelFreight | null {
+  const weightKg = parseWeight(draft.weight);
+  const rateMga = toAmount(draft.rate);
+  if (!(weightKg > 0) && !(rateMga > 0) && !draft.forwarder.trim()) return null;
+  // The mode the rate is kept for (a forwarder's sea and air rates differ).
+  return { ...(draft.forwarder.trim() && { forwarder: draft.forwarder.trim() }), weightKg, rateMga, ...(mode && { mode }) };
+}
+
+/**
+ * Resellers (Pro): freight by the kilo, "2,5 kg × 12 000 Ar = 30 000 Ar".
+ * The forwarder's rate is typed once per mode (sea, air): picking that
+ * forwarder again for a parcel sent the same way brings it back.
+ */
+function FreightFields({ parcel, value, onChange }: { parcel: Parcel; value: DraftFreight; onChange: (value: DraftFreight) => void }) {
+  const { t, locale } = useTranslation();
+  const { parcels } = useParcels();
+  const others = parcels.filter((other) => other.id !== parcel.id);
+  const forwarders = knownForwarders(others);
+  // Its shipment's mode first, then its own.
+  const mode = freightMode(parcel, shippingModeOf(parcel).mode);
+  const amount = freightMga(draftFreight(value));
+  const listId = `forwarders-${parcel.id}`;
+
+  return (
+    <div className={styles.freight} data-testid="parcel-freight">
+      <h4>
+        <Scale size={15} /> {t("parcelLots.freightTitle")}
+      </h4>
+      {mode && <p className={styles.freightMode}>{t("parcelLots.rateMode", { mode: t(`parcel.shipping.${mode}`) })}</p>}
+      <label className={styles.freightField}>
+        <span>{t("parcelLots.forwarder")}</span>
+        <input
+          value={value.forwarder}
+          list={listId}
+          placeholder={t("parcelLots.forwarderPlaceholder")}
+          onChange={(event) => {
+            const forwarder = event.target.value.slice(0, 40);
+            // A known forwarder brings back its rate, unless one is typed already.
+            const rate = rememberedRate(others, forwarder, mode);
+            onChange({ ...value, forwarder, rate: rate && !value.rate ? String(rate) : value.rate });
+          }}
+        />
+        <datalist id={listId}>
+          {forwarders.map((name) => (
+            <option key={name} value={name} />
+          ))}
+        </datalist>
+      </label>
+      <div className={styles.freightLine}>
+        <label className={styles.amount}>
+          <input
+            inputMode="decimal"
+            value={value.weight}
+            onChange={(event) => onChange({ ...value, weight: event.target.value.replace(/[^0-9.,]/g, "").slice(0, 8) })}
+            placeholder="0"
+            aria-label={t("parcelLots.weight")}
+          />
+          <span>kg</span>
+        </label>
+        <span aria-hidden>×</span>
+        <label className={styles.amount}>
+          <input
+            inputMode="numeric"
+            value={grouped(value.rate)}
+            onChange={(event) => onChange({ ...value, rate: digits(event.target.value) })}
+            placeholder="0"
+            aria-label={t("parcelLots.rate")}
+          />
+          <span>{t("parcelLots.perKg")}</span>
+        </label>
+      </div>
+      <p className={styles.freightResult} data-testid="parcel-freight-amount">
+        {amount > 0 ? t("parcelLots.freightAmount", { amount: formatAriary(amount, locale) }) : t("parcelLots.freightHint")}
+      </p>
     </div>
   );
 }
