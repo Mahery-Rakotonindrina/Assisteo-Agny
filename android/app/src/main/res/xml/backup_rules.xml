@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 11 and older: what Android backs up to the Google account.
+     Everything but the secure storage (@aparajita/capacitor-secure-storage):
+     the Supabase session, the personal AI key and the install id. Its values
+     are encrypted with a key of this phone's Keystore, which is never backed
+     up: restored elsewhere they could not be read anyway. -->
+<full-backup-content>
+    <exclude domain="sharedpref" path="WSSecureStorageSharedPreferences.xml" />
+</full-backup-content>

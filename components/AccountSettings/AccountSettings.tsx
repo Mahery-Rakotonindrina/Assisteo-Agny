@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { CloudOff, LogOut, RefreshCw, Trash2, UserRound } from "lucide-react";
 import { AccountSheet } from "@/components/AccountSheet";
 import { PlanBadge } from "@/components/PlanBadge";
@@ -8,6 +8,10 @@ import { useNow } from "@/hooks/useNow";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAccount } from "@/lib/account/AccountProvider";
+import { codeFrom, MIN_CODE_LENGTH } from "@/lib/signInCode";
+import { sendSignInCode, verifySignInCode, type SignInError } from "@/services/account";
+import { storageQuota } from "@/services/storageQuota";
+import { ApiError } from "@/types/api";
 import styles from "./AccountSettings.module.scss";
 
 function minutesAgo(now: number, at?: number) {
@@ -25,6 +29,11 @@ export function AccountSettings() {
   const [confirmOut, setConfirmOut] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  // Deleting asks for a code sent to the account's e-mail first.
+  const [deleteStep, setDeleteStep] = useState<"intro" | "code">("intro");
+  const [deleteCode, setDeleteCode] = useState("");
+  const [deleteError, setDeleteError] = useState<SignInError | null>(null);
+  const photosFull = useSyncExternalStore(storageQuota.subscribe, storageQuota.isFull, () => false);
 
   if (session === undefined) return <div className={styles.wrap} aria-busy />;
 
@@ -47,6 +56,46 @@ export function AccountSettings() {
       </div>
     );
   }
+
+  const closeDelete = () => {
+    setConfirmDelete(false);
+    setDeleteStep("intro");
+    setDeleteCode("");
+    setDeleteError(null);
+  };
+
+  const sendDeleteCode = async () => {
+    if (!email) return;
+    setDeleting(true);
+    const failure = await sendSignInCode(email, { create: false });
+    setDeleting(false);
+    setDeleteError(failure);
+    if (!failure) setDeleteStep("code");
+  };
+
+  const confirmDeletion = async () => {
+    if (!email) return;
+    setDeleting(true);
+    setDeleteError(null);
+    // The code opens a fresh session: the server only deletes right after one.
+    const failure = await verifySignInCode(email, deleteCode);
+    if (failure) {
+      setDeleteError(failure);
+      setDeleting(false);
+      return;
+    }
+    try {
+      await deleteAccount();
+      toast(t("account.deleted"));
+      closeDelete();
+    } catch (error) {
+      toast(t(error instanceof ApiError && error.code === "code_required" ? "account.deleteCodeAgain" : "account.deleteFailed"), "error");
+      setDeleteStep("intro");
+      setDeleteCode("");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const ago = minutesAgo(now, syncStatus.lastSyncAt);
   const statusText =
@@ -105,35 +154,58 @@ export function AccountSettings() {
         </Button>
       </div>
       {confirmOut && <p className={styles.hint}>{t("account.signOutHint")}</p>}
+      {photosFull && (
+        <p className={styles.hint} role="status" data-testid="photos-full">
+          {t("account.photosFull")}
+        </p>
+      )}
 
       {confirmDelete ? (
         <div className={styles.danger} role="alertdialog" aria-labelledby="delete-account-title">
           <strong id="delete-account-title">{t("account.deleteTitle")}</strong>
           <p>{t("account.deleteBody")}</p>
-          <div className={styles.actions}>
-            <Button
-              variant="danger"
-              icon={<Trash2 />}
-              disabled={deleting}
-              onClick={async () => {
-                setDeleting(true);
-                try {
-                  await deleteAccount();
-                  toast(t("account.deleted"));
-                } catch {
-                  toast(t("account.deleteFailed"), "error");
-                } finally {
-                  setDeleting(false);
-                  setConfirmDelete(false);
-                }
-              }}
-            >
-              {deleting ? t("account.deleting") : t("account.deleteConfirm")}
-            </Button>
-            <Button variant="ghost" disabled={deleting} onClick={() => setConfirmDelete(false)}>
-              {t("common.cancel")}
-            </Button>
-          </div>
+          {deleteStep === "intro" ? (
+            <>
+              <p>{t("account.deleteCodeIntro", { email: email ?? "" })}</p>
+              {deleteError && <p role="alert">{t(`account.errors.${deleteError}`)}</p>}
+              <div className={styles.actions}>
+                <Button variant="danger" icon={<Trash2 />} disabled={deleting || !email} onClick={() => void sendDeleteCode()} data-testid="delete-send-code">
+                  {t("account.sendCode")}
+                </Button>
+                <Button variant="ghost" disabled={deleting} onClick={closeDelete}>
+                  {t("common.cancel")}
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <p>{t("account.codeBody", { email: email ?? "" })}</p>
+              <input
+                className={styles.code}
+                type="text"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                value={deleteCode}
+                aria-label={t("account.codeTitle")}
+                // No maxLength: a pasted subject would be cut before its code.
+                onChange={(event) => {
+                  setDeleteCode(codeFrom(event.target.value));
+                  setDeleteError(null);
+                }}
+                disabled={deleting}
+                data-testid="delete-code"
+              />
+              {deleteError && <p role="alert">{t(`account.errors.${deleteError}`)}</p>}
+              <div className={styles.actions}>
+                <Button variant="danger" icon={<Trash2 />} disabled={deleting || deleteCode.length < MIN_CODE_LENGTH} onClick={() => void confirmDeletion()} data-testid="delete-confirm">
+                  {deleting ? t("account.deleting") : t("account.deleteConfirm")}
+                </Button>
+                <Button variant="ghost" disabled={deleting} onClick={closeDelete}>
+                  {t("common.cancel")}
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       ) : (
         <button type="button" className={styles.deleteLink} onClick={() => setConfirmDelete(true)}>

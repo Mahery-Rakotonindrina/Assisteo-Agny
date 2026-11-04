@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { FamilySeatActionSchema, seatOwnerName, seatRefusal, shareableSeats, type FamilySeatsResponse } from "@/lib/familySeats";
 import { logAdminAction } from "@/lib/server/adminLog";
-import { addSeat, leaveSeat, memberSeat, removeSeat, seatsOfOwner, SeatTakenError } from "@/lib/server/familySeats";
+import { acceptSeat, addSeat, declineSeat, leaveSeat, memberSeat, removeSeat, seatsOfOwner, SeatTakenError } from "@/lib/server/familySeats";
 import { applyCors, clientIp, sendError } from "@/lib/server/http";
 import { getPlansConfig } from "@/lib/server/planConfig";
 import { rateLimit } from "@/lib/server/rateLimit";
@@ -17,7 +17,9 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 /**
  * Family seats, from "Mon offre". GET: the seats the subscriber's plan gives,
  * the people added, and the seat the account holds in someone else's plan.
- * POST: add a person by e-mail, remove one, or leave a seat. Every check is
+ * POST: invite a person by e-mail, remove one, or, for the invited person,
+ * accept or decline the invitation, or leave the seat. The invitation gives
+ * nothing until it is accepted. Every check is
  * here, on the plan the server reads (never the app's word); each change goes
  * to the admin log. Before migration 0016: 409 migration_needed.
  */
@@ -28,7 +30,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     return sendError(res, 405, "method_not_allowed", "Use GET or POST.");
   }
 
-  const burst = await rateLimit(`family-seats:${clientIp(req)}`, 30, 60_000);
+  // Reads are cheap and the invitation window asks at every opening (a shared mobile address may have many): as /api/plan.
+  const burst = await rateLimit(`family-seats:${req.method}:${clientIp(req)}`, req.method === "GET" ? 120 : 30, 60_000);
   if (!burst.ok) return sendError(res, 429, "rate_limited", "Too many requests, try again in a moment.");
   if (!accountsEnabled) return sendError(res, 503, "unavailable", "Accounts are not configured.");
 
@@ -40,13 +43,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const config = await getPlansConfig();
     const access = await accessForEmail(email, Date.now(), config.customPlans);
     const { seats, reason } = shareableSeats(config, access.current, access.subscription?.paymentMethod);
+    // The plan an invitation offers: the subscriber's own now (shown to the person before they accept).
+    const ownerPlan = async (ownerEmail: string) => {
+      const owner = await accessForEmail(ownerEmail, Date.now(), config.customPlans);
+      return owner.current.custom ?? owner.current.plan;
+    };
     const state = async (): Promise<FamilySeatsResponse> => {
       const [members, joined] = await Promise.all([seatsOfOwner(account.id), memberSeat(email)]);
       return {
         seats,
         reason,
-        members: members.map((seat) => ({ id: seat.id, email: seat.memberEmail, createdAt: seat.createdAt })),
-        joined: joined && { owner: joined.ownerName || joined.ownerEmail },
+        members: members.map((seat) => ({ id: seat.id, email: seat.memberEmail, createdAt: seat.createdAt, ...(seat.pending && { pending: true }) })),
+        joined: joined && !joined.pending ? { owner: joined.ownerName || joined.ownerEmail } : null,
+        invitation: joined?.pending ? { owner: joined.ownerName || joined.ownerEmail, plan: await ownerPlan(joined.ownerEmail) } : null,
       };
     };
 
@@ -74,6 +83,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       const removed = await removeSeat(action.id, account.id);
       if (!removed) return sendError(res, 404, "not_found", "No such seat.");
       await logAdminAction(email, "family_seat_remove", `${email} → ${removed.memberEmail}`);
+    } else if (action.action === "accept") {
+      const accepted = await acceptSeat(email);
+      if (!accepted) return sendError(res, 404, "not_found", "No invitation waiting.");
+      await logAdminAction(email, "family_seat_accept", `${accepted.ownerEmail} → ${email}`);
+    } else if (action.action === "decline") {
+      const declined = await declineSeat(email);
+      if (declined) await logAdminAction(email, "family_seat_decline", `${declined.ownerEmail} → ${email}`);
     } else {
       const left = await leaveSeat(email);
       if (left) await logAdminAction(email, "family_seat_leave", `${left.ownerEmail} → ${email}`);

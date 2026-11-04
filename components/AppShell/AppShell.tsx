@@ -1,6 +1,7 @@
 import { useRouter } from "next/router";
 import { motion } from "motion/react";
 import { useEffect, useState, type ReactNode } from "react";
+import { FamilyInvitation } from "@/components/FamilyInvitation";
 import { PlanTheme } from "@/components/PlanTheme";
 import { PlanWelcome } from "@/components/PlanWelcome";
 import { Sidebar } from "@/components/Sidebar";
@@ -58,6 +59,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       {showTabBar && <TabBar />}
       <PlanTheme />
       <PlanWelcome />
+      {!bare && <FamilyInvitation />}
     </div>
   );
 }

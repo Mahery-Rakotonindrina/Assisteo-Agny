@@ -42,7 +42,10 @@ export type AdminAction =
   /** A subscriber added or removed a person from their family seats ("Mon offre"), or a person left one. */
   | "family_seat_add"
   | "family_seat_remove"
-  | "family_seat_leave";
+  | "family_seat_leave"
+  /** An invited person accepted or declined a family seat. */
+  | "family_seat_accept"
+  | "family_seat_decline";
 
 export type AdminLogEntry = {
   at: number;

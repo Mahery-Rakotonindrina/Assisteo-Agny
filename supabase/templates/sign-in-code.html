@@ -3,12 +3,16 @@
   Paste this into BOTH "Magic Link" and "Confirm signup" (the app signs in with
   the code: 8 digits, as set in Authentication → Email → OTP length, which
   components/AccountSheet expects; never with the link). Subject: "Ton code Assisteo Agny : {{ .Token }}"
+  The code is copied in one touch (user-select: all) and never read as a phone
+  number; the app's « Coller le code » finds it in whatever was copied.
 -->
 <!doctype html>
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="format-detection" content="telephone=no, date=no, address=no, email=no" />
+    <meta name="x-apple-disable-message-reformatting" />
   </head>
   <body style="margin:0;padding:0;background:#f4f5f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f5f0;padding:32px 16px;">
@@ -24,12 +28,12 @@
             </tr>
             <tr>
               <td style="padding:24px 32px 8px;text-align:center;">
-                <div style="display:inline-block;padding:16px 24px;border-radius:16px;background:#16181f;border:1px solid #2a2d36;color:#c6ff4d;font-size:34px;font-weight:700;letter-spacing:0.3em;font-family:'SFMono-Regular',Menlo,Consolas,monospace;">{{ .Token }}</div>
+                <div style="display:inline-block;padding:16px 24px;border-radius:16px;background:#16181f;border:1px solid #2a2d36;color:#c6ff4d;font-size:34px;font-weight:700;letter-spacing:0.3em;font-family:'SFMono-Regular',Menlo,Consolas,monospace;-webkit-user-select:all;user-select:all;">{{ .Token }}</div>
               </td>
             </tr>
             <tr>
               <td style="padding:16px 32px 32px;text-align:center;color:#d1d5db;font-size:15px;line-height:1.6;">
-                Entre ce code dans l’app pour te connecter. Il expire dans une heure.
+                Copie ce code (appuie longuement dessus), puis touche « Coller le code » dans l’app. Il expire dans une heure.
                 <p style="margin:20px 0 0;color:#6b7280;font-size:13px;line-height:1.5;">
                   Tu n’as rien demandé ? Ignore cet e-mail : personne ne peut se connecter sans ce code.
                 </p>

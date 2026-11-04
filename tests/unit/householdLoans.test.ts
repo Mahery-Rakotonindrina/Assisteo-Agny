@@ -9,6 +9,14 @@ type Row = { household_id: string; id: string; user_id: string | null; data: Rec
 const server = vi.hoisted(() => ({ rows: [] as Row[], as: "" }));
 vi.mock("@/lib/supabase", () => ({
   supabase: () => ({
+    // household_remove_repayment (0021): the repayment's author or the loan's lender puts the tombstone.
+    rpc: async (_name: string, { p_id }: { p_id: string }) => {
+      const row = server.rows.find((item) => item.id === p_id && !item.deleted_at && item.data.kind === "repayment");
+      const loan = row && server.rows.find((item) => item.id === row.data.loanId && item.data.kind === "loan");
+      if (!row || (row.user_id !== server.as && loan?.user_id !== server.as)) return { data: false, error: null };
+      row.deleted_at = new Date().toISOString();
+      return { data: true, error: null };
+    },
     from: () => ({
       select: () => ({
         match: (match: Record<string, string>) => ({
@@ -158,11 +166,49 @@ describe("the household's loans on the device", () => {
       [5000, "Rasoa"],
       [1000, "Anna"],
     ]);
+    // Nobody takes it over, but the lender (Anna: it is on her loan) may remove it.
     expect(annaBook.canRemoveRepayment(loan.repayments[0])).toBe(false);
+    expect(annaBook.canRemoveRepayment(loan.repayments[0], loan)).toBe(true);
     await annaBook.removeRepayment(loan, loan.repayments[0]);
     await syncHouseholdLoans(anna, home);
     expect(server.rows.find((row) => row.id === "gone-1")?.user_id).toBeNull();
-    expect((await householdLoanStore.list())[0].repayments).toHaveLength(2);
+    expect(server.rows.find((row) => row.id === "gone-1")?.deleted_at).not.toBeNull();
+    expect((await householdLoanStore.list())[0].repayments).toHaveLength(1);
+  });
+
+  it("lets the lender remove a repayment another member noted on their loan; nobody else but its author", async () => {
+    server.as = anna;
+    const annaBook = householdBook(anna, "Anna");
+    const loan = (await annaBook.create(fields("Voisin", 60000)))!;
+    await syncHouseholdLoans(anna, home);
+    // Ben notes a repayment on Anna's loan (a row of his own).
+    server.as = ben;
+    await householdLoanStore.wipe();
+    await syncHouseholdLoans(ben, home);
+    const benBook = householdBook(ben, "Ben");
+    await benBook.addRepayment(loan.id, { amountMga: 20000, at });
+    await syncHouseholdLoans(ben, home);
+    const [seenByBen] = await householdLoanStore.list();
+    // Ben isn't the lender: he can remove his own, and only his own.
+    expect(benBook.canRemoveRepayment(seenByBen.repayments[0], seenByBen)).toBe(true);
+
+    server.as = anna;
+    await householdLoanStore.wipe();
+    await syncHouseholdLoans(anna, home);
+    const [seen] = await householdLoanStore.list();
+    expect(seen.repayments).toHaveLength(1);
+    expect(annaBook.canRemoveRepayment(seen.repayments[0], seen)).toBe(true);
+    // A third member: neither the author nor the lender.
+    expect(householdBook("33333333-3333-4333-8333-333333333333").canRemoveRepayment(seen.repayments[0], seen)).toBe(false);
+    expect(await annaBook.removeRepayment(seen, seen.repayments[0])).toBe(true);
+    expect((await householdLoanStore.list())[0].repayments).toHaveLength(0);
+    const row = server.rows.find((item) => item.data.kind === "repayment");
+    expect(row?.deleted_at).not.toBeNull();
+    expect(row?.user_id).toBe(ben);
+    // Ben's device drops it at its next sync.
+    server.as = ben;
+    await syncHouseholdLoans(ben, home);
+    expect((await householdLoanStore.list())[0].repayments).toHaveLength(0);
   });
 
   it("gives one's own loans back on leaving, with every repayment; the others' go", async () => {

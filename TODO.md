@@ -241,6 +241,7 @@ Budget du mois du foyer. Réservé à l'offre Admin pendant le test, ouvert aux 
 - [x] Écran « Mes poches » à part (`/pockets`, comme « Prêts ») — « Tout ton argent », une carte par poche, « Virement », « Réordonner » dans la liste, « Comment ça marche ? » ; fiche à son adresse (`?id=`, retour à la liste), deux boutons (« Virement » avec ⇅, « Corriger le solde ») et « Plus » ; une ligne ouvre sa page et le retour ramène à la fiche ; une correction s’ouvre et se supprime ; « Dans tes poches » de Dépenses, la barre latérale et les raccourcis y mènent ; mêmes chiffres que Dépenses
 - [x] Masquer les soldes des poches — œil dans l’en-tête de « Mes poches » (tous les soldes) et « Masquer son solde » / « Afficher son solde » dans « Plus » de chaque poche ; un solde caché devient `************` (total, cartes, fiche, « Solde : … » du relevé, solde de départ, « Dans tes poches » de Dépenses), « Solde masqué » pour un lecteur d’écran, montants des mouvements visibles ; choix gardé sur l’appareil, jamais synchronisé
 - [x] Clavier ouvert dans une fenêtre (« Corriger le solde » sur iPhone) : le champ reste visible au-dessus de « Enregistrer / Annuler », plus de vide sous les boutons — toutes les fenêtres de Dépenses, Poches, Prêts, Colis, compte, rappel, annonce et Admin ; libellé « Combien as-tu vraiment sur … ? »
+- [x] Petits défauts restants — écran de scan en « Grand » et « Très grand » sur un téléphone de 667 px : « Importer une image » et « Plusieurs pages » visibles sans défiler, « Document » et « Véhicule » ne se touchent plus (aussi à 320 px) ; Admin : « Offres » et « Versions de l’app » en lecture seule pour un admin non propriétaire ; pages hors ligne servies avec leurs en-têtes de sécurité ; un ancien onglet ne remet plus son vieux service worker ; les anciens compteurs d’essai reçoivent une date de fin
 - [x] Poches, épargne, tontines et activité dans l’export et le bilan IA — Excel : feuilles « Mes poches » (début, entrées, sorties, virements, fin du mois), « Épargne et tontines », « Mon activité » (revendeurs, activité séparée), colonne « Poche » ; même chose en PDF ; le bilan reçoit les totaux seulement, sans aucun nom, et un ancien APK marche toujours
 - [x] Prêts et dettes : argent prêté ou emprunté, crédit chez l’épicier ; qui me doit, à qui je dois, remboursements comptés tout seuls — écran « Prêts » à part (§17) ; lien avec les poches (PR #85)
 - [x] Import d’un relevé MVola ou bancaire (captures ou PDF de plusieurs pages) : toutes les opérations d’un coup, sans doublon — jusqu’à 10 captures ou un PDF, une case par opération, « déjà là » décoché, chaque page compte comme un scan
@@ -277,3 +278,23 @@ L’argent prêté ou emprunté, par personne. Ni dépense ni revenu : rien n’
 - [x] Prêts partagés en famille (foyer) — bascule « Moi / Foyer » pour un membre avec « Prêts », option « Prêt du foyer » sur un nouveau prêt ; chaque membre note un remboursement, seul l’auteur modifie le prêt ; hors des poches, sans rappel ; rendus en perso à qui quitte le foyer (migration 0012)
 - [x] Écran Prêts plus simple, et le compte avec chaque personne (relevé avec le reste après chaque ligne) — carte « On te doit · Tu dois » qui filtre la liste, un seul « + Nouveau » (prêté, emprunté, scanner), cartes par personne avec pastille d’état, « Foyer » en pastille ; l’ajout en 4 gestes (« Pour quoi ? » en pastilles, le reste dans « Plus d’options ») ; « Compte avec … » : « + Il me doit encore… », « Il m’a rendu… » (réparti sur ses prêts), « Relancer », relevé par mois avec la colonne « Reste », aussi dans l’export PDF et Excel de la personne
 - [ ] Ouvrir « Prêts » à d’autres offres que l’Admin — une case à cocher dans Admin → Offres ; reste à choisir les offres
+
+## 18. Retour des clients sur l'UX
+
+- [x] Copier le code reçu par e-mail et le coller dans l’app — bouton « Coller le code » (dans l’app Android aussi) ; le code est trouvé même si on colle tout l’objet de l’e-mail ou une phrase autour ; dans l’e-mail, le code se sélectionne d’un appui (nouveau modèle à coller dans Supabase)
+- [x] « Se connecter » sur l’écran d’accueil quand on n’est pas connecté — petit bouton sur la ligne du « Bonjour », sans repousser les boutons de scan ; sur ordinateur, il reste dans la barre de gauche
+- [x] Après le scan d’une liste, toucher n’importe où sur la carte ouvre la liste (plus seulement « Ouvrir »)
+- [x] Listes (ex. courses) : en modifiant un article sur téléphone, le texte a toute la largeur (la quantité, le prix et ✓ passent dessous)
+
+## 19. Relevé en chemin (2026-11-04), fait le même jour
+
+- [x] Notes entières cliquables : après le scan d’un colis suivi, toute la note mène au colis (ouvert, recherche et filtres vidés) ; après une recette, toute la ligne « Ingrédients dans … » ouvre la liste
+- [x] Téléphone de 320 × 568 px en « Très grand » : « Importer une image » et « Plusieurs pages » visibles sans défiler (aussi avec le bandeau démo ou « Se connecter »)
+- [x] App Android : le clavier réduit la vue (`adjustResize`, Capacitor 8 s’occupe du reste) — à confirmer sur un téléphone dans « Corriger le solde »
+- [x] Essais Premium du jour épuisés : « Beaucoup d’essais ont commencé aujourd’hui : reviens demain pour lancer le tien. »
+- [x] Sauvegarde Android gardée (historique, dépenses, colis, réglages) mais sans les secrets (session, clé IA, identifiant d’installation) — il faut se reconnecter après une réinstallation
+- [x] CSP plus stricte : plus aucun script en ligne permis sur le site (empreinte pour le script de démarrage, `next-boot.js` pour la liste de Turbopack, page hors ligne sans script)
+- [x] Places famille : une invitation à accepter (fenêtre « … t’invite dans sa famille » avec Accepter, Refuser, Plus tard ; aussi dans « Mon offre ») ; les places déjà là restent acceptées ; lues seulement avec un e-mail confirmé (migration 0019)
+- [x] Supprimer son compte demande un code reçu par e-mail (moins de 5 min) ; un ancien APK est invité à se mettre à jour
+- [x] Foyer : le prêteur peut retirer un remboursement noté par un autre membre sur son prêt (migration 0021) ; aucune autre faille trouvée
+- [x] Photos : 100 Mo par compte et 2 Mo par fichier (migration 0020) ; au-delà, le scan reste sur l’appareil et Réglages → Compte le dit

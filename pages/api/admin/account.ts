@@ -161,7 +161,7 @@ async function card(email: string): Promise<AdminAccountCard> {
 async function familyOf(email: string): Promise<AdminAccountCard["family"]> {
   try {
     const [seat, given] = await Promise.all([memberSeat(email), seatsGivenBy(email)]);
-    return { seatOf: seat?.ownerEmail ?? null, members: given.map((entry) => entry.memberEmail) };
+    return { seatOf: seat && !seat.pending ? seat.ownerEmail : null, members: given.map((entry) => entry.memberEmail) };
   } catch (error) {
     if (error instanceof MigrationNeededError) return null;
     throw error;

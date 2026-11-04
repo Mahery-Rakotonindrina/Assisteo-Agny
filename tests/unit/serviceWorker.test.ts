@@ -10,7 +10,7 @@ type Sw = {
   buildOf: (html: string) => string | null;
   assetsOf: (html: string) => string[];
   pageKey: (url: string) => string;
-  keepPage: (cache: FakeCache, path: string, html: string) => Promise<boolean>;
+  keepPage: (cache: FakeCache, path: string, html: string, headers?: Headers) => Promise<boolean>;
   offlinePage: (cache: FakeCache, path: string) => Promise<Response>;
   CACHE: string;
   OFFLINE_PAGE: string;
@@ -73,6 +73,8 @@ describe("public/sw.js", () => {
     expect(sw.strategyFor(get(`${ORIGIN}/pockets?add=1`, "navigate"), ORIGIN)).toBe("page");
     expect(sw.strategyFor(get(`${ORIGIN}/_next/static/chunks/main-1.js`), ORIGIN)).toBe("static");
     expect(sw.strategyFor(get(`${ORIGIN}/icons/icon-192.png`), ORIGIN)).toBe("asset");
+    // Every page's first script (no inline one under the CSP): fetched, and kept for offline.
+    expect(sw.strategyFor(get(`${ORIGIN}/next-boot.js`), ORIGIN)).toBe("asset");
     expect(sw.strategyFor(get(`${ORIGIN}/api/plan`), ORIGIN)).toBeNull();
     expect(sw.strategyFor(get(`${ORIGIN}/api/plan`, "navigate"), ORIGIN)).toBeNull();
     expect(sw.strategyFor(get("https://x.supabase.co/rest/v1/expenses"), ORIGIN)).toBeNull();
@@ -95,6 +97,19 @@ describe("public/sw.js", () => {
 
     expect(await sw.keepPage(cache, "/pockets", page("b1"))).toBe(true);
     expect([...cache.entries.keys()].sort()).toEqual(["/_next/static/chunks/main-1.js", "/_next/static/css/a.css", "/pockets"]);
+  });
+
+  it("keeps the site's security headers with a page, served with it offline", async () => {
+    const cache = await fakeCaches.open(sw.CACHE);
+    const put = vi.spyOn(cache, "put");
+    const headers = new Headers({ "Content-Security-Policy": "default-src 'self'", "X-Frame-Options": "DENY", "Content-Length": "12", ETag: "x" });
+    expect(await sw.keepPage(cache, "/pockets", page("b1"), headers)).toBe(true);
+    const kept = put.mock.calls.find(([key]) => key === "/pockets")![1];
+    expect(kept.headers.get("Content-Security-Policy")).toBe("default-src 'self'");
+    expect(kept.headers.get("X-Frame-Options")).toBe("DENY");
+    expect(kept.headers.get("Content-Type")).toBe("text/html; charset=utf-8");
+    expect(kept.headers.get("Content-Length")).toBeNull();
+    expect(kept.headers.get("ETag")).toBeNull();
   });
 
   it("does not keep a page when one of its files can't be fetched", async () => {

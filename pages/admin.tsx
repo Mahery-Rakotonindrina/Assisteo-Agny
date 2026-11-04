@@ -193,7 +193,7 @@ export default function AdminPage() {
 
         {config && <AdminSubscriptions token={token} owner={owner} />}
         {config && <AdminAccounts token={token} />}
-        {config && <AdminPlans token={token} onSaved={() => setPlansVersion((version) => version + 1)} />}
+        {config && <AdminPlans token={token} owner={owner} onSaved={() => setPlansVersion((version) => version + 1)} />}
         {config && <AdminFeatures token={token} plansVersion={plansVersion} />}
         {config && <AdminPromoCodes token={token} />}
         {config && <AdminAiCost token={token} />}
@@ -304,7 +304,7 @@ export default function AdminPage() {
           </motion.form>
         )}
 
-        {config && <AppVersionCard token={token} />}
+        {config && <AppVersionCard token={token} owner={owner} />}
         {config && owner && <AdminLog token={token} />}
         {config && owner && <AdminTwoFactor token={token} onSession={keepSession} />}
       </motion.div>
@@ -356,7 +356,7 @@ function Stepper({ icon, label, hint, value, min, max, onChange }: StepperProps)
 const VERSION_PATTERN = /^(\d+(\.\d+){0,2})?$/;
 
 /** Minimum and latest app versions, checked by the native apps at launch. */
-function AppVersionCard({ token }: { token: string }) {
+function AppVersionCard({ token, owner }: { token: string; owner: boolean }) {
   const { t } = useTranslation();
   const toast = useToast();
   const [saved, setSaved] = useState<AppVersionResponse | null>(null);
@@ -399,6 +399,7 @@ function AppVersionCard({ token }: { token: string }) {
       <input
         className={styles.input}
         value={draft[key]}
+        readOnly={!owner}
         placeholder={placeholder}
         inputMode={key === "downloadUrl" ? "url" : "decimal"}
         onChange={(event) => setDraft({ ...draft, [key]: event.target.value.trim() })}
@@ -417,9 +418,14 @@ function AppVersionCard({ token }: { token: string }) {
       {field("latest", t("admin.latest"), t("admin.latestHint"), <Smartphone size={16} />, "1.0.0")}
       {field("downloadUrl", t("admin.downloadUrl"), null, <Download size={16} />, "https://…")}
       {!valid && <p className={styles.error}>{t("admin.invalidVersion")}</p>}
-      <Button type="submit" block icon={<Save />} disabled={!dirty || !valid || saving}>
-        {t("admin.save")}
-      </Button>
+      {/* The server refuses the other admins' changes (ownerWrites): no button that can only fail. */}
+      {owner ? (
+        <Button type="submit" block icon={<Save />} disabled={!dirty || !valid || saving}>
+          {t("admin.save")}
+        </Button>
+      ) : (
+        <p className={styles.hint}>{t("admin.ownerEdits")}</p>
+      )}
     </motion.form>
   );
 }

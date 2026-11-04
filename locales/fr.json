@@ -639,6 +639,7 @@
     "ipLimitHint": "Sur 30 jours, contre les abus (réinstallations en boucle).",
     "save": "Enregistrer",
     "saved": "Réglages enregistrés",
+    "ownerEdits": "Seul le propriétaire peut modifier ces réglages.",
     "logout": "Se déconnecter",
     "askLimit": "Questions par jour et par appareil",
     "askLimitHint": "Questions sur un scan avec l’IA du serveur. Illimité avec sa propre clé.",
@@ -966,7 +967,9 @@
         "plan_delete": "Offre créée supprimée",
         "family_seat_add": "Place famille ajoutée (par l’abonné)",
         "family_seat_remove": "Place famille retirée (par l’abonné)",
-        "family_seat_leave": "Place famille quittée"
+        "family_seat_leave": "Place famille quittée",
+        "family_seat_accept": "Place famille acceptée (par la personne invitée)",
+        "family_seat_decline": "Invitation à une place famille refusée"
       }
     },
     "export": {
@@ -1123,6 +1126,8 @@
     "codeBody": "On vient de l’envoyer à {email}.",
     "verifying": "Vérification…",
     "verify": "Valider",
+    "pasteCode": "Coller le code",
+    "pasteNone": "Pas de code copié. Copie-le dans l’e-mail, ou appuie longuement dans le champ puis « Coller ».",
     "resend": "Renvoyer le code",
     "resendIn": "Renvoyer le code dans {seconds} s",
     "checkSpam": "Rien reçu ? Regarde dans les spams.",
@@ -1153,7 +1158,10 @@
       "expired_code": "Ce code a expiré. Demande-en un nouveau.",
       "network": "Pas de connexion. Vérifie ton réseau.",
       "unavailable": "La connexion n’est pas disponible pour le moment."
-    }
+    },
+    "deleteCodeIntro": "Pour être sûr que c’est bien toi, on t’envoie d’abord un code à {email}.",
+    "deleteCodeAgain": "Le code a expiré. Recommence : demande un nouveau code, puis valide-le tout de suite.",
+    "photosFull": "Ton espace photos est plein : les nouvelles photos restent sur cet appareil, sans être envoyées. Supprime d’anciens scans pour libérer de la place."
   },
   "reminders": {
     "title": "Programmer un rappel",
@@ -1353,6 +1361,7 @@
     "notThisOne": "Ce n’est pas ce colis ? L’ajouter à part",
     "earlierUpdated": "Tu l’avais déjà scanné le {date} : ce scan a été mis à jour avec le dernier statut.",
     "openEarlier": "Voir l’ancien scan",
+    "openTracked": "Voir le colis",
     "limitReached": "Ton offre suit jusqu’à {count} colis à la fois. Marque des colis comme reçus, ou passe à une offre supérieure.",
     "shipping": {
       "label": "Mode d’envoi",
@@ -1651,7 +1660,8 @@
       "title": "Essaie Premium {days} jours",
       "body": "Gratuit et sans engagement : toutes les fonctions Premium pendant {days} jours. Une seule fois par compte.",
       "cta": "Essayer Premium {days} jours",
-      "used": "Tu as déjà profité de l’essai Premium."
+      "used": "Tu as déjà profité de l’essai Premium.",
+      "dayFull": "Beaucoup d’essais ont commencé aujourd’hui : reviens demain pour lancer le tien."
     },
     "codes": {
       "title": "J’ai un code",
@@ -1709,7 +1719,19 @@
       "leave": "Quitter cette place",
       "leaveConfirm": "Oui, quitter",
       "cancel": "Annuler",
-      "left": "Tu as quitté la place famille."
+      "left": "Tu as quitté la place famille.",
+      "invited": "On a invité {email}. La place est à lui dès qu’il accepte.",
+      "pending": "Invitation en attente",
+      "takenInvited": "Cette personne a déjà une place famille ou une invitation en attente.",
+      "gone": "Cette invitation n’existe plus.",
+      "invitation": "{owner} t’invite à partager son offre.",
+      "invitationHint": "Si tu acceptes, tu as les fonctions de son offre et tes propres quotas, tant que son abonnement court. Tu gardes toutes tes données.",
+      "accept": "Accepter",
+      "accepted": "C’est fait : tu profites maintenant de l’offre.",
+      "decline": "Refuser",
+      "declined": "Invitation refusée.",
+      "banner": "{owner} t’invite dans sa famille (offre {plan}).",
+      "later": "Plus tard"
     }
   },
   "deep": {

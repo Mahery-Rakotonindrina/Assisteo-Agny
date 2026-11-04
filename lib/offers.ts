@@ -40,6 +40,16 @@ export function normalizeTrialEmail(email: string) {
   return `${domain === "gmail.com" ? base.split(".").join("") : base}@${domain}`;
 }
 
+/**
+ * The message shown when the trial does not start, from the API's error code:
+ * already used, or the day's cap reached (`server_busy`: come back tomorrow).
+ */
+export function trialFailureKey(code: string | null | undefined) {
+  if (code === "refused") return "plans.trialOffer.used";
+  if (code === "server_busy") return "plans.trialOffer.dayFull";
+  return "plans.codes.failed";
+}
+
 /** True when the e-mail has paid for something (an amount above 0). */
 export const hasPaid = (rows: Array<Pick<Subscription, "amountMga">>) => rows.some((row) => (row.amountMga ?? 0) > 0);
 

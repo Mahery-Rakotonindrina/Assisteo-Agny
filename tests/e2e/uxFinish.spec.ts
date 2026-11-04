@@ -13,11 +13,19 @@ async function start(page: Page, { textSize = "normal", admin = true }: { textSi
   await page.addInitScript((size) => {
     localStorage.setItem("CapacitorStorage.settings.v1", JSON.stringify({ locale: "fr", theme: "dark", textSize: size, onboardingDone: true, updatedAt: 0 }));
   }, textSize);
-  if (admin)
+  if (admin) {
     await page.route("**/api/plan", async (route) => {
       const response = await route.fetch();
       await route.fulfill({ response, json: { ...(await response.json()), plan: "unlimited", features: undefined } });
     });
+    // An admin is signed in (no « Se connecter » on the home page), as supabase-js keeps it; nothing reaches Supabase.
+    await page.addInitScript(() => {
+      const user = { id: "00000000-0000-4000-8000-000000000001", email: "e2e@example.com", aud: "authenticated", app_metadata: {}, user_metadata: {}, created_at: "2026-01-01T00:00:00Z" };
+      const session = { access_token: "e2e.access.token", refresh_token: "e2e-refresh", token_type: "bearer", expires_in: 3600, expires_at: Math.floor(Date.now() / 1000) + 3600, user };
+      localStorage.setItem("capacitor-storage_assisteo-auth", JSON.stringify(session));
+    });
+    await page.route(/supabase\.co\/(rest|auth|storage)\//, (route) => route.fulfill({ json: [] }));
+  }
 }
 
 /** The box of an element, in the viewport. */
@@ -129,16 +137,37 @@ test("my expenses: the welcome card is folded, « Compris » closes it, « Comme
   await expect(welcome.getByText("Fixe ton budget.")).toBeVisible();
 });
 
-for (const plan of ["free", "unlimited"] as const) {
-  test(`scan on a 667 px phone (demo mode, ${plan}): « Importer une image » and « Plusieurs pages » show above the bar`, async ({ page, isMobile }) => {
+// "free": signed out, with « Se connecter »; "unlimited": signed in, with the plan badge.
+for (const [plan, textSize, width, height] of [
+  ["free", "normal", 375, 667],
+  ["unlimited", "normal", 375, 667],
+  ["free", "xlarge", 375, 667],
+  ["unlimited", "xlarge", 375, 667],
+  ["free", "xlarge", 320, 568],
+  ["unlimited", "xlarge", 320, 568],
+] as const) {
+  test(`scan on a ${height} px phone (demo mode, ${plan}, ${textSize}): « Importer une image » and « Plusieurs pages » show above the bar`, async ({ page, isMobile }) => {
     test.skip(!isMobile, "The phone's layout.");
-    await page.setViewportSize({ width: 375, height: 667 });
-    await start(page, { admin: plan === "unlimited" });
+    await page.setViewportSize({ width, height });
+    await start(page, { admin: plan === "unlimited", textSize });
     await page.goto("/");
-    // The demo banner is one line; its explanation opens on a tap.
+    // The demo banner is one line (two in "Très grand"); its explanation opens on a tap.
     const banner = page.getByRole("note").filter({ hasText: "Mode démo" });
     await expect(banner).toBeVisible();
     expect((await box(banner)).height).toBeLessThanOrEqual(56);
+    // The five modes' labels never run into each other ("Document" and "Véhicule" did in "Très grand").
+    // The text's own box: the label's may be narrower than a word that overflows it.
+    const labels = page.getByRole("radiogroup", { name: "Mode" }).getByRole("radio").locator("> span:last-child");
+    await expect(labels).toHaveCount(5);
+    const texts = await labels.evaluateAll((spans) =>
+      spans.map((span) => {
+        const range = document.createRange();
+        range.selectNodeContents(span);
+        const { left, right } = range.getBoundingClientRect();
+        return { left, right };
+      }),
+    );
+    for (let index = 0; index < 4; index++) expect(texts[index].right, `label ${index + 1} runs into the next`).toBeLessThan(texts[index + 1].left);
     const bar = await box(page.getByRole("navigation", { name: "Main" }).locator("> div"));
     for (const name of [/Importer une image/, /Plusieurs pages/]) {
       const button = page.getByRole(plan === "free" && String(name).includes("Plusieurs") ? "link" : "button", { name });

@@ -656,6 +656,30 @@ $bar-height: calc(var(--safe-top) + 3.95rem);
   }
 }
 
+// A followed parcel: « Voir le colis » covers the whole note, while the other
+// link and the « not this one » button stay above it, each on its own.
+.parcelNoteLinked {
+  position: relative;
+  transition: border-color 0.2s var(--ease-out);
+
+  &:hover {
+    border-color: var(--border-strong);
+  }
+
+  .parcelOpen::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-md);
+  }
+
+  a:not(.parcelOpen),
+  button {
+    position: relative;
+    z-index: 1;
+  }
+}
+
 .parcelEarlier {
   color: var(--text-muted);
 }
@@ -703,6 +727,23 @@ $bar-height: calc(var(--safe-top) + 3.95rem);
   [data-done] > & {
     border-color: var(--cat-list);
     background: var(--cat-list);
+  }
+}
+
+// A list kept in "Mes listes": its « Ouvrir » link covers the whole card.
+.listCard {
+  position: relative;
+  transition: border-color 0.2s var(--ease-out);
+
+  &:hover {
+    border-color: var(--border-strong);
+  }
+
+  .readListNote a::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-lg);
   }
 }
 

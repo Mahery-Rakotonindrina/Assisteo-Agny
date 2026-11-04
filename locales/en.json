@@ -639,6 +639,7 @@
     "ipLimitHint": "Over 30 days, against abuse (repeated reinstalls).",
     "save": "Save",
     "saved": "Settings saved",
+    "ownerEdits": "Only the owner can change these settings.",
     "logout": "Log out",
     "askLimit": "Questions per day per device",
     "askLimitHint": "Questions about a scan on the server’s AI. Unlimited with an own key.",
@@ -966,7 +967,9 @@
         "plan_delete": "Created plan deleted",
         "family_seat_add": "Family seat added (by the subscriber)",
         "family_seat_remove": "Family seat removed (by the subscriber)",
-        "family_seat_leave": "Family seat left"
+        "family_seat_leave": "Family seat left",
+        "family_seat_accept": "Family seat accepted (by the invited person)",
+        "family_seat_decline": "Family seat invitation declined"
       }
     },
     "export": {
@@ -1123,6 +1126,8 @@
     "codeBody": "We just sent it to {email}.",
     "verifying": "Checking…",
     "verify": "Confirm",
+    "pasteCode": "Paste the code",
+    "pasteNone": "No code copied. Copy it from the e-mail, or press and hold in the field, then “Paste”.",
     "resend": "Resend the code",
     "resendIn": "Resend the code in {seconds} s",
     "checkSpam": "Nothing yet? Check your spam folder.",
@@ -1153,7 +1158,10 @@
       "expired_code": "This code has expired. Ask for a new one.",
       "network": "No connection. Check your network.",
       "unavailable": "Sign-in isn’t available right now."
-    }
+    },
+    "deleteCodeIntro": "To make sure it's really you, we first send a code to {email}.",
+    "deleteCodeAgain": "The code expired. Start again: ask for a new code, then enter it right away.",
+    "photosFull": "Your photo space is full: new photos stay on this device and are not sent. Delete old scans to free up space."
   },
   "reminders": {
     "title": "Set a reminder",
@@ -1353,6 +1361,7 @@
     "notThisOne": "Not this parcel? Add it on its own",
     "earlierUpdated": "You scanned it before on {date}: that scan now shows the latest status.",
     "openEarlier": "See the earlier scan",
+    "openTracked": "See the parcel",
     "limitReached": "Your plan follows up to {count} parcels at once. Mark some as received, or move to a bigger plan.",
     "shipping": {
       "label": "Shipping",
@@ -1651,7 +1660,8 @@
       "title": "Try Premium for {days} days",
       "body": "Free, no commitment: every Premium feature for {days} days. Once per account.",
       "cta": "Try Premium for {days} days",
-      "used": "You already had the Premium trial."
+      "used": "You already had the Premium trial.",
+      "dayFull": "Many trials started today: come back tomorrow to start yours."
     },
     "codes": {
       "title": "I have a code",
@@ -1709,7 +1719,19 @@
       "leave": "Leave this seat",
       "leaveConfirm": "Yes, leave",
       "cancel": "Cancel",
-      "left": "You left the family seat."
+      "left": "You left the family seat.",
+      "invited": "{email} is invited. The seat is theirs as soon as they accept.",
+      "pending": "Invitation pending",
+      "takenInvited": "This person already holds a family seat or has an invitation waiting.",
+      "gone": "This invitation no longer exists.",
+      "invitation": "{owner} invites you to share their plan.",
+      "invitationHint": "If you accept, you get the features of their plan and your own quotas, while their subscription runs. You keep all your data.",
+      "accept": "Accept",
+      "accepted": "Done: you now enjoy the plan.",
+      "decline": "Decline",
+      "declined": "Invitation declined.",
+      "banner": "{owner} invites you to their family ({plan} plan).",
+      "later": "Later"
     }
   },
   "deep": {
