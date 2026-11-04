@@ -298,3 +298,19 @@ L’argent prêté ou emprunté, par personne. Ni dépense ni revenu : rien n’
 - [x] Supprimer son compte demande un code reçu par e-mail (moins de 5 min) ; un ancien APK est invité à se mettre à jour
 - [x] Foyer : le prêteur peut retirer un remboursement noté par un autre membre sur son prêt (migration 0021) ; aucune autre faille trouvée
 - [x] Photos : 100 Mo par compte et 2 Mo par fichier (migration 0020) ; au-delà, le scan reste sur l’appareil et Réglages → Compte le dit
+
+## 20. Propositions pour une app plus complète (2026-11-04, à choisir)
+
+Par ordre d’intérêt. Effort : petit, moyen, important.
+
+- [ ] Connexion avec Google, en plus du code par e-mail : un toucher, plus de code à copier (le retour des clients) — moyen ; c’est la ligne « Connexion par n° de téléphone (SMS) ou par Google » du § 10
+- [ ] Parrainage par WhatsApp : « Invite un ami, vous gagnez chacun 5 scans » ou une semaine Premium ; le bouche-à-oreille passe par WhatsApp à Madagascar — moyen
+- [ ] « Donner mon avis / Signaler un problème » dans Réglages : un message (et une capture si on veut) qui arrive dans l’Admin, au lieu de récolter les retours à la main — petit
+- [ ] Colis pour les revendeurs (offre Pro) : le fret au kilo et les colis regroupés par envoi, déjà au § 9, à faire en premier — moyen
+- [ ] Santé : scanner une ordonnance ou une boîte de médicament (nom, posologie, précautions) avec des rappels de prise ; avertissement clair : ça ne remplace pas le médecin — moyen
+- [ ] Résumé de la semaine, par notification le dimanche : dépenses de la semaine, colis arrivés, rappels à venir — petit
+- [ ] Partage familial des colis et des listes (la liste de courses à deux), déjà au § 10 — moyen
+- [ ] Statut d’un colis envoyé au client par WhatsApp en un toucher, déjà au § 9 — petit
+- [ ] « Ma boutique » pour les petits commerçants : ventes du jour, stock, crédit des clients (qui doit combien) — important
+- [ ] Aide intégrée : questions fréquentes et courtes vidéos « Comment ça marche », pour les gens peu habitués aux applis — petit
+- [ ] Sans code, à décider par le propriétaire : ouvrir « Mes dépenses » et « Prêts » à des offres payantes (cases à cocher dans Admin → Offres), déjà aux § 16 et § 17
