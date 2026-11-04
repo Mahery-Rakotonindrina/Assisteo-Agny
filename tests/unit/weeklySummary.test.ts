@@ -48,14 +48,14 @@ describe("the week's summary", () => {
     expect(weekSummary({ at, spending: null, parcels: [], reminders: [] }).spentMga).toBeNull();
   });
 
-  it("counts the parcels that arrived this week, by hand or delivered", () => {
+  it("counts only the parcels marked as received this week, not the delivered status nor updates", () => {
     const summary = weekSummary({
       at,
       spending: null,
-      parcels: [parcel({ receivedAt: local(28, 12, 9) }), parcel({ info: { status: "delivered" }, updatedAt: local(29, 12, 9) }), parcel({ receivedAt: local(20, 12, 9) }), parcel({})],
+      parcels: [parcel({ receivedAt: local(28, 12, 9) }), parcel({ info: { status: "delivered" }, updatedAt: local(29, 12, 9) }), parcel({ updatedAt: local(30, 12, 9) }), parcel({ receivedAt: local(20, 12, 9) }), parcel({})],
       reminders: [],
     });
-    expect(summary.arrived).toBe(2);
+    expect(summary.arrived).toBe(1);
   });
 
   it("counts the reminders of the 7 days after, not the past ones", () => {

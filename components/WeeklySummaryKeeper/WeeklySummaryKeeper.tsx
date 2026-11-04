@@ -22,10 +22,18 @@ export function WeeklySummaryKeeper() {
   const native = useSyncExternalStore(noSubscribe, isNative, () => false);
   // Unknown until the plan is read once (cache or server): nothing is cancelled meanwhile.
   if (!native || !ready || plan === null) return null;
-  return <Scheduler enabled={settings.weeklySummary && has("reminders")} />;
+  // Off or without reminders: no source is read, the pending notification is only cancelled.
+  return settings.weeklySummary && has("reminders") ? <Scheduler /> : <Canceller />;
 }
 
-function Scheduler({ enabled }: { enabled: boolean }) {
+function Canceller() {
+  useEffect(() => {
+    void reconcileWeekly(null);
+  }, []);
+  return null;
+}
+
+function Scheduler() {
   const { t } = useTranslation();
   const now = useNow(60 * 60_000);
   const at = nextSummaryAt(now);
@@ -36,9 +44,9 @@ function Scheduler({ enabled }: { enabled: boolean }) {
   const empty = summaryIsEmpty(summary);
 
   useEffect(() => {
-    const timer = setTimeout(() => void reconcileWeekly(enabled && !empty ? { at, title, body } : null), 2000);
+    const timer = setTimeout(() => void reconcileWeekly(!empty ? { at, title, body } : null), 2000);
     return () => clearTimeout(timer);
-  }, [enabled, empty, at, title, body]);
+  }, [empty, at, title, body]);
 
   return null;
 }

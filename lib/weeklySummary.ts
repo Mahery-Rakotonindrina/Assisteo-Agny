@@ -47,13 +47,10 @@ type ParcelLike = { receivedAt?: number; updatedAt: number; info: { status: stri
 export function weekSummary({ at, spending, parcels, reminders }: { at: number; spending: Spending[] | null; parcels: ParcelLike[]; reminders: number[] }): WeekSummary {
   const from = weekStart(at);
   const inWeek = (time: number) => time >= from && time <= at;
-  const arrivedAt = (parcel: ParcelLike) => parcel.receivedAt ?? (parcel.info.status === "delivered" ? parcel.updatedAt : null);
   return {
     spentMga: spending ? spending.filter((item) => !item.excluded && inWeek(item.at)).reduce((sum, item) => sum + item.amountMga, 0) : null,
-    arrived: parcels.filter((parcel) => {
-      const time = arrivedAt(parcel);
-      return time !== null && inWeek(time);
-    }).length,
+    // Only what the person marked as received counts: the carrier's status and the last update say nothing of the pick-up.
+    arrived: parcels.filter((parcel) => parcel.receivedAt !== undefined && inWeek(parcel.receivedAt)).length,
     upcoming: reminders.filter((time) => time > at && time <= at + 7 * DAY).length,
   };
 }

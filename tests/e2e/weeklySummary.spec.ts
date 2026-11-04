@@ -45,9 +45,13 @@ test("on a Sunday, a subscriber sees the week's card, below the scan, and can cl
   const card = page.getByTestId("week-card");
   await expect(card).toContainText("1 colis arrivé.");
   // Under the scan button: never above it.
-  const scan = await page.getByRole("button", { name: /Prendre une photo|Scanner/ }).first().boundingBox();
+  const scanButton = page.getByRole("button", { name: /Prendre une photo|Scanner/ }).first();
+  await expect(scanButton).toBeVisible();
+  const scan = await scanButton.boundingBox();
   const box = await card.boundingBox();
-  if (scan && box) expect(box.y).toBeGreaterThan(scan.y);
+  expect(scan).not.toBeNull();
+  expect(box).not.toBeNull();
+  expect(box!.y).toBeGreaterThan(scan!.y);
   await card.getByRole("button", { name: "Fermer" }).click();
   await expect(card).toHaveCount(0);
 });
@@ -62,6 +66,9 @@ test("no card on another day, nor without a reminders plan, nor once switched of
   await expect(page.getByTestId("week-card")).toHaveCount(0);
 
   await page.clock.setFixedTime(new Date(SUNDAY));
+  // Switched on first: the card shows, so the next check proves the setting is what hides it.
+  await page.goto("/");
+  await expect(page.getByTestId("week-card")).toBeVisible();
   await page.goto("/settings");
   await page.getByRole("switch", { name: "Résumé du dimanche" }).click();
   await page.goto("/");
