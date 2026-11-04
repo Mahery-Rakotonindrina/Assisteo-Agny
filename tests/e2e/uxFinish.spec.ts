@@ -129,16 +129,34 @@ test("my expenses: the welcome card is folded, « Compris » closes it, « Comme
   await expect(welcome.getByText("Fixe ton budget.")).toBeVisible();
 });
 
-for (const plan of ["free", "unlimited"] as const) {
-  test(`scan on a 667 px phone (demo mode, ${plan}): « Importer une image » and « Plusieurs pages » show above the bar`, async ({ page, isMobile }) => {
+for (const [plan, textSize] of [
+  ["free", "normal"],
+  ["unlimited", "normal"],
+  ["free", "xlarge"],
+  ["unlimited", "xlarge"],
+] as const) {
+  test(`scan on a 667 px phone (demo mode, ${plan}, ${textSize}): « Importer une image » and « Plusieurs pages » show above the bar`, async ({ page, isMobile }) => {
     test.skip(!isMobile, "The phone's layout.");
     await page.setViewportSize({ width: 375, height: 667 });
-    await start(page, { admin: plan === "unlimited" });
+    await start(page, { admin: plan === "unlimited", textSize });
     await page.goto("/");
-    // The demo banner is one line; its explanation opens on a tap.
+    // The demo banner is one line (two in "Très grand"); its explanation opens on a tap.
     const banner = page.getByRole("note").filter({ hasText: "Mode démo" });
     await expect(banner).toBeVisible();
     expect((await box(banner)).height).toBeLessThanOrEqual(56);
+    // The five modes' labels never run into each other ("Document" and "Véhicule" did in "Très grand").
+    // The text's own box: the label's may be narrower than a word that overflows it.
+    const labels = page.getByRole("radiogroup", { name: "Mode" }).getByRole("radio").locator("> span:last-child");
+    await expect(labels).toHaveCount(5);
+    const texts = await labels.evaluateAll((spans) =>
+      spans.map((span) => {
+        const range = document.createRange();
+        range.selectNodeContents(span);
+        const { left, right } = range.getBoundingClientRect();
+        return { left, right };
+      }),
+    );
+    for (let index = 0; index < 4; index++) expect(texts[index].right, `label ${index + 1} runs into the next`).toBeLessThan(texts[index + 1].left);
     const bar = await box(page.getByRole("navigation", { name: "Main" }).locator("> div"));
     for (const name of [/Importer une image/, /Plusieurs pages/]) {
       const button = page.getByRole(plan === "free" && String(name).includes("Plusieurs") ? "link" : "button", { name });

@@ -87,7 +87,7 @@
   summary {
     display: flex;
     align-items: center;
-    min-height: 2.75rem;
+    min-height: 44px;
     font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
@@ -105,6 +105,43 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+}
+
+// Larger text: the five modes keep about their normal size, so "Document" and
+// "Véhicule" don't run into each other on a 375 px phone (as the tabs of "Mes dépenses").
+:global(html[data-text-size="large"]) .modes,
+:global(html[data-text-size="xlarge"]) .modes {
+  [role="radiogroup"] {
+    gap: 2px;
+    padding: 3px;
+  }
+
+  [role="radio"] {
+    container-type: inline-size;
+    padding: 0 2px;
+    font-size: clamp(11.2px, 2.3vw, 12.48px);
+  }
+
+  [role="radio"] > span:last-child {
+    font-size: min(clamp(11.2px, 2.3vw, 12.48px), 20cqi);
+  }
+}
+
+// A 320 px phone: they would touch even at the normal size.
+@media (max-width: 359px) {
+  .modes [role="radiogroup"] {
+    gap: 2px;
+    padding: 3px;
+  }
+
+  .modes [role="radio"] {
+    container-type: inline-size;
+    padding: 0 2px;
+  }
+
+  .modes [role="radio"] > span:last-child {
+    font-size: min(0.7rem, 20cqi);
+  }
 }
 
 .framing {
@@ -440,6 +477,53 @@
 
   .multi {
     margin-top: 0;
+  }
+
+  // Larger text: the greeting and the framing tip give their room to the buttons,
+  // with a plan badge or the demo line too.
+  :global(html[data-text-size="large"]) .idle,
+  :global(html[data-text-size="xlarge"]) .idle {
+    gap: 0.5rem;
+  }
+
+  :global(html[data-text-size="large"]) .headline,
+  :global(html[data-text-size="xlarge"]) .headline {
+    font-size: 1.5rem;
+  }
+
+  :global(html[data-text-size="large"]) .demoBanner summary,
+  :global(html[data-text-size="xlarge"]) .demoBanner summary {
+    font-size: 0.75rem;
+  }
+
+  :global(html[data-text-size="large"]) .greeting,
+  :global(html[data-text-size="xlarge"]) .greeting,
+  :global(html[data-text-size="large"]) .framing,
+  :global(html[data-text-size="xlarge"]) .framing {
+    display: none;
+  }
+
+  :global(html[data-text-size="large"]) .orb,
+  :global(html[data-text-size="xlarge"]) .orb {
+    --orb-size: 76px;
+    --orb-halo: 24px;
+  }
+}
+
+// Shorter still (568 px, the first iPhone SE): the same at every text size.
+@media (max-width: 1023px) and (max-height: 600px) {
+  .idle {
+    gap: 0.5rem;
+  }
+
+  .greeting,
+  .framing {
+    display: none;
+  }
+
+  .orb {
+    --orb-size: 88px;
+    --orb-halo: 32px;
   }
 }
 

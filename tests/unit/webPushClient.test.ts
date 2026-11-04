@@ -15,7 +15,7 @@ vi.mock("@/services/account", () => ({ authHeaders: async () => ({ Authorization
 vi.mock("@/services/trial", () => ({ getInstallId: async () => "install-123456" }));
 
 /** A browser with push: the subscription it holds, and whether it was unsubscribed. */
-function fakeBrowser(alreadySubscribed: boolean) {
+function fakeBrowser(alreadySubscribed: boolean, workerThere = true) {
   const state = { subscription: null as null | { unsubscribe: () => Promise<boolean>; toJSON: () => unknown } };
   const make = () => ({
     toJSON: () => ({ endpoint: "https://web.push.apple.com/x", keys: { p256dh: "B".repeat(87), auth: "A".repeat(22) } }),
@@ -30,12 +30,13 @@ function fakeBrowser(alreadySubscribed: boolean) {
     subscribe: async () => (state.subscription = make()),
   };
   const registration = { pushManager };
-  vi.stubGlobal("navigator", { serviceWorker: { register: async () => registration, ready: Promise.resolve(registration), getRegistration: async () => registration } });
+  const register = vi.fn(async () => registration);
+  vi.stubGlobal("navigator", { serviceWorker: { register, ready: Promise.resolve(registration), getRegistration: async () => (workerThere ? registration : undefined) } });
   vi.stubGlobal("Notification", { permission: "granted", requestPermission: async () => "granted" });
   vi.stubGlobal("window", { PushManager: function PushManager() {}, Notification: {} });
   const data = new Map<string, string>();
   vi.stubGlobal("localStorage", { getItem: (k: string) => data.get(k) ?? null, setItem: (k: string, v: string) => void data.set(k, v), removeItem: (k: string) => void data.delete(k) });
-  return state;
+  return Object.assign(state, { register });
 }
 
 beforeEach(async () => {
@@ -66,6 +67,22 @@ describe("subscribeWebPush", () => {
     expect(await subscribeWebPush("BKey")).toBe("subscribed");
     expect(browser.subscription).not.toBeNull();
     expect(readPushTakeover()).toBe(true);
+  });
+
+  it("uses the worker already there: a tab opened before a deployment never puts its old one back", async () => {
+    const browser = fakeBrowser(false);
+    http.post.mockResolvedValueOnce(undefined);
+    const { subscribeWebPush } = await import("@/services/webPush");
+    expect(await subscribeWebPush("BKey")).toBe("subscribed");
+    expect(browser.register).not.toHaveBeenCalled();
+  });
+
+  it("registers the worker when there is none yet", async () => {
+    const browser = fakeBrowser(false, false);
+    http.post.mockResolvedValueOnce(undefined);
+    const { subscribeWebPush } = await import("@/services/webPush");
+    expect(await subscribeWebPush("BKey")).toBe("subscribed");
+    expect(browser.register).toHaveBeenCalledWith("/sw.js", { scope: "/" });
   });
 });
 

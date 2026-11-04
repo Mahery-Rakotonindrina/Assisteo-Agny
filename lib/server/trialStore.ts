@@ -56,8 +56,9 @@ type Store = {
 function redisStore(redis: Redis): Store {
   return {
     async incr(key, ttlSeconds) {
-      const value = await redis.incr(key);
-      if (ttlSeconds && value === 1) await redis.expire(key, ttlSeconds);
+      if (!ttlSeconds) return redis.incr(key);
+      // NX: a running window keeps its end, and a key written before the TTL existed gets one.
+      const [value] = await redis.pipeline().incr(key).expire(key, ttlSeconds, "NX").exec<[number, number]>();
       return value;
     },
     incrBy: (key, amount) => redis.incrby(key, amount),

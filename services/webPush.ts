@@ -81,7 +81,9 @@ export async function subscribeWebPush(publicKey: string): Promise<SubscribeOutc
   if (permission !== "granted") return "denied";
   let subscription: PushSubscription | null = null;
   try {
-    await navigator.serviceWorker.register(serviceWorkerUrl(), { scope: "/" });
+    // Already there on the site (services/offline.ts, at load): registering again from a tab
+    // opened before a deployment would put that old build's worker back and lose the offline pages.
+    if (!(await navigator.serviceWorker.getRegistration("/"))) await navigator.serviceWorker.register(serviceWorkerUrl(), { scope: "/" });
     const registration = await navigator.serviceWorker.ready;
     subscription =
       (await registration.pushManager.getSubscription()) ??
