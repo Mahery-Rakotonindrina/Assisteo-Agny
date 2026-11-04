@@ -20,7 +20,7 @@ Dépôt : `Mahery-Rakotonindrina/Assisteo-Agny` (GitHub, public). Le CLI `gh` es
 1. Le skill `assisteo-tester` est passé au vert.
 2. `TODO.md` est à jour (cases cochées, avec une précision courte).
 3. `git add -A`, puis `git status --short` : rien qui ne doive pas partir (pas de `.env*`, pas de fichiers de test). Les avertissements « LF will be replaced by CRLF » sont normaux. Le bloc d'AGENTS.md réécrit par `next dev` se committe avec le reste.
-4. Le message est en anglais, au format `type(scope): what it does`. Types : `feat`, `fix`, `build`, `docs`. Exemples : `feat(scan): multi-page (Premium), share to the app, QR codes…`, `fix(admin): keep the chart legend readable at half width`. Le corps liste ce qui change pour l'utilisateur, en lignes d'environ 72 caractères, et se termine par la ligne d'attribution demandée par le système.
+4. Le message est en français, au format `type(portée): ce que ça fait`, au nom du propriétaire (identité Git du dépôt), sans ligne `Co-Authored-By` et sans aucune mention de l'IA ni de Claude (règle du propriétaire du 2026-11-04). Types : `feat`, `fix`, `build`, `docs`. Exemples : `feat(scan): plusieurs pages (Premium), partage vers l'app, codes QR`, `fix(admin): légende du graphique lisible en demi-largeur`. Le corps liste ce qui change pour l'utilisateur, en lignes d'environ 72 caractères. Tout ce qui part sur GitHub (commits, PR, commentaires, fusions) est au nom du compte GitHub du propriétaire : `gh` y est connecté, et l'identité Git du dépôt est la sienne.
 
 ## 2. Branche, Pull Request vers develop, suivi de la CI
 
@@ -32,7 +32,7 @@ node .claude/skills/assisteo-livrer/scripts/ci-wait.mjs          # attend la CI 
 
 - Un commit par fonctionnalité (une case de TODO.md). Plusieurs fonctionnalités liées peuvent partager une branche et une PR.
 - La PR vise **toujours `develop`** : avec `gh` connecté, `gh pr create --base develop --head feat/<nom> --title "…" --body "…"` (le dépôt a `master` comme branche par défaut : ne jamais omettre `--base develop`). Sans `gh`, donner le lien `https://github.com/Mahery-Rakotonindrina/Assisteo-Agny/compare/develop...feat/<nom>?expand=1`.
-- Fusionner la PR dans `develop` seulement si l'utilisateur le demande (`gh pr merge` demande toujours sa confirmation). Ne jamais pousser directement sur `develop`.
+- Une PR par fonctionnalité. Depuis le 2026-11-04, Claude **fusionne lui-même** la PR dans `develop` une fois la CI verte (`gh pr merge <n> --merge`, jamais en squash), après avoir réglé les conflits. Ne jamais pousser directement sur `develop`.
 
 - Le script attend la fin et affiche une ligne par workflow. En cas d'échec, il affiche aussi le job et l'étape fautifs. Il prend un commit en argument (par défaut `HEAD`).
 - La CI dure quelques minutes. Un push qui ne change que des `.md` ne la lance pas (`paths-ignore`).
