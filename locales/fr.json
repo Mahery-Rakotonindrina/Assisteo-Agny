@@ -3867,5 +3867,23 @@
     "step1": "Dans Safari, touche le bouton Partager (le carré avec une flèche).",
     "step2": "Choisis « Sur l’écran d’accueil », puis « Ajouter ».",
     "step3": "Ouvre Assisteo depuis sa nouvelle icône et reviens ici."
+  },
+  "weekly": {
+    "title": "Ta semaine",
+    "notifTitle": "Ta semaine avec Assisteo Agny",
+    "spent": "Dépenses : {amount}.",
+    "arrived": {
+      "one": "{count} colis arrivé.",
+      "other": "{count} colis arrivés."
+    },
+    "upcoming": {
+      "one": "{count} rappel la semaine prochaine.",
+      "other": "{count} rappels la semaine prochaine."
+    },
+    "close": "Fermer",
+    "setting": "Résumé du dimanche",
+    "hintApp": "Chaque dimanche à 17 h : tes dépenses, tes colis arrivés et tes rappels de la semaine à venir. Calculé sur ton téléphone.",
+    "hintWeb": "Le dimanche, une carte « Ta semaine » s’affiche sur l’accueil : tes dépenses, tes colis arrivés et tes rappels. Calculé sur ton appareil.",
+    "locked": "Résumé du dimanche : à partir de l’offre {plan}"
   }
 }
