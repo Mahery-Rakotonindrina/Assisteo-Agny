@@ -26,7 +26,8 @@ export function UserReportForm({ rowClassName, labelClassName, iconClassName }: 
 
   const show = () => {
     setOpen(true);
-    void getSession().then((session) => setSignedIn(Boolean(session)));
+    // "Signed in" only counts with a confirmed e-mail: else the server sees an anonymous message, and a contact is needed.
+    void getSession().then((session) => setSignedIn(Boolean(session?.user.email_confirmed_at)));
   };
 
   const send = async (event: FormEvent) => {

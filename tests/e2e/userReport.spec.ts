@@ -30,6 +30,8 @@ test("a message is sent from Settings and shows up in the Admin list", async ({ 
 
 test("the reports list needs the admin token and a valid message", async ({ request }) => {
   expect([401, 503]).toContain((await request.get("/api/admin/reports", { headers: { Authorization: "Bearer nope" } })).status());
-  const bad = await request.post("/api/reports", { data: { kind: "idea", message: "x" } });
+  // Its own address, as prepare() gives the page: no limit shared with another test or a retry.
+  const ip = `10.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}.${1 + Math.floor(Math.random() * 254)}`;
+  const bad = await request.post("/api/reports", { headers: { "x-forwarded-for": ip }, data: { kind: "idea", message: "x" } });
   expect(bad.status()).toBe(400);
 });

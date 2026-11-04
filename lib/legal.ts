@@ -10,7 +10,7 @@ export type LegalDocument = { title: string; intro: string; sections: LegalSecti
 export type LegalKind = "privacy" | "terms";
 
 /** Date of the last change, shown on both documents. */
-export const LEGAL_UPDATED_AT = "2026-11-03";
+export const LEGAL_UPDATED_AT = "2026-11-04";
 
 const privacyFr: LegalDocument = {
   title: "Politique de confidentialité",
@@ -67,6 +67,7 @@ const privacyFr: LegalDocument = {
           list: [
             "Ton historique est gardé jusqu’à ce que tu le supprimes, ou que tu supprimes ton compte.",
             "Les enregistrements d’abonnement (e-mail, offre, dates, paiement) sont gardés le temps nécessaire à la comptabilité, même si tu supprimes ton compte.",
+            "Les messages d’avis ou de problème envoyés depuis les réglages (texte, écran, version, appareil, e-mail du compte ou contact donné) sont effacés au bout de 12 mois, ou quand tu supprimes ton compte.",
             "Le compteur lié à l’adresse IP s’efface au bout de 30 jours ; celui des questions, au bout de 2 jours.",
             "Les journaux techniques de l’hébergeur sont conservés quelques jours.",
           ],
@@ -159,6 +160,7 @@ const privacyEn: LegalDocument = {
           list: [
             "Your history is kept until you delete it, or delete your account.",
             "Subscription records (e-mail, plan, dates, payment) are kept as long as accounting requires, even if you delete your account.",
+            "Feedback and problem messages sent from the settings (text, screen, version, device, account e-mail or contact given) are erased after 12 months, or when you delete your account.",
             "The IP address counter is erased after 30 days; the questions counter after 2 days.",
             "The host's technical logs are kept for a few days.",
           ],

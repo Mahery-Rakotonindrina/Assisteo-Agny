@@ -3,40 +3,63 @@ import { redis } from "./redis";
 import type { ReportStatus, UserReport } from "@/lib/userReport";
 
 // Feedback and problem reports, read in Admin. A Redis hash (id -> report) so
-// one report can change state; process memory without Redis. Capped: the
-// oldest drop off, so a flood never fills the database.
+// one report can change state; process memory without Redis. Kept 12 months
+// at most (they hold an e-mail or a contact), capped, and erased with the
+// account that sent them.
 
 const KEY = "reports:items";
 export const REPORTS_MAX = 300;
+/** A report older than this is erased (when the list is read or grows). */
+export const REPORTS_KEEP_MS = 365 * 24 * 60 * 60_000;
 
-let memory = new Map<string, UserReport>();
+/** A report as stored: the account that sent it (to erase it with the account), never shown in Admin. */
+export type StoredReport = UserReport & { accountId: string | null };
 
-const parse = (item: UserReport | string) => (typeof item === "string" ? (JSON.parse(item) as UserReport) : item);
+let memory = new Map<string, StoredReport>();
+
+const parse = (item: StoredReport | string) => (typeof item === "string" ? (JSON.parse(item) as StoredReport) : item);
 
 /** Newest-first order: the id starts with the time. */
-const newestFirst = (a: UserReport, b: UserReport) => b.at - a.at || (a.id < b.id ? 1 : -1);
+const newestFirst = (a: StoredReport, b: StoredReport) => b.at - a.at || (a.id < b.id ? 1 : -1);
 
-export async function addUserReport(fields: Omit<UserReport, "id" | "at" | "status">, at = Date.now()): Promise<UserReport> {
-  const report: UserReport = { id: `${at}-${randomBytes(3).toString("hex")}`, at, status: "new", ...fields };
-  if (!redis) {
-    memory.set(report.id, report);
-    const extra = [...memory.values()].sort(newestFirst).slice(REPORTS_MAX);
-    for (const old of extra) memory.delete(old.id);
-    return report;
-  }
-  await redis.hset(KEY, { [report.id]: report });
-  if ((await redis.hlen(KEY)) > REPORTS_MAX) {
-    const ids = (await redis.hkeys(KEY)).sort().slice(0, -REPORTS_MAX);
-    if (ids.length > 0) await redis.hdel(KEY, ...ids);
-  }
-  return report;
+/** What Admin gets: the report without the account id. */
+export const publicReport = ({ accountId: _accountId, ...report }: StoredReport): UserReport => report;
+
+async function readAll(): Promise<StoredReport[]> {
+  if (!redis) return [...memory.values()];
+  const all = await redis.hgetall<Record<string, StoredReport | string>>(KEY);
+  return Object.values(all ?? {}).map(parse);
 }
 
-/** Every report kept, newest first. */
-export async function readUserReports(): Promise<UserReport[]> {
-  if (!redis) return [...memory.values()].sort(newestFirst);
-  const all = await redis.hgetall<Record<string, UserReport | string>>(KEY);
-  return Object.values(all ?? {}).map(parse).sort(newestFirst);
+async function remove(ids: string[]) {
+  if (ids.length === 0) return;
+  if (!redis) {
+    for (const id of ids) memory.delete(id);
+    return;
+  }
+  await redis.hdel(KEY, ...ids);
+}
+
+/** Erases the reports older than 12 months, and the oldest beyond the cap. Returns the ones kept, newest first. */
+async function prune(now: number): Promise<StoredReport[]> {
+  const all = (await readAll()).sort(newestFirst);
+  const kept = all.filter((report) => report.at > now - REPORTS_KEEP_MS).slice(0, REPORTS_MAX);
+  const keptIds = new Set(kept.map((report) => report.id));
+  await remove(all.filter((report) => !keptIds.has(report.id)).map((report) => report.id));
+  return kept;
+}
+
+export async function addUserReport(fields: Omit<StoredReport, "id" | "at" | "status">, at = Date.now()): Promise<UserReport> {
+  const report: StoredReport = { id: `${at}-${randomBytes(3).toString("hex")}`, at, status: "new", ...fields };
+  if (redis) await redis.hset(KEY, { [report.id]: report });
+  else memory.set(report.id, report);
+  await prune(Date.now());
+  return publicReport(report);
+}
+
+/** Every report kept, newest first (without the account id). */
+export async function readUserReports(now = Date.now()): Promise<UserReport[]> {
+  return (await prune(now)).map(publicReport);
 }
 
 /** Changes a report's state; false when it is gone. */
@@ -47,10 +70,22 @@ export async function setUserReportStatus(id: string, status: ReportStatus): Pro
     memory.set(id, { ...report, status });
     return true;
   }
-  const found = await redis.hget<UserReport | string>(KEY, id);
+  const found = await redis.hget<StoredReport | string>(KEY, id);
   if (!found) return false;
   await redis.hset(KEY, { [id]: { ...parse(found), status } });
   return true;
+}
+
+/** The reports sent by an account (for the copy of its data), newest first. */
+export async function userReportsOf(accountId: string): Promise<UserReport[]> {
+  const mine = (await readAll()).filter((report) => report.accountId === accountId).sort(newestFirst);
+  return mine.map(publicReport);
+}
+
+/** Erases every report sent by an account (account deletion). */
+export async function deleteUserReportsOf(accountId: string) {
+  const mine = (await readAll()).filter((report) => report.accountId === accountId);
+  await remove(mine.map((report) => report.id));
 }
 
 /** Tests only: forget the in-memory reports. */
