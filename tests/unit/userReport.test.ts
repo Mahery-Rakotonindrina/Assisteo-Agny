@@ -122,7 +122,8 @@ describe("POST /api/reports", () => {
     // Another account behind the same address is not affected.
     expect((await call(valid, { authorization: "Bearer other" }, "5.5.5.5")).status).toBe(204);
     // Without a confirmed e-mail, the address counts.
-    expect((await call(valid, { authorization: "Bearer unconfirmed" }, "6.6.6.6")).status).toBe(204);
-    expect((await readUserReports())[0]).toMatchObject({ email: null });
+    // Its own words: reports sent in the same millisecond have no set order.
+    expect((await call({ ...valid, message: "Envoyé sans e-mail confirmé" }, { authorization: "Bearer unconfirmed" }, "6.6.6.6")).status).toBe(204);
+    expect((await readUserReports()).find((report) => report.message === "Envoyé sans e-mail confirmé")).toMatchObject({ email: null });
   });
 });
