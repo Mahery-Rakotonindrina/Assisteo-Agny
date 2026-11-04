@@ -33,12 +33,13 @@ Cherche, dans cet ordre :
 1. La branche est `feat/`, `fix/` ou `chore/`. Sinon, arrête-toi.
 2. `check.mjs --fast` est vert, `TODO.md` est à jour.
 3. `git add -A`, puis `git status --short` : rien qui ne doive partir (`.env*`, `.claude/passation/`, captures).
-4. Le commit est en anglais : `type(scope): what it does`, un corps qui liste ce qui change pour les utilisateurs, et à la fin `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
+4. Le commit est en français : `type(portée): ce que ça fait`, et un corps qui liste ce qui change pour les gens. Il part au nom du propriétaire (identité Git du dépôt). Pas de ligne `Co-Authored-By`, et aucune mention de l'IA ni de Claude (règle du propriétaire du 2026-11-04).
 5. `git push -q -u origin <branche>`.
-6. `gh pr create --base develop --head <branche>`. Le corps est en anglais (What changes / Worth knowing / Checks), écrit à partir de la passation, et se termine par `🤖 Generated with [Claude Code](https://claude.com/claude-code)`.
+   Tout ce qui part sur GitHub (commit, push, PR, commentaires) est au nom du compte GitHub du propriétaire : `gh` y est connecté et l'identité Git du dépôt est la sienne. Ne change jamais `git config user.*`.
+6. `gh pr create --base develop --head <branche>`. Le titre et le corps sont en français (Ce qui change / Bon à savoir / Vérifications), écrits à partir de la passation, sans aucune mention de l'IA ni de Claude. Une PR par fonctionnalité.
 7. `node .claude/skills/assisteo-livrer/scripts/ci-wait.mjs`. En cas d'échec : `gh run view <id> --log-failed`, puis rapporte la cause.
 
-**Interdit** : `gh pr merge`, une PR vers `master`, un push sur `master` ou `develop`, `--force`, toucher aux règles GitHub.
+**Interdit** : `gh pr merge` (c'est le chef d'orchestre qui fusionne dans develop), une PR vers `master`, un push sur `master` ou `develop`, `--force`, toucher aux règles GitHub.
 
 ## La passation
 
