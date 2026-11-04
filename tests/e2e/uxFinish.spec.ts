@@ -13,11 +13,19 @@ async function start(page: Page, { textSize = "normal", admin = true }: { textSi
   await page.addInitScript((size) => {
     localStorage.setItem("CapacitorStorage.settings.v1", JSON.stringify({ locale: "fr", theme: "dark", textSize: size, onboardingDone: true, updatedAt: 0 }));
   }, textSize);
-  if (admin)
+  if (admin) {
     await page.route("**/api/plan", async (route) => {
       const response = await route.fetch();
       await route.fulfill({ response, json: { ...(await response.json()), plan: "unlimited", features: undefined } });
     });
+    // An admin is signed in (no « Se connecter » on the home page), as supabase-js keeps it; nothing reaches Supabase.
+    await page.addInitScript(() => {
+      const user = { id: "00000000-0000-4000-8000-000000000001", email: "e2e@example.com", aud: "authenticated", app_metadata: {}, user_metadata: {}, created_at: "2026-01-01T00:00:00Z" };
+      const session = { access_token: "e2e.access.token", refresh_token: "e2e-refresh", token_type: "bearer", expires_in: 3600, expires_at: Math.floor(Date.now() / 1000) + 3600, user };
+      localStorage.setItem("capacitor-storage_assisteo-auth", JSON.stringify(session));
+    });
+    await page.route(/supabase\.co\/(rest|auth|storage)\//, (route) => route.fulfill({ json: [] }));
+  }
 }
 
 /** The box of an element, in the viewport. */

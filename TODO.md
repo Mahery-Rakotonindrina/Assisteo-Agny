@@ -278,3 +278,20 @@ L’argent prêté ou emprunté, par personne. Ni dépense ni revenu : rien n’
 - [x] Prêts partagés en famille (foyer) — bascule « Moi / Foyer » pour un membre avec « Prêts », option « Prêt du foyer » sur un nouveau prêt ; chaque membre note un remboursement, seul l’auteur modifie le prêt ; hors des poches, sans rappel ; rendus en perso à qui quitte le foyer (migration 0012)
 - [x] Écran Prêts plus simple, et le compte avec chaque personne (relevé avec le reste après chaque ligne) — carte « On te doit · Tu dois » qui filtre la liste, un seul « + Nouveau » (prêté, emprunté, scanner), cartes par personne avec pastille d’état, « Foyer » en pastille ; l’ajout en 4 gestes (« Pour quoi ? » en pastilles, le reste dans « Plus d’options ») ; « Compte avec … » : « + Il me doit encore… », « Il m’a rendu… » (réparti sur ses prêts), « Relancer », relevé par mois avec la colonne « Reste », aussi dans l’export PDF et Excel de la personne
 - [ ] Ouvrir « Prêts » à d’autres offres que l’Admin — une case à cocher dans Admin → Offres ; reste à choisir les offres
+
+## 18. Retour des clients sur l'UX
+
+- [x] Copier le code reçu par e-mail et le coller dans l’app — bouton « Coller le code » (dans l’app Android aussi) ; le code est trouvé même si on colle tout l’objet de l’e-mail ou une phrase autour ; dans l’e-mail, le code se sélectionne d’un appui (nouveau modèle à coller dans Supabase)
+- [x] « Se connecter » sur l’écran d’accueil quand on n’est pas connecté — petit bouton sur la ligne du « Bonjour », sans repousser les boutons de scan ; sur ordinateur, il reste dans la barre de gauche
+- [x] Après le scan d’une liste, toucher n’importe où sur la carte ouvre la liste (plus seulement « Ouvrir »)
+- [x] Listes (ex. courses) : en modifiant un article sur téléphone, le texte a toute la largeur (la quantité, le prix et ✓ passent dessous)
+
+## 19. À discuter (relevé en chemin, 2026-11-04)
+
+- [ ] Même chose que pour les listes : après le scan d’un colis suivi, toute la note « Ce colis est dans ta liste » mène au colis ; après une recette, toute la ligne « Liste de courses créée » ouvre la liste
+- [ ] Téléphone de 320 × 568 px (premier iPhone SE) en « Très grand » : « Importer une image » et « Plusieurs pages » restent sous la barre
+- [ ] App Android : vérifier sur un téléphone que le clavier ne cache pas le champ dans « Corriger le solde » ; sinon, ajouter le module clavier de Capacitor
+- [ ] Essai Premium : quand le nombre d’essais du jour est atteint, un message clair (« Reviens demain ») au lieu de l’erreur générique
+- [ ] Sécurité, points de l’audit laissés de côté : sauvegarde Android des données (`allowBackup`), CSP plus stricte (par nonce), code par e-mail avant de supprimer le compte, invitation à accepter pour les places famille, remboursements dans le foyer, quota de stockage des photos
+- [ ] Sécurité, migration 0019 : les places famille ne se lisent qu’avec un e-mail confirmé (faible urgence, le serveur le vérifie déjà)
+- [ ] Hébergement : Vercel Pro pour un usage commercial (le plan gratuit l’interdit) ; un nom de domaine à soi avant tout passage à Netlify (les APK installés gardent l’adresse actuelle)

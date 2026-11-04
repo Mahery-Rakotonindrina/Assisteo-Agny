@@ -1,3 +1,4 @@
+import { Clipboard } from "@capacitor/clipboard";
 import { Capacitor } from "@capacitor/core";
 import { Haptics, ImpactStyle, NotificationType } from "@capacitor/haptics";
 import { Share } from "@capacitor/share";
@@ -63,6 +64,22 @@ export async function copyText(text: string) {
     const copied = document.execCommand("copy");
     area.remove();
     return copied;
+  }
+}
+
+/**
+ * The text on the clipboard, or null when it can't be read: the app reads it
+ * natively; a browser may ask first (Safari shows « Coller ») or refuse.
+ */
+export async function readClipboard(): Promise<string | null> {
+  try {
+    if (Capacitor.isNativePlatform()) {
+      const { type, value } = await Clipboard.read();
+      return type.startsWith("text") ? value : null;
+    }
+    return navigator.clipboard?.readText ? await navigator.clipboard.readText() : null;
+  } catch {
+    return null;
   }
 }
 

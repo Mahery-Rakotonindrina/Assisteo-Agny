@@ -216,9 +216,20 @@
   }
 }
 
+// Editing a line: the text on a line of its own, then the quantity, the price and the save button.
+// Side by side on a phone, they left the text field a few pixels wide.
 .editItem {
   flex: 1;
   min-width: 0;
+  flex-wrap: wrap;
+
+  input[name="text"] {
+    flex: 1 1 100%;
+  }
+
+  .qty {
+    flex: 1 1 0 !important;
+  }
 }
 
 .qty {

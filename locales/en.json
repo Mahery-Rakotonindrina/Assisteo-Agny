@@ -1124,6 +1124,8 @@
     "codeBody": "We just sent it to {email}.",
     "verifying": "Checking…",
     "verify": "Confirm",
+    "pasteCode": "Paste the code",
+    "pasteNone": "No code copied. Copy it from the e-mail, or press and hold in the field, then “Paste”.",
     "resend": "Resend the code",
     "resendIn": "Resend the code in {seconds} s",
     "checkSpam": "Nothing yet? Check your spam folder.",

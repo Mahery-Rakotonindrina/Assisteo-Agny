@@ -2,7 +2,8 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { Apple, ArrowRight, Box, Car, Check, CloudOff, FileText, Files, FlaskConical, ImageUp, Lightbulb, Package, QrCode, RotateCcw, Sparkles, X } from "lucide-react";
+import { Apple, ArrowRight, Box, Car, Check, CloudOff, FileText, Files, FlaskConical, ImageUp, Lightbulb, LogIn, Package, QrCode, RotateCcw, Sparkles, X } from "lucide-react";
+import { AccountSheet } from "@/components/AccountSheet";
 import { Button } from "@/components/Button";
 import { CaptureOrb } from "@/components/CaptureOrb";
 import { CodeList } from "@/components/CodeList";
@@ -32,6 +33,7 @@ import { useScan, type ParcelBatchOutcome } from "@/hooks/useScan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTrial } from "@/hooks/useTrial";
 import type { ScanMode } from "@/lib/ai/schema";
+import { useAccount } from "@/lib/account/AccountProvider";
 import { config } from "@/lib/config";
 import { exampleIds, exampleImage } from "@/lib/examples";
 import { easeOut, rise, stagger } from "@/lib/motion";
@@ -71,6 +73,10 @@ export default function ScanPage() {
   const picking = router.isReady && router.query.pick === "1" && !picked;
   const { state, start, startWithFile, startWithSrc, retry, reset, analyzeAnyway, canRetry, pages } = useScan(mode);
   const { has, planFor, name: planName } = usePlan();
+  // Not signed in: the way in is here, not only deep in the settings.
+  const account = useAccount();
+  const signedOut = account.available && account.session === null;
+  const [signingIn, setSigningIn] = useState(false);
   const inHousehold = useInHousehold();
   const keptExpenses = useKeptExpenses(!has("expenses"));
   const keptLoans = useKeptLoans(!has("loans"));
@@ -147,9 +153,16 @@ export default function ScanPage() {
           >
             <div className={styles.intro}>
               <motion.header variants={rise} className={styles.header}>
-                <p className={styles.greeting} suppressHydrationWarning>
-                  {t(`scan.greeting.${greetingKey()}`)}
-                </p>
+                <div className={styles.greetingRow}>
+                  <p className={styles.greeting} suppressHydrationWarning>
+                    {t(`scan.greeting.${greetingKey()}`)}
+                  </p>
+                  {signedOut && (
+                    <button type="button" className={styles.signIn} onClick={() => setSigningIn(true)}>
+                      <LogIn size={15} aria-hidden /> {t("account.signIn")}
+                    </button>
+                  )}
+                </div>
                 <h1 className={styles.headline}>
                   {t("scan.headline")} <em>{t("scan.headlineAccent")}</em>
                 </h1>
@@ -443,6 +456,8 @@ export default function ScanPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <AccountSheet open={signingIn} onClose={() => setSigningIn(false)} />
     </>
   );
 }

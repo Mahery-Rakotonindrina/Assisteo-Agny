@@ -814,7 +814,12 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
 
   function renderList(list: NonNullable<HistoryEntry["analysis"]["list"]>) {
     return (
-      <Section title={`${t(`lists.kinds.${list.kind}`)} · ${t("lists.count", { count: list.items.length })}`} icon={<ListChecks />}>
+      // Kept in "Mes listes": a tap anywhere on the card opens it, not only « Ouvrir ».
+      <Section
+        title={`${t(`lists.kinds.${list.kind}`)} · ${t("lists.count", { count: list.items.length })}`}
+        icon={<ListChecks />}
+        className={savedList ? styles.listCard : undefined}
+      >
         <ul className={styles.readList}>
           {list.items.map((item, index) => (
             <li key={`${index}-${item.text}`} data-done={item.done ? "" : undefined}>

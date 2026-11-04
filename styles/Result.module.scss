@@ -706,6 +706,23 @@ $bar-height: calc(var(--safe-top) + 3.95rem);
   }
 }
 
+// A list kept in "Mes listes": its « Ouvrir » link covers the whole card.
+.listCard {
+  position: relative;
+  transition: border-color 0.2s var(--ease-out);
+
+  &:hover {
+    border-color: var(--border-strong);
+  }
+
+  .readListNote a::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-lg);
+  }
+}
+
 .readListNote {
   display: flex;
   align-items: center;

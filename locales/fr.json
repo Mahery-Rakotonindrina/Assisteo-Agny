@@ -1124,6 +1124,8 @@
     "codeBody": "On vient de l’envoyer à {email}.",
     "verifying": "Vérification…",
     "verify": "Valider",
+    "pasteCode": "Coller le code",
+    "pasteNone": "Pas de code copié. Copie-le dans l’e-mail, ou appuie longuement dans le champ puis « Coller ».",
     "resend": "Renvoyer le code",
     "resendIn": "Renvoyer le code dans {seconds} s",
     "checkSpam": "Rien reçu ? Regarde dans les spams.",

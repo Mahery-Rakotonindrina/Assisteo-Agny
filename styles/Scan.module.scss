@@ -45,9 +45,44 @@
   }
 }
 
+.greetingRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
 .greeting {
   @include eyebrow;
-  margin-bottom: 0.5rem;
+}
+
+// Not signed in (phones and the app; the sidebar has it on a computer): a
+// small pill on the greeting's line, its touch area 44 px tall.
+.signIn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 32px;
+  margin-left: auto;
+  padding: 0 0.8rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent-text);
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -6px 0;
+  }
+
+  @include desktop {
+    display: none;
+  }
 }
 
 .headline {
@@ -448,7 +483,7 @@
     padding-top: 0.25rem;
   }
 
-  .greeting {
+  .greetingRow {
     margin-bottom: 0.25rem;
   }
 
@@ -503,6 +538,16 @@
     display: none;
   }
 
+  :global(html[data-text-size="large"]) .greetingRow,
+  :global(html[data-text-size="xlarge"]) .greetingRow {
+    margin-bottom: 0;
+  }
+
+  :global(html[data-text-size="large"]) .signIn,
+  :global(html[data-text-size="xlarge"]) .signIn {
+    margin-bottom: 0.25rem;
+  }
+
   :global(html[data-text-size="large"]) .orb,
   :global(html[data-text-size="xlarge"]) .orb {
     --orb-size: 76px;
@@ -519,6 +564,14 @@
   .greeting,
   .framing {
     display: none;
+  }
+
+  .greetingRow {
+    margin-bottom: 0;
+  }
+
+  .signIn {
+    margin-bottom: 0.25rem;
   }
 
   .orb {
