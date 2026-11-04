@@ -639,6 +639,7 @@
     "ipLimitHint": "Over 30 days, against abuse (repeated reinstalls).",
     "save": "Save",
     "saved": "Settings saved",
+    "ownerEdits": "Only the owner can change these settings.",
     "logout": "Log out",
     "askLimit": "Questions per day per device",
     "askLimitHint": "Questions about a scan on the server’s AI. Unlimited with an own key.",

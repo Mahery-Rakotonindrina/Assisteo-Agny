@@ -59,15 +59,36 @@ async function missingAssets(cache, html) {
   return missing;
 }
 
+// The site's security headers (next.config.ts): a page served offline keeps them.
+const SECURITY_HEADERS = [
+  "Content-Security-Policy",
+  "X-Content-Type-Options",
+  "X-Frame-Options",
+  "Referrer-Policy",
+  "Permissions-Policy",
+  "Cross-Origin-Opener-Policy",
+  "Strict-Transport-Security",
+];
+
+/** What a kept page is served with: its type and the security headers it came with. */
+function keptHeaders(from) {
+  const headers = new Headers({ "Content-Type": "text/html; charset=utf-8" });
+  for (const name of SECURITY_HEADERS) {
+    const value = from ? from.get(name) : null;
+    if (value) headers.set(name, value);
+  }
+  return headers;
+}
+
 /** Keeps a page of this build, after its files: a kept page always has them. */
-async function keepPage(cache, path, html) {
+async function keepPage(cache, path, html, headers) {
   if (BUILD !== "none" && buildOf(html) !== BUILD) return false;
   for (const asset of await missingAssets(cache, html)) {
     const response = await fetch(asset);
     if (!response.ok) return false;
     await cache.put(asset, response);
   }
-  await cache.put(path, new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } }));
+  await cache.put(path, new Response(html, { headers: keptHeaders(headers) }));
   return true;
 }
 
@@ -93,7 +114,7 @@ async function handlePage(event) {
   const type = response.headers.get("Content-Type") || "";
   if (response.ok && !response.redirected && type.includes("text/html")) {
     const copy = response.clone();
-    event.waitUntil(copy.text().then((html) => keepPage(cache, path, html)).catch(() => false));
+    event.waitUntil(copy.text().then((html) => keepPage(cache, path, html, response.headers)).catch(() => false));
   }
   return response;
 }
@@ -156,10 +177,10 @@ self.addEventListener("message", (event) => {
     caches.open(CACHE).then(async (cache) => {
       const path = url.pathname;
       const kept = await cache.match(path);
-      if (kept) return keepPage(cache, path, await kept.text());
+      if (kept) return keepPage(cache, path, await kept.text(), kept.headers);
       const response = await fetch(path, { credentials: "same-origin" });
       if (!response.ok || !(response.headers.get("Content-Type") || "").includes("text/html")) return false;
-      return keepPage(cache, path, await response.text());
+      return keepPage(cache, path, await response.text(), response.headers);
     }).catch(() => false),
   );
 });
@@ -212,5 +233,5 @@ self.addEventListener("notificationclick", (event) => {
 
 // Unit tests (tests/unit/serviceWorker.test.ts) load this file in Node.
 if (typeof module === "object" && module.exports) {
-  module.exports = { strategyFor, buildOf, assetsOf, pageKey, keepPage, offlinePage, CACHE, OFFLINE_PAGE };
+  module.exports = { strategyFor, buildOf, assetsOf, pageKey, keepPage, keptHeaders, offlinePage, CACHE, OFFLINE_PAGE };
 }

@@ -15,7 +15,7 @@ import { CustomPlans } from "./CustomPlans";
 const offerFields: Array<keyof PlanOffer> = ["priceMga", "yearPriceMga", "scans", "questionsPerDay", "parcels", "deepPerMonth", "familySeats"];
 
 /** Prices and limits of each plan, and how to pay: shown on the app's offers page. */
-export function AdminPlans({ token, onSaved }: { token: string; onSaved?: () => void }) {
+export function AdminPlans({ token, owner, onSaved }: { token: string; owner: boolean; onSaved?: () => void }) {
   const { t } = useTranslation();
   const toast = useToast();
   const [saved, setSaved] = useState<PlansConfig | null>(null);
@@ -84,7 +84,7 @@ export function AdminPlans({ token, onSaved }: { token: string; onSaved?: () => 
               {offerFields.map((field) => (
                 <label key={field} className={styles.field}>
                   <span>{t(`admin.plans.fields.${field}`)}</span>
-                  <input inputMode="numeric" value={String(draft.offers[plan][field])} onChange={(event) => setOffer(plan, field, event.target.value)} />
+                  <input inputMode="numeric" readOnly={!owner} value={String(draft.offers[plan][field])} onChange={(event) => setOffer(plan, field, event.target.value)} />
                   {field === "yearPriceMga" && <small>{t("admin.plans.monthsFree", { count: monthsFree(draft.offers[plan]) })}</small>}
                   {field === "deepPerMonth" && noDeepLimit.includes(plan) && <small className={styles.error}>{t("admin.plans.deepNeedsLimit")}</small>}
                   {field === "familySeats" && <small>{t("admin.plans.familySeatsHint")}</small>}
@@ -97,7 +97,7 @@ export function AdminPlans({ token, onSaved }: { token: string; onSaved?: () => 
 
         <label className={styles.field}>
           <span>{t("admin.plans.freeParcels")}</span>
-          <input inputMode="numeric" value={String(draft.freeParcels)} onChange={(event) => setDraft({ ...draft, freeParcels: number(event.target.value) })} />
+          <input inputMode="numeric" readOnly={!owner} value={String(draft.freeParcels)} onChange={(event) => setDraft({ ...draft, freeParcels: number(event.target.value) })} />
           <small>{t("admin.plans.freeParcelsHint")}</small>
         </label>
 
@@ -105,6 +105,7 @@ export function AdminPlans({ token, onSaved }: { token: string; onSaved?: () => 
           <span>{t("admin.plans.instructions")}</span>
           <textarea
             rows={5}
+            readOnly={!owner}
             value={draft.payment.instructions}
             onChange={(event) => setDraft({ ...draft, payment: { ...draft.payment, instructions: event.target.value.slice(0, 1500) } })}
             placeholder={t("admin.plans.instructionsPlaceholder")}
@@ -113,6 +114,7 @@ export function AdminPlans({ token, onSaved }: { token: string; onSaved?: () => 
         <label className={styles.field}>
           <span>{t("admin.plans.contact")}</span>
           <input
+            readOnly={!owner}
             value={draft.payment.contact}
             onChange={(event) => setDraft({ ...draft, payment: { ...draft.payment, contact: event.target.value.slice(0, 200) } })}
             placeholder="034 00 000 00 · https://wa.me/261340000000"
@@ -120,9 +122,14 @@ export function AdminPlans({ token, onSaved }: { token: string; onSaved?: () => 
           <small>{t("admin.plans.contactHint")}</small>
         </label>
 
-        <Button type="submit" block icon={<Save />} disabled={!dirty || saving || noDeepLimit.length > 0}>
-          {t("admin.save")}
-        </Button>
+        {/* The server refuses the other admins' changes (ownerWrites): no button that can only fail. */}
+        {owner ? (
+          <Button type="submit" block icon={<Save />} disabled={!dirty || saving || noDeepLimit.length > 0}>
+            {t("admin.save")}
+          </Button>
+        ) : (
+          <p className={styles.hint}>{t("admin.ownerEdits")}</p>
+        )}
       </motion.form>
       <CustomPlans token={token} config={saved} onSaved={createdSaved} />
     </>

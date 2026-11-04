@@ -709,6 +709,31 @@ test("the admin shows the features table, and the changes before saving", async 
   await expect(table.getByRole("button", { name: "Confirmer et enregistrer" })).toBeVisible();
 });
 
+test("another admin sees the offers and the app versions, without « Enregistrer » (the owner's)", async ({ page }) => {
+  await prepare(page);
+  // The page reads who is signed in from the session; the server's checks stay the owner's here.
+  let session = "";
+  await page.route("**/api/admin/login", async (route) => {
+    const response = await route.fetch();
+    const json = await response.json();
+    session = json.session;
+    const parts = session.split(".");
+    parts[3] = Buffer.from("autre.admin@example.com").toString("base64url");
+    await route.fulfill({ response, json: { ...json, session: parts.join("."), actor: "autre.admin@example.com" } });
+  });
+  await page.route(/\/api\/admin\/(?!login)/, (route) => route.continue({ headers: { ...route.request().headers(), authorization: `Bearer ${session}` } }));
+  await page.goto("/admin");
+  await page.locator("#admin-token").fill("e2e-admin-token-0123456789");
+  await page.getByRole("button", { name: "Déverrouiller" }).click();
+  await expect(page.getByText("Ouvert avec ton compte : autre.admin@example.com")).toBeVisible();
+  for (const title of ["Offres", "Versions de l’app"]) {
+    const card = page.locator("form").filter({ has: page.getByRole("heading", { name: title, exact: true }) });
+    await expect(card.getByText("Seul le propriétaire peut modifier ces réglages.")).toBeVisible();
+    await expect(card.getByRole("button", { name: "Enregistrer" })).toHaveCount(0);
+    await expect(card.getByRole("textbox").first()).not.toBeEditable();
+  }
+});
+
 test("a Premium who kept expenses still finds the expenses link, one without has none", async ({ page }) => {
   await prepare(page);
   let plan = "premium";

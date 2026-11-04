@@ -639,6 +639,7 @@
     "ipLimitHint": "Sur 30 jours, contre les abus (réinstallations en boucle).",
     "save": "Enregistrer",
     "saved": "Réglages enregistrés",
+    "ownerEdits": "Seul le propriétaire peut modifier ces réglages.",
     "logout": "Se déconnecter",
     "askLimit": "Questions par jour et par appareil",
     "askLimitHint": "Questions sur un scan avec l’IA du serveur. Illimité avec sa propre clé.",
