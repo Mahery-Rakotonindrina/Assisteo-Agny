@@ -7,7 +7,7 @@ test("the help page shows its guides and opens a question", async ({ page }) => 
   await prepare(page);
   await page.goto("/aide");
   await expect(page.getByRole("heading", { level: 1, name: "Aide" })).toBeVisible();
-  await expect(page.locator("[data-guide]")).toHaveCount(4);
+  await expect(page.locator("[data-guide]")).toHaveCount(3); // the expense guide needs a plan that opens expenses
   const question = page.getByText("Que puis-je scanner ?");
   await expect(async () => {
     await question.click();

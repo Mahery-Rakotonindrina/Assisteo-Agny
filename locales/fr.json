@@ -3872,7 +3872,7 @@
     "title": "Aide",
     "lead": "Les réponses aux questions fréquentes et des guides pas à pas.",
     "metaTitle": "Aide Assisteo Agny : questions fréquentes et guides",
-    "metaDescription": "Comment scanner, suivre un colis, noter tes dépenses, créer un compte ou utiliser l’app sans réseau : les réponses d’Assisteo Agny.",
+    "metaDescription": "Comment scanner, suivre un colis, créer un compte ou utiliser l’app sans réseau : les réponses d’Assisteo Agny.",
     "searchLabel": "Chercher dans l’aide",
     "searchPlaceholder": "Chercher une question…",
     "noResult": "Aucune réponse pour « {query} ». Essaie d’autres mots, ou écris-nous depuis les Réglages (« Donner mon avis / Signaler un problème »).",
@@ -3909,11 +3909,13 @@
           },
           "pay": {
             "q": "Comment payer une offre ?",
-            "a": "Par Mobile Money (MVola…) en ariary, depuis l’écran « Offres ». Il n’y a pas de renouvellement automatique : tu choisis quand continuer."
+            "a": "Par Mobile Money (MVola…) en ariary, depuis l’écran « Offres ». Il n’y a pas de renouvellement automatique : tu choisis quand continuer.",
+            "undefined": "Connecte-toi d’abord : ton offre est liée à ton e-mail. Dans « Les offres », paie par Mobile Money en ariary en suivant les instructions, puis envoie la référence de la transaction. L’offre s’active dès que le paiement est vérifié. Rien ne se renouvelle automatiquement."
           },
           "limit": {
             "q": "J’ai utilisé tous mes scans, que faire ?",
-            "a": "Les scans reviennent chaque mois. Pour en avoir plus tout de suite, regarde les offres : chaque offre a son nombre de scans par mois."
+            "a": "Les scans reviennent chaque mois. Pour en avoir plus tout de suite, regarde les offres : chaque offre a son nombre de scans par mois.",
+            "undefined": "Avec l’essai gratuit, les scans offerts ne reviennent pas : pour continuer, choisis une offre dans « Les offres ». Avec une offre, ton compteur repart à zéro le 1er de chaque mois ; pour en avoir plus tout de suite, passe à une offre plus grande."
           }
         }
       },
@@ -3922,11 +3924,11 @@
         "questions": {
           "add": {
             "q": "Comment suivre un colis ?",
-            "a": "Scanne l’étiquette ou le bordereau, ou ajoute le colis à la main avec son numéro de suivi. Il apparaît dans l’écran « Colis » avec son statut."
+            "a": "Scanne la page de suivi de ta commande (Temu, Shein, AliExpress, Pinduoduo…), puis touche « Ajouter à mes colis ». Le colis apparaît dans « Mes colis ». Rescanne la page plus tard pour mettre son statut à jour."
           },
           "status": {
             "q": "Comment changer le statut d’un colis ?",
-            "a": "Ouvre le colis et choisis son nouveau statut (en route, arrivé, retiré…). Tu peux aussi activer un rappel pour ne pas l’oublier."
+            "a": "Rescanne la page de suivi : le statut se met à jour tout seul. Tu peux aussi toucher « Modifier » pour le changer à la main, ou « Marquer comme reçu » quand tu l’as récupéré."
           },
           "costs": {
             "q": "Puis-je noter ce que le colis m’a coûté ?",
@@ -3964,7 +3966,7 @@
           },
           "remind": {
             "q": "Puis-je être prévenu quand une échéance arrive ?",
-            "a": "Oui : choisis une date d’échéance et active un rappel. Les rappels sont réservés à certaines offres (voir « Offres »)."
+            "a": "Oui, dans l’app Android : si le prêt a une date à rendre, l’app te prévient la veille à 9 h, et le jour même pour relancer quelqu’un qui te doit de l’argent (« Me rappeler les échéances », dans « Prêts »). Il faut une offre avec les rappels (voir « Les offres »)."
           }
         }
       },
@@ -3981,7 +3983,7 @@
           },
           "delete": {
             "q": "Comment supprimer mon compte ?",
-            "a": "Dans Réglages, section Compte. La suppression efface ton compte et ses données sur nos serveurs. Elle est définitive."
+            "a": "Dans Réglages, section Compte, touche « Supprimer mon compte ». On t’envoie d’abord un code par e-mail pour vérifier que c’est toi. Ton compte et ses données sont effacés de nos serveurs et de cet appareil : c’est définitif."
           }
         }
       },
@@ -3990,7 +3992,7 @@
         "questions": {
           "works": {
             "q": "L’app marche-t-elle sans internet ?",
-            "a": "Tu peux consulter ton historique, tes colis, tes listes et tes dépenses. Pour analyser une photo, il faut du réseau."
+            "a": "Tu peux consulter ton historique, tes colis et tes listes. Pour analyser une photo, il faut du réseau."
           },
           "queue": {
             "q": "Que se passe-t-il si je scanne sans réseau ?",
@@ -3998,7 +4000,7 @@
           },
           "data": {
             "q": "Comment économiser mes données mobiles ?",
-            "a": "Dans Réglages, active l’économie de données : les photos sont plus légères et partent plus vite, même en 3G."
+            "a": "Dans Réglages, choisis « Toujours » pour l’économie de données (« Auto » est le mode par défaut) : les photos sont plus légères et partent plus vite, même en 3G."
           }
         }
       }
@@ -4025,16 +4027,16 @@
         "title": "Suivre un colis",
         "steps": {
           "1": {
-            "t": "Scanne l’étiquette",
-            "b": "Ou saisis le numéro de suivi à la main."
+            "t": "Scanne la page de suivi",
+            "b": "Celle de ta commande sur Temu, Shein, AliExpress…"
           },
           "2": {
             "t": "Ajoute le colis",
             "b": "Il rejoint ta liste, avec son statut."
           },
           "3": {
-            "t": "Active un rappel",
-            "b": "L’app te prévient à l’arrivée."
+            "t": "Sois prévenu",
+            "b": "À partir de Lite, une notification le jour de livraison prévue (Réglages)."
           }
         }
       },
@@ -4064,7 +4066,7 @@
           },
           "2": {
             "t": "Entre ton e-mail",
-            "b": "Confirme-le avec le lien reçu."
+            "b": "Tape le code reçu par e-mail (pas de mot de passe)."
           },
           "3": {
             "t": "Retrouve tout",
@@ -4072,6 +4074,7 @@
           }
         }
       }
-    }
+    },
+    "contactMail": "Ou par e-mail :"
   }
 }

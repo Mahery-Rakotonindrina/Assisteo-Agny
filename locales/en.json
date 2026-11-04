@@ -3872,7 +3872,7 @@
     "title": "Help",
     "lead": "Answers to common questions and step-by-step guides.",
     "metaTitle": "Assisteo Agny help: common questions and guides",
-    "metaDescription": "How to scan, track a parcel, log your spending, create an account or use the app offline: Assisteo Agny's answers.",
+    "metaDescription": "How to scan, track a parcel, create an account or use the app offline: Assisteo Agny's answers.",
     "searchLabel": "Search the help",
     "searchPlaceholder": "Search a question…",
     "noResult": "No answer for “{query}”. Try other words, or write to us from Settings (“Give feedback / Report a problem”).",
@@ -3909,11 +3909,13 @@
           },
           "pay": {
             "q": "How do I pay for a plan?",
-            "a": "By Mobile Money (MVola…) in ariary, from the “Plans” screen. There is no automatic renewal: you choose when to continue."
+            "a": "By Mobile Money (MVola…) in ariary, from the “Plans” screen. There is no automatic renewal: you choose when to continue.",
+            "undefined": "Sign in first: your plan is tied to your e-mail. In “Plans”, pay by Mobile Money in ariary following the instructions, then send the transaction reference. The plan is turned on once the payment is checked. Nothing renews automatically."
           },
           "limit": {
             "q": "I used all my scans, what now?",
-            "a": "Scans come back every month. To get more right away, look at the plans: each one has its own number of scans a month."
+            "a": "Scans come back every month. To get more right away, look at the plans: each one has its own number of scans a month.",
+            "undefined": "With the free trial, the free scans do not come back: to go on, pick a plan in “Plans”. With a plan, your count starts again on the 1st of each month; to get more right away, move to a bigger plan."
           }
         }
       },
@@ -3922,11 +3924,11 @@
         "questions": {
           "add": {
             "q": "How do I track a parcel?",
-            "a": "Scan the label or the waybill, or add the parcel by hand with its tracking number. It shows in the “Parcels” screen with its status."
+            "a": "Scan your order’s tracking page (Temu, Shein, AliExpress, Pinduoduo…), then tap “Add to my parcels”. It shows in “My parcels”. Scan the page again later to update its status."
           },
           "status": {
             "q": "How do I change a parcel’s status?",
-            "a": "Open the parcel and pick its new status (on the way, arrived, collected…). You can also turn on a reminder so you don’t forget it."
+            "a": "Scan the tracking page again: the status updates by itself. You can also tap “Edit” to change it by hand, or “Mark as received” once you have it."
           },
           "costs": {
             "q": "Can I note what the parcel cost me?",
@@ -3964,7 +3966,7 @@
           },
           "remind": {
             "q": "Can I be warned when a due date comes?",
-            "a": "Yes: pick a due date and turn on a reminder. Reminders are reserved to some plans (see “Plans”)."
+            "a": "Yes, in the Android app: when the loan has a due date, the app warns you the day before at 9 am, and on the day itself to chase someone who owes you (“Remind me of due dates”, in “Loans”). You need a plan with reminders (see “Plans”)."
           }
         }
       },
@@ -3981,7 +3983,7 @@
           },
           "delete": {
             "q": "How do I delete my account?",
-            "a": "In Settings, Account section. Deleting erases your account and its data on our servers. It is final."
+            "a": "In Settings, Account section, tap “Delete my account”. We first e-mail you a code to check it is you. Your account and its data are erased from our servers and this device: it is final."
           }
         }
       },
@@ -3990,7 +3992,7 @@
         "questions": {
           "works": {
             "q": "Does the app work without internet?",
-            "a": "You can look at your history, parcels, lists and spending. Analysing a photo needs a network."
+            "a": "You can look at your history, parcels and lists. Analysing a photo needs a network."
           },
           "queue": {
             "q": "What happens if I scan without a network?",
@@ -3998,7 +4000,7 @@
           },
           "data": {
             "q": "How do I save mobile data?",
-            "a": "In Settings, turn on the data saver: photos are lighter and leave faster, even on 3G."
+            "a": "In Settings, choose “Always” for the data saver (“Auto” is the default mode): photos are lighter and leave faster, even on 3G."
           }
         }
       }
@@ -4025,16 +4027,16 @@
         "title": "Track a parcel",
         "steps": {
           "1": {
-            "t": "Scan the label",
-            "b": "Or type the tracking number by hand."
+            "t": "Scan the tracking page",
+            "b": "The one of your order on Temu, Shein, AliExpress…"
           },
           "2": {
             "t": "Add the parcel",
             "b": "It joins your list, with its status."
           },
           "3": {
-            "t": "Turn on a reminder",
-            "b": "The app warns you when it arrives."
+            "t": "Get notified",
+            "b": "From Lite, a notification on the expected delivery day (Settings)."
           }
         }
       },
@@ -4064,7 +4066,7 @@
           },
           "2": {
             "t": "Enter your e-mail",
-            "b": "Confirm it with the link you receive."
+            "b": "Type the code we e-mail you (no password)."
           },
           "3": {
             "t": "Find everything",
@@ -4072,6 +4074,7 @@
           }
         }
       }
-    }
+    },
+    "contactMail": "Or by e-mail:"
   }
 }

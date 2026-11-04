@@ -3,8 +3,10 @@ import { motion } from "motion/react";
 import { useState } from "react";
 import { Apple, BellRing, Camera, ChevronDown, FileText, HandCoins, LifeBuoy, ListChecks, Mail, MessageCircle, Package, ScanSearch, Search, Sparkles, UserRound, Wallet, WifiOff, type LucideIcon } from "lucide-react";
 import { Seo } from "@/components/Seo";
+import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
-import { helpGuides, helpTopics, searchHelp, type HelpGuideId, type HelpTopicId } from "@/lib/help";
+import { config } from "@/lib/config";
+import { helpGuideFeature, helpGuides, helpTopics, searchHelp, type HelpGuideId, type HelpTopicId } from "@/lib/help";
 import { rise, stagger } from "@/lib/motion";
 import styles from "@/styles/Help.module.scss";
 
@@ -29,9 +31,13 @@ const guideIcons: Record<HelpGuideId, [LucideIcon, LucideIcon, LucideIcon]> = {
 /** Help: guides in a few steps, then the common questions by topic, with a search. */
 export default function HelpPage() {
   const { t } = useTranslation();
+  const { has } = usePlan();
   const [query, setQuery] = useState("");
 
-  const entries = helpTopics.flatMap(({ id, questions }) =>
+  // Topics and guides of a feature the plan does not open stay hidden (static fallback: hidden).
+  const topics = helpTopics.filter((topic) => !("feature" in topic) || has(topic.feature));
+  const guides = helpGuides.filter((id) => { const feature = helpGuideFeature[id]; return !feature || has(feature); });
+  const entries = topics.flatMap(({ id, questions }) =>
     questions.map((question) => {
       const base = `help.topics.${id}.questions.${question}`;
       return { key: `${id}-${question}`, topic: id, q: t(`${base}.q`), a: t(`${base}.a`), text: `${t(`${base}.q`)} ${t(`${base}.a`)} ${t(`help.topics.${id}.title`)}` };
@@ -60,7 +66,7 @@ export default function HelpPage() {
           <motion.section variants={rise} className={styles.section} data-testid="help-guides">
             <h2>{t("help.guidesTitle")}</h2>
             <div className={styles.guides}>
-              {helpGuides.map((id) => (
+              {guides.map((id) => (
                 <article key={id} className={styles.guide} data-guide={id}>
                   <h3>{t(`help.guides.${id}.title`)}</h3>
                   <ol>
@@ -89,7 +95,7 @@ export default function HelpPage() {
               {found.length === 0 ? t("help.noResult", { query: query.trim() }) : t("help.resultCount", { count: found.length })}
             </p>
           )}
-          {helpTopics.map(({ id }) => {
+          {topics.map(({ id }) => {
             const list = found.filter((entry) => entry.topic === id);
             if (list.length === 0) return null;
             const Icon = topicIcons[id];
@@ -115,6 +121,12 @@ export default function HelpPage() {
 
         <motion.p variants={rise} className={styles.contact}>
           {t("help.contact")} <Link href="/settings">{t("settings.title")}</Link>
+          {config.contactEmail && (
+            <>
+              {" "}
+              {t("help.contactMail")} <a href={`mailto:${config.contactEmail}`}>{config.contactEmail}</a>
+            </>
+          )}
         </motion.p>
       </motion.div>
     </>
