@@ -122,7 +122,7 @@ export function planPushes(rows: DueRow[], devices: PushDevice[], locales: Map<s
 export type SubscriptionRow = { email: string; plan: SubscriptionPlanId; starts_at: string; ends_at: string | null; payment_method?: string | null; features?: FeatureDiff | null };
 
 /** A family seat (migration 0016), with its subscriber's other seats passed alongside to rank it. */
-export type SeatRow = { id: string; ownerId: string; ownerEmail: string; memberEmail: string; createdAt: number };
+export type SeatRow = { id: string; ownerId: string; ownerEmail: string; memberEmail: string; createdAt: number; pending?: boolean };
 
 /**
  * The users who may use reminders by the Admin settings (Lite and up by default, the Premium trial
@@ -156,7 +156,7 @@ export function paidReminderUsers(
     const email = user.email?.toLowerCase() ?? null;
     let { current, subscription } = access(email ?? "");
     // A family seat: the subscriber's plan, while it runs and gives this seat, when better than the user's own.
-    const seat = email ? seats.find((entry) => entry.memberEmail.toLowerCase() === email) : undefined;
+    const seat = email ? seats.find((entry) => !entry.pending && entry.memberEmail.toLowerCase() === email) : undefined;
     if (seat) {
       const owner = access(seat.ownerEmail.toLowerCase());
       const { seats: count } = shareableSeats(offers, owner.current, owner.subscription?.paymentMethod);

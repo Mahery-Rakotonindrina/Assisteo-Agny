@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import type { HistoryEntry } from "@/types/history";
 import { isSavingData } from "./dataSaver";
 import { historyStore } from "./historyStore";
+import { storageQuota } from "./storageQuota";
 
 // Two-way sync of the history between this device and the user's account.
 //
@@ -222,7 +223,11 @@ async function pushEntry(uid: string, entry: HistoryEntry) {
       .from(BUCKET)
       .upload(remote.preview, await dataUrlToBlob(entry.thumbnail), { contentType: "image/jpeg", upsert: true });
     if (error) throw error;
+    // A smaller photo frees space: uploads may be tried again.
+    storageQuota.accepted();
   }
+  // Storage refused a photo already (full): not sent again until the app is reopened or space is freed (a data cost for nothing).
+  if (!remote && storageQuota.isFull()) return;
   if (!remote) {
     const folder = `${uid}/${entry.id}`;
     remote = { preview: `${folder}/preview.jpg`, thumbnail: `${folder}/thumbnail.jpg` };
@@ -231,7 +236,12 @@ async function pushEntry(uid: string, entry: HistoryEntry) {
       db.storage.from(BUCKET).upload(remote.thumbnail, await dataUrlToBlob(entry.thumbnail), { contentType: "image/jpeg", upsert: true }),
     ]);
     const failed = uploads.find((upload) => upload.error);
-    if (failed?.error) throw failed.error;
+    if (failed?.error) {
+      // The account's storage is full (or the file too big): the scan stays on this device, still to send, and the others go on.
+      if (storageQuota.refused(failed.error)) return;
+      throw failed.error;
+    }
+    storageQuota.accepted();
   }
 
   const { error } = await db.from("analyses").upsert({
@@ -338,6 +348,7 @@ export const sync = {
     unsubscribeHistory = null;
     await running?.catch(() => undefined);
     historyStore.setKeepTombstones(false);
+    storageQuota.reset();
     if (wipe) {
       await historyStore.wipe();
       if (uid) await Preferences.remove({ key: cursorKey(uid) });

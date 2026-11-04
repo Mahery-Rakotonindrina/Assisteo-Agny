@@ -17,10 +17,10 @@ export type LoanBook = {
   addRepayment(id: string, repayment: { amountMga: number; at: number; note?: string; wallet?: string }): Promise<number | null>;
   markRepaid(id: string): Promise<number | null>;
   remove(id: string): Promise<void>;
-  removeRepayment(loan: Loan, repayment: Repayment): Promise<void>;
-  /** Corrected or removed by this user (the household's: its author only). */
+  removeRepayment(loan: Loan, repayment: Repayment): Promise<unknown>;
+  /** Corrected or removed by this user (the household's: its author only; a repayment, its author or the loan's lender). */
   canEdit(loan: Loan): boolean;
-  canRemoveRepayment(repayment: Repayment): boolean;
+  canRemoveRepayment(repayment: Repayment, loan?: Loan): boolean;
 };
 
 export const personalBook: LoanBook = {
@@ -44,8 +44,8 @@ export function householdBook(me: string | null, myName?: string): LoanBook {
     addRepayment: (id, repayment) => householdLoanStore.addRepayment(id, repayment, me, myName),
     markRepaid: (id) => householdLoanStore.markRepaid(id, me, myName),
     remove: (id) => householdLoanStore.remove(id, me),
-    removeRepayment: (_loan, repayment) => householdLoanStore.removeRepayment(repayment.id, me),
+    removeRepayment: (loan, repayment) => householdLoanStore.removeRepayment(repayment.id, me, isMineRow(loan as { userId?: string }, me)),
     canEdit: (loan) => isMineRow(loan as { userId?: string }, me),
-    canRemoveRepayment: (repayment) => isMineRow(repayment as { userId?: string }, me),
+    canRemoveRepayment: (repayment, loan) => isMineRow(repayment as { userId?: string }, me) || (loan !== undefined && isMineRow(loan as { userId?: string }, me)),
   };
 }

@@ -165,10 +165,10 @@ function sampleBackup() {
         { id: randomUUID(), email: "ben@example.com", feature: "garage", starts_at: at(3), ends_at: at(10), note: "Essai du garage", created_by: "owner", created_at: at(3) },
         { id: randomUUID(), email: "anna@example.com", feature: "pdfExport", starts_at: at(1), ends_at: at(2), note: null, created_by: "admin@example.com", created_at: at(1) },
       ],
-      // Migration 0016: Anna shares her Premium with two people.
+      // Migrations 0016 and 0019: Anna shares her Premium with two people, one accepted, one invited.
       family_seats: [
-        { id: randomUUID(), owner_id: anna, owner_email: "anna@example.com", owner_name: "Anna", member_email: "mere.rabe@example.com", created_at: at(4) },
-        { id: randomUUID(), owner_id: anna, owner_email: "anna@example.com", owner_name: null, member_email: "fils.rabe@example.com", created_at: at(5) },
+        { id: randomUUID(), owner_id: anna, owner_email: "anna@example.com", owner_name: "Anna", member_email: "mere.rabe@example.com", created_at: at(4), accepted_at: at(4) },
+        { id: randomUUID(), owner_id: anna, owner_email: "anna@example.com", owner_name: null, member_email: "fils.rabe@example.com", created_at: at(5), accepted_at: null },
       ],
       _migrations: [],
     },
@@ -232,6 +232,18 @@ try {
   await client.query("commit");
 
   problems.push(...compareData(data, await exportData(client), { exact: true }));
+
+  // A backup from before migration 0019 has no accepted_at: its seats come back accepted, not as invitations.
+  await client.query("begin");
+  try {
+    const [owner] = data.tables["auth.users"];
+    const legacy = { id: randomUUID(), owner_id: owner.id, owner_email: owner.email, owner_name: null, member_email: "ancienne.sauvegarde@example.com", created_at: new Date().toISOString() };
+    await restoreData(client, { tables: { family_seats: [legacy] } });
+    const { rows } = await client.query("select accepted_at from public.family_seats where id = $1", [legacy.id]);
+    if (rows[0]?.accepted_at === null || rows[0] === undefined) problems.push("family_seats: a seat saved before migration 0019 came back as a waiting invitation");
+  } finally {
+    await client.query("rollback");
+  }
 } catch (error) {
   problems.push(error.message);
 } finally {

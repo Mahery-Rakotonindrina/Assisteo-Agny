@@ -1,7 +1,7 @@
 // The Row Level Security of the shared budget (migration 0009_households.sql)
 // of the loans (0010_loans.sql), of the features offered for a while (0011),
 // of the loan links and household loans (0012), of the plants (0013), of the home inventory (0014),
-// with the plans created from the Admin a subscription may hold (0015), of the family seats (0016),
+// with the plans created from the Admin a subscription may hold (0015), of the family seats (0016, 0019), of the photo quota (0020),
 // tested as Supabase runs it: each query as the "authenticated" role with a
 // user id, or as the server ("service_role"). `client.query(text, params)`
 // must return { rows }. Returns the problems found (empty: all good).
@@ -18,7 +18,7 @@ export async function runRlsChecks(client) {
     [ben, "ben@example.com", null],
     [carla, "carla@example.com", null],
   ]) {
-    await client.query("insert into auth.users (id, email, created_at, raw_user_meta_data) values ($1, $2, now(), $3)", [id, email, name ? { full_name: name } : {}]);
+    await client.query("insert into auth.users (id, email, created_at, raw_user_meta_data, email_confirmed_at) values ($1, $2, now(), $3, now())", [id, email, name ? { full_name: name } : {}]);
   }
 
   /** Runs `queries` in a transaction as `role` (and user), then rolls back or commits. */
@@ -310,7 +310,7 @@ export async function runRlsChecks(client) {
   const [{ invite: homeCode }] = await server("select public.create_household_invite($1, $2) as invite", [anna, home]);
   await server("select public.join_household($1, $2)", [ben, homeCode.code]);
   const dora = randomUUID();
-  await client.query("insert into auth.users (id, email, created_at) values ($1, 'dora@example.com', now())", [dora]);
+  await client.query("insert into auth.users (id, email, created_at, email_confirmed_at) values ($1, 'dora@example.com', now(), now())", [dora]);
   const loanSql = "insert into public.household_loans (household_id, id, data, updated_at) values ($1, $2, $3, now())";
   const loanRow = (amountMga) => ({ kind: "loan", direction: "lent", person: "Voisin", amountMga, at: 1759900000000 });
   const repaymentRow = (loanId, amountMga, at) => ({ kind: "repayment", loanId, amountMga, at });
@@ -330,6 +330,31 @@ export async function runRlsChecks(client) {
   await refused("a member can't write a household loan in another's name", () =>
     tryUser(ben, "insert into public.household_loans (household_id, id, user_id, data, updated_at) values ($1, 'fake', $2, '{}', now())", [home, anna]), /row-level security/);
   await check("a member can't delete a household loan (tombstones only)", async () => ((await user(anna, "delete from public.household_loans where id = 'hloan-a' returning id")).length ? "deleted" : null));
+  // Repayments: written by whoever got or paid back, and kept by their author (audit F5: nobody acts in another's name).
+  await check("a member can't change another's repayment", async () => ((await user(anna, "update public.household_loans set data = '{}' where id = 'hrep-b1' returning id")).length ? "changed" : null));
+  await check("a member can't remove another's repayment (a tombstone is a change)", async () => ((await user(anna, "update public.household_loans set deleted_at = now() where id = 'hrep-b1' returning id")).length ? "removed" : null));
+  await refused("a member can't take over another's repayment by writing the same id", () => tryUser(anna, "insert into public.household_loans (household_id, id, data, updated_at) values ($1, 'hrep-b1', '{}', now()) on conflict (household_id, id) do update set data = excluded.data, user_id = excluded.user_id", [home]), /row-level security/);
+  await refused("an author can't hand their repayment to another member", () => tryUser(ben, "update public.household_loans set user_id = $1 where id = 'hrep-b1'", [anna]), /row-level security/);
+  await refused("a non-member can't note a repayment on the household's loan", () => tryUser(dora, loanSql, [home, "hrep-d0", repaymentRow("hloan-a", 1, 1760000000000)]), /row-level security/);
+  await check("an author changes their own repayment", async () => ((await tryUser(ben, "update public.household_loans set updated_at = now() where id = 'hrep-b1' returning id")).length === 1 ? null : "refused"));
+  // Migration 0021: the lender, or the author, removes a repayment through the function; nobody else.
+  await user(ben, loanSql, [home, "hrep-b2", repaymentRow("hloan-a", 3000, 1760000000000)]);
+  await user(ben, loanSql, [home, "hrep-b3", repaymentRow("hloan-a", 2000, 1760000000000)]);
+  await user(anna, loanSql, [home, "hrep-a2", repaymentRow("hloan-a", 1000, 1760000000000)]);
+  const removeRepayment = async (who, id) => (await user(who, "select public.household_remove_repayment($1) as ok", [id]))[0]?.ok;
+  const tombstoned = async (id) => (await client.query("select deleted_at from public.household_loans where id = $1", [id])).rows[0]?.deleted_at !== null;
+  await check("a non-member removes no repayment", async () => ((await removeRepayment(dora, "hrep-b2")) === false && !(await tombstoned("hrep-b2")) ? null : "removed"));
+  await check("a member can't remove a repayment on another's loan written by a third (not the lender, not the author)", async () => ((await removeRepayment(ben, "hrep-a2")) === false && !(await tombstoned("hrep-a2")) ? null : "removed"));
+  await check("the lender removes a repayment another member noted on their loan", async () => ((await removeRepayment(anna, "hrep-b2")) === true && (await tombstoned("hrep-b2")) ? null : "not removed"));
+  await check("the author removes their own repayment", async () => ((await removeRepayment(ben, "hrep-b3")) === true && (await tombstoned("hrep-b3")) ? null : "not removed"));
+  await check("removing leaves the row as it was (a tombstone only)", async () => {
+    const { rows } = await client.query("select user_id, data from public.household_loans where id = 'hrep-b2'");
+    return rows[0]?.user_id === ben && rows[0].data.amountMga === 3000 ? null : "row changed";
+  });
+  await check("a repayment already removed answers false", async () => ((await removeRepayment(anna, "hrep-b2")) === false ? null : "true again"));
+  await check("a loan is not a repayment: the function leaves it", async () => ((await removeRepayment(anna, "hloan-a")) === false ? null : "removed a loan"));
+  await check("the author removes their own repayment on their own loan", async () => ((await removeRepayment(anna, "hrep-a2")) === true ? null : "not removed"));
+  await refused("a visitor can't call household_remove_repayment", () => tryVisitor("select public.household_remove_repayment('hrep-b1')"), /permission denied/);
   await refused("a signed-in client can't call household_return_loans", () => tryUser(anna, "select public.household_return_loans($1, $2)", [home, ben]), /permission denied/);
 
   // Ben leaves: his loan comes back to him with the repayment Anna wrote on it; his repayment on Anna's loan stays.
@@ -398,6 +423,25 @@ export async function runRlsChecks(client) {
   await check("the subscriber reads their seats", async () => ((await count(anna, "select 1 from public.family_seats")) === 1 ? null : "not visible"));
   await check("the invited person reads their own seat", async () => ((await withEmail(ben, "ben@example.com", "select 1 from public.family_seats")).length === 1 ? null : "not visible"));
   await check("another account reads no seat", async () => ((await withEmail(carla, "carla@example.com", "select 1 from public.family_seats")).length ? "visible" : null));
+  // Migration 0019: the e-mail of the session must be confirmed, and an invitation waits for its answer.
+  const eve = randomUUID();
+  await client.query("insert into auth.users (id, email, created_at) values ($1, 'eve@example.com', now())", [eve]);
+  await server(seatSql, [anna, "eve@example.com"]);
+  await check("an unconfirmed e-mail reads no seat, even its own", async () => ((await withEmail(eve, "eve@example.com", "select 1 from public.family_seats")).length ? "visible" : null));
+  await check("email_confirmed() is true for a confirmed e-mail and false for another", async () => {
+    const [yes] = await withEmail(ben, "ben@example.com", "select public.email_confirmed() as ok");
+    const [no] = await withEmail(eve, "eve@example.com", "select public.email_confirmed() as ok");
+    return yes?.ok === true && no?.ok === false ? null : `got ${yes?.ok}/${no?.ok}`;
+  });
+  await refused("a visitor can't call email_confirmed()", () => tryVisitor("select public.email_confirmed()"), /permission denied/);
+  await check("a new seat is an invitation: not accepted yet", async () => {
+    const rows = (await client.query("select accepted_at from public.family_seats where member_email = 'ben@example.com'")).rows;
+    return rows.length === 1 && rows[0].accepted_at === null ? null : "accepted at once";
+  });
+  await refused("the invited person can't accept by themselves", () => tryUser(ben, "update public.family_seats set accepted_at = now() where member_email = 'ben@example.com'"), /permission denied/);
+  await refused("the subscriber can't accept for the person", () => tryUser(anna, "update public.family_seats set accepted_at = now()"), /permission denied/);
+  await server("update public.family_seats set accepted_at = now() where member_email = 'ben@example.com'");
+  await server("delete from public.family_seats where member_email = 'eve@example.com'");
   await hidden("a visitor reads no seat", () => tryVisitor("select 1 from public.family_seats"));
   await refused("an account can't give itself a seat", () => tryUser(carla, seatSql, [anna, "carla@example.com"]), /permission denied|row-level security/);
   await refused("the subscriber can't write a seat directly (the server checks the plan)", () => tryUser(anna, seatSql, [anna, "dora@example.com"]), /permission denied|row-level security/);
@@ -410,5 +454,29 @@ export async function runRlsChecks(client) {
   });
   await refused("one seat per person", () => server(seatSql, [anna, "ben@example.com"]), /duplicate key|unique/);
   await refused("no seat for oneself", () => server(seatSql, [anna, "anna.rabe@example.com"]), /check constraint/);
+  // ---- Photo storage (migration 0020): a limit per account, kept by the database ----
+  const photoSql = "insert into storage.objects (bucket_id, name, metadata) values ('scans', $1, $2)";
+  const limit = Number((await client.query("select public.photo_quota_bytes() as bytes")).rows[0].bytes);
+  await check("the quota is set (a few hundred MB)", () => (limit >= 50_000_000 && limit <= 5_000_000_000 ? null : `got ${limit}`));
+  await check("the bucket keeps a size limit for one file", async () => {
+    const { rows } = await client.query("select file_size_limit from storage.buckets where id = 'scans'");
+    return Number(rows[0]?.file_size_limit) > 0 && Number(rows[0].file_size_limit) <= 5_242_880 ? null : `got ${rows[0]?.file_size_limit}`;
+  });
+  await check("an account under its quota adds a photo", async () => ((await tryUser(anna, photoSql + " returning id", [`${anna}/s1/preview.jpg`, { size: 150000 }])).length === 1 ? null : "refused"));
+  await server(photoSql, [`${anna}/s1/preview.jpg`, { size: limit }]);
+  await refused("an account at its quota can't add a photo", () => tryUser(anna, photoSql, [`${anna}/s2/preview.jpg`, { size: 150000 }]), /row-level security/);
+  await check("an account at its quota can still write over a photo it has (shrinking frees space)", async () => ((await tryUser(anna, photoSql + " returning id", [`${anna}/s1/preview.jpg`, { size: 20000 }])).length === 1 ? null : "refused"));
+  // Writing over a file changes its size: empty files grown one by one would get round a check on adding only.
+  const growSql = "update storage.objects set metadata = $1 where bucket_id = 'scans' and name = $2 returning id";
+  await server(photoSql, [`${anna}/e1/preview.jpg`, { size: 0 }]);
+  await refused("an account at its quota can't grow a file by writing over it", () => tryUser(anna, growSql, [{ size: 2097152 }, `${anna}/e1/preview.jpg`]), /row-level security/);
+  await check("a file may shrink or stay the same size at the quota", async () => ((await tryUser(anna, growSql, [{ size: 0 }, `${anna}/e1/preview.jpg`])).length === 1 ? null : "refused"));
+  await check("an account adds an empty file", async () => ((await tryUser(ben, "insert into storage.objects (bucket_id, name, metadata) values ('scans', $1, $2) returning id", [`${ben}/g1/preview.jpg`, { size: 0 }])).length === 1 ? null : "refused"));
+  await server(photoSql, [`${ben}/g1/preview.jpg`, { size: 0 }]);
+  await check("a file grows within the quota, up to it", async () => ((await tryUser(ben, growSql, [{ size: 2097152 }, `${ben}/g1/preview.jpg`])).length === 1 ? null : "refused"));
+  await refused("a file can't grow past the quota by itself", () => tryUser(ben, growSql, [{ size: limit + 1 }, `${ben}/g1/preview.jpg`]), /row-level security/);
+  await check("another account has its own quota", async () => ((await tryUser(ben, photoSql + " returning id", [`${ben}/s1/preview.jpg`, { size: 150000 }])).length === 1 ? null : "refused"));
+  await refused("a photo goes in one's own folder only", () => tryUser(ben, photoSql, [`${anna}/s3/preview.jpg`, { size: 1 }]), /row-level security/);
+  await refused("a visitor can't call photo_quota_ok()", () => tryVisitor("select public.photo_quota_ok('x/y.jpg')"), /permission denied/);
   return problems;
 }

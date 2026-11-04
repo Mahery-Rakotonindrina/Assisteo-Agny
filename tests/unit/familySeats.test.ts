@@ -8,7 +8,7 @@ import { defaultPlansConfig, type CustomPlan, type PlansConfig, type Subscriptio
 // signed-in account, the subscriptions of each e-mail and the family seats
 // held here.
 type Row = Pick<Subscription, "id" | "email" | "plan" | "startsAt" | "endsAt" | "paymentMethod">;
-type Seat = { id: string; ownerId: string; ownerEmail: string; ownerName: string | null; memberEmail: string; createdAt: number };
+type Seat = { id: string; ownerId: string; ownerEmail: string; ownerName: string | null; memberEmail: string; createdAt: number; pending?: boolean };
 const state = vi.hoisted(() => ({
   account: null as { id: string; email: string } | null,
   rows: [] as Row[],
@@ -42,18 +42,31 @@ vi.mock("@/lib/server/familySeats", async () => {
     if (state.missing) throw new MigrationNeededError("0016_places_famille");
   };
   return {
-    seatForMember: async (email: string) => (state.missing ? null : (state.seats.find((seat) => seat.memberEmail === email) ?? null)),
+    // An invitation not accepted gives nothing (lib/server/familySeats.ts).
+    seatForMember: async (email: string) => (state.missing ? null : (state.seats.find((seat) => seat.memberEmail === email && !seat.pending) ?? null)),
     seatsOfOwner: async (ownerId: string) => (guard(), state.seats.filter((seat) => seat.ownerId === ownerId).sort((a, b) => a.createdAt - b.createdAt)),
     memberSeat: async (email: string) => (guard(), state.seats.find((seat) => seat.memberEmail === email) ?? null),
     addSeat: async (input: Omit<Seat, "id" | "createdAt">) => {
       guard();
-      const seat = { ...input, id: crypto.randomUUID(), createdAt: Date.now() + state.seats.length };
+      const seat = { ...input, id: crypto.randomUUID(), createdAt: Date.now() + state.seats.length, pending: true };
       state.seats.push(seat);
       return seat;
     },
     removeSeat: async (id: string, ownerId: string) => {
       guard();
       const seat = state.seats.find((entry) => entry.id === id && entry.ownerId === ownerId) ?? null;
+      state.seats = state.seats.filter((entry) => entry !== seat);
+      return seat;
+    },
+    acceptSeat: async (email: string) => {
+      guard();
+      const seat = state.seats.find((entry) => entry.memberEmail === email && entry.pending) ?? null;
+      if (seat) seat.pending = false;
+      return seat;
+    },
+    declineSeat: async (email: string) => {
+      guard();
+      const seat = state.seats.find((entry) => entry.memberEmail === email && entry.pending) ?? null;
       state.seats = state.seats.filter((entry) => entry !== seat);
       return seat;
     },
@@ -118,7 +131,7 @@ function reply() {
 async function call(method: string, body?: unknown) {
   const { res, api } = reply();
   await seatsRoute(request({ method, body }), api);
-  return res as { statusCode: number; body: { error?: { code: string }; seats?: number; members?: Array<{ id: string; email: string }> } };
+  return res as { statusCode: number; body: { error?: { code: string }; seats?: number; members?: Array<{ id: string; email: string; pending?: boolean }>; joined?: unknown; invitation?: unknown } };
 }
 
 /** The plan of the signed-in member, as every route reads it. */
@@ -266,6 +279,12 @@ describe("resolvePlan for a person on a family seat", () => {
     expect((await memberPlan("e@example.com")).current.plan).toBe("free");
   });
 
+  it("a seat still waiting for its answer gives nothing", async () => {
+    state.rows = [row(OWNER.email, "premium", -5, 25)];
+    state.seats = [{ ...seat("mere@example.com"), pending: true }];
+    expect((await memberPlan()).current.plan).toBe("free");
+  });
+
   it("works as before the migration: the person's own plan", async () => {
     state.missing = true;
     state.rows = [row("mere@example.com", "lite", -1, 29)];
@@ -293,6 +312,52 @@ describe("POST /api/family-seats", () => {
     const removed = await call("POST", { action: "remove", id: added.body.members?.[0].id });
     expect(removed.body.members).toEqual([]);
     expect(state.logged).toEqual(["family_seat_add", "family_seat_remove"]);
+  });
+
+  it("only invites: the person has nothing until they accept, then the plan, and they may refuse", async () => {
+    state.rows = [row(OWNER.email, "premium", -5, 25)];
+    const invited = await call("POST", { action: "add", email: "mere@example.com" });
+    // The subscriber sees the person, waiting; the seat counts.
+    expect(invited.body.members).toMatchObject([{ email: "mere@example.com", pending: true }]);
+    expect((await memberPlan()).current.plan).toBe("free");
+    expect((await memberPlan()).seat).toBeNull();
+
+    state.account = { id: "member-1", email: "mere@example.com" };
+    const seen = await call("GET");
+    expect(seen.body).toMatchObject({ joined: null, invitation: { owner: "Rado", plan: "premium" } });
+    expect((await call("POST", { action: "accept" })).body).toMatchObject({ joined: { owner: "Rado" }, invitation: null });
+    expect((await memberPlan()).current.plan).toBe("premium");
+    expect(state.logged).toEqual(["family_seat_add", "family_seat_accept"]);
+
+    // Another person refuses theirs: the seat is free again, and nothing was given.
+    state.account = OWNER;
+    await call("POST", { action: "add", email: "fils@example.com" });
+    state.account = { id: "member-2", email: "fils@example.com" };
+    expect((await call("POST", { action: "decline" })).body).toMatchObject({ joined: null, invitation: null });
+    expect(state.seats.map((entry) => entry.memberEmail)).toEqual(["mere@example.com"]);
+    expect(state.logged).toContain("family_seat_decline");
+  });
+
+  it("accepts nothing without an invitation, and never another person's", async () => {
+    state.account = { id: "member-1", email: "mere@example.com" };
+    expect((await call("POST", { action: "accept" })).statusCode).toBe(404);
+    state.seats = [seat("mere@example.com")];
+    // Already accepted: nothing waits.
+    expect((await call("POST", { action: "accept" })).statusCode).toBe(404);
+    // An invitation for someone else stays theirs.
+    state.seats = [{ ...seat("fils@example.com"), pending: true }];
+    expect((await call("POST", { action: "accept" })).statusCode).toBe(404);
+    expect(state.seats[0].pending).toBe(true);
+    // A decline doesn't remove an accepted seat (that is leaving).
+    state.seats = [seat("mere@example.com")];
+    await call("POST", { action: "decline" });
+    expect(state.seats).toHaveLength(1);
+  });
+
+  it("keeps a waiting invitation's seat taken (one seat or invitation per person)", async () => {
+    state.rows = [row(OWNER.email, "premium", -5, 25)];
+    state.seats = [{ ...seat("mere@example.com", 0, "other", "other@example.com"), pending: true }];
+    expect((await call("POST", { action: "add", email: "mere@example.com" })).body.error?.code).toBe("seat_taken");
   });
 
   it("refuses when every seat is taken", async () => {
@@ -355,6 +420,10 @@ describe("reminder pushes for a person on a family seat", () => {
     expect(paidReminderUsers(users, [sub(OWNER.email, "premium", -5, 25)], NOW, defaultPlansConfig, []).has("member-1")).toBe(false);
     const lowered = { ...defaultPlansConfig, offers: { ...defaultPlansConfig.offers, premium: { ...defaultPlansConfig.offers.premium, familySeats: 0 } } };
     expect(paidReminderUsers(users, [sub(OWNER.email, "premium", -5, 25)], NOW, lowered, [], seats).has("member-1")).toBe(false);
+  });
+
+  it("not while the invitation waits for its answer", () => {
+    expect(paidReminderUsers(users, [sub(OWNER.email, "premium", -5, 25)], NOW, defaultPlansConfig, [], [{ ...seats[0], pending: true }]).has("member-1")).toBe(false);
   });
 });
 

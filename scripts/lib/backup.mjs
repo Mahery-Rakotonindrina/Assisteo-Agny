@@ -105,13 +105,24 @@ export async function exportData(client) {
 }
 
 /**
+ * A row as an older backup had it. A family seat saved before migration 0019
+ * has no `accepted_at`: it comes back accepted (as the migration made it),
+ * not as an invitation waiting.
+ */
+export function withLegacyDefaults(table, row) {
+  if (table === "family_seats" && !("accepted_at" in row)) return { ...row, accepted_at: row.created_at };
+  return row;
+}
+
+/**
  * Upserts the app tables back, inside the caller's transaction. The accounts
  * must exist (same user ids): the rows reference auth.users.
  */
 export async function restoreData(client, data, log = () => {}) {
   for (const [table, conflict] of Object.entries(RESTORE_KEYS)) {
     const rows = data.tables[table] ?? [];
-    for (const row of rows) {
+    for (const saved of rows) {
+      const row = withLegacyDefaults(table, saved);
       const columns = Object.keys(row);
       const values = columns.map((column) => (row[column] !== null && typeof row[column] === "object" && !(row[column] instanceof Date) ? JSON.stringify(row[column]) : row[column]));
       const updates = columns.filter((column) => !conflict.includes(column)).map((column) => `"${column}" = excluded."${column}"`);

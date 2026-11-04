@@ -18,9 +18,10 @@ function toError(message: string | undefined, status?: number): SignInError {
   return "unavailable";
 }
 
-export async function sendSignInCode(email: string): Promise<SignInError | null> {
+/** `create: false`: only for an existing account (the code asked before deleting it). */
+export async function sendSignInCode(email: string, { create = true }: { create?: boolean } = {}): Promise<SignInError | null> {
   if (!accountsAvailable) return "unavailable";
-  const { error } = await supabase().auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
+  const { error } = await supabase().auth.signInWithOtp({ email, options: { shouldCreateUser: create } });
   return error ? toError(error.message, error.status) : null;
 }
 

@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { LogOut, UserPlus, Users, X } from "lucide-react";
+import { Check, LogOut, MailPlus, UserPlus, Users, X } from "lucide-react";
 import { Button } from "@/components/Button";
 import { useToast } from "@/components/Toast";
 import { usePlan } from "@/hooks/usePlan";
@@ -18,9 +18,11 @@ function failureKey(error: unknown) {
     case "seats_full":
       return "plans.family.full";
     case "seat_taken":
-      return "plans.family.taken";
+      return "plans.family.takenInvited";
     case "seat_self":
       return "plans.family.self";
+    case "not_found":
+      return "plans.family.gone";
     case "plan_required":
       return "plans.family.noSeats";
     case "migration_needed":
@@ -73,7 +75,8 @@ export function FamilySeats() {
     try {
       setState(await httpClient.post<FamilySeatsResponse>("/api/family-seats", action, { headers: await authHeaders() }));
       toast(done);
-      if (action.action === "leave") await planStore.refresh();
+      // The plan of a person changes when they accept or give a seat back.
+      if (action.action === "leave" || action.action === "accept") await planStore.refresh();
       return true;
     } catch (error) {
       toast(t(failureKey(error)), "error");
@@ -87,7 +90,7 @@ export function FamilySeats() {
     event.preventDefault();
     const parsed = SeatEmailSchema.safeParse(email);
     if (!parsed.success) return toast(t("plans.family.invalid"), "error");
-    if (await act({ action: "add", email: parsed.data }, t("plans.family.added", { email: parsed.data }))) setEmail("");
+    if (await act({ action: "add", email: parsed.data }, t("plans.family.invited", { email: parsed.data }))) setEmail("");
   };
 
   if (!signedIn || !plan) return null;
@@ -96,6 +99,23 @@ export function FamilySeats() {
 
   return (
     <>
+      {state?.invitation && (
+        <div className={styles.card} data-testid="family-invitation">
+          <p className={styles.text}>
+            <MailPlus size={16} aria-hidden /> {t("plans.family.invitation", { owner: state.invitation.owner })}
+          </p>
+          <p className={styles.hint}>{t("plans.family.invitationHint")}</p>
+          <div className={styles.row}>
+            <Button icon={<Check />} disabled={busy} onClick={() => void act({ action: "accept" }, t("plans.family.accepted"))} data-testid="family-accept">
+              {t("plans.family.accept")}
+            </Button>
+            <Button variant="ghost" disabled={busy} onClick={() => void act({ action: "decline" }, t("plans.family.declined"))} data-testid="family-decline">
+              {t("plans.family.decline")}
+            </Button>
+          </div>
+        </div>
+      )}
+
       {state?.joined && owner && (
         <div className={styles.card} data-testid="family-joined">
           <p className={styles.text}>
@@ -136,6 +156,7 @@ export function FamilySeats() {
                 <li key={member.id} data-inactive={index >= state.seats ? "" : undefined}>
                   <span>
                     {member.email}
+                    {member.pending && <small>{t("plans.family.pending")}</small>}
                     {index >= state.seats && <small>{t("plans.family.inactive")}</small>}
                   </span>
                   <Button

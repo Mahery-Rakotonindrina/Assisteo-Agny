@@ -17,11 +17,15 @@ export const FamilySeatActionSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("remove"), id: z.uuid() }),
   /** The invited person gives their seat back. */
   z.object({ action: z.literal("leave") }),
+  /** The invited person accepts the invitation: only then do they get the plan. */
+  z.object({ action: z.literal("accept") }),
+  /** The invited person refuses the invitation. */
+  z.object({ action: z.literal("decline") }),
 ]);
 export type FamilySeatAction = z.infer<typeof FamilySeatActionSchema>;
 
-/** One seat as the subscriber sees it. */
-export type FamilySeat = { id: string; email: string; createdAt: number };
+/** One seat as the subscriber sees it; `pending`: the person has not accepted yet (the seat is kept for them, they get nothing). */
+export type FamilySeat = { id: string; email: string; createdAt: number; pending?: boolean };
 
 /** GET /api/family-seats. */
 export type FamilySeatsResponse = {
@@ -33,6 +37,8 @@ export type FamilySeatsResponse = {
   members: FamilySeat[];
   /** The seat this account holds in someone else's plan, if any (to leave it). */
   joined: { owner: string } | null;
+  /** An invitation to a seat in someone else's plan, waiting for this account's answer. */
+  invitation?: { owner: string; /** The subscriber's plan (a built-in id or a created plan's). */ plan: string } | null;
 };
 
 /** Why an add is refused, as the API's error code. */

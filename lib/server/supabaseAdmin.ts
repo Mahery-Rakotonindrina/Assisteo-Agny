@@ -36,13 +36,21 @@ async function lookupConfirmed(userId: string) {
  * address nobody proved to own.
  */
 export async function verifyAccount(req: NextApiRequest): Promise<{ id: string; email: string | null } | null> {
+  const verified = await verifiedClaims(req);
+  if (!verified) return null;
+  const { id, claims } = verified;
+  const email = claims.email;
+  if (typeof email !== "string" || !email) return { id, email: null };
+  return { id, email: (await emailConfirmed(id, lookupConfirmed)) ? email.toLowerCase() : null };
+}
+
+/** The user id and the verified claims of the session token (e-mail, amr…), or null. */
+export async function verifiedClaims(req: NextApiRequest): Promise<{ id: string; claims: { email?: unknown; amr?: unknown } } | null> {
   const token = req.headers.authorization?.match(/^Bearer\s+(.+)$/i)?.[1];
   if (!token || !accountsEnabled) return null;
   // Verifies the JWT signature (locally with asymmetric keys, else via the Auth server).
   const { data, error } = await supabaseAdmin().auth.getClaims(token);
-  const sub = data?.claims?.sub;
-  const email = data?.claims?.email;
-  if (error || typeof sub !== "string") return null;
-  if (typeof email !== "string" || !email) return { id: sub, email: null };
-  return { id: sub, email: (await emailConfirmed(sub, lookupConfirmed)) ? email.toLowerCase() : null };
+  const claims = data?.claims;
+  if (error || !claims || typeof claims.sub !== "string") return null;
+  return { id: claims.sub, claims };
 }

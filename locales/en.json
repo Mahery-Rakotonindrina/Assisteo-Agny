@@ -967,7 +967,9 @@
         "plan_delete": "Created plan deleted",
         "family_seat_add": "Family seat added (by the subscriber)",
         "family_seat_remove": "Family seat removed (by the subscriber)",
-        "family_seat_leave": "Family seat left"
+        "family_seat_leave": "Family seat left",
+        "family_seat_accept": "Family seat accepted (by the invited person)",
+        "family_seat_decline": "Family seat invitation declined"
       }
     },
     "export": {
@@ -1156,7 +1158,10 @@
       "expired_code": "This code has expired. Ask for a new one.",
       "network": "No connection. Check your network.",
       "unavailable": "Sign-in isn’t available right now."
-    }
+    },
+    "deleteCodeIntro": "To make sure it's really you, we first send a code to {email}.",
+    "deleteCodeAgain": "The code expired. Start again: ask for a new code, then enter it right away.",
+    "photosFull": "Your photo space is full: new photos stay on this device and are not sent. Delete old scans to free up space."
   },
   "reminders": {
     "title": "Set a reminder",
@@ -1714,7 +1719,19 @@
       "leave": "Leave this seat",
       "leaveConfirm": "Yes, leave",
       "cancel": "Cancel",
-      "left": "You left the family seat."
+      "left": "You left the family seat.",
+      "invited": "{email} is invited. The seat is theirs as soon as they accept.",
+      "pending": "Invitation pending",
+      "takenInvited": "This person already holds a family seat or has an invitation waiting.",
+      "gone": "This invitation no longer exists.",
+      "invitation": "{owner} invites you to share their plan.",
+      "invitationHint": "If you accept, you get the features of their plan and your own quotas, while their subscription runs. You keep all your data.",
+      "accept": "Accept",
+      "accepted": "Done: you now enjoy the plan.",
+      "decline": "Decline",
+      "declined": "Invitation declined.",
+      "banner": "{owner} invites you to their family ({plan} plan).",
+      "later": "Later"
     }
   },
   "deep": {
