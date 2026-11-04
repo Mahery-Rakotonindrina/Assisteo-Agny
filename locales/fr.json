@@ -967,7 +967,9 @@
         "plan_delete": "Offre créée supprimée",
         "family_seat_add": "Place famille ajoutée (par l’abonné)",
         "family_seat_remove": "Place famille retirée (par l’abonné)",
-        "family_seat_leave": "Place famille quittée"
+        "family_seat_leave": "Place famille quittée",
+        "family_seat_accept": "Place famille acceptée (par la personne invitée)",
+        "family_seat_decline": "Invitation à une place famille refusée"
       }
     },
     "export": {
@@ -1156,7 +1158,10 @@
       "expired_code": "Ce code a expiré. Demande-en un nouveau.",
       "network": "Pas de connexion. Vérifie ton réseau.",
       "unavailable": "La connexion n’est pas disponible pour le moment."
-    }
+    },
+    "deleteCodeIntro": "Pour être sûr que c’est bien toi, on t’envoie d’abord un code à {email}.",
+    "deleteCodeAgain": "Le code a expiré. Recommence : demande un nouveau code, puis valide-le tout de suite.",
+    "photosFull": "Ton espace photos est plein : les nouvelles photos restent sur cet appareil, sans être envoyées. Supprime d’anciens scans pour libérer de la place."
   },
   "reminders": {
     "title": "Programmer un rappel",
@@ -1712,7 +1717,19 @@
       "leave": "Quitter cette place",
       "leaveConfirm": "Oui, quitter",
       "cancel": "Annuler",
-      "left": "Tu as quitté la place famille."
+      "left": "Tu as quitté la place famille.",
+      "invited": "On a invité {email}. La place est à lui dès qu’il accepte.",
+      "pending": "Invitation en attente",
+      "takenInvited": "Cette personne a déjà une place famille ou une invitation en attente.",
+      "gone": "Cette invitation n’existe plus.",
+      "invitation": "{owner} t’invite à partager son offre.",
+      "invitationHint": "Si tu acceptes, tu as les fonctions de son offre et tes propres quotas, tant que son abonnement court. Tu gardes toutes tes données.",
+      "accept": "Accepter",
+      "accepted": "C’est fait : tu profites maintenant de l’offre.",
+      "decline": "Refuser",
+      "declined": "Invitation refusée.",
+      "banner": "{owner} t’invite dans sa famille (offre {plan}).",
+      "later": "Plus tard"
     }
   },
   "deep": {

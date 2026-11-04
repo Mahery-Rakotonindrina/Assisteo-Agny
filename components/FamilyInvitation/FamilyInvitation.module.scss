@@ -1,0 +1,69 @@
+@use "../../styles/mixins" as *;
+
+// A bottom window with a backdrop, like the other sheets: it covers the screen
+// only while it is open, then nothing stays over the screen's buttons.
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+
+  @include desktop {
+    align-items: center;
+  }
+}
+
+.sheet {
+  width: 100%;
+  max-width: var(--app-width);
+  max-height: 92vh;
+  max-height: calc(var(--viewport-height, 100dvh) * 0.92);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1.25rem 1.25rem calc(1.25rem + var(--safe-bottom));
+  border-radius: 28px 28px 0 0;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+
+  @include desktop {
+    max-width: 440px;
+    border-radius: 28px;
+  }
+}
+
+.title {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 1.05rem;
+
+  svg {
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+  }
+}
+
+.hint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+
+  // A real touch target, whatever the text size.
+  button {
+    min-height: 2.75rem;
+  }
+}

@@ -1,11 +1,15 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { applyCors, clientIp, sendError } from "@/lib/server/http";
 import { rateLimit } from "@/lib/server/rateLimit";
-import { accountsEnabled, supabaseAdmin, verifyUser } from "@/lib/server/supabaseAdmin";
+import { codeIsRecent } from "@/lib/server/recentSignIn";
+import { accountsEnabled, supabaseAdmin, verifiedClaims } from "@/lib/server/supabaseAdmin";
 
 // Deletes the signed-in user's account for good: photos first (storage is not
 // covered by the database cascade), then the auth user, which cascades to
-// analyses, settings and the encrypted AI key.
+// analyses, settings and the encrypted AI key. Only right after the person
+// typed a code sent to their e-mail (lib/server/recentSignIn.ts): the session
+// alone is not enough. An older app, which doesn't ask for the code, is told
+// to update (403 code_required).
 
 const BUCKET = "scans";
 const PAGE = 1000;
@@ -44,8 +48,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const limit = await rateLimit(`account-delete:${clientIp(req)}`, 5, 60_000);
   if (!limit.ok) return sendError(res, 429, "rate_limited", "Too many requests.");
 
-  const userId = await verifyUser(req);
-  if (!userId) return sendError(res, 401, "invalid_key", "Sign in again.");
+  const verified = await verifiedClaims(req).catch(() => null);
+  if (!verified) return sendError(res, 401, "invalid_key", "Sign in again.");
+  const userId = verified.id;
+  if (!codeIsRecent(verified.claims, Date.now())) {
+    return sendError(res, 403, "code_required", "Confirm with the code sent to your e-mail, then try again. If your app doesn't ask for a code, update it to delete your account.");
+  }
 
   res.setHeader("Cache-Control", "no-store");
   try {

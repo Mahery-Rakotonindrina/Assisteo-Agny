@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import type { HistoryEntry } from "@/types/history";
 import { isSavingData } from "./dataSaver";
 import { historyStore } from "./historyStore";
+import { storageQuota } from "./storageQuota";
 
 // Two-way sync of the history between this device and the user's account.
 //
@@ -231,7 +232,12 @@ async function pushEntry(uid: string, entry: HistoryEntry) {
       db.storage.from(BUCKET).upload(remote.thumbnail, await dataUrlToBlob(entry.thumbnail), { contentType: "image/jpeg", upsert: true }),
     ]);
     const failed = uploads.find((upload) => upload.error);
-    if (failed?.error) throw failed.error;
+    if (failed?.error) {
+      // The account's storage is full (or the file too big): the scan stays on this device, still to send, and the others go on.
+      if (storageQuota.refused(failed.error)) return;
+      throw failed.error;
+    }
+    storageQuota.accepted();
   }
 
   const { error } = await db.from("analyses").upsert({
@@ -338,6 +344,7 @@ export const sync = {
     unsubscribeHistory = null;
     await running?.catch(() => undefined);
     historyStore.setKeepTombstones(false);
+    storageQuota.reset();
     if (wipe) {
       await historyStore.wipe();
       if (uid) await Preferences.remove({ key: cursorKey(uid) });

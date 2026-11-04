@@ -773,6 +773,8 @@ export type ApiErrorCode =
   | "seats_full"
   | "seat_taken"
   | "seat_self"
+  /** Deleting the account: the code sent by e-mail was not typed just now (or the app is too old to ask for it). */
+  | "code_required"
   | "method_not_allowed";
 
 export type ApiErrorBody = {

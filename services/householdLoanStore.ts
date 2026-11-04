@@ -1,6 +1,7 @@
 import { clear, createStore, del, get, set, values } from "idb-keyval";
 import { acceptHouseholdLoanRow, gatherHouseholdLoans, GONE_AUTHOR, isMineRow, personalCopy, type HouseholdLoan, type HouseholdLoanRecord, type HouseholdLoanRow, type HouseholdRepaymentRow } from "@/lib/householdLoans";
 import { cappedRepayment, loanRemaining } from "@/lib/loans";
+import { supabase } from "@/lib/supabase";
 import { createId } from "./historyStore";
 import { cleanLoanFields, loanStore, type LoanFields } from "./loanStore";
 import { createRowSync } from "./rowSync";
@@ -108,11 +109,25 @@ export const householdLoanStore = {
     return left > 0 ? householdLoanStore.addRepayment(loanId, { amountMga: left, at }, me, authorName) : null;
   },
 
-  /** Removes one of this member's repayments; another's stays. */
-  async removeRepayment(repaymentId: string, me: string | null) {
+  /**
+   * Removes a repayment: this member's own, or (`asLender`: it is on this member's loan) one another member
+   * noted. A row is only pushed by its author, so the lender's removal goes through the server
+   * (migration 0021); true when it was removed.
+   */
+  async removeRepayment(repaymentId: string, me: string | null, asLender = false) {
     const record = await get<HouseholdLoanRecord>(repaymentId, db());
-    if (!record || record.deletedAt || record.kind !== "repayment" || !isMineRow(record, me)) return;
-    await drop(record);
+    if (!record || record.deletedAt || record.kind !== "repayment") return false;
+    if (isMineRow(record, me)) {
+      await drop(record);
+      return true;
+    }
+    if (!asLender) return false;
+    const { data, error } = await supabase().rpc("household_remove_repayment", { p_id: repaymentId });
+    if (error || data !== true) return false;
+    // The other members drop it on their next sync; here, at once.
+    await del(repaymentId, db());
+    notify();
+    return true;
   },
 
   /** Removes one of this member's loans, with the repayments they wrote on it (the others' are left out from then on). */

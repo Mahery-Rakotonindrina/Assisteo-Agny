@@ -392,7 +392,7 @@ function LoanCard({ loan, now, readOnly, book, author, authorOf, onEdit, onRepay
                   </>
                 )}
               </span>
-              {!readOnly && book.canRemoveRepayment(repayment) && (
+              {!readOnly && book.canRemoveRepayment(repayment, loan) && (
                 <button type="button" className={styles.iconButton} onClick={() => void book.removeRepayment(loan, repayment)} aria-label={t("loans.detail.removeRepayment")}>
                   <X size={14} />
                 </button>

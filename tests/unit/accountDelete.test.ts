@@ -2,11 +2,12 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { describe, expect, it, vi } from "vitest";
 
 // A stand-in for the "scans" bucket: files at any level, listed one folder at a time like Supabase.
-const bucket = vi.hoisted(() => ({ files: [] as string[], empty: [] as string[], removed: [] as string[][], deleted: [] as string[] }));
+const bucket = vi.hoisted(() => ({ files: [] as string[], empty: [] as string[], removed: [] as string[][], deleted: [] as string[], claims: {} as { amr?: unknown } }));
+const nowSeconds = () => Math.floor(Date.now() / 1000);
 vi.mock("@/lib/server/redis", () => ({ redis: null }));
 vi.mock("@/lib/server/supabaseAdmin", () => ({
   accountsEnabled: true,
-  verifyUser: async () => "u1",
+  verifiedClaims: async () => ({ id: "u1", claims: bucket.claims }),
   supabaseAdmin: () => ({
     storage: {
       from: () => ({
@@ -37,7 +38,28 @@ vi.mock("@/lib/server/supabaseAdmin", () => ({
 
 const { default: accountRoute, listUserFiles } = await import("@/pages/api/account");
 
+const call = async (ip: string) => {
+  const res = { statusCode: 200, body: undefined as unknown, status(code: number) { this.statusCode = code; return this; }, json(body: unknown) { this.body = body; return this; }, end() { return this; }, setHeader() {} };
+  await accountRoute({ method: "DELETE", headers: {}, socket: { remoteAddress: ip } } as unknown as NextApiRequest, res as unknown as NextApiResponse);
+  return res;
+};
+
 describe("deleting an account", () => {
+  it("asks for a code typed just now: an older app, or a session left open, is refused and nothing is erased", async () => {
+    bucket.deleted = [];
+    bucket.removed = [];
+    bucket.files = ["u1/scan-1/preview.jpg"];
+    // Opened by a password, or an old token without "amr": no proof.
+    for (const claims of [{}, { amr: [{ method: "password", timestamp: nowSeconds() }] }, { amr: [{ method: "otp", timestamp: nowSeconds() - 3600 }] }]) {
+      bucket.claims = claims;
+      const res = await call("10.3.0.2");
+      expect(res.statusCode).toBe(403);
+      expect(res.body).toMatchObject({ error: { code: "code_required" } });
+    }
+    expect(bucket.deleted).toEqual([]);
+    expect(bucket.removed).toEqual([]);
+  });
+
   it("lists every file under the user's folder, at any level", async () => {
     bucket.files = [
       "u1/stray.jpg",
@@ -57,9 +79,8 @@ describe("deleting an account", () => {
   it("removes the files by batches of 1000, then the user", async () => {
     bucket.files = Array.from({ length: 1200 }, (_, index) => `u1/loans/l${index % 3}/p${index}.jpg`).concat("u1/scan-1/preview.jpg");
     bucket.removed = [];
-    const res = { statusCode: 200, status(code: number) { this.statusCode = code; return this; }, json() { return this; }, end() { return this; }, setHeader() {} };
-    const req = { method: "DELETE", headers: {}, socket: { remoteAddress: "10.3.0.1" } } as unknown as NextApiRequest;
-    await accountRoute(req, res as unknown as NextApiResponse);
+    bucket.claims = { amr: [{ method: "otp", timestamp: nowSeconds() - 30 }] };
+    const res = await call("10.3.0.1");
     expect(res.statusCode).toBe(204);
     expect(bucket.removed.map((batch) => batch.length)).toEqual([1000, 201]);
     expect(bucket.removed.flat()).toContain("u1/scan-1/preview.jpg");

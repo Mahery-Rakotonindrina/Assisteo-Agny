@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { isSavingData } from "./dataSaver";
 import { loanProofStore } from "./loanProofStore";
 import { loanStore } from "./loanStore";
+import { storageQuota } from "./storageQuota";
 
 // "Prêts": the photo proofs in the account, like the scans' photos
 // (services/sync.ts): the private "scans" bucket, under
@@ -61,7 +62,12 @@ async function pushPhotos(uid: string) {
         supabase().storage.from(BUCKET).upload(paths.thumbnail, await dataUrlToBlob(image.thumbnail), { contentType: "image/jpeg", upsert: true }),
       ]);
       const failed = uploads.find((upload) => upload.error);
-      if (failed?.error) throw failed.error;
+      if (failed?.error) {
+        // The account's storage is full (or the file too big): the photo stays on this device, still to send.
+        if (storageQuota.refused(failed.error)) continue;
+        throw failed.error;
+      }
+      storageQuota.accepted();
       // The loan now says where its photo is: pushed with it by the loans' sync.
       await loanStore.setProofRemote(loan.id, proof.id, paths.preview);
     }
