@@ -1,14 +1,15 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { ArrowLeft, Cloud, Loader2, Mail, X } from "lucide-react";
+import { ArrowLeft, ClipboardPaste, Cloud, Loader2, Mail, X } from "lucide-react";
 import { Button } from "@/components/Button";
 import { LegalConsent } from "@/components/LegalConsent";
 import { useToast } from "@/components/Toast";
 import { useSheetKeyboard } from "@/hooks/useSheetKeyboard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { easeOut, spring } from "@/lib/motion";
+import { CODE_LENGTH, codeFrom, MIN_CODE_LENGTH } from "@/lib/signInCode";
 import { sendSignInCode, verifySignInCode, type SignInError } from "@/services/account";
-import { haptics } from "@/services/device";
+import { haptics, readClipboard } from "@/services/device";
 import styles from "./AccountSheet.module.scss";
 
 type AccountSheetProps = {
@@ -17,14 +18,6 @@ type AccountSheetProps = {
 };
 
 const RESEND_DELAY_S = 60;
-/**
- * Sign-in codes are 8 digits, as Supabase sends them (Authentication → Email
- * → OTP length). A full code is checked as soon as it is typed; from 6 digits
- * a button checks it too, should that setting change (Supabase allows 6 to 10).
- */
-const CODE_LENGTH = 8;
-const MIN_CODE_LENGTH = 6;
-const MAX_CODE_LENGTH = 10;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** Passwordless sign-in: e-mail, then the one-time code received by e-mail. */
@@ -95,6 +88,24 @@ export function AccountSheet({ open, onClose }: AccountSheetProps) {
     haptics.success();
     toast(t("account.signedIn"));
     close();
+  };
+
+  /** A full code, typed or pasted, is checked at once. */
+  const takeCode = (digits: string) => {
+    setCode(digits);
+    setError(null);
+    if (digits.length === CODE_LENGTH && !busy) void verify(digits);
+  };
+
+  // « Coller le code »: the code copied from the e-mail, even with the words around it.
+  const paste = async () => {
+    const digits = codeFrom((await readClipboard()) ?? "");
+    if (digits.length < MIN_CODE_LENGTH) {
+      toast(t("account.pasteNone"), "error");
+      codeRef.current?.focus();
+      return;
+    }
+    takeCode(digits);
   };
 
   return (
@@ -192,18 +203,18 @@ export function AccountSheet({ open, onClose }: AccountSheetProps) {
                     type="text"
                     inputMode="numeric"
                     autoComplete="one-time-code"
-                    maxLength={MAX_CODE_LENGTH}
                     placeholder={"•".repeat(CODE_LENGTH)}
                     value={code}
                     aria-label={t("account.codeTitle")}
-                    onChange={(event) => {
-                      const digits = event.target.value.replace(/\D/g, "").slice(0, MAX_CODE_LENGTH);
-                      setCode(digits);
-                      setError(null);
-                      if (digits.length === CODE_LENGTH && !busy) void verify(digits);
-                    }}
+                    // No maxLength: a pasted subject ("Ton code … : 12345678") would be cut before its code.
+                    onChange={(event) => takeCode(codeFrom(event.target.value))}
                     disabled={busy}
                   />
+                  {!busy && code.length < MIN_CODE_LENGTH && (
+                    <Button variant="secondary" block icon={<ClipboardPaste />} onClick={() => void paste()}>
+                      {t("account.pasteCode")}
+                    </Button>
+                  )}
                   {busy && (
                     <p className={styles.small}>
                       <Loader2 size={14} className={styles.spin} /> {t("account.verifying")}
