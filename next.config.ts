@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import type { NextConfig } from "next";
+import { bootScript, scriptHash } from "./lib/bootScript";
 
 // Version shown in Settings: the APK's own version name on CI mobile builds
 // (1.0.<run>), otherwise package.json, plus the deployed commit when known.
@@ -32,10 +33,12 @@ function originOf(value: string | undefined) {
   }
 }
 
-// Content Security Policy for the web app. Inline scripts and styles stay
-// allowed: the Pages Router, styled-jsx and motion need them (Next's
-// "without nonces" setup). Network access is limited to our API, Supabase
-// (auth, data, photos, realtime) and Sentry when configured.
+// Content Security Policy for the web app. No inline script runs but the
+// one of pages/_document.tsx, allowed by its hash: the Pages Router's own
+// data (__NEXT_DATA__) is JSON, never run. A nonce would need every page
+// rendered per request. Inline styles stay allowed: motion writes them.
+// Network access is limited to our API, Supabase (auth, data, photos,
+// realtime) and Sentry when configured.
 function contentSecurityPolicy() {
   const supabase = originOf(process.env.NEXT_PUBLIC_SUPABASE_URL);
   const sentry = originOf(process.env.NEXT_PUBLIC_SENTRY_DSN?.replace(/\/\/[^@]+@/, "//"));
@@ -43,7 +46,8 @@ function contentSecurityPolicy() {
   const directives = {
     "default-src": ["'self'"],
     // 'wasm-unsafe-eval' lets the QR code reader compile its WebAssembly (not JavaScript eval).
-    "script-src": ["'self'", "'unsafe-inline'", "'wasm-unsafe-eval'", isDev && "'unsafe-eval'"],
+    // In development, Next's own tooling still runs inline scripts.
+    "script-src": ["'self'", isDev ? "'unsafe-inline'" : scriptHash(bootScript), "'wasm-unsafe-eval'", isDev && "'unsafe-eval'"],
     "style-src": ["'self'", "'unsafe-inline'"],
     "img-src": ["'self'", "data:", "blob:", supabase],
     "media-src": ["'self'", "blob:"],

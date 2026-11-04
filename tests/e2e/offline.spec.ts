@@ -49,6 +49,6 @@ test("offline: « Mes poches » and « Mes dépenses » open again after a first
   await expect(page.getByRole("heading", { name: "Tu es hors ligne" })).toBeVisible();
 
   await context.setOffline(false);
-  await page.getByRole("button", { name: "Réessayer" }).click();
+  await page.getByRole("link", { name: "Réessayer" }).click();
   await expect(page.getByRole("heading", { name: "Tu es hors ligne" })).toHaveCount(0);
 });

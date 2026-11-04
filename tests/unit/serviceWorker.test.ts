@@ -73,6 +73,8 @@ describe("public/sw.js", () => {
     expect(sw.strategyFor(get(`${ORIGIN}/pockets?add=1`, "navigate"), ORIGIN)).toBe("page");
     expect(sw.strategyFor(get(`${ORIGIN}/_next/static/chunks/main-1.js`), ORIGIN)).toBe("static");
     expect(sw.strategyFor(get(`${ORIGIN}/icons/icon-192.png`), ORIGIN)).toBe("asset");
+    // Every page's first script (no inline one under the CSP): fetched, and kept for offline.
+    expect(sw.strategyFor(get(`${ORIGIN}/next-boot.js`), ORIGIN)).toBe("asset");
     expect(sw.strategyFor(get(`${ORIGIN}/api/plan`), ORIGIN)).toBeNull();
     expect(sw.strategyFor(get(`${ORIGIN}/api/plan`, "navigate"), ORIGIN)).toBeNull();
     expect(sw.strategyFor(get("https://x.supabase.co/rest/v1/expenses"), ORIGIN)).toBeNull();

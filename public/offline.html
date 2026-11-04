@@ -42,7 +42,6 @@
         gap: 0.75rem;
         margin-top: 1.5rem;
       }
-      button,
       a {
         display: inline-flex;
         align-items: center;
@@ -56,11 +55,11 @@
         text-decoration: none;
         cursor: pointer;
       }
-      button {
+      .retry {
         background: #c6ff4d;
         color: #0b0c10;
       }
-      a {
+      .home {
         background: #23262e;
         color: #f4f5f0;
       }
@@ -75,8 +74,9 @@
       <h1>Tu es hors ligne</h1>
       <p>Cette page n’a pas encore été ouverte sur cet appareil. Les écrans déjà visités s’ouvrent sans internet, avec tes données.</p>
       <div class="actions">
-        <button type="button" onclick="location.reload()">Réessayer</button>
-        <a href="/">Accueil</a>
+        <!-- No script (the site's CSP allows no inline one): an empty link opens this same address again. -->
+        <a class="retry" href="">Réessayer</a>
+        <a class="home" href="/">Accueil</a>
       </div>
       <p class="en" lang="en">You are offline. This page was never opened on this device: the screens you already visited open without internet.</p>
     </main>

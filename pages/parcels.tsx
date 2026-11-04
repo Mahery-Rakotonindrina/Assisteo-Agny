@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { AnimatePresence, motion } from "motion/react";
 import { useDeferredValue, useEffect, useRef, useState } from "react";
 import {
@@ -87,9 +88,13 @@ export default function ParcelsPage() {
   const [range, setRange] = useState<DayRange>(thisMonthSoFar);
   const [exporting, setExporting] = useState(false);
   const [clientFilter, setClientFilter] = useState<{ name: string | null } | null>(null);
-  // One parcel open at a time: opening one closes the other.
-  const [openId, setOpenId] = useState<string | null>(null);
-  const toggle = (id: string) => setOpenId((current) => (current === id ? null : id));
+  // One parcel open at a time: opening one closes the other. A parcel opened
+  // from a scan ("?open=…") stays open until the user picks another one.
+  const router = useRouter();
+  const opened = typeof router.query.open === "string" ? router.query.open : null;
+  const [picked, setPicked] = useState<string | null | undefined>(undefined);
+  const openId = picked === undefined ? opened : picked;
+  const toggle = (id: string) => setPicked(openId === id ? null : id);
   const showClients = reseller && view === "clients";
   const toast = useToast();
   const periodParcels = parcels.filter((parcel) => inPeriod(parcel, period, now, range));

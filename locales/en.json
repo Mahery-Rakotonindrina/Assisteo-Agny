@@ -1356,6 +1356,7 @@
     "notThisOne": "Not this parcel? Add it on its own",
     "earlierUpdated": "You scanned it before on {date}: that scan now shows the latest status.",
     "openEarlier": "See the earlier scan",
+    "openTracked": "See the parcel",
     "limitReached": "Your plan follows up to {count} parcels at once. Mark some as received, or move to a bigger plan.",
     "shipping": {
       "label": "Shipping",
@@ -1654,7 +1655,8 @@
       "title": "Try Premium for {days} days",
       "body": "Free, no commitment: every Premium feature for {days} days. Once per account.",
       "cta": "Try Premium for {days} days",
-      "used": "You already had the Premium trial."
+      "used": "You already had the Premium trial.",
+      "dayFull": "Many trials started today: come back tomorrow to start yours."
     },
     "codes": {
       "title": "I have a code",

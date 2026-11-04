@@ -294,4 +294,3 @@ L’argent prêté ou emprunté, par personne. Ni dépense ni revenu : rien n’
 - [ ] Essai Premium : quand le nombre d’essais du jour est atteint, un message clair (« Reviens demain ») au lieu de l’erreur générique
 - [ ] Sécurité, points de l’audit laissés de côté : sauvegarde Android des données (`allowBackup`), CSP plus stricte (par nonce), code par e-mail avant de supprimer le compte, invitation à accepter pour les places famille, remboursements dans le foyer, quota de stockage des photos
 - [ ] Sécurité, migration 0019 : les places famille ne se lisent qu’avec un e-mail confirmé (faible urgence, le serveur le vérifie déjà)
-- [ ] Hébergement : Vercel Pro pour un usage commercial (le plan gratuit l’interdit) ; un nom de domaine à soi avant tout passage à Netlify (les APK installés gardent l’adresse actuelle)

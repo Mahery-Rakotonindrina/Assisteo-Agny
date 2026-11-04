@@ -907,10 +907,24 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
    */
   function renderParcel(parcel: NonNullable<HistoryEntry["analysis"]["parcel"]>) {
     const firstEarlier = earlierScans[earlierScans.length - 1];
+    // The followed parcel this note is about: its link covers the whole note.
+    const notedParcel = parcelsWithNews[0] ?? trackedParcel;
+    const openParcel = notedParcel && (
+      <>
+        {" "}
+        <Link href={{ pathname: "/parcels", query: { open: notedParcel.id } }} className={styles.parcelOpen}>
+          {t("parcel.openTracked")}
+        </Link>
+      </>
+    );
     return (
       <>
         {!example && (trackedParcel || firstEarlier) && (
-          <motion.div variants={rise} className={styles.parcelNote} data-news={parcelHasNews || undefined}>
+          <motion.div
+            variants={rise}
+            className={`${styles.parcelNote} ${notedParcel ? styles.parcelNoteLinked : ""}`}
+            data-news={parcelHasNews || undefined}
+          >
             <PackageCheck size={18} />
             <div>
               {/* The status it moves from: one of the parcels this scan updates (a shipment may have others already up to date). */}
@@ -922,9 +936,13 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
                         from: t(`parcel.statuses.${parcelsWithNews[0].info.status}`),
                         to: t(`parcel.statuses.${parcel.status}`),
                       })}
+                  {openParcel}
                 </p>
               ) : trackedParcel ? (
-                <p>{t("parcel.inList", { status: t(`parcel.statuses.${trackedParcel.info.status}`) })}</p>
+                <p>
+                  {t("parcel.inList", { status: t(`parcel.statuses.${trackedParcel.info.status}`) })}
+                  {openParcel}
+                </p>
               ) : null}
               {/* Why it is taken for a followed parcel, and a way out when it is not that one. */}
               {trackedParcel && parcelMatch && (

@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- The backup (Google account, new phone) keeps the data of people
+         without an account, but never the secure storage: the session and the
+         personal AI key (res/xml/backup_rules.xml for Android 11 and older,
+         res/xml/data_extraction_rules.xml for Android 12 and newer). -->
     <application
         android:allowBackup="true"
+        android:fullBackupContent="@xml/backup_rules"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        tools:targetApi="31"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
@@ -16,7 +24,12 @@
             android:theme="@style/AppTheme.NoActionBarLaunch"
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"
             android:exported="true">
+            <!-- adjustResize: the keyboard never pans the page. Edge to edge
+                 (Android 15+), the window keeps its size and Capacitor's
+                 SystemBars pads the WebView by the keyboard's height instead,
+                 so the page (and window.visualViewport) ends above it. -->
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

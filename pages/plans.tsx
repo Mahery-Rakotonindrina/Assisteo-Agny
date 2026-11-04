@@ -12,7 +12,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { formatAriary, formatDate, formatNumber } from "@/lib/format";
 import { config } from "@/lib/config";
 import { rise, stagger } from "@/lib/motion";
-import { defaultYearPrice, discountedPrice, monthsFree, TRIAL_DAYS } from "@/lib/offers";
+import { defaultYearPrice, discountedPrice, monthsFree, TRIAL_DAYS, trialFailureKey } from "@/lib/offers";
 import { isBuiltInPlan, localName, planRankIn } from "@/lib/customPlans";
 import { defaultPlansConfig, planIds, planRank, soldPlans, type AnyPlanId, type PlanOffer, type PlanResponse } from "@/lib/plans";
 import { familyLine, offerLines } from "@/lib/planPerks";
@@ -48,7 +48,7 @@ export default function PlansPage() {
       await startPremiumTrial();
       haptics.tap();
     } catch (error) {
-      toast(error instanceof ApiError && error.code === "refused" ? t("plans.trialOffer.used") : t("plans.codes.failed"), "error");
+      toast(t(trialFailureKey(error instanceof ApiError ? error.code : null)), "error");
       void planStore.refresh();
     } finally {
       setBusy(null);

@@ -13,6 +13,7 @@ import {
   referralReward,
   suggestedAmount,
   trialEligible,
+  trialFailureKey,
 } from "@/lib/offers";
 import { defaultPlansConfig, periodEnd, type PaidPlanId } from "@/lib/plans";
 import { mergeOffer } from "@/lib/server/planConfig";
@@ -56,6 +57,13 @@ describe("Premium trial", () => {
     expect(trialEligible([{ plan: "premium", paymentMethod: "promo" }])).toBe(false);
     expect(trialEligible([{ plan: "pro", paymentMethod: "mvola" }])).toBe(false);
     expect(trialEligible([{ plan: "unlimited", paymentMethod: null }])).toBe(false);
+  });
+
+  it("says why it did not start: already used, the day's cap, or a failure", () => {
+    expect(trialFailureKey("refused")).toBe("plans.trialOffer.used");
+    expect(trialFailureKey("server_busy")).toBe("plans.trialOffer.dayFull");
+    expect(trialFailureKey("upstream_error")).toBe("plans.codes.failed");
+    expect(trialFailureKey(undefined)).toBe("plans.codes.failed");
   });
 
   it("lasts the given days from now", () => {
