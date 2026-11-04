@@ -578,6 +578,39 @@
     --orb-size: 88px;
     --orb-halo: 32px;
   }
+
+  // The chosen mode's label says enough; the hint that asks to pick one stays.
+  .modeHint:not(.modeHintPick) {
+    display: none;
+  }
+
+  // Larger text on a 320 × 568 phone: « Importer une image » and « Plusieurs
+  // pages » above the bar too, with the demo banner and « Se connecter ».
+  :global(html[data-text-size="large"]) .idle,
+  :global(html[data-text-size="xlarge"]) .idle {
+    gap: 0.4rem;
+  }
+
+  :global(html[data-text-size="large"]) .headline,
+  :global(html[data-text-size="xlarge"]) .headline {
+    font-size: 1.3rem;
+  }
+
+  :global(html[data-text-size="large"]) .demoBanner summary,
+  :global(html[data-text-size="xlarge"]) .demoBanner summary {
+    font-size: 0.7rem;
+  }
+
+  :global(html[data-text-size="large"]) .orb,
+  :global(html[data-text-size="xlarge"]) .orb {
+    --orb-size: 64px;
+    --orb-halo: 14px;
+  }
+
+  :global(html[data-text-size="large"]) .captureLabel,
+  :global(html[data-text-size="xlarge"]) .captureLabel {
+    margin: 0;
+  }
 }
 
 // ---- Examples (before the first scan) -----------------------------------------

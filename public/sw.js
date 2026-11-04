@@ -18,6 +18,8 @@ const BUILD = new URL(self.location.href).searchParams.get("build") || "none";
 const PREFIX = "assisteo-offline-";
 const CACHE = PREFIX + BUILD;
 const OFFLINE_PAGE = "/offline.html";
+// Every page's first script (pages/_document.tsx): kept at install, so a kept page starts offline.
+const BOOT_SCRIPT = "/next-boot.js";
 
 /** The fetches it answers: "page", "static" (fingerprinted, never changes), "asset" (icons…), else null. */
 function strategyFor(request, origin) {
@@ -27,7 +29,7 @@ function strategyFor(request, origin) {
   if (url.pathname.startsWith("/api/") || url.pathname === "/sw.js") return null;
   if (request.mode === "navigate") return "page";
   if (url.pathname.startsWith("/_next/static/")) return "static";
-  if (/^\/(icons|splash)\//.test(url.pathname) || /^\/(manifest\.webmanifest|favicon\.ico|icon\.svg|apple-touch-icon\.png)$/.test(url.pathname)) return "asset";
+  if (/^\/(icons|splash)\//.test(url.pathname) || /^\/(manifest\.webmanifest|favicon\.ico|icon\.svg|apple-touch-icon\.png|next-boot\.js)$/.test(url.pathname)) return "asset";
   return null;
 }
 
@@ -146,7 +148,7 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
       .open(CACHE)
-      .then((cache) => cache.add(OFFLINE_PAGE))
+      .then((cache) => cache.addAll([OFFLINE_PAGE, BOOT_SCRIPT]))
       .then(() => self.skipWaiting()),
   );
 });
@@ -233,5 +235,5 @@ self.addEventListener("notificationclick", (event) => {
 
 // Unit tests (tests/unit/serviceWorker.test.ts) load this file in Node.
 if (typeof module === "object" && module.exports) {
-  module.exports = { strategyFor, buildOf, assetsOf, pageKey, keepPage, keptHeaders, offlinePage, CACHE, OFFLINE_PAGE };
+  module.exports = { strategyFor, buildOf, assetsOf, pageKey, keepPage, keptHeaders, offlinePage, CACHE, OFFLINE_PAGE, BOOT_SCRIPT };
 }

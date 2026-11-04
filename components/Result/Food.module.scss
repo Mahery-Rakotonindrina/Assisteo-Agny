@@ -202,7 +202,9 @@
   }
 }
 
+// The list made from the recipe: « Ouvrir » covers the whole line, a 44 px target.
 .shoppingNote {
+  position: relative;
   font-size: 0.88rem;
   color: var(--text-muted);
 
@@ -214,5 +216,12 @@
   a {
     color: var(--accent-text);
     font-weight: 600;
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: min(0px, calc((100% - 44px) / 2)) -0.3rem;
+      border-radius: var(--radius-sm);
+    }
   }
 }

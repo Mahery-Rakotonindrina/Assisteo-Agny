@@ -1356,6 +1356,7 @@
     "notThisOne": "Ce n’est pas ce colis ? L’ajouter à part",
     "earlierUpdated": "Tu l’avais déjà scanné le {date} : ce scan a été mis à jour avec le dernier statut.",
     "openEarlier": "Voir l’ancien scan",
+    "openTracked": "Voir le colis",
     "limitReached": "Ton offre suit jusqu’à {count} colis à la fois. Marque des colis comme reçus, ou passe à une offre supérieure.",
     "shipping": {
       "label": "Mode d’envoi",
@@ -1654,7 +1655,8 @@
       "title": "Essaie Premium {days} jours",
       "body": "Gratuit et sans engagement : toutes les fonctions Premium pendant {days} jours. Une seule fois par compte.",
       "cta": "Essayer Premium {days} jours",
-      "used": "Tu as déjà profité de l’essai Premium."
+      "used": "Tu as déjà profité de l’essai Premium.",
+      "dayFull": "Beaucoup d’essais ont commencé aujourd’hui : reviens demain pour lancer le tien."
     },
     "codes": {
       "title": "J’ai un code",

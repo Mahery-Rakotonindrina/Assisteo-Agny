@@ -137,15 +137,18 @@ test("my expenses: the welcome card is folded, « Compris » closes it, « Comme
   await expect(welcome.getByText("Fixe ton budget.")).toBeVisible();
 });
 
-for (const [plan, textSize] of [
-  ["free", "normal"],
-  ["unlimited", "normal"],
-  ["free", "xlarge"],
-  ["unlimited", "xlarge"],
+// "free": signed out, with « Se connecter »; "unlimited": signed in, with the plan badge.
+for (const [plan, textSize, width, height] of [
+  ["free", "normal", 375, 667],
+  ["unlimited", "normal", 375, 667],
+  ["free", "xlarge", 375, 667],
+  ["unlimited", "xlarge", 375, 667],
+  ["free", "xlarge", 320, 568],
+  ["unlimited", "xlarge", 320, 568],
 ] as const) {
-  test(`scan on a 667 px phone (demo mode, ${plan}, ${textSize}): « Importer une image » and « Plusieurs pages » show above the bar`, async ({ page, isMobile }) => {
+  test(`scan on a ${height} px phone (demo mode, ${plan}, ${textSize}): « Importer une image » and « Plusieurs pages » show above the bar`, async ({ page, isMobile }) => {
     test.skip(!isMobile, "The phone's layout.");
-    await page.setViewportSize({ width: 375, height: 667 });
+    await page.setViewportSize({ width, height });
     await start(page, { admin: plan === "unlimited", textSize });
     await page.goto("/");
     // The demo banner is one line (two in "Très grand"); its explanation opens on a tap.
