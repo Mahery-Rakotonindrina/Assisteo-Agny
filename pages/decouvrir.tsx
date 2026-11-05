@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import type { CSSProperties } from "react";
-import { Apple, ArrowRight, BellRing, Briefcase, Camera, Car, ChevronDown, Coins, Download, FileDown, Files, FileText, HandCoins, House, ListChecks, MessageCircle, Package, ScanSearch, Sparkles, Sprout, Store, Wallet, type LucideIcon } from "lucide-react";
+import { Apple, ArrowRight, LifeBuoy, BellRing, Briefcase, Camera, Car, ChevronDown, Coins, Download, FileDown, Files, FileText, HandCoins, House, ListChecks, MessageCircle, Package, ScanSearch, Sparkles, Sprout, Store, Wallet, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/Button";
 import { PlanBadge } from "@/components/PlanBadge";
 import { Seo } from "@/components/Seo";
@@ -186,6 +186,9 @@ export default function DiscoverPage() {
         </motion.section>
 
         <motion.footer variants={rise} className={styles.footer}>
+          <Link href="/aide" data-testid="discover-help">
+            <LifeBuoy size={14} aria-hidden /> {t("help.open")}
+          </Link>
           <Link href="/privacy">{t("legal.privacy")}</Link>
           <Link href="/terms">{t("legal.terms")}</Link>
         </motion.footer>

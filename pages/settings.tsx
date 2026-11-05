@@ -18,6 +18,7 @@ import {
   HeartPulse,
   ImageDown,
   Info,
+  LifeBuoy,
   Monitor,
   Moon,
   Package,
@@ -425,6 +426,13 @@ export default function SettingsPage() {
             <Row icon={<Info />} label={t("settings.version")}>
               <span className={styles.value}>{appVersion}</span>
             </Row>
+            <Link href="/aide" className={styles.linkRow} data-testid="help-link">
+              <span className={styles.rowIcon}>
+                <LifeBuoy />
+              </span>
+              <span className={styles.linkLabel}>{t("help.open")}</span>
+              <ChevronRight size={16} />
+            </Link>
             <Link href="/privacy" className={styles.linkRow}>
               <span className={styles.rowIcon}>
                 <ShieldCheck />

@@ -58,6 +58,7 @@ function Form({ parcel, onClose, clients }: Omit<Props, "open">) {
   const { info } = parcel;
   const [title, setTitle] = useState(parcel.title);
   const [client, setClient] = useState(parcel.client ?? "");
+  const [clientPhone, setClientPhone] = useState(parcel.clientPhone ?? "");
   const [status, setStatus] = useState<ParcelStatus>(info.status);
   // Sea or air: automatic (read on a scan, or guessed) unless the user picks one.
   const [shipping, setShipping] = useState<ShippingMode | "auto">(parcel.shippingMode ?? "auto");
@@ -112,7 +113,7 @@ function Form({ parcel, onClose, clients }: Omit<Props, "open">) {
     };
     // An untouched day keeps the exact time it was marked received.
     const receivedAt = receivedDay === initialReceivedDay ? undefined : receivedDay ? pickedUpAt(receivedDay) : null;
-    await parcelStore.edit(parcel.id, { title, client, info: next, receivedAt, shippingMode: shipping === "auto" ? null : shipping });
+    await parcelStore.edit(parcel.id, { title, client, clientPhone: reseller ? clientPhone : undefined, info: next, receivedAt, shippingMode: shipping === "auto" ? null : shipping });
     haptics.success();
     setSaving(false);
     onClose();
@@ -162,6 +163,11 @@ function Form({ parcel, onClose, clients }: Omit<Props, "open">) {
             ))}
           </datalist>
         </Field>
+        {reseller && client.trim() && (
+          <Field label={t("parcelWhatsapp.phone")} hint={t("parcelWhatsapp.phoneHint")}>
+            <input type="tel" inputMode="tel" autoComplete="off" value={clientPhone} onChange={(event) => setClientPhone(event.target.value.slice(0, 24))} placeholder="034 12 345 67" />
+          </Field>
+        )}
         <Field label={t("parcels.fields.status")}>
           <select value={status} onChange={(event) => setStatus(event.target.value as ParcelStatus)}>
             {parcelStatuses.map((value) => (

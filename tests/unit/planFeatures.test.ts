@@ -84,7 +84,7 @@ describe("features by plan: nothing changes until the owner changes something", 
     expect(planPerks("lite", limits, t, "fr").slice(3)).toEqual(["plans.features.reminders", "plans.features.parcelCosts", "plans.features.pdfExport", "plans.features.ownKey", "plans.features.plants"]);
     const lines = (id: "lite" | "premium" | "pro", below: "lite" | "premium" | null) =>
       offerLines({ id, features: ladder[id], deepPerMonth: 60 }, below && { id: below, features: ladder[below] }, ["limits"], t, "fr");
-    expect(lines("pro", "premium")).toEqual([{ text: "plans.features.allPremium", inherit: true }, { text: "limits" }, { text: 'plans.features.deep {"count":"60"}' }, { text: "plans.features.clients" }, { text: "plans.features.reseller" }, { text: "plans.features.shop" }]);
+    expect(lines("pro", "premium")).toEqual([{ text: "plans.features.allPremium", inherit: true }, { text: "limits" }, { text: 'plans.features.deep {"count":"60"}' }, { text: "plans.features.clients" }, { text: "plans.features.reseller" }, { text: "parcelLots.perk" }, { text: "plans.features.shop" }]);
     expect(lines("premium", "lite").map((line) => line.text)).toEqual(["plans.features.allLite", "limits", 'plans.features.deep {"count":"60"}', "plans.features.priority", "plans.features.multiPage", "plans.features.garage", "plans.features.inventory"]);
     expect(lines("lite", null).map((line) => line.text)).toEqual(["limits", "plans.features.reminders", "plans.features.parcelCosts", "plans.features.pdfExport", "plans.features.ownKey", "plans.features.plants"]);
   });

@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { applyCors, clientIp, sendError } from "@/lib/server/http";
 import { rateLimit } from "@/lib/server/rateLimit";
 import { codeIsRecent } from "@/lib/server/recentSignIn";
+import { deleteReferralData } from "@/lib/server/referralBonus";
 import { deleteUserReportsOf } from "@/lib/server/userReports";
 import { accountsEnabled, supabaseAdmin, verifiedClaims } from "@/lib/server/supabaseAdmin";
 
@@ -66,6 +67,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
     // The feedback messages sent from this account go with it.
     await deleteUserReportsOf(userId);
+    // The installs and addresses kept against abuse, the scans won and the friends go with it.
+    if (typeof verified.claims.email === "string") await deleteReferralData(verified.claims.email.toLowerCase());
     const { error } = await supabaseAdmin().auth.admin.deleteUser(userId);
     if (error) throw error;
   } catch {

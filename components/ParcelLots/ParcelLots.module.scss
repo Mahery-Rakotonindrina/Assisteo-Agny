@@ -1,0 +1,245 @@
+@use "../../styles/mixins" as *;
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.empty {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  @include card;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.95rem 1rem;
+  border-radius: var(--radius-md);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: var(--surface-strong);
+  color: var(--text-muted);
+
+  &[data-mode="sea"] {
+    background: color-mix(in srgb, var(--cat-document) 16%, transparent);
+    color: var(--cat-document);
+  }
+
+  &[data-mode="air"] {
+    background: color-mix(in srgb, var(--cat-parcel) 16%, transparent);
+    color: var(--cat-parcel);
+  }
+}
+
+.title {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+
+  strong {
+    font-size: 1rem;
+    font-weight: 800;
+    overflow-wrap: break-word;
+  }
+
+  small {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+}
+
+.iconButton {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  color: var(--text-muted);
+
+  &:hover {
+    background: var(--surface-strong);
+    color: var(--text);
+  }
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
+  gap: 0.45rem;
+  margin: 0;
+
+  div {
+    min-width: 0;
+    padding: 0.5rem 0.65rem;
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+  }
+
+  dt {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+
+  dd {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: break-word;
+
+    &[data-tone="due"] {
+      color: var(--cat-food);
+    }
+  }
+}
+
+.status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.5rem;
+
+  label {
+    flex: 1 1 11rem;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+
+    span {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+  }
+
+  select {
+    width: 100%;
+    min-width: 0;
+    height: 2.75rem;
+    padding: 0 0.8rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    @include field-font(0.95rem);
+  }
+}
+
+.toggle {
+  align-self: flex-start;
+  min-height: 2.75rem;
+  padding: 0 0.2rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--accent-text);
+}
+
+.parcels {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0;
+  list-style: none;
+
+  a {
+    display: flex;
+    flex-direction: column;
+    min-height: 2.75rem;
+    justify-content: center;
+    padding: 0.45rem 0.7rem;
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
+  }
+
+  strong {
+    font-size: 0.92rem;
+    overflow-wrap: break-word;
+  }
+
+  small {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+}
+
+.picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0;
+  list-style: none;
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    min-height: 2.75rem;
+    padding: 0.4rem 0.7rem;
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    cursor: pointer;
+  }
+
+  input {
+    flex-shrink: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+    accent-color: var(--accent-mark);
+  }
+
+  span {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  strong {
+    font-size: 0.92rem;
+    overflow-wrap: break-word;
+  }
+
+  small {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+}
+
+.sheetActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  > * {
+    flex: 1 1 10rem;
+  }
+}

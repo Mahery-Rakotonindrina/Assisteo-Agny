@@ -25,6 +25,7 @@ import {
   Package,
   PackageCheck,
   PackagePlus,
+  Pill,
   Plus,
   QrCode,
   Receipt,
@@ -47,6 +48,7 @@ import { FolderPicker } from "@/components/FolderPicker";
 import { ReceiptControls } from "@/components/Expenses";
 import { GarageControls } from "@/components/Garage";
 import { hasInventoryControls, InventoryControls, InventoryIcon } from "@/components/Inventory";
+import { MedicationPlanner, MedicineCard, MedicineDisclaimer } from "@/components/Medicine";
 import { ObjectAdControls } from "@/components/ObjectAd";
 import { PlanBadge } from "@/components/PlanBadge";
 import { PlanLock } from "@/components/PlanLock";
@@ -103,7 +105,7 @@ import { cancelReminder, canSnooze, expiryDate, INSURANCE_NOTICE_DAYS, insurance
 import type { HistoryEntry } from "@/types/history";
 import styles from "@/styles/Result.module.scss";
 
-type TabId = "overview" | "list" | "parcel" | "nutrition" | "recipe" | "vehicle" | "document" | "text" | "chat";
+type TabId = "overview" | "medicine" | "list" | "parcel" | "nutrition" | "recipe" | "vehicle" | "document" | "text" | "chat";
 
 /** Photos of these kinds rarely hold text worth reading in full. */
 const withoutText = new Set(["food", "vehicle", "plant"]);
@@ -169,7 +171,8 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetKey, setSheetKey] = useState(0);
   // A parcel opens on its tracking details.
-  const [tab, setTab] = useState<TabId>(analysis.parcel ? "parcel" : analysis.list ? "list" : "overview");
+  // A prescription or a medicine box opens on its medicines (and the warning that goes with them).
+  const [tab, setTab] = useState<TabId>(analysis.medicine ? "medicine" : analysis.parcel ? "parcel" : analysis.list ? "list" : "overview");
   const [composerFocused, setComposerFocused] = useState(false);
   // A suggested question tapped on the overview: sent once the question tab opens.
   const [askNow, setAskNow] = useState<string | null>(null);
@@ -233,6 +236,7 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
 
   const tabs = [
     { id: "overview", label: t("result.tabs.overview"), icon: <Sparkles /> },
+    analysis.medicine && { id: "medicine", label: t("medicine.tab"), icon: <Pill /> },
     analysis.list && { id: "list", label: t("result.tabs.list"), icon: <ListChecks /> },
     analysis.parcel && { id: "parcel", label: t("result.tabs.parcel"), icon: <Package /> },
     (analysis.nutrition || analysis.diet) && { id: "nutrition", label: t("result.tabs.nutrition"), icon: <Utensils /> },
@@ -626,6 +630,21 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
 
   function renderPanel(): ReactNode {
     switch (tab) {
+      case "medicine":
+        return (
+          analysis.medicine && (
+            <>
+              <Section title={t("medicine.title")} icon={<Pill />}>
+                <MedicineCard medicine={analysis.medicine} />
+              </Section>
+              {!example && analysis.medicine.items.length > 0 && (
+                <Section title={t("medicine.remindersTitle")} icon={<BellRing />}>
+                  <MedicationPlanner entry={entry} medicine={analysis.medicine} />
+                </Section>
+              )}
+            </>
+          )
+        );
       case "list":
         return analysis.list && renderList(analysis.list);
       case "parcel":
@@ -699,6 +718,7 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
           <>
             <Section title={t("result.summary")} icon={<Sparkles />}>
               <p className={styles.summary}>{analysis.summary}</p>
+              {analysis.medicine && <MedicineDisclaimer />}
             </Section>
 
             {(meta.pageCount ?? 1) > 1 && (
