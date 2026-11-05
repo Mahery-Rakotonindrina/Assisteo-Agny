@@ -113,9 +113,9 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Plusieurs captures de colis d'un coup : « Un colis par photo », chaque photo analysée à part (un scan chacune) puis ajoutée à Mes colis ou mise à jour, résumé à la fin — à partir de Premium, comme « Plusieurs pages »
 - [x] Date de livraison prévue dans la liste, notification le jour J à l'heure choisie (heure de Madagascar) — réglable dans Paramètres → Notifications, notification locale sur l'appareil
 - [ ] Suivi automatique sans rescanner, notification au changement de statut
-- [ ] Fret calculé au kilo (poids × tarif du transitaire)
-- [ ] Envoyer le statut au client par WhatsApp
-- [ ] Regrouper les colis par envoi (lot, conteneur)
+- [x] Fret calculé au kilo (poids × tarif du transitaire) — tarif retenu par transitaire et par mode, mer ou avion (Pro, #130)
+- [x] Envoyer le statut au client par WhatsApp — jamais le prix d’achat, les frais ni le bénéfice (Pro, #132)
+- [x] Regrouper les colis par envoi (lot, conteneur) — onglet « Envois », statut changé d’un coup (Pro, #130)
 - [x] Relevé PDF pour un seul client (Pro) : bouton « Relevé » sur chaque client de la vue Clients, sur la période choisie, à partager par WhatsApp — statut, envoi, n° de suivi, montant, payé, reste à payer ; jamais le prix d’achat, les frais ni le bénéfice
 
 ## 10. Compte et synchronisation
@@ -124,8 +124,8 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Synchro : historique et photos, colis, réglages, clé IA (chiffrée)
 - [x] Plusieurs appareils ; la déconnexion efface les données de l'appareil
 - [x] Suppression du compte, données et photos comprises
-- [ ] Connexion par n° de téléphone (SMS) ou par Google
-- [ ] Partage familial (colis et listes partagés)
+- [x] Connexion par Google — « Continuer avec Google », visible dès que Google est activé dans Supabase (#136) ; le SMS reste à faire
+- [x] Partage familial (colis et listes partagés) — avec le foyer de « Mes dépenses » ; un colis partagé ne montre aucun prix (#138)
 - [x] Télécharger une copie de toutes ses données — Réglages, un ZIP (LISEZ-MOI, un JSON par écran, photos en option, compte.json avec un compte), toutes les offres
 
 ## 11. Offres et abonnements
@@ -299,18 +299,18 @@ L’argent prêté ou emprunté, par personne. Ni dépense ni revenu : rien n’
 - [x] Foyer : le prêteur peut retirer un remboursement noté par un autre membre sur son prêt (migration 0021) ; aucune autre faille trouvée
 - [x] Photos : 100 Mo par compte et 2 Mo par fichier (migration 0020) ; au-delà, le scan reste sur l’appareil et Réglages → Compte le dit
 
-## 20. Propositions pour une app plus complète (2026-11-04, à choisir)
+## 20. Propositions pour une app plus complète (2026-11-04, faites le 2026-11-05)
 
 Par ordre d’intérêt. Effort : petit, moyen, important.
 
-- [ ] Connexion avec Google, en plus du code par e-mail : un toucher, plus de code à copier (le retour des clients) — moyen ; c’est la ligne « Connexion par n° de téléphone (SMS) ou par Google » du § 10
-- [ ] Parrainage par WhatsApp : « Invite un ami, vous gagnez chacun 5 scans » ou une semaine Premium ; le bouche-à-oreille passe par WhatsApp à Madagascar — moyen
-- [ ] « Donner mon avis / Signaler un problème » dans Réglages : un message (et une capture si on veut) qui arrive dans l’Admin, au lieu de récolter les retours à la main — petit
-- [ ] Colis pour les revendeurs (offre Pro) : le fret au kilo et les colis regroupés par envoi, déjà au § 9, à faire en premier — moyen
-- [ ] Santé : scanner une ordonnance ou une boîte de médicament (nom, posologie, précautions) avec des rappels de prise ; avertissement clair : ça ne remplace pas le médecin — moyen
-- [ ] Résumé de la semaine, par notification le dimanche : dépenses de la semaine, colis arrivés, rappels à venir — petit
-- [ ] Partage familial des colis et des listes (la liste de courses à deux), déjà au § 10 — moyen
-- [ ] Statut d’un colis envoyé au client par WhatsApp en un toucher, déjà au § 9 — petit
-- [ ] « Ma boutique » pour les petits commerçants : ventes du jour, stock, crédit des clients (qui doit combien) — important
-- [ ] Aide intégrée : questions fréquentes et courtes vidéos « Comment ça marche », pour les gens peu habitués aux applis — petit
+- [x] Connexion avec Google, en plus du code par e-mail : un toucher, plus de code à copier (le retour des clients) — moyen ; c’est la ligne « Connexion par n° de téléphone (SMS) ou par Google » du § 10 — fait (#136) ; à activer dans Google Cloud et Supabase
+- [x] Parrainage par WhatsApp : « Invite un ami, vous gagnez chacun 5 scans » ou une semaine Premium ; le bouche-à-oreille passe par WhatsApp à Madagascar — moyen — fait : 5 scans chacun, lien d’invitation, anti-abus côté serveur (#134)
+- [x] « Donner mon avis / Signaler un problème » dans Réglages : un message (et une capture si on veut) qui arrive dans l’Admin, au lieu de récolter les retours à la main — petit — fait : avis dans l’Admin, gardés 12 mois (#128)
+- [x] Colis pour les revendeurs (offre Pro) : le fret au kilo et les colis regroupés par envoi, déjà au § 9, à faire en premier — moyen — fait (#130)
+- [x] Santé : scanner une ordonnance ou une boîte de médicament (nom, posologie, précautions) avec des rappels de prise ; avertissement clair : ça ne remplace pas le médecin — moyen — fait : rien n’est deviné, rappels de prise à partir de Lite (#133)
+- [x] Résumé de la semaine, par notification le dimanche : dépenses de la semaine, colis arrivés, rappels à venir — petit — fait : notification le dimanche à 17 h (APK), carte le dimanche (site), à partir de Lite (#131)
+- [x] Partage familial des colis et des listes (la liste de courses à deux), déjà au § 10 — moyen — fait (#138)
+- [x] Statut d’un colis envoyé au client par WhatsApp en un toucher, déjà au § 9 — petit — fait (#132)
+- [x] « Ma boutique » pour les petits commerçants : ventes du jour, stock, crédit des clients (qui doit combien) — important — fait : ventes, stock, crédit des clients, totaux (Pro, #135)
+- [x] Aide intégrée : questions fréquentes et courtes vidéos « Comment ça marche », pour les gens peu habitués aux applis — petit — fait : page /aide, guides et 21 questions (#129) ; pas de vidéos
 - [ ] Sans code, à décider par le propriétaire : ouvrir « Mes dépenses » et « Prêts » à des offres payantes (cases à cocher dans Admin → Offres), déjà aux § 16 et § 17
