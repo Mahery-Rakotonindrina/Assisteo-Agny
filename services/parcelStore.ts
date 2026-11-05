@@ -29,6 +29,8 @@ export type Parcel = {
   title: string;
   /** Who the parcel is for (a family member, a customer…). */
   client?: string;
+  /** Resellers: the client's phone number, to send them the status on WhatsApp. */
+  clientPhone?: string;
   /** Sea or air, chosen by the user; otherwise read on the scans or guessed (see shippingModeOf). */
   shippingMode?: ShippingMode;
   /**
@@ -190,7 +192,7 @@ export const parcelStore = {
    * was picked up (and marks it received), null marks it not received,
    * absent keeps it. `shippingMode`: null goes back to automatic, absent keeps it.
    */
-  async edit(id: string, changes: { title: string; client?: string; info: ParcelInfo; receivedAt?: number | null; shippingMode?: ShippingMode | null }) {
+  async edit(id: string, changes: { title: string; client?: string; clientPhone?: string; info: ParcelInfo; receivedAt?: number | null; shippingMode?: ShippingMode | null }) {
     const current = await get<Parcel>(id, db());
     if (!current) return;
     const statusChanged = changes.info.status !== current.info.status;
@@ -198,6 +200,8 @@ export const parcelStore = {
       ...current,
       title: changes.title.trim() || current.title,
       client: changes.client?.trim() || undefined,
+      // Absent (an older caller): kept as it is.
+      clientPhone: changes.clientPhone === undefined ? current.clientPhone : changes.clientPhone.trim() || undefined,
       info: changes.info,
       receivedAt: changes.receivedAt === undefined ? current.receivedAt : (changes.receivedAt ?? undefined),
       shippingMode: changes.shippingMode === undefined ? current.shippingMode : (changes.shippingMode ?? undefined),
