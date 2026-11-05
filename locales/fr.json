@@ -4246,5 +4246,20 @@
     "shareTitle": "Colis « {title} »",
     "copied": "Message copié : colle-le dans la conversation du client",
     "failed": "Impossible de partager le message"
+  },
+  "referralBonus": {
+    "body": "Invite un ami : quand il entre ton code dans « J’ai un code » puis fait son premier scan, vous gagnez chacun {scans} scans. Et si une offre est payée ensuite, tu reçois 1 mois offert.",
+    "message": "Je t’invite sur Assisteo Agny : on gagne chacun {scans} scans ! L’app t’aide à comprendre ce que tu photographies. Ouvre ce lien, crée ton compte : mon code {code} sera déjà rempli dans « J’ai un code ». Fais ensuite ton premier scan. {link}",
+    "friends": "Amis invités : {invited} (premier scan fait : {rewarded})",
+    "won": "Scans gagnés : {won} · il t’en reste {left}",
+    "admin": {
+      "title": "Parrainage",
+      "subtitle": "Ce que gagnent le parrain et son ami quand l’ami a un compte confirmé et fait son premier scan. Une fois par ami, par installation, et pas de parrainage de soi-même.",
+      "scans": "Scans gagnés par chacun (0 = parrainage par scans coupé)",
+      "cap": "Amis récompensés par parrain et par mois (au-delà, l’ami gagne, pas le parrain)",
+      "rewarded": "{count} amis récompensés depuis le début.",
+      "save": "Enregistrer",
+      "saved": "Parrainage enregistré."
+    }
   }
 }

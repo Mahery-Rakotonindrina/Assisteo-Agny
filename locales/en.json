@@ -4246,5 +4246,20 @@
     "shareTitle": "Parcel “{title}”",
     "copied": "Message copied: paste it in the client's chat",
     "failed": "Couldn't share the message"
+  },
+  "referralBonus": {
+    "body": "Invite a friend: when they enter your code in “I have a code” then make their first scan, you each win {scans} scans. And if they later pay for a plan, you get 1 month free.",
+    "message": "I’m inviting you to Assisteo Agny: we each win {scans} scans! The app helps you understand what you photograph. Open this link and create your account: my code {code} will already be filled in under “I have a code”. Then make your first scan. {link}",
+    "friends": "Friends invited: {invited} (first scan done: {rewarded})",
+    "won": "Scans won: {won} · {left} left",
+    "admin": {
+      "title": "Referral",
+      "subtitle": "What the referrer and their friend win when the friend has a confirmed account and makes a first scan. Once per friend, per install, and never to refer oneself.",
+      "scans": "Scans each one wins (0 = referral by scans off)",
+      "cap": "Friends rewarded per referrer and per month (above it, the friend wins, not the referrer)",
+      "rewarded": "{count} friends rewarded so far.",
+      "save": "Save",
+      "saved": "Referral saved."
+    }
   }
 }

@@ -11,6 +11,7 @@ import { getPlansConfig } from "@/lib/server/planConfig";
 import { rateLimit } from "@/lib/server/rateLimit";
 import { reportError } from "@/lib/server/reportError";
 import { subscriptionsForEmail } from "@/lib/server/subscriptions";
+import { bonusScansLeft } from "@/lib/server/referralBonus";
 import { getAskUsage, getPlanUsage, getTrialUsage } from "@/lib/server/trialStore";
 
 /**
@@ -35,7 +36,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   const config = await getPlansConfig();
   const { account, current, features, quotas, grants, customPlan, seat } = await resolvePlan(req, config);
   const all = req.headers[allPlansHeader] === "all";
-  const limits = await limitsFor(current.plan, config, quotas, features);
+  let limits = await limitsFor(current.plan, config, quotas, features);
+  // Scans won through a referral are added to the month's (or the trial's): what is left is what the app shows.
+  if (account?.email && limits.scans > 0) {
+    const bonus = await bonusScansLeft(account.email).catch(() => 0);
+    if (bonus > 0) limits = { ...limits, scans: limits.scans + bonus };
+  }
 
   let usage: PlanResponse["usage"];
   if (current.plan !== "free" && account) usage = await getPlanUsage(account.id);

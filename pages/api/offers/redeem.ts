@@ -17,6 +17,7 @@ import {
 } from "@/lib/server/offerStore";
 import { enterDiscountCode } from "@/lib/server/offers";
 import { rateLimit } from "@/lib/server/rateLimit";
+import { addReferralChild } from "@/lib/server/referralBonus";
 import { reportError } from "@/lib/server/reportError";
 import { addSubscriptions, subscriptionsForEmail } from "@/lib/server/subscriptions";
 import { verifyAccount } from "@/lib/server/supabaseAdmin";
@@ -103,6 +104,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     if (await parentOf(email)) return refuse("already_referred");
     if (hasPaid(await subscriptionsForEmail(email))) return refuse("already_paid");
     if (!(await setParent(email, referrer))) return refuse("already_referred");
+    // Counted on the referrer's screen; the bonus itself comes with the friend's first scan (pages/api/analyze.ts).
+    await addReferralChild(referrer, email).catch(() => undefined);
     return res.status(200).json({ ok: true, kind: "referral" } satisfies RedeemResponse);
   } catch (error) {
     await reportError(error, { route: "offers/redeem" });

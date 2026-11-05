@@ -83,6 +83,17 @@ export const CODE_PATTERN = /^[A-Z0-9-]{3,24}$/;
 /** "  noel-2026 " → "NOEL-2026": codes are typed in any case, with stray spaces. */
 export const normalizeCode = (input: string) => input.trim().toUpperCase().replace(/\s+/g, "");
 
+/** A referral code as `referralCodeFor` makes them: 7 characters, no 0/O/1/I/L. */
+const INVITE_PATTERN = /^[2-9A-HJKMNP-Z]{7}$/;
+
+/** The referral code of an invitation link (`/plans?ref=CODE`), or null when it isn't one: nothing else from the address is trusted. */
+export function inviteCodeFrom(value: unknown): string | null {
+  const raw = Array.isArray(value) ? value[0] : value;
+  if (typeof raw !== "string" || raw.length > 40) return null;
+  const code = normalizeCode(raw);
+  return INVITE_PATTERN.test(code) ? code : null;
+}
+
 export type PromoProblem = "inactive" | "expired" | "used_up";
 
 /** Why a code can't be used right now, or null when it can. */
