@@ -3867,5 +3867,41 @@
     "step1": "In Safari, tap the Share button (the square with an arrow).",
     "step2": "Choose “Add to Home Screen”, then “Add”.",
     "step3": "Open Assisteo from its new icon and come back here."
+  },
+  "medicine": {
+    "tab": "Medicines",
+    "title": "What the prescription says",
+    "disclaimer": "This information doesn't replace the advice of a doctor or a pharmacist. Follow what is written on your prescription and ask them if in doubt.",
+    "unreadable": "Not legible for sure: {what} Check with your pharmacist.",
+    "none": "No medicine could be read on the photo.",
+    "dose": "Dosage",
+    "duration": "Duration",
+    "notWritten": "Not written on the photo: ask your doctor or pharmacist",
+    "days": "{count} day(s)",
+    "precautions": "Usual precautions",
+    "contraindications": "Common contraindications (general information)",
+    "remindersTitle": "Dose reminders",
+    "plannerHint": "Tick the medicines to be reminded of, check the times and the number of days, then create the reminders. Nothing is created without your consent.",
+    "start": "First day",
+    "perDay": "Doses a day",
+    "perDayOption": "{count} a day",
+    "daysLabel": "For how many days",
+    "daysPlaceholder": "E.g. 7",
+    "timeLabel": "Time of dose {number}",
+    "needDays": "Enter the number of days written on the prescription.",
+    "create": "Create the dose reminders",
+    "saved": "Reminders created until {date}",
+    "savedShort": "Reminders created",
+    "savedNoNotifications": "Reminders saved, but notifications are blocked: allow them in the phone's settings.",
+    "activeUntil": "Dose reminders until {date}",
+    "courseLine": "At {times}, for {count} day(s)",
+    "stop": "Stop the reminders",
+    "confirmStop": "Yes, stop the reminders",
+    "stopped": "Dose reminders stopped",
+    "locked": "Dose reminders: with the {plan} plan.",
+    "reminder": {
+      "title": "Time for your medicine",
+      "withDose": "{name}: {dose}"
+    }
   }
 }

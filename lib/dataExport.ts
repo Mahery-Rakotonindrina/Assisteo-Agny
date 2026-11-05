@@ -60,6 +60,7 @@ export const EXPORT_DEVICE_SOURCES: Record<string, CopyFile | `left out: ${strin
   "services/homeItemReminders.ts": "left out: the notifications scheduled on this device",
   "services/parcelReminders.ts": "left out: the notifications scheduled on this device",
   "services/plantReminders.ts": "left out: the notifications scheduled on this device",
+  "services/medicationReminders.ts": "left out: the notifications scheduled on this device",
   "services/vehicleReminders.ts": "left out: the notifications scheduled on this device",
   "services/webPushTakeover.ts": "left out: a technical switch",
   "hooks/useDismissed.ts": "left out: the tips closed",

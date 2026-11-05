@@ -3867,5 +3867,41 @@
     "step1": "Dans Safari, touche le bouton Partager (le carré avec une flèche).",
     "step2": "Choisis « Sur l’écran d’accueil », puis « Ajouter ».",
     "step3": "Ouvre Assisteo depuis sa nouvelle icône et reviens ici."
+  },
+  "medicine": {
+    "tab": "Médicaments",
+    "title": "Ce que dit l’ordonnance",
+    "disclaimer": "Ces informations ne remplacent pas l’avis d’un médecin ou d’un pharmacien. Suis ce qui est écrit sur ton ordonnance et demande-leur en cas de doute.",
+    "unreadable": "Pas lisible avec certitude : {what} Vérifie avec ton pharmacien.",
+    "none": "Aucun médicament n’a pu être lu sur la photo.",
+    "dose": "Posologie",
+    "duration": "Durée",
+    "notWritten": "Pas écrite sur la photo : demande à ton médecin ou à ton pharmacien",
+    "days": "{count} jour(s)",
+    "precautions": "Précautions habituelles",
+    "contraindications": "Contre-indications courantes (informations générales)",
+    "remindersTitle": "Rappels de prise",
+    "plannerHint": "Coche les médicaments à te rappeler, vérifie les heures et le nombre de jours, puis crée les rappels. Rien n’est créé sans ton accord.",
+    "start": "Premier jour",
+    "perDay": "Prises par jour",
+    "perDayOption": "{count} par jour",
+    "daysLabel": "Pendant combien de jours",
+    "daysPlaceholder": "Ex. : 7",
+    "timeLabel": "Heure de la prise {number}",
+    "needDays": "Indique le nombre de jours écrit sur l’ordonnance.",
+    "create": "Créer les rappels de prise",
+    "saved": "Rappels créés jusqu’au {date}",
+    "savedShort": "Rappels créés",
+    "savedNoNotifications": "Rappels enregistrés, mais les notifications sont bloquées : autorise-les dans les réglages du téléphone.",
+    "activeUntil": "Rappels de prise jusqu’au {date}",
+    "courseLine": "À {times}, pendant {count} jour(s)",
+    "stop": "Arrêter les rappels",
+    "confirmStop": "Oui, arrêter les rappels",
+    "stopped": "Rappels de prise arrêtés",
+    "locked": "Les rappels de prise : avec l’offre {plan}.",
+    "reminder": {
+      "title": "C’est l’heure de ton médicament",
+      "withDose": "{name} : {dose}"
+    }
   }
 }
