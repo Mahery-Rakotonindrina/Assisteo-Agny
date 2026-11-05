@@ -1,6 +1,7 @@
 import type { Analysis, ChatMessage, ObjectAd, ObjectCondition, PaperKind, ScanMode, TranslateLanguage } from "@/lib/ai/schema";
 import type { ScannedCode } from "@/lib/codes";
 import type { MealLog } from "@/lib/food";
+import type { MedicationPlan } from "@/lib/medication";
 import type { ReminderRepeat } from "@/lib/reminderRepeat";
 
 export type ChatEntry = ChatMessage & { at: number };
@@ -40,6 +41,8 @@ export type HistoryEntry = {
   reminderRepeat?: ReminderRepeat;
   /** The occurrence of a recurring reminder that just came, once moved on (device-local, for "remind me later"). */
   reminderFiredAt?: number;
+  /** A prescription or medicine box: the dose reminders the user confirmed (synced). */
+  medication?: MedicationPlan;
   /** Follow-up conversation about this scan. */
   chat?: ChatEntry[];
   /** Starred by the user, and the folder they put it in (synced). */

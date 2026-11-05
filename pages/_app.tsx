@@ -8,6 +8,7 @@ import { Onboarding } from "@/components/Onboarding";
 import { ExpenseReminderKeeper } from "@/components/ExpenseReminderKeeper";
 import { LoanReminderKeeper } from "@/components/LoanReminderKeeper";
 import { LoanSharingKeeper } from "@/components/LoanSharingKeeper";
+import { MedicationReminderKeeper } from "@/components/MedicationReminderKeeper";
 import { ParcelReminderKeeper } from "@/components/ParcelReminderKeeper";
 import { PlantReminderKeeper } from "@/components/PlantReminderKeeper";
 import { ReminderKeeper } from "@/components/ReminderKeeper";
@@ -16,6 +17,7 @@ import { ShareReceiver } from "@/components/ShareReceiver";
 import { ToastProvider } from "@/components/Toast";
 import { UpdateGate } from "@/components/UpdateGate";
 import { VehicleReminderKeeper } from "@/components/VehicleReminderKeeper";
+import { WeeklySummaryKeeper } from "@/components/WeeklySummaryKeeper";
 import { HomeReminderKeeper } from "@/components/HomeReminderKeeper";
 import { useKeyboardReveal } from "@/hooks/useKeyboardReveal";
 import { useNativeBootstrap } from "@/hooks/useNativeBootstrap";
@@ -83,8 +85,10 @@ export default function App({ Component, pageProps }: AppProps) {
               <VehicleReminderKeeper />
               <HomeReminderKeeper />
               <ExpenseReminderKeeper />
+              <WeeklySummaryKeeper />
               <LoanReminderKeeper />
               <PlantReminderKeeper />
+              <MedicationReminderKeeper />
               <LoanSharingKeeper />
               <ScanQueueRunner />
               <ShareReceiver />

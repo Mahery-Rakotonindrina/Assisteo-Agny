@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { AnimatePresence, motion } from "motion/react";
 import { useDeferredValue, useEffect, useRef, useState } from "react";
 import {
+  Boxes,
   CalendarClock,
   Check,
   ChevronDown,
@@ -10,6 +11,7 @@ import {
   ExternalLink,
   FileSpreadsheet,
   MapPin,
+  MessageCircle,
   Package,
   Pencil,
   Plane,
@@ -27,6 +29,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { ParcelClients } from "@/components/ParcelClients";
 import { ParcelCosts } from "@/components/ParcelCosts";
 import { ParcelEditSheet } from "@/components/ParcelEditSheet";
+import { ParcelLots } from "@/components/ParcelLots";
 import { SegmentedControl } from "@/components/SegmentedControl";
 import { Seo } from "@/components/Seo";
 import { useToast } from "@/components/Toast";
@@ -40,9 +43,11 @@ import { easeOut, rise, stagger } from "@/lib/motion";
 import { deliveryState, formatDay } from "@/lib/parcelDelivery";
 import { exportFileName, parcelsWorkbook, XLSX_TYPE } from "@/lib/parcelExport";
 import { inPeriod, isForClient, isValidRange, parcelDate, type DayRange, type Period } from "@/lib/parcelReport";
+import { whatsappLink } from "@/lib/loans";
+import { clientPhone, parcelStatusMessage } from "@/lib/parcelMessage";
 import { compareParcels, matchesSearch, parcelStep, parcelSteps, parcelTone, shippingModeOf, trackingUrl } from "@/lib/parcels";
 import { shippingModes, type ShippingMode } from "@/lib/ai/schema";
-import { haptics } from "@/services/device";
+import { haptics, openExternal, shareText } from "@/services/device";
 import { shareFile } from "@/services/fileShare";
 import { keepParcelThumbnails } from "@/services/parcelLinking";
 import { exportClientStatement } from "@/services/parcelStatement";
@@ -82,7 +87,7 @@ export default function ParcelsPage() {
   // Pro: the parcels by client, over a period, and one client's parcels.
   const reseller = usePlan().has("reseller");
   const now = useNow(60_000);
-  const [view, setView] = useState<"parcels" | "clients">("parcels");
+  const [view, setView] = useState<"parcels" | "clients" | "lots">("parcels");
   const [period, setPeriod] = useState<Period>("month");
   // Chosen days: this month so far, to start with.
   const [range, setRange] = useState<DayRange>(thisMonthSoFar);
@@ -109,6 +114,9 @@ export default function ParcelsPage() {
     }
   }
   const showClients = reseller && view === "clients";
+  // Pro: the shipments (lots, containers) and their parcels.
+  const showLots = reseller && view === "lots";
+  const showList = !showClients && !showLots;
   const toast = useToast();
   const periodParcels = parcels.filter((parcel) => inPeriod(parcel, period, now, range));
 
@@ -217,6 +225,8 @@ export default function ParcelsPage() {
       ...parcel.timeline.flatMap((item) => [item.event?.description, item.event?.location, item.event?.at]),
       parcel.priceMga,
       ...(parcel.fees ?? []).flatMap((fee) => [fee.label, fee.amountMga]),
+      parcel.lot?.name,
+      parcel.freight?.forwarder,
       parcel.salePriceMga,
       parcel.paidMga,
       total || null,
@@ -269,6 +279,7 @@ export default function ParcelsPage() {
                   options={[
                     { value: "parcels", label: t("parcels.clients.parcelsTab"), icon: <Package size={16} /> },
                     { value: "clients", label: t("parcels.clients.clientsTab"), icon: <Users size={16} /> },
+                    { value: "lots", label: t("parcelLots.tab"), icon: <Boxes size={16} /> },
                   ]}
                 />
               </motion.div>
@@ -300,13 +311,18 @@ export default function ParcelsPage() {
                 />
               </motion.div>
             )}
-            {!showClients && clientFilter && (
+            {showLots && (
+              <motion.div variants={rise}>
+                <ParcelLots parcels={parcels} />
+              </motion.div>
+            )}
+            {showList && clientFilter && (
               <motion.button variants={rise} type="button" className={styles.clientFilter} onClick={() => setClientFilter(null)}>
                 <UserRound size={14} /> {clientFilter.name ? t("parcels.forClient", { name: clientFilter.name }) : t("parcels.clients.none")}
                 <X size={14} aria-label={t("parcels.clearSearch")} />
               </motion.button>
             )}
-            {!showClients && parcels.length > 0 && (
+            {showList && parcels.length > 0 && (
               <motion.label variants={rise} className={styles.search}>
                 <Search size={18} />
                 <input
@@ -323,7 +339,7 @@ export default function ParcelsPage() {
                 )}
               </motion.label>
             )}
-            {!showClients && shippingModes.some((mode) => shippingCounts[mode] > 0) && (
+            {showList && shippingModes.some((mode) => shippingCounts[mode] > 0) && (
               <motion.div variants={rise} className={styles.shippingFilter} role="group" aria-label={t("parcel.shipping.label")}>
                 <button type="button" aria-pressed={shipping === "all"} onClick={() => setShipping("all")}>
                   {t("parcel.shipping.all")}
@@ -340,9 +356,9 @@ export default function ParcelsPage() {
                 })}
               </motion.div>
             )}
-            {!showClients && (deferredQuery || clientFilter || shipping !== "all") && visible.length === 0 && <p className={styles.noMatch}>{t("parcels.noMatch")}</p>}
-            {!showClients && deferredQuery && visible.length > 0 && <p className={styles.matchCount}>{t("parcels.matchCount", { count: visible.length })}</p>}
-            {!showClients && ongoing.length > 0 && (
+            {showList && (deferredQuery || clientFilter || shipping !== "all") && visible.length === 0 && <p className={styles.noMatch}>{t("parcels.noMatch")}</p>}
+            {showList && deferredQuery && visible.length > 0 && <p className={styles.matchCount}>{t("parcels.matchCount", { count: visible.length })}</p>}
+            {showList && ongoing.length > 0 && (
               <motion.section variants={rise} className={styles.group}>
                 <h2>{t("parcels.ongoing")}</h2>
                 {ongoing.map((parcel) => (
@@ -351,6 +367,7 @@ export default function ParcelsPage() {
                     parcel={parcel}
                     thumbnail={parcel.thumbnail ?? thumbnails.get(parcel.scanIds[0])}
                     clients={clients}
+                    phone={clientPhone(parcel, parcels)}
                     hasScan={hasScan}
                     reseller={reseller}
                     now={now}
@@ -360,7 +377,7 @@ export default function ParcelsPage() {
                 ))}
               </motion.section>
             )}
-            {!showClients && received.length > 0 && (
+            {showList && received.length > 0 && (
               <motion.section variants={rise} className={styles.group}>
                 <h2>{t("parcels.received")}</h2>
                 {received.map((parcel) => (
@@ -369,6 +386,7 @@ export default function ParcelsPage() {
                     parcel={parcel}
                     thumbnail={parcel.thumbnail ?? thumbnails.get(parcel.scanIds[0])}
                     clients={clients}
+                    phone={clientPhone(parcel, parcels)}
                     hasScan={hasScan}
                     reseller={reseller}
                     received
@@ -390,6 +408,8 @@ type ParcelRowProps = {
   parcel: Parcel;
   thumbnail?: string;
   clients: string[];
+  /** Pro: the client's phone number, its own or from another of their parcels. */
+  phone?: string;
   /** Whether a scan still exists in the history (to open it). */
   hasScan: (id: string) => boolean;
   received?: boolean;
@@ -402,7 +422,7 @@ type ParcelRowProps = {
   onToggle: () => void;
 };
 
-function ParcelRow({ parcel, thumbnail, clients, hasScan, reseller, received = false, now, open, onToggle }: ParcelRowProps) {
+function ParcelRow({ parcel, thumbnail, clients, phone, hasScan, reseller, received = false, now, open, onToggle }: ParcelRowProps) {
   const { t, locale } = useTranslation();
   const toast = useToast();
   const card = useRef<HTMLElement>(null);
@@ -437,6 +457,20 @@ function ParcelRow({ parcel, thumbnail, clients, hasScan, reseller, received = f
         ? t("parcels.expectedLate", { date: formatDay(delivery.day, locale, { weekday: false }) })
         : t("parcels.expected", { date: formatDay(delivery.day, locale) }));
 
+  // Pro: the status for the client, in their WhatsApp chat when their number is known, else shared.
+  const sendStatus = async () => {
+    haptics.tap();
+    const message = parcelStatusMessage(parcel, t, locale);
+    const link = whatsappLink(phone, message);
+    if (link) {
+      openExternal(link);
+      return;
+    }
+    const outcome = await shareText(t("parcelWhatsapp.shareTitle", { title: parcel.title }), message);
+    if (outcome === "copied") toast(t("parcelWhatsapp.copied"));
+    else if (outcome === "unavailable") toast(t("parcelWhatsapp.failed"), "error");
+  };
+
   const copy = async (value: string) => {
     try {
       await navigator.clipboard.writeText(value);
@@ -467,6 +501,11 @@ function ParcelRow({ parcel, thumbnail, clients, hasScan, reseller, received = f
           {parcel.client && (
             <span className={styles.client}>
               <UserRound size={12} /> {t("parcels.forClient", { name: parcel.client })}
+            </span>
+          )}
+          {reseller && parcel.lot && (
+            <span className={styles.client}>
+              <Boxes size={12} /> {t("parcelLots.badge", { name: parcel.lot.name })}
             </span>
           )}
           <span className={styles.status}>{statusText}</span>
@@ -552,6 +591,11 @@ function ParcelRow({ parcel, thumbnail, clients, hasScan, reseller, received = f
                 <Button variant="secondary" size="md" icon={<Pencil />} onClick={() => setEditing(true)}>
                   {t("parcels.edit")}
                 </Button>
+                {reseller && parcel.client?.trim() && (
+                  <Button variant="secondary" size="md" icon={<MessageCircle />} onClick={() => void sendStatus()} data-testid="parcel-send-status">
+                    {t("parcelWhatsapp.button")}
+                  </Button>
+                )}
                 {lastScan && (
                   <Button href={`/result?id=${lastScan}`} variant="secondary" size="md">
                     {t("parcels.openScan")}

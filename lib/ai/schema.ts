@@ -78,6 +78,10 @@ export type MobileMoneyOperator = (typeof mobileMoneyOperators)[number];
 export const diets = ["vegetarian", "vegan", "gluten_free", "lactose_free", "halal", "low_sugar", "low_salt"] as const;
 export type Diet = (typeof diets)[number];
 
+/** A prescription (ordonnance) or a medicine box, blister or leaflet. */
+export const medicineKinds = ["prescription", "box"] as const;
+export type MedicineKind = (typeof medicineKinds)[number];
+
 export const AnalysisSchema = z.object({
   category: z.enum(categories).describe("What the photo mainly shows."),
   title: z.string().describe("Short name of the subject, 2 to 6 words."),
@@ -298,6 +302,32 @@ export const AnalysisSchema = z.object({
     })
     .nullable()
     .describe("Only for plants, null otherwise."),
+  medicine: z
+    .object({
+      kind: z.enum(medicineKinds).describe("prescription: a doctor's prescription (ordonnance); box: a medicine box, blister or leaflet."),
+      unreadable: z
+        .string()
+        .nullable()
+        .describe("What could not be read with certainty (handwriting, a blurred word, a cut-off line), in the user's language; null when everything is legible. Never guess instead."),
+      items: z
+        .array(
+          z.object({
+            name: z.string().describe("The medicine's name exactly as written (brand or generic). An empty string when it cannot be read with certainty: never a plausible or similar name."),
+            strength: z.string().nullable().describe("The strength as written, e.g. '500 mg', '250 mg/5 ml'; null if not written."),
+            dose: z
+              .string()
+              .nullable()
+              .describe("The dosage instructions exactly as written on the photo, e.g. '1 comprimé matin et soir'; null when not written. Never deduce or invent one."),
+            timesPerDay: z.number().nullable().describe("Doses a day, only when the written instructions say it (matin et soir = 2); null otherwise."),
+            durationDays: z.number().nullable().describe("Days of treatment, only when written (pendant 7 jours = 7, 1 boîte is not a duration); null otherwise."),
+            precautions: z.array(z.string()).describe("0 to 3 usual precautions for this medicine (with food, drowsiness, no alcohol…), short."),
+            contraindications: z.array(z.string()).describe("0 to 3 commonly known general contraindications, each phrased as general information, short."),
+          }),
+        )
+        .describe("Every medicine shown, in the order written."),
+    })
+    .nullable()
+    .describe("Only for a medical prescription (ordonnance) or a medicine box, blister or leaflet; null otherwise."),
   reminder: z
     .object({
       title: z.string(),
@@ -325,6 +355,7 @@ export function normalizeStoredAnalysis(raw: unknown): unknown {
     vehicle: null,
     list: null,
     plant: null,
+    medicine: null,
     ...analysis,
     document: document
       ? {

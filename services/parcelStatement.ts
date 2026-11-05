@@ -1,5 +1,5 @@
 import type { Locale } from "@/i18n.config";
-import { formatAriary, formatDate } from "@/lib/format";
+import { formatAriary, formatDate, formatDecimal } from "@/lib/format";
 import { eventTime, shippingModeOf } from "@/lib/parcels";
 import { parcelDate } from "@/lib/parcelReport";
 import { pdfFileName, PdfWriter } from "@/lib/pdf";
@@ -39,6 +39,9 @@ export function statementLines(parcel: Parcel, t: Translate, locale: Locale): Li
     mode && { label: label("shipping"), value: t(`parcel.shipping.${mode}`) },
     info.trackingNumber ? { label: label("trackingNumber"), value: info.trackingNumber } : null,
     info.carrier ? { label: label("carrier"), value: info.carrier } : null,
+    // The shipment and the weight, never the freight paid (what the parcel cost).
+    parcel.lot ? { label: t("parcelLots.columns.lot"), value: parcel.lot.name } : null,
+    parcel.freight?.weightKg ? { label: t("parcelLots.columns.weightKg"), value: t("parcelLots.kg", { weight: formatDecimal(parcel.freight.weightKg, locale) }) } : null,
     orderedAt !== null ? { label: label("orderedAt"), value: formatDate(orderedAt, locale) } : null,
     info.items.length > 0
       ? {

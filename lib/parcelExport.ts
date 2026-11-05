@@ -23,6 +23,9 @@ export type ParcelRow = {
   carrier: string | null;
   /** "Aérien (NORMAL)" or "Maritime (SEA)". */
   shipping: string | null;
+  /** Resellers: the shipment (lot, container) and the weight of the freight by the kilo. */
+  lot: string | null;
+  weightKg: number | null;
   status: string;
   orderedAt: Date | null;
   receivedAt: Date | null;
@@ -50,6 +53,8 @@ export function parcelRows(parcels: Parcel[], t: Translate, locale: Locale): Par
       trackingNumber: info.trackingNumber,
       carrier: info.carrier,
       shipping: ((mode) => (mode ? t(`parcel.shipping.${mode}`) : null))(shippingModeOf(parcel).mode),
+      lot: parcel.lot?.name ?? null,
+      weightKg: parcel.freight?.weightKg || null,
       status: parcel.receivedAt ? t("parcels.receivedLabel") : t(`parcel.statuses.${info.status}`),
       orderedAt: excelDay(eventTime(info.orderedAt)),
       receivedAt: excelDay(parcel.receivedAt ?? null),
@@ -68,7 +73,7 @@ export function parcelRows(parcels: Parcel[], t: Translate, locale: Locale): Par
   });
 }
 
-const parcelColumns: Array<{ key: keyof ParcelRow; width: number; kind?: "money" | "day" }> = [
+const parcelColumns: Array<{ key: keyof ParcelRow; width: number; kind?: "money" | "day" | "weight" }> = [
   { key: "client", width: 18 },
   { key: "title", width: 30 },
   { key: "platform", width: 13 },
@@ -88,6 +93,9 @@ const parcelColumns: Array<{ key: keyof ParcelRow; width: number; kind?: "money"
   { key: "paidMga", width: 17, kind: "money" },
   { key: "dueMga", width: 17, kind: "money" },
   { key: "profitMga", width: 17, kind: "money" },
+  // Last, so the columns before keep their place.
+  { key: "lot", width: 20 },
+  { key: "weightKg", width: 11, kind: "weight" },
 ];
 
 /** The workbook's bytes (.xlsx). */
@@ -97,7 +105,7 @@ export async function parcelsWorkbook(parcels: Parcel[], t: Translate, locale: L
   workbook.creator = "Assisteo Agny";
   workbook.created = new Date();
 
-  const label = (key: string) => t(`parcels.export.columns.${key}`);
+  const label = (key: string) => (key === "lot" || key === "weightKg" ? t(`parcelLots.columns.${key}`) : t(`parcels.export.columns.${key}`));
   const rows = parcelRows(parcels, t, locale);
   const head = (sheet: import("exceljs").Worksheet) => sheetHeading(sheet, heading);
   // The table starts under the heading; its header row stays visible when scrolling.
@@ -116,7 +124,7 @@ export async function parcelsWorkbook(parcels: Parcel[], t: Translate, locale: L
       name: label(key),
       filterButton: true,
       ...(index === 0 && { totalsRowLabel: t("parcels.export.total") }),
-      ...(kind === "money" && { totalsRowFunction: "sum" as const, totalsRowResult: sum(rows.map((row) => row[key] as number | null)) }),
+      ...((kind === "money" || kind === "weight") && { totalsRowFunction: "sum" as const, totalsRowResult: sum(rows.map((row) => row[key] as number | null)) }),
     })),
     rows: rows.map((row) => parcelColumns.map(({ key }) => row[key] ?? "")),
   });
