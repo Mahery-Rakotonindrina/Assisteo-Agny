@@ -3867,5 +3867,43 @@
     "step1": "Dans Safari, touche le bouton Partager (le carré avec une flèche).",
     "step2": "Choisis « Sur l’écran d’accueil », puis « Ajouter ».",
     "step3": "Ouvre Assisteo depuis sa nouvelle icône et reviens ici."
+  },
+  "userReport": {
+    "open": "Donner mon avis / Signaler un problème",
+    "title": "Ton avis nous aide",
+    "kindLabel": "Type de message",
+    "kinds": {
+      "problem": "Un problème",
+      "idea": "Une idée"
+    },
+    "messageLabel": "Ton message",
+    "placeholderProblem": "Que s’est-il passé ? Sur quel écran ?",
+    "placeholderIdea": "Qu’est-ce qui te serait utile ?",
+    "contactLabel": "Ton e-mail ou ton numéro (facultatif)",
+    "hint": "Le message part avec l’écran d’où tu viens, la version de l’app et ton appareil. Pas de photo.",
+    "hintSignedIn": "Le message part avec l’écran d’où tu viens, la version de l’app, ton appareil et l’e-mail de ton compte. Pas de photo.",
+    "send": "Envoyer",
+    "cancel": "Annuler",
+    "tooShort": "Écris au moins quelques mots.",
+    "sent": "Merci, ton message est bien parti.",
+    "failed": "Impossible d’envoyer pour l’instant. Réessaie plus tard.",
+    "tooMany": "Tu as déjà envoyé plusieurs messages. Réessaie dans une heure.",
+    "admin": {
+      "title": "Avis et problèmes",
+      "subtitle": "Les messages envoyés depuis les Réglages (les 300 derniers).",
+      "empty": "Aucun message pour l’instant.",
+      "more": "Voir {count} de plus",
+      "anonymous": "Anonyme",
+      "screen": "Écran : {screen}",
+      "status": {
+        "new": "Nouveau",
+        "read": "Lu",
+        "done": "Traité"
+      },
+      "markRead": "Marquer lu",
+      "markDone": "Marquer traité",
+      "markNew": "Remettre en nouveau",
+      "filterAll": "Tous"
+    }
   }
 }

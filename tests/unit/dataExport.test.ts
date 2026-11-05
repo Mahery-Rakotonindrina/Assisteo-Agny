@@ -85,6 +85,7 @@ const account: AccountExport = {
   household: null,
   loanShareLinks: [],
   notificationDevices: [{ platform: "android", updatedAt: "2026-11-01T00:00:00.000Z" }],
+  feedback: [],
 };
 
 describe("the copy", () => {
