@@ -3905,5 +3905,24 @@
       "markNew": "Remettre en nouveau",
       "filterAll": "Tous"
     }
+  },
+  "householdShare": {
+    "someone": "un membre du foyer",
+    "list": {
+      "share": "Partager avec le foyer",
+      "shared": "Liste partagée : les membres du foyer la voient et la cochent",
+      "sharedBy": "Partagée par {name}",
+      "sharedByMe": "Partagée avec le foyer",
+      "stop": "Arrêter le partage",
+      "stopped": "Partage arrêté : la liste n’est plus qu’à toi"
+    },
+    "parcel": {
+      "share": "Partager avec le foyer",
+      "shared": "Colis partagé avec le foyer, sans ses prix",
+      "stop": "Arrêter le partage",
+      "stopped": "Partage du colis arrêté",
+      "fromHousehold": "Partagés par ton foyer",
+      "sharedBy": "Partagé par {name}"
+    }
   }
 }

@@ -1,7 +1,7 @@
 // The Row Level Security of the shared budget (migration 0009_households.sql)
 // of the loans (0010_loans.sql), of the features offered for a while (0011),
 // of the loan links and household loans (0012), of the plants (0013), of the home inventory (0014),
-// with the plans created from the Admin a subscription may hold (0015), of the family seats (0016, 0019), of the photo quota (0020),
+// with the plans created from the Admin a subscription may hold (0015), of the family seats (0016, 0019), of the photo quota (0020), of the lists and parcels shared with the household (0023),
 // tested as Supabase runs it: each query as the "authenticated" role with a
 // user id, or as the server ("service_role"). `client.query(text, params)`
 // must return { rows }. Returns the problems found (empty: all good).
@@ -478,5 +478,76 @@ export async function runRlsChecks(client) {
   await check("another account has its own quota", async () => ((await tryUser(ben, photoSql + " returning id", [`${ben}/s1/preview.jpg`, { size: 150000 }])).length === 1 ? null : "refused"));
   await refused("a photo goes in one's own folder only", () => tryUser(ben, photoSql, [`${anna}/s3/preview.jpg`, { size: 1 }]), /row-level security/);
   await refused("a visitor can't call photo_quota_ok()", () => tryVisitor("select public.photo_quota_ok('x/y.jpg')"), /permission denied/);
+
+  // ---- Lists and parcels shared with the household (migration 0023_partage_foyer.sql) ---------
+  const [erin, finn, gaby] = [randomUUID(), randomUUID(), randomUUID()];
+  for (const [id, email] of [
+    [erin, "erin@example.com"],
+    [finn, "finn@example.com"],
+    [gaby, "gaby@example.com"],
+  ]) {
+    await client.query("insert into auth.users (id, email, created_at, email_confirmed_at) values ($1, $2, now(), now())", [id, email]);
+  }
+  const [{ family }] = await server("select public.create_household($1, 'Famille Erin') as family", [erin]);
+  const [{ invite: familyCode }] = await server("select public.create_household_invite($1, $2) as invite", [erin, family]);
+  await server("select public.join_household($1, $2)", [finn, familyCode.code]);
+  const shareSqlOf = "insert into public.household_shares (household_id, id, kind, data, updated_at) values ($1, $2, $3, $4, now())";
+  const sharedList = (id, done) => ({ id, title: "Courses", kind: "shopping", items: [{ id: "i1", text: "Riz", done }], createdAt: 1, updatedAt: 1 });
+  await user(erin, shareSqlOf, [family, "list:l1", "list", sharedList("list:l1", false)]);
+  await user(erin, shareSqlOf, [family, "parcel:p1", "parcel", { id: "parcel:p1", sourceId: "p1", title: "Robe" }]);
+  await check("a member reads the household's shared lists and parcels", async () => ((await count(finn, "select 1 from public.household_shares")) === 2 ? null : "not visible"));
+  await check("a non-member reads no shared list nor parcel", async () => ((await count(gaby, "select 1 from public.household_shares")) ? "visible" : null));
+  await hidden("a visitor reads no shared list", () => tryVisitor("select 1 from public.household_shares"));
+  await refused("a non-member can't share into the household", () => tryUser(gaby, shareSqlOf, [family, "list:intruder", "list", sharedList("list:intruder", false)]), /row-level security/);
+  await check("a non-member can't tick a shared list", async () => ((await user(gaby, "update public.household_shares set data = '{}' where id = 'list:l1' returning id")).length ? "changed" : null));
+  await refused("a member can't share in another's name", () =>
+    tryUser(finn, "insert into public.household_shares (household_id, id, kind, user_id, data, updated_at) values ($1, 'list:fake', 'list', $2, '{}', now())", [family, erin]), /row-level security/);
+  await refused("a share's id says its kind", () => tryUser(erin, shareSqlOf, [family, "parcel:x", "list", {}]), /check constraint/);
+  await check("a member ticks an item on another's shared list", async () =>
+    (await user(finn, "update public.household_shares set data = $1, updated_at = now() where id = 'list:l1' returning id", [sharedList("list:l1", true)])).length === 1 ? null : "refused");
+  await check("ticking leaves the list its author's", async () => {
+    const rows = (await client.query("select user_id, kind, data from public.household_shares where id = 'list:l1'")).rows;
+    return rows[0]?.user_id === erin && rows[0].kind === "list" && rows[0].data.items[0].done === true ? null : `got ${JSON.stringify(rows[0])}`;
+  });
+  await check("a member can't take a list over (the author stays)", async () => {
+    await user(finn, "update public.household_shares set user_id = $1 where id = 'list:l1'", [finn]);
+    const rows = (await client.query("select user_id from public.household_shares where id = 'list:l1'")).rows;
+    return rows[0]?.user_id === erin ? null : "taken over";
+  });
+  await check("a member can't stop another's sharing (the tombstone is ignored)", async () => {
+    await user(finn, "update public.household_shares set deleted_at = now() where id = 'list:l1'");
+    const rows = (await client.query("select deleted_at from public.household_shares where id = 'list:l1'")).rows;
+    return rows[0]?.deleted_at === null ? null : "stopped";
+  });
+  await check("a member can't change another's shared parcel (read only)", async () => ((await user(finn, "update public.household_shares set data = '{}' where id = 'parcel:p1' returning id")).length ? "changed" : null));
+  await check("nobody deletes a share (tombstones only)", async () => ((await user(erin, "delete from public.household_shares where id = 'parcel:p1' returning id")).length ? "deleted" : null));
+  await check("the author stops sharing their parcel", async () => {
+    await user(erin, "update public.household_shares set deleted_at = now(), updated_at = now() where id = 'parcel:p1'");
+    const rows = (await client.query("select deleted_at from public.household_shares where id = 'parcel:p1'")).rows;
+    return rows[0]?.deleted_at ? null : "still shared";
+  });
+  for (const name of ["household_return_shares", "household_member_left_shares", "household_closing_shares", "household_shares_guard", "household_shares_author_gone"]) {
+    const args = name === "household_return_shares" ? "($1, $2)" : "()";
+    const params = name === "household_return_shares" ? [family, finn] : [];
+    await refused(`a signed-in client can't call ${name}`, () => tryUser(erin, `select public.${name}${args}`, params), /permission denied|trigger functions can only be called as triggers/);
+  }
+
+  // Finn shares a list, then leaves: it comes back to him as a personal list, and leaves the household.
+  await user(finn, shareSqlOf, [family, "list:f1", "list", { ...sharedList("list:f1", false), householdId: family, userId: finn }]);
+  await server("select public.remove_household_member($1, $2, $1)", [finn, family]);
+  await check("a leaver gets their shared lists back as personal ones (same id, no household)", async () => {
+    const data = (await user(finn, "select data from public.lists where id = 'f1' and deleted_at is null"))[0]?.data;
+    return data?.id === "f1" && data.title === "Courses" && data.householdId === undefined && data.userId === undefined ? null : `got ${JSON.stringify(data)}`;
+  });
+  await check("a leaver's shares leave the household", async () => ((await client.query("select deleted_at from public.household_shares where id = 'list:f1'")).rows[0]?.deleted_at ? null : "still live"));
+  await check("a leaver reads the household's lists no more", async () => ((await count(finn, "select 1 from public.household_shares")) ? "visible" : null));
+
+  // Erin deletes her account: her shares leave the household (read only, tombstoned).
+  const [{ invite: gabyCode }] = await server("select public.create_household_invite($1, $2) as invite", [erin, family]);
+  await server("select public.join_household($1, $2)", [gaby, gabyCode.code]);
+  await user(gaby, shareSqlOf, [family, "list:g1", "list", sharedList("list:g1", false)]);
+  await server("select public.delete_household($1, $2)", [erin, family]);
+  await check("deleting the household gives each member their shared lists back", async () => ((await count(gaby, "select 1 from public.lists where id = 'g1' and deleted_at is null")) === 1 ? null : "not back"));
+
   return problems;
 }

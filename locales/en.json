@@ -3905,5 +3905,24 @@
       "markNew": "Back to new",
       "filterAll": "All"
     }
+  },
+  "householdShare": {
+    "someone": "a household member",
+    "list": {
+      "share": "Share with the household",
+      "shared": "List shared: the household's members see it and tick it",
+      "sharedBy": "Shared by {name}",
+      "sharedByMe": "Shared with the household",
+      "stop": "Stop sharing",
+      "stopped": "Sharing stopped: the list is yours alone again"
+    },
+    "parcel": {
+      "share": "Share with the household",
+      "shared": "Parcel shared with the household, without its prices",
+      "stop": "Stop sharing",
+      "stopped": "Parcel sharing stopped",
+      "fromHousehold": "Shared by your household",
+      "sharedBy": "Shared by {name}"
+    }
   }
 }

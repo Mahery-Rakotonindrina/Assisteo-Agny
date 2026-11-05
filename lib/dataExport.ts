@@ -35,6 +35,8 @@ export const EXPORT_DATABASES = {
   "assisteo-household": { store: "state", file: "foyer" },
   "assisteo-household-expenses": { store: "expenses", file: "foyer" },
   "assisteo-household-loans": { store: "loans", file: "foyer" },
+  "assisteo-household-lists": { store: "lists", file: "foyer" },
+  "assisteo-household-parcels": { store: "parcels", file: "foyer" },
 } as const satisfies Record<string, { store: string; file: CopyFile | null }>;
 
 export type ExportDatabase = keyof typeof EXPORT_DATABASES;
@@ -183,6 +185,9 @@ function contents({ databases, settings }: LocalData, account: AccountExport | n
         household: { name: state.household.name, role: state.household.role },
         expenses: list(mine(read("assisteo-household-expenses"), me), "foyer"),
         loans: list(mine(read("assisteo-household-loans"), me), "foyer"),
+        // The lists and parcels one shares with it (the others' stay theirs).
+        lists: list(mine(read("assisteo-household-lists"), me), "foyer"),
+        parcels: list(mine(read("assisteo-household-parcels"), me), "foyer"),
       }
     : undefined;
 

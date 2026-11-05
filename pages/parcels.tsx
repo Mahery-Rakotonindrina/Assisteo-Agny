@@ -20,6 +20,7 @@ import {
   Trash2,
   UserRound,
   Users,
+  UsersRound,
   X,
 } from "lucide-react";
 import { Button } from "@/components/Button";
@@ -32,7 +33,8 @@ import { Seo } from "@/components/Seo";
 import { useToast } from "@/components/Toast";
 import { useHistory } from "@/hooks/useHistory";
 import { useNow } from "@/hooks/useNow";
-import { useParcels } from "@/hooks/useParcels";
+import { useHousehold } from "@/hooks/useHousehold";
+import { useParcels, useSharedParcels } from "@/hooks/useParcels";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatAriary, formatDate, formatDateTime, formatMonthYear, toDateInput } from "@/lib/format";
@@ -43,6 +45,8 @@ import { inPeriod, isForClient, isValidRange, parcelDate, type DayRange, type Pe
 import { compareParcels, matchesSearch, parcelStep, parcelSteps, parcelTone, shippingModeOf, trackingUrl } from "@/lib/parcels";
 import { shippingModes, type ShippingMode } from "@/lib/ai/schema";
 import { haptics } from "@/services/device";
+import { shareParcel, unshareParcel } from "@/services/sharedParcels";
+import { isOwnShare, type SharedParcelRecord } from "@/lib/householdShares";
 import { shareFile } from "@/services/fileShare";
 import { keepParcelThumbnails } from "@/services/parcelLinking";
 import { exportClientStatement } from "@/services/parcelStatement";
@@ -81,6 +85,21 @@ export default function ParcelsPage() {
   const deferredQuery = useDeferredValue(query);
   // Pro: the parcels by client, over a period, and one client's parcels.
   const reseller = usePlan().has("reseller");
+  // Shared with the household: one's own parcels (shared or not), and the others' copies, read only.
+  const household = useHousehold();
+  const me = household?.userId ?? null;
+  const householdId = household?.household?.id ?? null;
+  const sharedParcels = useSharedParcels();
+  const sharedIds = new Set(sharedParcels.filter((share) => isOwnShare(share, me)).map((share) => share.sourceId));
+  const fromHousehold = sharedParcels.filter((share) => !isOwnShare(share, me));
+  const memberName = (userId: string | undefined) => household?.household?.members.find((member) => member.userId === userId)?.label ?? null;
+  const shareFor = (parcel: Parcel): ShareControl | null =>
+    householdId && me
+      ? {
+          shared: sharedIds.has(parcel.id),
+          toggle: () => void (sharedIds.has(parcel.id) ? unshareParcel(parcel.id) : shareParcel(parcel, householdId, me)),
+        }
+      : null;
   const now = useNow(60_000);
   const [view, setView] = useState<"parcels" | "clients">("parcels");
   const [period, setPeriod] = useState<Period>("month");
@@ -353,6 +372,7 @@ export default function ParcelsPage() {
                     clients={clients}
                     hasScan={hasScan}
                     reseller={reseller}
+                    share={shareFor(parcel)}
                     now={now}
                     open={openId === parcel.id}
                     onToggle={() => toggle(parcel.id)}
@@ -371,6 +391,7 @@ export default function ParcelsPage() {
                     clients={clients}
                     hasScan={hasScan}
                     reseller={reseller}
+                    share={shareFor(parcel)}
                     received
                     now={now}
                     open={openId === parcel.id}
@@ -380,6 +401,14 @@ export default function ParcelsPage() {
               </motion.section>
             )}
           </>
+        )}
+        {fromHousehold.length > 0 && (
+          <motion.section variants={rise} className={styles.group} data-testid="household-parcels">
+            <h2>{t("householdShare.parcel.fromHousehold")}</h2>
+            {fromHousehold.map((share) => (
+              <SharedParcelCard key={share.id} share={share} by={memberName(share.userId)} />
+            ))}
+          </motion.section>
         )}
       </motion.div>
     </>
@@ -395,6 +424,8 @@ type ParcelRowProps = {
   received?: boolean;
   /** Pro: show what the client still owes. */
   reseller: boolean;
+  /** In a household: share this parcel with it (read only for the others), or stop. */
+  share: ShareControl | null;
   /** To tell the expected delivery day against today. */
   now: number;
   /** Its details are shown; the list keeps one parcel open at a time. */
@@ -402,7 +433,34 @@ type ParcelRowProps = {
   onToggle: () => void;
 };
 
-function ParcelRow({ parcel, thumbnail, clients, hasScan, reseller, received = false, now, open, onToggle }: ParcelRowProps) {
+type ShareControl = { shared: boolean; toggle: () => void };
+
+/** Another member's parcel shared with the household: where it is, read only. */
+function SharedParcelCard({ share, by }: { share: SharedParcelRecord; by: string | null }) {
+  const { t, locale } = useTranslation();
+  const status = share.info.status as Parcel["info"]["status"];
+  const tracking = typeof share.info.trackingNumber === "string" ? share.info.trackingNumber : null;
+  return (
+    <article className={styles.card} data-tone={share.receivedAt ? "done" : parcelTone(status)} data-testid="household-parcel">
+      <div className={styles.summary}>
+        <span className={styles.thumb}>
+          {/* eslint-disable-next-line @next/next/no-img-element -- local data URL */}
+          {share.thumbnail ? <img src={share.thumbnail} alt="" /> : <Package size={20} />}
+        </span>
+        <span className={styles.text}>
+          <strong>{share.title}</strong>
+          <span className={styles.status}>{share.receivedAt ? t("parcels.receivedOn", { date: formatDate(share.receivedAt, locale) }) : t(`parcel.statuses.${status}`)}</span>
+          {tracking && <small>{[t("parcel.trackingNumber"), tracking].join(" · ")}</small>}
+          <span className={styles.client}>
+            <UsersRound size={12} /> {t("householdShare.parcel.sharedBy", { name: by ?? t("householdShare.someone") })}
+          </span>
+        </span>
+      </div>
+    </article>
+  );
+}
+
+function ParcelRow({ parcel, thumbnail, clients, hasScan, reseller, share, received = false, now, open, onToggle }: ParcelRowProps) {
   const { t, locale } = useTranslation();
   const toast = useToast();
   const card = useRef<HTMLElement>(null);
@@ -552,6 +610,21 @@ function ParcelRow({ parcel, thumbnail, clients, hasScan, reseller, received = f
                 <Button variant="secondary" size="md" icon={<Pencil />} onClick={() => setEditing(true)}>
                   {t("parcels.edit")}
                 </Button>
+                {share && (
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    icon={<UsersRound />}
+                    data-testid={share.shared ? "parcel-unshare" : "parcel-share-household"}
+                    onClick={() => {
+                      haptics.tap();
+                      share.toggle();
+                      toast(share.shared ? t("householdShare.parcel.stopped") : t("householdShare.parcel.shared"));
+                    }}
+                  >
+                    {share.shared ? t("householdShare.parcel.stop") : t("householdShare.parcel.share")}
+                  </Button>
+                )}
                 {lastScan && (
                   <Button href={`/result?id=${lastScan}`} variant="secondary" size="md">
                     {t("parcels.openScan")}
