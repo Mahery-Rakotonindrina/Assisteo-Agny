@@ -3906,6 +3906,233 @@
       "filterAll": "All"
     }
   },
+  "weekly": {
+    "title": "Your week",
+    "notifTitle": "Your week with Assisteo Agny",
+    "spent": "Spending: {amount}.",
+    "arrived": {
+      "one": "{count} parcel arrived.",
+      "other": "{count} parcels arrived."
+    },
+    "upcoming": {
+      "one": "{count} reminder next week.",
+      "other": "{count} reminders next week."
+    },
+    "close": "Close",
+    "setting": "Sunday summary",
+    "hintApp": "Every Sunday at 5 pm: your spending, the parcels that arrived and your reminders for the week ahead. Worked out on your phone.",
+    "hintWeb": "On Sundays, a “Your week” card shows on the home screen: your spending, the parcels that arrived and your reminders. Worked out on your device.",
+    "locked": "Sunday summary: from the {plan} plan"
+  },
+  "help": {
+    "title": "Help",
+    "lead": "Answers to common questions and step-by-step guides.",
+    "metaTitle": "Assisteo Agny help: common questions and guides",
+    "metaDescription": "How to scan, track a parcel, create an account or use the app offline: Assisteo Agny's answers.",
+    "searchLabel": "Search the help",
+    "searchPlaceholder": "Search a question…",
+    "noResult": "No answer for “{query}”. Try other words, or write to us from Settings (“Give feedback / Report a problem”).",
+    "resultCount": "{count} answer(s)",
+    "guidesTitle": "How it works",
+    "faqTitle": "Common questions",
+    "step": "Step {n}",
+    "contact": "Can’t find your answer? Write to us from Settings, “Give feedback / Report a problem”.",
+    "open": "Help",
+    "topics": {
+      "scan": {
+        "title": "Scanning",
+        "questions": {
+          "what": {
+            "q": "What can I scan?",
+            "a": "A document, a bill, a dish or food, a parcel, a vehicle, a plant or an object. Take the photo: the app tells you what it is and what you can do next."
+          },
+          "blurry": {
+            "q": "The answer is wrong or unclear, what can I do?",
+            "a": "Retake the photo closer, well lit, without glare. You can also ask the AI a question under the result. If it is still wrong, use the thumbs down: it helps us improve."
+          },
+          "pages": {
+            "q": "How do I scan a document with several pages?",
+            "a": "With the “Several pages” option (from the Premium plan): add one photo per page, then run the analysis once."
+          }
+        }
+      },
+      "plans": {
+        "title": "Plans",
+        "questions": {
+          "free": {
+            "q": "What is free?",
+            "a": "A trial with scans and questions to start, no bank card. The Lite, Premium and Pro plans add more scans, reminders and extra tools."
+          },
+          "pay": {
+            "q": "How do I pay for a plan?",
+            "a": "By Mobile Money (MVola…) in ariary, from the “Plans” screen. There is no automatic renewal: you choose when to continue.",
+            "undefined": "Sign in first: your plan is tied to your e-mail. In “Plans”, pay by Mobile Money in ariary following the instructions, then send the transaction reference. The plan is turned on once the payment is checked. Nothing renews automatically."
+          },
+          "limit": {
+            "q": "I used all my scans, what now?",
+            "a": "Scans come back every month. To get more right away, look at the plans: each one has its own number of scans a month.",
+            "undefined": "With the free trial, the free scans do not come back: to go on, pick a plan in “Plans”. With a plan, your count starts again on the 1st of each month; to get more right away, move to a bigger plan."
+          }
+        }
+      },
+      "parcels": {
+        "title": "Parcels",
+        "questions": {
+          "add": {
+            "q": "How do I track a parcel?",
+            "a": "Scan your order’s tracking page (Temu, Shein, AliExpress, Pinduoduo…), then tap “Add to my parcels”. It shows in “My parcels”. Scan the page again later to update its status."
+          },
+          "status": {
+            "q": "How do I change a parcel’s status?",
+            "a": "Scan the tracking page again: the status updates by itself. You can also tap “Edit” to change it by hand, or “Mark as received” once you have it."
+          },
+          "costs": {
+            "q": "Can I note what the parcel cost me?",
+            "a": "Yes, with the parcel costs (from the Lite plan): price, shipping, customs. The app works out the total."
+          }
+        }
+      },
+      "expenses": {
+        "title": "Spending",
+        "questions": {
+          "add": {
+            "q": "How do I log an expense?",
+            "a": "Scan the receipt or the bill, or type the amount by hand. The app files the expense in a category and counts it in the month."
+          },
+          "budget": {
+            "q": "How do I set a budget?",
+            "a": "In the “My spending” screen, set the month’s budget: the app shows what is left and warns you when you get close."
+          },
+          "share": {
+            "q": "Can I share my spending with my family?",
+            "a": "Yes, with an account: you can invite the people of your household to follow spending together."
+          }
+        }
+      },
+      "loans": {
+        "title": "Loans",
+        "questions": {
+          "add": {
+            "q": "How do I note a loan or a debt?",
+            "a": "In the “Loans” screen, add who, how much and the date. You choose whether you lent or borrowed money."
+          },
+          "repay": {
+            "q": "How do I note a repayment?",
+            "a": "Open the loan and add a payment: the amount left to repay updates by itself."
+          },
+          "remind": {
+            "q": "Can I be warned when a due date comes?",
+            "a": "Yes, in the Android app: when the loan has a due date, the app warns you the day before at 9 am, and on the day itself to chase someone who owes you (“Remind me of due dates”, in “Loans”). You need a plan with reminders (see “Plans”)."
+          }
+        }
+      },
+      "account": {
+        "title": "Account",
+        "questions": {
+          "need": {
+            "q": "Do I need an account?",
+            "a": "No, you can use the app without one. An account (with your e-mail) lets you find your history, parcels and plan on all your devices."
+          },
+          "lost": {
+            "q": "I changed phone, how do I get my data back?",
+            "a": "Sign in with the same account: your data syncs. Without an account, it stays on the old device."
+          },
+          "delete": {
+            "q": "How do I delete my account?",
+            "a": "In Settings, Account section, tap “Delete my account”. We first e-mail you a code to check it is you. Your account and its data are erased from our servers and this device: it is final."
+          }
+        }
+      },
+      "offline": {
+        "title": "Offline",
+        "questions": {
+          "works": {
+            "q": "Does the app work without internet?",
+            "a": "You can look at your history, parcels and lists. Analysing a photo needs a network."
+          },
+          "queue": {
+            "q": "What happens if I scan without a network?",
+            "a": "The photo waits in the queue: as soon as the network is back, it is analysed and you get the result."
+          },
+          "data": {
+            "q": "How do I save mobile data?",
+            "a": "In Settings, choose “Always” for the data saver (“Auto” is the default mode): photos are lighter and leave faster, even on 3G."
+          }
+        }
+      }
+    },
+    "guides": {
+      "scan": {
+        "title": "Scan a photo",
+        "steps": {
+          "1": {
+            "t": "Take the photo",
+            "b": "Frame the object or document well, with some light."
+          },
+          "2": {
+            "t": "The AI analyses it",
+            "b": "In a few seconds, you see what it is."
+          },
+          "3": {
+            "t": "Ask a question",
+            "b": "Ask for a detail or what to do next."
+          }
+        }
+      },
+      "parcel": {
+        "title": "Track a parcel",
+        "steps": {
+          "1": {
+            "t": "Scan the tracking page",
+            "b": "The one of your order on Temu, Shein, AliExpress…"
+          },
+          "2": {
+            "t": "Add the parcel",
+            "b": "It joins your list, with its status."
+          },
+          "3": {
+            "t": "Get notified",
+            "b": "From Lite, a notification on the expected delivery day (Settings)."
+          }
+        }
+      },
+      "expense": {
+        "title": "Log an expense",
+        "steps": {
+          "1": {
+            "t": "Scan the receipt",
+            "b": "Or type the amount by hand."
+          },
+          "2": {
+            "t": "Check the category",
+            "b": "Fix it in one tap if needed."
+          },
+          "3": {
+            "t": "Look at your month",
+            "b": "The total and the budget left update."
+          }
+        }
+      },
+      "account": {
+        "title": "Create an account",
+        "steps": {
+          "1": {
+            "t": "Open Settings",
+            "b": "Tap “Sign in”."
+          },
+          "2": {
+            "t": "Enter your e-mail",
+            "b": "Type the code we e-mail you (no password)."
+          },
+          "3": {
+            "t": "Find everything",
+            "b": "History, parcels and plan on all your devices."
+          }
+        }
+      }
+    },
+    "contactMail": "Or by e-mail:"
+  },
   "googleSignIn": {
     "button": "Continue with Google",
     "or": "or",
