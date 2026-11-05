@@ -44,6 +44,7 @@ import { SegmentedControl } from "@/components/SegmentedControl";
 import { Seo } from "@/components/Seo";
 import { PlanBadge } from "@/components/PlanBadge";
 import { DataCopy } from "@/components/DataCopy";
+import { UserReportForm } from "@/components/UserReportForm";
 import { ScreenReset } from "@/components/ScreenReset";
 import { Toggle } from "@/components/Toggle";
 import { WebPushSettings } from "@/components/WebPushSettings";
@@ -430,6 +431,7 @@ export default function SettingsPage() {
               <span className={styles.linkLabel}>{t("legal.terms")}</span>
               <ChevronRight size={16} />
             </Link>
+            <UserReportForm rowClassName={styles.linkRow} labelClassName={styles.linkLabel} iconClassName={styles.rowIcon} />
             <p className={styles.privacy}>{t("settings.privacy")}</p>
           </Group>
         </div>
