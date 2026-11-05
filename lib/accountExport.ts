@@ -21,6 +21,8 @@ export type AccountExport = {
   loanShareLinks: Array<{ person: string; createdAt: string; updatedAt: string; active: boolean }>;
   /** The devices that receive reminders: no token nor key. */
   notificationDevices: Array<{ platform: string; updatedAt: string }>;
+  /** The feedback messages sent from the account (Settings), kept 12 months. */
+  feedback: Array<{ sentAt: string; kind: string; message: string }>;
 };
 
 const iso = (value: string | number | null | undefined) => (value === null || value === undefined || value === "" ? null : new Date(value).toISOString());

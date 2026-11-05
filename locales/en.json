@@ -3868,6 +3868,44 @@
     "step2": "Choose “Add to Home Screen”, then “Add”.",
     "step3": "Open Assisteo from its new icon and come back here."
   },
+  "userReport": {
+    "open": "Give feedback / Report a problem",
+    "title": "Your feedback helps us",
+    "kindLabel": "Message type",
+    "kinds": {
+      "problem": "A problem",
+      "idea": "An idea"
+    },
+    "messageLabel": "Your message",
+    "placeholderProblem": "What happened? On which screen?",
+    "placeholderIdea": "What would be useful to you?",
+    "contactLabel": "Your e-mail or number (optional)",
+    "hint": "The message goes with the screen you came from, the app version and your device. No photo.",
+    "hintSignedIn": "The message goes with the screen you came from, the app version, your device and your account e-mail. No photo.",
+    "send": "Send",
+    "cancel": "Cancel",
+    "tooShort": "Write at least a few words.",
+    "sent": "Thanks, your message has been sent.",
+    "failed": "Could not send right now. Try again later.",
+    "tooMany": "You already sent several messages. Try again in an hour.",
+    "admin": {
+      "title": "Feedback and problems",
+      "subtitle": "Messages sent from Settings (the latest 300).",
+      "empty": "No messages yet.",
+      "more": "Show {count} more",
+      "anonymous": "Anonymous",
+      "screen": "Screen: {screen}",
+      "status": {
+        "new": "New",
+        "read": "Read",
+        "done": "Done"
+      },
+      "markRead": "Mark as read",
+      "markDone": "Mark as done",
+      "markNew": "Back to new",
+      "filterAll": "All"
+    }
+  },
   "medicine": {
     "tab": "Medicines",
     "title": "What the prescription says",
