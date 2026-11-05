@@ -1,0 +1,38 @@
+@use "../../styles/mixins" as *;
+
+.card {
+  @include card;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.7rem 0.9rem;
+
+  ul {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.92rem;
+    overflow-wrap: anywhere;
+  }
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+
+  strong {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.95rem;
+
+    svg {
+      color: var(--accent-text);
+    }
+  }
+}

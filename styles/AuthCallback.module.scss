@@ -1,0 +1,29 @@
+// Back from Google's sign-in: a short wait, or what went wrong.
+
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  max-width: 28rem;
+  margin: 0 auto;
+  padding: 4rem 1.25rem;
+  text-align: center;
+
+  p {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+  }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

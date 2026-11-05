@@ -1,0 +1,233 @@
+@use "../../styles/mixins" as *;
+
+// A prescription or a medicine box on a scan, and the dose reminders.
+// Every field is at least 16 px, so iOS doesn't zoom on focus.
+
+.card,
+.planner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.disclaimer {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  padding: 0.8rem 0.9rem;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--cat-food) 14%, transparent);
+  color: var(--text);
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.4;
+
+  svg {
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+    color: var(--cat-food);
+  }
+}
+
+.unreadable {
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--radius-sm);
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.muted {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    padding: 0.85rem 0.95rem;
+    border-radius: var(--radius-md);
+    background: var(--surface);
+  }
+
+  h3 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 1rem;
+    font-weight: 800;
+    overflow-wrap: break-word;
+
+    small {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+  }
+
+  dl {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: 0.4rem;
+    margin: 0;
+
+    dt {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    dd {
+      margin: 0;
+      font-size: 0.95rem;
+      font-weight: 700;
+      overflow-wrap: break-word;
+
+      &[data-missing] {
+        font-weight: 500;
+        color: var(--text-muted);
+      }
+    }
+  }
+
+  h4 {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-muted);
+  }
+
+  ul {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding-left: 1.1rem;
+    font-size: 0.9rem;
+  }
+}
+
+.active {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 700;
+  color: var(--accent-text);
+}
+
+.courses {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    flex-direction: column;
+    padding: 0.55rem 0.75rem;
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+  }
+
+  span {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+  }
+}
+
+.course {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-height: 2.75rem;
+  cursor: pointer;
+
+  input {
+    flex-shrink: 0;
+    width: 1.3rem;
+    height: 1.3rem;
+    accent-color: var(--accent-mark);
+  }
+
+  span {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  strong {
+    overflow-wrap: break-word;
+  }
+
+  small {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+}
+
+.grid,
+.times {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  gap: 0.55rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+
+  > span {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+
+  input,
+  select {
+    width: 100%;
+    min-width: 0;
+    height: 2.75rem;
+    padding: 0 0.75rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    outline: none;
+    @include field-font(0.95rem);
+
+    &:focus {
+      border-color: var(--accent-mark);
+    }
+
+    &[aria-invalid="true"] {
+      border-color: var(--danger);
+    }
+  }
+}
+
+.needDays {
+  font-size: 0.85rem;
+  color: var(--danger);
+}
