@@ -53,6 +53,30 @@ describe("the referral bonus", () => {
     expect(await store.bonusScansLeft(referrer)).toBe(0);
   });
 
+  it("lets a friend on the referrer's address win later from another one, but not from the referrer's install", async () => {
+    await store.noteDevice(referrer, "install-referrer-0001", "10.0.6.1");
+    const same = await friend();
+    expect(await scan(same, "install-family-00001", "10.0.6.1")).toBe("self");
+    expect(await scan(same, "install-family-00001", "10.0.6.9")).toBe("rewarded");
+    const clone = await friend();
+    expect(await scan(clone, "install-referrer-0001", "10.0.6.8")).toBe("self");
+    expect(await scan(clone, "install-clone-0000001", "10.0.6.8")).toBe("already");
+  });
+
+  it("erases and shows what is kept against abuse", async () => {
+    await store.noteDevice(referrer, "install-referrer-0001", "10.0.7.1");
+    const email = await friend();
+    await scan(email, "install-erase-0000001", "10.0.7.2");
+    expect(await store.referralData(referrer)).toMatchObject({ devices: expect.arrayContaining(["i:install-referrer-0001", "p:10.0.7.1"]), friendsInvited: 1, scansWon: 5, scansLeft: 5 });
+    await store.deleteReferralData(referrer);
+    expect(await store.referralData(referrer)).toEqual({ devices: [], friendsInvited: 0, scansWon: 0, scansLeft: 0 });
+  });
+
+  it("makes no key for an account without won scans", async () => {
+    expect(await store.takeBonusScan("rien@example.mg")).toBe(false);
+    expect(await store.bonusScansLeft("rien@example.mg")).toBe(0);
+  });
+
   it("rewards an install once, whoever the account", async () => {
     expect(await scan(await friend(), "install-shared-00001", "10.0.2.1")).toBe("rewarded");
     expect(await scan(await friend(), "install-shared-00001", "10.0.2.2")).toBe("install");

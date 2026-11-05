@@ -3868,9 +3868,47 @@
     "step2": "Choose “Add to Home Screen”, then “Add”.",
     "step3": "Open Assisteo from its new icon and come back here."
   },
+  "userReport": {
+    "open": "Give feedback / Report a problem",
+    "title": "Your feedback helps us",
+    "kindLabel": "Message type",
+    "kinds": {
+      "problem": "A problem",
+      "idea": "An idea"
+    },
+    "messageLabel": "Your message",
+    "placeholderProblem": "What happened? On which screen?",
+    "placeholderIdea": "What would be useful to you?",
+    "contactLabel": "Your e-mail or number (optional)",
+    "hint": "The message goes with the screen you came from, the app version and your device. No photo.",
+    "hintSignedIn": "The message goes with the screen you came from, the app version, your device and your account e-mail. No photo.",
+    "send": "Send",
+    "cancel": "Cancel",
+    "tooShort": "Write at least a few words.",
+    "sent": "Thanks, your message has been sent.",
+    "failed": "Could not send right now. Try again later.",
+    "tooMany": "You already sent several messages. Try again in an hour.",
+    "admin": {
+      "title": "Feedback and problems",
+      "subtitle": "Messages sent from Settings (the latest 300).",
+      "empty": "No messages yet.",
+      "more": "Show {count} more",
+      "anonymous": "Anonymous",
+      "screen": "Screen: {screen}",
+      "status": {
+        "new": "New",
+        "read": "Read",
+        "done": "Done"
+      },
+      "markRead": "Mark as read",
+      "markDone": "Mark as done",
+      "markNew": "Back to new",
+      "filterAll": "All"
+    }
+  },
   "referralBonus": {
     "body": "Invite a friend: when they enter your code in “I have a code” then make their first scan, you each win {scans} scans. And if they later pay for a plan, you get 1 month free.",
-    "message": "Invite a friend: we each win {scans} scans! I’m inviting you to Assisteo Agny, which helps you understand what you photograph. Open this link and create your account: my code {code} will already be filled in under “I have a code”. Then make your first scan. {link}",
+    "message": "I’m inviting you to Assisteo Agny: we each win {scans} scans! The app helps you understand what you photograph. Open this link and create your account: my code {code} will already be filled in under “I have a code”. Then make your first scan. {link}",
     "friends": "Friends invited: {invited} (first scan done: {rewarded})",
     "won": "Scans won: {won} · {left} left",
     "admin": {

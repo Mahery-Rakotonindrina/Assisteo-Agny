@@ -189,9 +189,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     );
     // A friend's first scan on the server's AI, with a confirmed account: the referral bonus (never blocks the answer).
     if (!override && account?.email) {
-      await rewardFirstScan({ email: account.email, installId: statsDevice, ip: clientIp(req) })
-        .then(() => noteDevice(account.email!, statsDevice, clientIp(req)))
-        .catch(() => undefined);
+      // Side by side, each one round trip or two: it must not slow the answer.
+      await Promise.all([rewardFirstScan({ email: account.email, installId: statsDevice, ip: clientIp(req) }), noteDevice(account.email, statsDevice, clientIp(req))]).catch(() => undefined);
     }
     return res.status(200).json({
       analysis: { ...analysis, confidence: Math.min(1, Math.max(0, analysis.confidence)) },

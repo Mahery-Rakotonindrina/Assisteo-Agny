@@ -6,6 +6,7 @@ import { AdminAiCost } from "@/components/AdminAiCost";
 import { AdminFeatures } from "@/components/AdminFeatures";
 import { AdminLog } from "@/components/AdminLog";
 import { AdminReferral } from "@/components/AdminReferral";
+import { AdminReports } from "@/components/AdminReports";
 import { AdminPlans } from "@/components/AdminPlans";
 import { AdminPromoCodes } from "@/components/AdminPromoCodes";
 import { AdminStats } from "@/components/AdminStats";
@@ -307,6 +308,7 @@ export default function AdminPage() {
 
         {config && <AppVersionCard token={token} owner={owner} />}
         {config && <AdminReferral token={token} />}
+        {config && <AdminReports token={token} />}
         {config && owner && <AdminLog token={token} />}
         {config && owner && <AdminTwoFactor token={token} onSession={keepSession} />}
       </motion.div>
