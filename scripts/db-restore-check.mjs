@@ -124,6 +124,11 @@ function sampleBackup() {
         },
         { user_id: ben, id: "plant-2", data: { name: "Basilic", place: "outdoor", waterEveryDays: 2, scanIds: [], checks: [] }, updated_at: at(6), deleted_at: at(7) },
       ],
+      shop: [
+        { user_id: anna, id: "product-1", data: { kind: "product", name: "Riz 5 kg", stock: 12, lowAt: 3, priceMga: 18000, createdAt: 1759900000000 }, updated_at: at(6), deleted_at: null },
+        { user_id: anna, id: "sale-1", data: { kind: "sale", at: 1759900000000, productId: "product-1", name: "Riz 5 kg", qty: 2, unitPriceMga: 18000, paidMga: 20000, customer: "Rado", phone: "034 00 000 00", createdAt: 1759900000000 }, updated_at: at(6), deleted_at: null },
+        { user_id: ben, id: "payment-1", data: { kind: "payment", at: 1759900000000, customer: "Soa", amountMga: 5000, createdAt: 1759900000000 }, updated_at: at(6), deleted_at: at(7) },
+      ],
       loan_shares: [
         {
           token_hash: "a".repeat(64),

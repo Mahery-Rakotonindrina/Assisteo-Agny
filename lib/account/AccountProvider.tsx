@@ -17,6 +17,8 @@ import { startListSync, syncLists } from "@/services/listSync";
 import { vehicleStore } from "@/services/vehicleStore";
 import { plantStore } from "@/services/plantStore";
 import { startPlantSync, syncPlants } from "@/services/plantSync";
+import { shopStore } from "@/services/shopStore";
+import { startShopSync, syncShop } from "@/services/shopSync";
 import { startVehicleSync, syncVehicles } from "@/services/vehicleSync";
 import { homeItemStore } from "@/services/homeItemStore";
 import { startHomeItemSync, syncHomeItems } from "@/services/homeItemSync";
@@ -120,6 +122,12 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!userId) return;
     return startPlantSync(userId);
+  }, [userId]);
+
+  // "Ma boutique" (fails quietly before migration 0022).
+  useEffect(() => {
+    if (!userId) return;
+    return startShopSync(userId);
   }, [userId]);
 
   // "Prêts".
@@ -242,6 +250,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         syncVehicles(userId).catch(() => undefined),
         syncHomeItems(userId).catch(() => undefined),
         syncPlants(userId).catch(() => undefined),
+        syncShop(userId).catch(() => undefined),
         syncLoans(userId).catch(() => undefined),
         syncExpenses(userId).catch(() => undefined),
         householdId ? syncHouseholdExpenses(userId, householdId).catch(() => undefined) : undefined,
@@ -267,6 +276,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await vehicleStore.wipe();
     await homeItemStore.wipe();
     await plantStore.wipe();
+    await shopStore.wipe();
     await loanStore.wipe();
     await expenseStore.wipe();
     await householdExpenseStore.wipe();
@@ -296,6 +306,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await vehicleStore.wipe();
     await homeItemStore.wipe();
     await plantStore.wipe();
+    await shopStore.wipe();
     await loanStore.wipe();
     await expenseStore.wipe();
     await householdExpenseStore.wipe();

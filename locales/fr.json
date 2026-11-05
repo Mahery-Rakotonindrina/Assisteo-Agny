@@ -32,7 +32,8 @@
       "lists": "Listes",
       "settings": "Ré|glages",
       "admin": "Admin"
-    }
+    },
+    "shop": "Ma boutique"
   },
   "scan": {
     "greeting": {
@@ -316,14 +317,16 @@
         "expenses": "Dépenses et revenus",
         "pockets": "Poches",
         "loans": "Prêts",
-        "parcels": "Colis"
+        "parcels": "Colis",
+        "shop": "Ma boutique"
       },
       "hints": {
         "history": "Toutes tes analyses. Tes colis gardent leur photo.",
         "expenses": "Dépenses, revenus, récurrentes, budget et épargne. Tes poches restent.",
         "pockets": "Tes poches et les virements entre elles. Tes dépenses restent.",
         "loans": "Tous tes prêts, remboursements et preuves.",
-        "parcels": "Tous les colis que tu suis, et leurs rappels."
+        "parcels": "Tous les colis que tu suis, et leurs rappels.",
+        "shop": "Tes ventes, ton stock et le crédit de tes clients."
       },
       "empty": "Rien à effacer",
       "title": "{name} : tout effacer ?",
@@ -358,14 +361,21 @@
         "links": "Les liens de partage envoyés sont arrêtés",
         "parcels": "{count} colis suivis",
         "parcelsOne": "1 colis suivi",
-        "parcelReminders": "Leurs rappels d’arrivée"
+        "parcelReminders": "Leurs rappels d’arrivée",
+        "shopSales": "{count} ventes",
+        "shopSalesOne": "1 vente",
+        "shopProducts": "{count} produits en stock",
+        "shopProductsOne": "1 produit en stock",
+        "shopPayments": "{count} paiements de clients",
+        "shopPaymentsOne": "1 paiement de client"
       },
       "stays": {
         "history": "Tes colis (avec leur photo), tes dépenses, tes prêts et tes listes.",
         "expenses": "Tes poches : leur solde est recalculé sans ces lignes. Tes catégories. Tes scans, colis et véhicules restent dans leurs écrans. Le budget du foyer ne change pas.",
         "pockets": "Tes dépenses, revenus, épargne et prêts : ils restent, sans poche. Tu pourras ajouter de nouvelles poches.",
         "loans": "Les prêts du foyer. Tes poches : les mouvements des prêts en sortent.",
-        "parcels": "Leurs scans restent dans l’historique. Leurs prix et ventes sortent de Dépenses."
+        "parcels": "Leurs scans restent dans l’historique. Leurs prix et ventes sortent de Dépenses.",
+        "shop": "Tes autres écrans ne changent pas."
       },
       "everywhere": "Avec ton compte, c’est effacé aussi sur tes autres appareils. Tu ne pourras pas revenir en arrière.",
       "final": "Tu ne pourras pas revenir en arrière.",
@@ -377,7 +387,8 @@
         "expenses": "Dépenses et revenus effacés",
         "pockets": "Poches effacées",
         "loans": "Prêts effacés",
-        "parcels": "Colis effacés"
+        "parcels": "Colis effacés",
+        "shop": "Ma boutique effacée"
       },
       "offline": "Pas de connexion : les liens de partage n’ont pas pu être arrêtés. Rien n’est effacé, réessaie avec internet.",
       "failed": "L’effacement n’a pas abouti. Réessaie."
@@ -427,7 +438,8 @@
           "plantes": "tes plantes et leurs diagnostics",
           "foyer": "ton foyer : son nom, ton rôle, et seulement les lignes que tu as écrites",
           "reglages": "tes réglages",
-          "compte": "ton compte : ton e-mail, ton offre, tes abonnements, les codes utilisés, les places famille, les liens de partage et les appareils qui reçoivent les rappels"
+          "compte": "ton compte : ton e-mail, ton offre, tes abonnements, les codes utilisés, les places famille, les liens de partage et les appareils qui reçoivent les rappels",
+          "boutique": "ta boutique : les produits en stock, les ventes et les paiements des clients"
         },
         "photosIn": "les photos, rangées par écran ; les fichiers JSON indiquent le chemin de chacune",
         "photosOut": "pas de photos dans cette copie (case « Avec les photos » décochée)",
@@ -1093,7 +1105,8 @@
         "loans": "Prêts",
         "expenses": "Mes dépenses",
         "inventory": "Ma maison",
-        "plants": "Mes plantes"
+        "plants": "Mes plantes",
+        "shop": "Ma boutique"
       },
       "descriptions": {
         "reminders": "Rappels sur les scans (répétition, report), l’assurance et l’arrivée des colis.",
@@ -1107,7 +1120,8 @@
         "loans": "Qui me doit, à qui je dois : remboursements, retards, relance WhatsApp. Rien n’est compté dans les dépenses.",
         "expenses": "Le budget du mois, seul ou en foyer, et le bilan du mois par l’IA.",
         "inventory": "L’inventaire de la maison : objets, garanties et leur rappel, factures liées, export pour l’assurance.",
-        "plants": "Les plantes, leur arrosage proposé par l’IA, le rappel du matin et le diagnostic d’une plante malade (un scan du mois)."
+        "plants": "Les plantes, leur arrosage proposé par l’IA, le rappel du matin et le diagnostic d’une plante malade (un scan du mois).",
+        "shop": "Le carnet du petit commerçant : les ventes du jour, le stock avec alerte, le crédit des clients avec rappel WhatsApp, les totaux du jour et du mois."
       },
       "deepNeedsLimit": "Impossible d’enregistrer : {list} n’a pas de quota d’analyses approfondies (0 = sans limite). Mets d’abord un nombre par mois plus haut, dans les prix et quotas des offres. Gratuit n’a pas de quota : pas d’analyse approfondie."
     }
@@ -1610,7 +1624,8 @@
       "inventory": "Ma maison : tes objets, leur garantie et leurs factures, export pour l’assurance",
       "plants": "Mes plantes : arrosage, rappel le matin, diagnostic d’une plante malade",
       "allPlan": "Tout {plan}, et :",
-      "family": "Jusqu’à {count} personnes de ta famille"
+      "family": "Jusqu’à {count} personnes de ta famille",
+      "shop": "Ma boutique : ventes du jour, stock, crédit des clients"
     },
     "how": "Comment s’abonner",
     "step1": "Connecte-toi",
@@ -1896,7 +1911,8 @@
     "expensesHint": "Budget du mois, ce qu’il reste",
     "inventoryHint": "Objets, garanties, factures",
     "plantsHint": "Arrosage et rappels",
-    "pocketsHint": "Espèces, MVola, banque…"
+    "pocketsHint": "Espèces, MVola, banque…",
+    "shopHint": "Ventes, stock et crédit"
   },
   "food": {
     "title": "Journal alimentaire",
@@ -2218,6 +2234,10 @@
       "inventory": {
         "title": "Ma maison",
         "body": "Les objets de ta maison avec leur facture et leur garantie, un rappel avant la fin, et un export pour l’assurance."
+      },
+      "shop": {
+        "title": "Ma boutique",
+        "body": "Tes ventes du jour, ton stock avec alerte quand il est bas, et qui te doit combien, avec un rappel par WhatsApp."
       }
     }
   },
@@ -4260,6 +4280,83 @@
       "rewarded": "{count} amis récompensés depuis le début.",
       "save": "Enregistrer",
       "saved": "Parrainage enregistré."
+    }
+  },
+  "shop": {
+    "title": "Ma boutique",
+    "subtitle": "Tes ventes, ton stock et le crédit de tes clients.",
+    "locked": "Ma boutique est incluse à partir de l’offre {plan} : ventes du jour, stock avec alerte et crédit des clients.",
+    "totals": {
+      "label": "Totaux",
+      "today": "Aujourd’hui",
+      "month": "Ce mois-ci",
+      "owed": "On te doit",
+      "detail": "Encaissé {collected} · à crédit {credit}",
+      "owedBy": "{count} client(s)"
+    },
+    "tabs": {
+      "sales": "Ventes",
+      "stock": "Stock",
+      "credit": "Crédit"
+    },
+    "sale": {
+      "title": "Nouvelle vente",
+      "new": "Nouvelle vente",
+      "product": "Produit",
+      "otherProduct": "Autre produit (à écrire)",
+      "name": "Produit vendu",
+      "qty": "Quantité",
+      "price": "Prix unitaire (Ar)",
+      "payment": "Paiement",
+      "paid": "Payé en entier",
+      "credit": "À crédit (le client paiera plus tard)",
+      "paidNow": "Payé maintenant (Ar)",
+      "customer": "Client",
+      "phone": "Numéro WhatsApp du client (facultatif)",
+      "total": "Total : {amount}",
+      "save": "Enregistrer la vente",
+      "invalid": "Écris le produit, la quantité et le prix.",
+      "needCustomer": "Pour une vente à crédit, écris le nom du client.",
+      "emptyTitle": "Aucune vente aujourd’hui",
+      "emptyBody": "Touche « Nouvelle vente » pour noter ta première vente du jour.",
+      "line": "{qty} × {price} · {time}",
+      "creditFor": "{name} doit encore {rest}",
+      "delete": "Supprimer",
+      "deleteName": "Supprimer la vente de {name}",
+      "confirmDelete": "Oui, supprimer cette vente"
+    },
+    "stock": {
+      "lowTitle": "{count} produit(s) bientôt en rupture",
+      "low": "Presque fini : {qty} en stock",
+      "inStock": "{qty} en stock",
+      "emptyTitle": "Aucun produit en stock",
+      "emptyBody": "Ajoute tes produits pour suivre ce qu’il te reste, et être prévenu quand il est bas."
+    },
+    "product": {
+      "add": "Ajouter un produit",
+      "addTitle": "Nouveau produit",
+      "editTitle": "Modifier le produit",
+      "edit": "Modifier",
+      "name": "Nom du produit",
+      "stock": "En stock",
+      "lowAt": "Prévenir à partir de",
+      "price": "Prix de vente habituel (Ar, facultatif)",
+      "lowHint": "Quand le stock tombe à ce nombre ou moins, le produit apparaît dans l’alerte. Chaque vente enlève la quantité vendue.",
+      "save": "Enregistrer",
+      "delete": "Supprimer le produit",
+      "invalid": "Écris le nom du produit et la quantité en stock."
+    },
+    "credit": {
+      "title": "Encaisser un paiement",
+      "collect": "Encaisser",
+      "remind": "Relancer sur WhatsApp",
+      "owes": "{name} te doit {amount}.",
+      "received": "Montant reçu (Ar)",
+      "save": "Enregistrer le paiement",
+      "invalid": "Écris un montant, au plus ce que le client doit.",
+      "emptyTitle": "Personne ne te doit rien",
+      "emptyBody": "Les ventes à crédit apparaîtront ici, avec ce que chaque client doit encore.",
+      "message": "Bonjour {name}, petit rappel : il reste {amount} à payer à la boutique. Merci !"
     }
   },
   "householdShare": {
