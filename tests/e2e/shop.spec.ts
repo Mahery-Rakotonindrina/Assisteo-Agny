@@ -75,7 +75,7 @@ test("a shopkeeper adds a product, sells it, sells on credit, collects, and sees
   await page.getByTestId("sale-line").filter({ hasText: "Huile" }).getByTestId("sale-delete").click();
   await page.getByTestId("sale-delete-confirm").click();
   await expect(page.getByTestId("sale-line")).toHaveCount(1);
-  await expect(page.getByTestId("day-sold")).toHaveText(/^36s000 Ar$/);
+  await expect(page.getByTestId("day-sold")).toHaveText(/^36\s000 Ar$/);
   await expect(page.getByTestId("total-owed")).toHaveText(/^0 Ar$/);
 });
 
