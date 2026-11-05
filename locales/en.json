@@ -3905,5 +3905,14 @@
       "markNew": "Back to new",
       "filterAll": "All"
     }
+  },
+  "googleSignIn": {
+    "button": "Continue with Google",
+    "or": "or",
+    "pageTitle": "Sign in",
+    "finishing": "Signing in with Google…",
+    "signedIn": "You're signed in with Google",
+    "failed": "Signing in with Google didn't work. Try again, or get a code by e-mail.",
+    "back": "Back to settings"
   }
 }

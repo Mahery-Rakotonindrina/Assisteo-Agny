@@ -62,6 +62,7 @@ export const EXPORT_DEVICE_SOURCES: Record<string, CopyFile | `left out: ${strin
   "services/plantReminders.ts": "left out: the notifications scheduled on this device",
   "services/vehicleReminders.ts": "left out: the notifications scheduled on this device",
   "services/webPushTakeover.ts": "left out: a technical switch",
+  "services/googleSignIn.ts": "left out: the page to go back to after signing in with Google",
   "hooks/useDismissed.ts": "left out: the tips closed",
   "components/UpdateGate/UpdateGate.tsx": "left out: the update notice closed",
   "pages/history.tsx": "left out: a tip shown",
