@@ -3867,5 +3867,20 @@
     "step1": "Dans Safari, touche le bouton Partager (le carré avec une flèche).",
     "step2": "Choisis « Sur l’écran d’accueil », puis « Ajouter ».",
     "step3": "Ouvre Assisteo depuis sa nouvelle icône et reviens ici."
+  },
+  "referralBonus": {
+    "body": "Invite un ami : quand il entre ton code dans « J’ai un code » puis fait son premier scan, vous gagnez chacun {scans} scans. Et si une offre est payée ensuite, tu reçois 1 mois offert.",
+    "message": "Invite un ami : vous gagnez chacun {scans} scans ! Je t’invite sur Assisteo Agny, qui t’aide à comprendre ce que tu photographies. Ouvre ce lien, crée ton compte : mon code {code} sera déjà rempli dans « J’ai un code ». Fais ensuite ton premier scan. {link}",
+    "friends": "Amis invités : {invited} (premier scan fait : {rewarded})",
+    "won": "Scans gagnés : {won} · il t’en reste {left}",
+    "admin": {
+      "title": "Parrainage",
+      "subtitle": "Ce que gagnent le parrain et son ami quand l’ami a un compte confirmé et fait son premier scan. Une fois par ami, par installation, et pas de parrainage de soi-même.",
+      "scans": "Scans gagnés par chacun (0 = parrainage par scans coupé)",
+      "cap": "Amis récompensés par parrain et par mois (au-delà, l’ami gagne, pas le parrain)",
+      "rewarded": "{count} amis récompensés depuis le début.",
+      "save": "Enregistrer",
+      "saved": "Parrainage enregistré."
+    }
   }
 }

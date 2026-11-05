@@ -1,9 +1,10 @@
 import { useRouter } from "next/router";
 import { motion } from "motion/react";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { ArrowLeft, BadgePercent, Check, Copy, ExternalLink, Gift, LogIn, MessageCircle, Phone, RefreshCw, Share2, Sparkles, TicketCheck } from "lucide-react";
 import { Button } from "@/components/Button";
 import { PlanIcon } from "@/components/PlanBadge";
+import { ReferralStats } from "@/components/ReferralStats";
 import { Seo } from "@/components/Seo";
 import { useToast } from "@/components/Toast";
 import { useAccount } from "@/lib/account/AccountProvider";
@@ -12,12 +13,13 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { formatAriary, formatDate, formatNumber } from "@/lib/format";
 import { config } from "@/lib/config";
 import { rise, stagger } from "@/lib/motion";
-import { defaultYearPrice, discountedPrice, monthsFree, TRIAL_DAYS, trialFailureKey } from "@/lib/offers";
+import { defaultYearPrice, discountedPrice, inviteCodeFrom, monthsFree, TRIAL_DAYS, trialFailureKey } from "@/lib/offers";
 import { isBuiltInPlan, localName, planRankIn } from "@/lib/customPlans";
 import { defaultPlansConfig, planIds, planRank, soldPlans, type AnyPlanId, type PlanOffer, type PlanResponse } from "@/lib/plans";
 import { familyLine, offerLines } from "@/lib/planPerks";
 import { haptics, shareText } from "@/services/device";
 import { redeemCode, startPremiumTrial } from "@/services/offers";
+import { clearPendingReferral, keepPendingReferral, pendingReferral } from "@/services/pendingReferral";
 import { planStore } from "@/services/plan";
 import { ApiError } from "@/types/api";
 import styles from "@/styles/Plans.module.scss";
@@ -33,7 +35,25 @@ export default function PlansPage() {
   const { email } = useAccount();
   const [refreshing, setRefreshing] = useState(false);
   const [code, setCode] = useState("");
+  // What each of the two wins by a referral (set in Admin); 0 until known or when switched off.
+  const [scansEach, setScansEach] = useState(0);
   const [busy, setBusy] = useState<"trial" | "code" | null>(null);
+
+  // An invitation link (/plans?ref=CODE): the code is kept on the device (until the person is signed in), then filled in.
+  useEffect(() => {
+    if (!router.isReady) return;
+    const invited = inviteCodeFrom(router.query.ref);
+    if (!invited) return;
+    keepPendingReferral(invited);
+    void router.replace("/plans", undefined, { shallow: true });
+  }, [router]);
+  const signedIn = Boolean(email);
+  useEffect(() => {
+    if (!signedIn) return;
+    void pendingReferral().then((pending) => {
+      if (pending) setCode((current) => current || pending);
+    });
+  }, [signedIn, router.query.ref]);
   // By rank: a plan created from the Admin sits between the built-in ones.
   const offers = [...(plan?.offers ?? fallbackOffers)].sort((a, b) => planRankIn(a.id, plan) - planRankIn(b.id, plan));
   const payment = plan?.payment ?? defaultPlansConfig.payment;
@@ -61,6 +81,8 @@ export default function PlansPage() {
     setBusy("code");
     try {
       const result = await redeemCode(code);
+      // The server has judged it: kept no more (an answer of its own, whatever it is).
+      clearPendingReferral();
       if (!result.ok) {
         toast(t(`plans.codes.refused.${result.reason}`), "error");
         return;
@@ -80,7 +102,13 @@ export default function PlansPage() {
 
   // The presentation page at the public address (the server's in the Android app),
   // else this page's origin (local dev).
-  const shareMessage = () => t("plans.referral.message", { code: referralCode ?? "", link: `${config.siteUrl || window.location.origin}/decouvrir` });
+  const shareMessage = () => {
+    const site = config.siteUrl || window.location.origin;
+    // The link opens the offers page with the code filled in (kept until sign-in).
+    return scansEach > 0
+      ? t("referralBonus.message", { scans: scansEach, code: referralCode ?? "", link: `${site}/plans?ref=${encodeURIComponent(referralCode ?? "")}` })
+      : t("plans.referral.message", { code: referralCode ?? "", link: `${site}/decouvrir` });
+  };
   const shareReferral = async () => {
     haptics.tap();
     if ((await shareText(t("plans.referral.title"), shareMessage())) === "copied") toast(t("plans.copied"));
@@ -251,8 +279,9 @@ export default function PlansPage() {
             <h2>
               <Gift size={18} /> {t("plans.referral.title")}
             </h2>
-            <p>{t("plans.referral.body")}</p>
+            <p>{scansEach > 0 ? t("referralBonus.body", { scans: scansEach }) : t("plans.referral.body")}</p>
             <p className={styles.referralCode}>{referralCode}</p>
+            <ReferralStats onSummary={(summary) => setScansEach(summary.scansEach)} />
             <div className={styles.contact}>
               <Button variant="secondary" size="md" icon={<MessageCircle />} onClick={whatsappReferral}>
                 {t("plans.referral.whatsapp")}

@@ -5,11 +5,13 @@ import { activeModel, activeProvider, analyzeImage, readOverride } from "@/lib/a
 import { AnalyzeRequestSchema, InstallIdSchema, installIdHeader, type AnalyzeResponse, type TrialState } from "@/lib/ai/schema";
 import { applyCors, clientIp, sendError } from "@/lib/server/http";
 import { rateLimit } from "@/lib/server/rateLimit";
+import { bonusScansLeft, noteDevice, returnBonusScan, rewardFirstScan, takeBonusScan } from "@/lib/server/referralBonus";
 import { reportError } from "@/lib/server/reportError";
 import { track } from "@/lib/server/stats";
 import { limitsFor, resolvePlan } from "@/lib/server/plan";
 import {
   countServerCall,
+  getTrialConfig,
   releasePlanDeep,
   releasePlanScan,
   releaseServerCall,
@@ -90,9 +92,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   let quota: (TrialState & { userId: string }) | null = null;
   let deepQuota: TrialState | null = null;
   let trialAi = false;
+  // A scan won through a referral, spent once the plan's own are used up: given back if the analysis fails.
+  let planBonus: string | null = null;
+  const giveBackPlanScan = (userId: string) => (planBonus ? returnBonusScan(planBonus) : releasePlanScan(userId));
   if (!override && current.plan !== "free" && account) {
     const { scans, deepPerMonth } = await limitsFor(current.plan, undefined, quotas, features);
-    const usage = await reservePlanScan(account.id, scans);
+    let usage = await reservePlanScan(account.id, scans);
+    if (usage === null && account.email && (await takeBonusScan(account.email))) {
+      planBonus = account.email;
+      usage = { used: scans, limit: scans + (await bonusScansLeft(account.email)) };
+    }
     if (usage === null) {
       await track({ type: "error", route: "analyze", code: "plan_limit" }, statsDevice);
       return sendError(res, 403, "plan_limit", "This month's scans are used up.");
@@ -101,7 +110,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     if (deep) {
       deepQuota = await reservePlanDeep(account.id, deepPerMonth);
       if (!deepQuota) {
-        await releasePlanScan(account.id).catch(() => undefined);
+        await giveBackPlanScan(account.id).catch(() => undefined);
         await track({ type: "error", route: "analyze", code: "deep_limit" }, statsDevice);
         return sendError(res, 403, "deep_limit", "This month's deep analyses are used up.");
       }
@@ -109,7 +118,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     // A Premium trial's calls share a daily cap of their own (an account is free to make).
     if (onTrial) {
       if (!(await reserveTrialAiCall())) {
-        await Promise.all([releasePlanScan(account.id), deepQuota && releasePlanDeep(account.id)]).catch(() => undefined);
+        await Promise.all([giveBackPlanScan(account.id), deepQuota && releasePlanDeep(account.id)]).catch(() => undefined);
         await track({ type: "error", route: "analyze", code: "server_busy" }, statsDevice);
         return sendError(res, 503, "server_busy", "The trial's AI has reached today's limit: come back tomorrow.");
       }
@@ -121,7 +130,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   }
 
   // ...anyone else one of the free trial scans.
-  let trial: (TrialState & { subject: TrialSubject; ip: string }) | null = null;
+  let trial: (TrialState & { subject: TrialSubject; ip: string; bonusEmail: string | null }) | null = null;
+  const giveBackTrial = (booked: NonNullable<typeof trial>) => (booked.bonusEmail ? returnBonusScan(booked.bonusEmail) : releaseTrialScan(booked.subject, booked.ip));
   if (!override && !quota) {
     const installId = InstallIdSchema.safeParse(req.headers[installIdHeader]);
     if (!installId.success) {
@@ -130,17 +140,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const ip = clientIp(req);
     // Signed in: the account's count applies too (an invalid token just counts as signed out).
     const subject: TrialSubject = { installId: installId.data, userId: account?.id ?? null };
-    const usage = await reserveTrialScan(subject, ip);
+    let usage = await reserveTrialScan(subject, ip);
+    let bonusEmail: string | null = null;
+    // The free trial is over: a scan won through a referral goes on.
+    if (usage === null && account?.email && (await takeBonusScan(account.email))) {
+      bonusEmail = account.email;
+      const { limit } = await getTrialConfig();
+      usage = { used: limit, limit: limit + (await bonusScansLeft(account.email)) };
+    }
     if (usage === null) {
       await track({ type: "error", route: "analyze", code: "trial_exhausted" }, statsDevice);
       return sendError(res, 403, "trial_exhausted", "The free trial is over: choose a plan to continue.");
     }
     if (!(await reserveServerCall())) {
-      await releaseTrialScan(subject, ip).catch(() => undefined);
+      await (bonusEmail ? returnBonusScan(bonusEmail) : releaseTrialScan(subject, ip)).catch(() => undefined);
       await track({ type: "error", route: "analyze", code: "server_busy" }, statsDevice);
       return sendError(res, 503, "server_busy", "The free AI has reached today's limit: come back tomorrow.");
     }
-    trial = { subject, ip, ...usage };
+    trial = { subject, ip, ...usage, bonusEmail };
   }
 
   // A deep analysis offered to a free account counts too, under the emergency cap (never without a limit).
@@ -149,7 +166,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const { deepPerMonth } = await limitsFor(current.plan, undefined, quotas, features);
     deepQuota = await reservePlanDeep(account.id, deepPerMonth);
     if (!deepQuota) {
-      if (trial) await Promise.all([releaseTrialScan(trial.subject, trial.ip), releaseServerCall()]).catch(() => undefined);
+      if (trial) await Promise.all([giveBackTrial(trial), releaseServerCall()]).catch(() => undefined);
       await track({ type: "error", route: "analyze", code: "deep_limit" }, statsDevice);
       return sendError(res, 403, "deep_limit", "This month's deep analyses are used up.");
     }
@@ -170,6 +187,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       { type: "scan", mode: parsed.data.mode, category: analysis.category, ownKey: Boolean(override), durationMs: Date.now() - startedAt },
       statsDevice,
     );
+    // A friend's first scan on the server's AI, with a confirmed account: the referral bonus (never blocks the answer).
+    if (!override && account?.email) {
+      await rewardFirstScan({ email: account.email, installId: statsDevice, ip: clientIp(req) })
+        .then(() => noteDevice(account.email!, statsDevice, clientIp(req)))
+        .catch(() => undefined);
+    }
     return res.status(200).json({
       analysis: { ...analysis, confidence: Math.min(1, Math.max(0, analysis.confidence)) },
       meta: {
@@ -186,8 +209,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     // The caller hung up: the AI may already have been billed, so nothing is given back.
     if (abort.signal.aborted) return;
     // A failure on the provider's side doesn't consume a trial scan.
-    if (trial) await Promise.all([releaseTrialScan(trial.subject, trial.ip), releaseServerCall(), freeDeep && releasePlanDeep(freeDeep)]).catch(() => undefined);
-    if (quota) await Promise.all([releasePlanScan(quota.userId), releaseServerCall(), deepQuota && releasePlanDeep(quota.userId), trialAi && releaseTrialAiCall()]).catch(() => undefined);
+    if (trial) await Promise.all([giveBackTrial(trial), releaseServerCall(), freeDeep && releasePlanDeep(freeDeep)]).catch(() => undefined);
+    if (quota) await Promise.all([giveBackPlanScan(quota.userId), releaseServerCall(), deepQuota && releasePlanDeep(quota.userId), trialAi && releaseTrialAiCall()]).catch(() => undefined);
     await track({ type: "error", route: "analyze", code: error instanceof AnalysisError ? error.code : "upstream_error" }, statsDevice);
     const engine = override ? `user-${override.provider}` : activeProvider;
     // The bigger model refused on the server's key (no quota or billing for it, model gone): ours to fix.
