@@ -69,9 +69,17 @@ test("a shopkeeper adds a product, sells it, sells on credit, collects, and sees
   await expect(page.getByTestId("debt-amount")).toHaveText(/^4\s000 Ar$/);
   // No margin anywhere on the screen.
   await expect(page.getByText(/marge|bénéfice/i)).toHaveCount(0);
+
+  // Deleting the credit sale asks first, and takes the payment it received with it: nobody owes, only the cash sale is left.
+  await page.getByRole("radio", { name: "Ventes" }).click();
+  await page.getByTestId("sale-line").filter({ hasText: "Huile" }).getByTestId("sale-delete").click();
+  await page.getByTestId("sale-delete-confirm").click();
+  await expect(page.getByTestId("sale-line")).toHaveCount(1);
+  await expect(page.getByTestId("day-sold")).toHaveText(/^36s000 Ar$/);
+  await expect(page.getByTestId("total-owed")).toHaveText(/^0 Ar$/);
 });
 
-test("the shop can be erased from Settings, and is in the copy of the data", async ({ page }) => {
+test("the shop can be erased from Settings", async ({ page }) => {
   await asAdmin(page);
   await page.goto("/boutique");
   await page.getByTestId("sale-new").click();
@@ -84,6 +92,8 @@ test("the shop can be erased from Settings, and is in the copy of the data", asy
   const row = page.locator('[data-testid="reset-row"][data-screen="shop"]');
   await row.click();
   await page.getByTestId("reset-confirm").click();
+  // The erasing is asynchronous: wait for its message before leaving the page.
+  await expect(page.getByText("Ma boutique effacée")).toBeVisible();
   await page.goto("/boutique");
   await expect(page.getByTestId("sale-line")).toHaveCount(0);
 });

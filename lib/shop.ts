@@ -32,10 +32,19 @@ export type ShopSale = Base & {
   customer?: string;
   /** Where to send a reminder (WhatsApp). */
   phone?: string;
+  /** What was really taken off the stock (less than `qty` when the stock was short): what goes back if the sale is removed. */
+  stockTaken?: number;
 };
 
 /** Money received later from a customer, against what they owe. */
-export type ShopPayment = Base & { kind: "payment"; at: number; customer: string; amountMga: number };
+export type ShopPayment = Base & {
+  kind: "payment";
+  at: number;
+  customer: string;
+  amountMga: number;
+  /** Which sales it paid, oldest first. A sale removed takes its part of the payment with it. */
+  applied?: Array<{ saleId: string; amountMga: number }>;
+};
 
 export type ShopRecord = ShopProduct | ShopSale | ShopPayment;
 
@@ -55,6 +64,11 @@ export function cleanQty(value: number | undefined): number | null {
 export function cleanMoney(value: number | undefined): number | null {
   if (value === undefined || !Number.isFinite(value) || value < 0 || value > MAX_AMOUNT) return null;
   return Math.round(value);
+}
+
+/** What a payment counts for: its parts on the sales still there (all of it for a payment that doesn't say which sales). */
+export function paymentAmount(payment: ShopPayment, liveSales: ReadonlySet<string>) {
+  return payment.applied ? payment.applied.reduce((sum, part) => sum + (liveSales.has(part.saleId) ? part.amountMga : 0), 0) : payment.amountMga;
 }
 
 export const saleTotal = (sale: Pick<ShopSale, "qty" | "unitPriceMga">) => Math.round(sale.qty * sale.unitPriceMga);
@@ -104,7 +118,8 @@ export function shopTotals(records: ShopRecord[], from: number, to: number): Sho
     totals.collectedMga += Math.min(sale.paidMga, saleTotal(sale));
     totals.creditMga += saleRest(sale);
   }
-  for (const payment of byKind(records, "payment")) if (payment.at >= from && payment.at < to) totals.collectedMga += payment.amountMga;
+  const live = new Set(byKind(records, "sale").map((sale) => sale.id));
+  for (const payment of byKind(records, "payment")) if (payment.at >= from && payment.at < to) totals.collectedMga += paymentAmount(payment, live);
   return totals;
 }
 
@@ -135,9 +150,21 @@ export const lowStock = (records: ShopRecord[]) => byKind(records, "product").fi
 
 export type CustomerDebt = { key: string; name: string; owedMga: number; phone?: string; lastAt: number };
 
-/** Who owes how much: what is left on their sales, less their payments. Only those who still owe, the most first. */
+/** What is left to pay on each sale (after the payments that went to it). */
+function remainingBySale(records: ShopRecord[]) {
+  const paid = new Map<string, number>();
+  for (const payment of byKind(records, "payment")) for (const part of payment.applied ?? []) paid.set(part.saleId, (paid.get(part.saleId) ?? 0) + part.amountMga);
+  return new Map(byKind(records, "sale").map((sale) => [sale.id, Math.max(0, saleRest(sale) - (paid.get(sale.id) ?? 0))]));
+}
+
+/**
+ * Who owes how much: what is left on their sales, after the payments that
+ * went to them. A sale removed takes its payments with it. Only those who
+ * still owe, the most first.
+ */
 export function customerDebts(records: ShopRecord[]): CustomerDebt[] {
   const debts = new Map<string, CustomerDebt>();
+  const remaining = remainingBySale(records);
   const entry = (name: string) => {
     const key = customerKey(name);
     let debt = debts.get(key);
@@ -148,19 +175,38 @@ export function customerDebts(records: ShopRecord[]): CustomerDebt[] {
     return debt;
   };
   for (const sale of [...byKind(records, "sale")].sort((a, b) => a.at - b.at)) {
-    if (!sale.customer || saleRest(sale) === 0) continue;
+    const left = remaining.get(sale.id) ?? 0;
+    if (!sale.customer || left === 0) continue;
     const debt = entry(sale.customer);
-    debt.owedMga += saleRest(sale);
+    debt.owedMga += left;
     debt.lastAt = Math.max(debt.lastAt, sale.at);
     // The newest name spelling and number win.
     debt.name = sale.customer.trim();
     if (sale.phone) debt.phone = sale.phone;
   }
+  // A payment that doesn't say which sales it paid (kept as a whole) comes off the customer's total.
   for (const payment of byKind(records, "payment")) {
-    const debt = debts.get(customerKey(payment.customer));
+    const debt = payment.applied ? undefined : debts.get(customerKey(payment.customer));
     if (debt) debt.owedMga -= payment.amountMga;
   }
   return [...debts.values()].filter((debt) => debt.owedMga > 0).sort((a, b) => b.owedMga - a.owedMga || a.name.localeCompare(b.name));
+}
+
+/** Which sales a payment from this customer pays: the oldest first, each up to what it still lacks. */
+export function allocatePayment(records: ShopRecord[], customer: string, amountMga: number) {
+  const remaining = remainingBySale(records);
+  const applied: Array<{ saleId: string; amountMga: number }> = [];
+  let left = amountMga;
+  for (const sale of [...byKind(records, "sale")].sort((a, b) => a.at - b.at)) {
+    if (left <= 0) break;
+    if (!sale.customer || customerKey(sale.customer) !== customerKey(customer)) continue;
+    const take = Math.min(left, remaining.get(sale.id) ?? 0);
+    if (take > 0) {
+      applied.push({ saleId: sale.id, amountMga: take });
+      left -= take;
+    }
+  }
+  return applied;
 }
 
 export const totalOwed = (debts: CustomerDebt[]) => debts.reduce((sum, debt) => sum + debt.owedMga, 0);

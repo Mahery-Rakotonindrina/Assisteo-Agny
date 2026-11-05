@@ -51,6 +51,7 @@ export const EXPORT_DEVICE_SOURCES: Record<string, CopyFile | `left out: ${strin
   "services/loanReminders.ts": "reglages",
   "services/objectAd.ts": "reglages",
   "services/fx.ts": "reglages",
+  "services/weeklySummary.ts": "left out: only the id of a scheduled notification, a technical identifier",
   "services/aiKeyStore.ts": "left out: the personal AI key is a secret",
   "lib/supabase.ts": "left out: the session's tokens are secrets",
   "services/trial.ts": "left out: the install id, a technical identifier",

@@ -3926,6 +3926,24 @@
       "filterAll": "Tous"
     }
   },
+  "weekly": {
+    "title": "Ta semaine",
+    "notifTitle": "Ta semaine avec Assisteo Agny",
+    "spent": "Dépenses : {amount}.",
+    "arrived": {
+      "one": "{count} colis arrivé.",
+      "other": "{count} colis arrivés."
+    },
+    "upcoming": {
+      "one": "{count} rappel la semaine prochaine.",
+      "other": "{count} rappels la semaine prochaine."
+    },
+    "close": "Fermer",
+    "setting": "Résumé du dimanche",
+    "hintApp": "Chaque dimanche à 17 h : tes dépenses, tes colis arrivés et tes rappels de la semaine à venir. Calculé sur ton téléphone.",
+    "hintWeb": "Le dimanche, une carte « Ta semaine » s’affiche sur l’accueil : tes dépenses, tes colis arrivés et tes rappels. Calculé sur ton appareil.",
+    "locked": "Résumé du dimanche : à partir de l’offre {plan}"
+  },
   "shop": {
     "title": "Ma boutique",
     "subtitle": "Tes ventes, ton stock et le crédit de tes clients.",
@@ -3966,7 +3984,8 @@
       "line": "{qty} × {price} · {time}",
       "creditFor": "{name} doit encore {rest}",
       "delete": "Supprimer",
-      "deleteName": "Supprimer la vente de {name}"
+      "deleteName": "Supprimer la vente de {name}",
+      "confirmDelete": "Oui, supprimer cette vente"
     },
     "stock": {
       "lowTitle": "{count} produit(s) bientôt en rupture",

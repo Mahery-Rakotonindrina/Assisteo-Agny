@@ -82,6 +82,33 @@ describe("the shop store", () => {
     expect((await shopStore.list()).some((record) => record.kind === "sale")).toBe(false);
   });
 
+  it("gives back only what the sale really took from a short stock", async () => {
+    const product = (await shopStore.saveProduct({ name: "Sucre", stock: 2 }))!;
+    const sold = (await shopStore.addSale({ productId: product.id, name: "Sucre", qty: 5, unitPriceMga: 500 }))!;
+    expect(sold.stockTaken).toBe(2);
+    await shopStore.remove(sold.id);
+    expect((await shopStore.list()).find((record) => record.id === product.id)).toMatchObject({ stock: 2 });
+  });
+
+  it("takes the payments of a removed credit sale with it, everywhere", async () => {
+    const first = (await shopStore.addSale({ name: "Riz", qty: 1, unitPriceMga: 10000, paidMga: 0, customer: "Rado" }))!;
+    await shopStore.addSale({ name: "Huile", qty: 1, unitPriceMga: 6000, paidMga: 0, customer: "Rado" });
+    // 12 000 pays the first sale (10 000) and 2 000 of the second.
+    const payment = (await shopStore.addPayment("Rado", 12000))!;
+    expect(payment.applied?.map((part) => part.amountMga)).toEqual([10000, 2000]);
+    expect(customerDebts(await shopStore.list())[0].owedMga).toBe(4000);
+    await shopStore.remove(first.id);
+    const records = await shopStore.list();
+    // The payment keeps only its part on the second sale: 2 000 collected, 4 000 still owed.
+    expect(customerDebts(records)[0].owedMga).toBe(4000);
+    expect(dayAndMonth(records, Date.now()).day.collectedMga).toBe(2000);
+    // A payment that only paid the removed sale is gone altogether.
+    const alone = (await shopStore.addSale({ name: "Sel", qty: 1, unitPriceMga: 1000, paidMga: 0, customer: "Soa" }))!;
+    const small = (await shopStore.addPayment("Soa", 1000))!;
+    await shopStore.remove(alone.id);
+    expect((await shopStore.list()).some((record) => record.id === small.id)).toBe(false);
+  });
+
   it("never goes below zero stock", async () => {
     const product = (await shopStore.saveProduct({ name: "Sel", stock: 1 }))!;
     await shopStore.addSale({ productId: product.id, name: "Sel", qty: 5, unitPriceMga: 500 });

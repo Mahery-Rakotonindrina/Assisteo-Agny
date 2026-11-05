@@ -1,5 +1,6 @@
 import { clear, createStore, del, get, set, values } from "idb-keyval";
 import {
+  allocatePayment,
   byKind,
   cleanMoney,
   cleanQty,
@@ -115,9 +116,12 @@ export const shopStore = {
       createdAt: now,
       updatedAt: now,
     };
-    await write(sale);
-    if (product) await write({ ...product, stock: Math.max(0, Math.round((product.stock - qty) * 100) / 100) });
-    return sale;
+    // Only what the stock really had comes off it (and goes back if the sale is removed).
+    const stockTaken = product ? Math.min(qty, product.stock) : 0;
+    const recorded: ShopSale = product ? { ...sale, stockTaken } : sale;
+    await write(recorded);
+    if (product) await write({ ...product, stock: Math.round((product.stock - stockTaken) * 100) / 100 });
+    return recorded;
   },
 
   /** A payment from a customer; at most what they owe. Null when they owe nothing. */
@@ -126,16 +130,25 @@ export const shopStore = {
     const debt = customerDebts(await shopStore.list()).find((item) => item.key === customerKey(customer));
     if (!amount || !debt) return null;
     const now = Date.now();
-    const payment: ShopPayment = { kind: "payment", id: createId(), at, customer: debt.name, amountMga: Math.min(amount, debt.owedMga), createdAt: now, updatedAt: now };
+    const paid = Math.min(amount, debt.owedMga);
+    const payment: ShopPayment = { kind: "payment", id: createId(), at, customer: debt.name, amountMga: paid, applied: allocatePayment(await shopStore.list(), debt.name, paid), createdAt: now, updatedAt: now };
     await write(payment);
     return payment;
   },
 
-  /** Removes a sale (its quantity goes back to the stock), a payment or a product. */
+  /**
+   * Removes a sale (what it took off the stock goes back, and the payments
+   * that only paid it go with it), a payment or a product.
+   */
   async remove(id: string) {
     const current = await get<ShopRecord>(id, db());
     if (!current || current.deletedAt) return;
-    if (current.kind === "sale") await shopStore.adjustStock(current.productId ?? "", current.qty);
+    if (current.kind === "sale") {
+      await shopStore.adjustStock(current.productId ?? "", current.stockTaken ?? current.qty);
+      for (const payment of byKind(await shopStore.list(), "payment")) {
+        if (payment.applied?.length && payment.applied.every((part) => part.saleId === id)) await shopStore.remove(payment.id);
+      }
+    }
     if (keepTombstones) await write({ ...current, deletedAt: Date.now() });
     else {
       await del(id, db());

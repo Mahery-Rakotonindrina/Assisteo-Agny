@@ -36,6 +36,8 @@ export default function ShopPage() {
   const { records, isLoading } = useShop();
   const [tab, setTab] = useState<Tab>("sales");
   const [sheet, setSheet] = useState<Sheet>(null);
+  // The sale whose removal waits for a confirmation.
+  const [confirming, setConfirming] = useState<string | null>(null);
   const money = (value: number) => formatAriary(value, locale);
 
   const { day, month } = dayAndMonth(records, now);
@@ -129,9 +131,28 @@ export default function ShopPage() {
                           <strong>{money(saleTotal(sale))}</strong>
                         </div>
                         <div className={styles.row}>
-                          <Button variant="ghost" icon={<Trash2 />} aria-label={t("shop.sale.deleteName", { name: sale.name })} onClick={() => void shopStore.remove(sale.id)}>
-                            {t("shop.sale.delete")}
-                          </Button>
+                          {confirming === sale.id ? (
+                            <>
+                              <Button
+                                variant="danger"
+                                icon={<Trash2 />}
+                                onClick={() => {
+                                  setConfirming(null);
+                                  void shopStore.remove(sale.id);
+                                }}
+                                data-testid="sale-delete-confirm"
+                              >
+                                {t("shop.sale.confirmDelete")}
+                              </Button>
+                              <Button variant="ghost" onClick={() => setConfirming(null)}>
+                                {t("common.cancel")}
+                              </Button>
+                            </>
+                          ) : (
+                            <Button variant="ghost" icon={<Trash2 />} aria-label={t("shop.sale.deleteName", { name: sale.name })} onClick={() => setConfirming(sale.id)} data-testid="sale-delete">
+                              {t("shop.sale.delete")}
+                            </Button>
+                          )}
                         </div>
                       </li>
                     ))}
