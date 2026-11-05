@@ -71,6 +71,7 @@ const food: Record<Locale, Analysis> = {
     parcel: null,
     list: null,
     plant: null,
+    medicine: null,
     reminder: { title: "Salade au frigo", body: "Pense à finir ta salade avant demain soir.", delayHours: 24 },
   },
   en: {
@@ -137,6 +138,7 @@ const food: Record<Locale, Analysis> = {
     parcel: null,
     list: null,
     plant: null,
+    medicine: null,
     reminder: { title: "Salad in the fridge", body: "Remember to finish your salad before tomorrow night.", delayHours: 24 },
   },
 };
@@ -178,6 +180,7 @@ const documentScan: Record<Locale, Analysis> = {
     parcel: null,
     list: null,
     plant: null,
+    medicine: null,
     reminder: { title: "Facture d'électricité", body: "Le prélèvement de 84,20 € arrive bientôt.", delayHours: 72 },
   },
   en: {
@@ -216,6 +219,7 @@ const documentScan: Record<Locale, Analysis> = {
     parcel: null,
     list: null,
     plant: null,
+    medicine: null,
     reminder: { title: "Electricity bill", body: "The €84.20 direct debit is coming up.", delayHours: 72 },
   },
 };
@@ -247,6 +251,7 @@ const objectScan: Record<Locale, Analysis> = {
     parcel: null,
     list: null,
     plant: { place: "indoor", waterEveryDaysRainy: 7, waterEveryDaysDry: 10 },
+    medicine: null,
     reminder: { title: "Arroser le Monstera", body: "Vérifie la terre et arrose si elle est sèche.", delayHours: 168 },
   },
   en: {
@@ -275,6 +280,7 @@ const objectScan: Record<Locale, Analysis> = {
     parcel: null,
     list: null,
     plant: { place: "indoor", waterEveryDaysRainy: 7, waterEveryDaysDry: 10 },
+    medicine: null,
     reminder: { title: "Water the Monstera", body: "Check the soil and water if it is dry.", delayHours: 168 },
   },
 };
@@ -334,6 +340,7 @@ const vehicleScan: Record<Locale, Analysis> = {
     parcel: null,
     list: null,
     plant: null,
+    medicine: null,
     reminder: { title: "Révision de la Corolla", body: "Pense à vérifier la date de ta prochaine révision.", delayHours: 720 },
   },
   en: {
@@ -390,6 +397,7 @@ const vehicleScan: Record<Locale, Analysis> = {
     parcel: null,
     list: null,
     plant: null,
+    medicine: null,
     reminder: { title: "Corolla service", body: "Remember to check when your next service is due.", delayHours: 720 },
   },
 };
@@ -446,6 +454,7 @@ const parcelScan: Record<Locale, Analysis> = {
     },
     list: null,
     plant: null,
+    medicine: null,
     reminder: null,
   },
   en: {
@@ -488,6 +497,7 @@ const parcelScan: Record<Locale, Analysis> = {
     },
     list: null,
     plant: null,
+    medicine: null,
     reminder: null,
   },
 };
@@ -522,6 +532,7 @@ const listScan: Record<Locale, Analysis> = {
       ],
     },
     plant: null,
+    medicine: null,
     reminder: null,
   },
   en: {
@@ -552,6 +563,7 @@ const listScan: Record<Locale, Analysis> = {
       ],
     },
     plant: null,
+    medicine: null,
     reminder: null,
   },
 };
@@ -601,6 +613,7 @@ const registrationScan: Record<Locale, Analysis> = {
     parcel: null,
     list: null,
     plant: null,
+    medicine: null,
     reminder: null,
   },
   en: {
@@ -646,6 +659,7 @@ const registrationScan: Record<Locale, Analysis> = {
     parcel: null,
     list: null,
     plant: null,
+    medicine: null,
     reminder: null,
   },
 };
@@ -699,6 +713,7 @@ const mobileMoneyScan: Record<Locale, Analysis> = {
     parcel: null,
     list: null,
     plant: null,
+    medicine: null,
     reminder: null,
   },
   en: {
@@ -748,6 +763,7 @@ const mobileMoneyScan: Record<Locale, Analysis> = {
     parcel: null,
     list: null,
     plant: null,
+    medicine: null,
     reminder: null,
   },
 };
@@ -801,6 +817,7 @@ const tillReceiptScan: Record<Locale, Analysis> = {
     parcel: null,
     list: null,
     plant: null,
+    medicine: null,
     reminder: null,
   },
   en: {
@@ -850,6 +867,7 @@ const tillReceiptScan: Record<Locale, Analysis> = {
     parcel: null,
     list: null,
     plant: null,
+    medicine: null,
     reminder: null,
   },
 };
@@ -903,6 +921,7 @@ const received = (locale: Locale): Analysis => {
     parcel: null,
     list: null,
     plant: null,
+    medicine: null,
     reminder: null,
   };
 };
@@ -956,6 +975,7 @@ const withdrawal = (locale: Locale): Analysis => {
     parcel: null,
     list: null,
     plant: null,
+    medicine: null,
     reminder: null,
   };
 };
@@ -964,6 +984,120 @@ const withdrawal = (locale: Locale): Analysis => {
 export function mockReceipt(locale: Locale, direction: "out" | "in" | "own" = "out"): Analysis {
   return direction === "in" ? received(locale) : direction === "own" ? withdrawal(locale) : mobileMoneyScan[locale];
 }
+
+// A fictional prescription, for demo mode: two medicines with their dosage
+// and duration as written, one word that could not be read.
+const prescriptionScan: Record<Locale, Analysis> = {
+  fr: {
+    category: "document",
+    title: "Ordonnance · Amoxicilline et Paracétamol",
+    summary:
+      "Une ordonnance pour deux médicaments : de l'Amoxicilline 500 mg, 1 gélule matin et soir pendant 7 jours, et du Paracétamol 500 mg en cas de douleur. Le nom du médecin est difficile à lire.",
+    confidence: 0.82,
+    tags: ["ordonnance", "santé", "médicaments"],
+    facts: [
+      { label: "Médicaments", value: "2" },
+      { label: "Traitement", value: "7 jours" },
+      { label: "Date", value: "3 novembre 2026" },
+    ],
+    suggestions: [
+      { kind: "warning", title: "Suis l'avis du médecin", detail: "Prends les doses écrites sur l'ordonnance. En cas de doute, demande à ton pharmacien." },
+      { kind: "tip", title: "Va jusqu'au bout", detail: "Un antibiotique se prend toute la durée prévue, même si tu te sens mieux avant." },
+    ],
+    questions: ["À quoi sert l'Amoxicilline ?", "Puis-je la prendre en mangeant ?", "Que faire si j'oublie une dose ?"],
+    nutrition: null,
+    recipe: null,
+    diet: null,
+    document: null,
+    vehicle: null,
+    parcel: null,
+    list: null,
+    plant: null,
+    medicine: {
+      kind: "prescription",
+      unreadable: "Le nom du médecin n'est pas lisible.",
+      items: [
+        {
+          name: "Amoxicilline",
+          strength: "500 mg",
+          dose: "1 gélule matin et soir",
+          timesPerDay: 2,
+          durationDays: 7,
+          precautions: ["À prendre au début du repas", "Peut donner des troubles digestifs"],
+          contraindications: ["Allergie aux pénicillines"],
+        },
+        {
+          name: "Paracétamol",
+          strength: "500 mg",
+          dose: "1 comprimé si douleur, 3 par jour au plus",
+          timesPerDay: null,
+          durationDays: null,
+          precautions: ["Pas plus de la dose écrite", "Attention aux autres médicaments qui en contiennent"],
+          contraindications: ["Maladie grave du foie"],
+        },
+      ],
+    },
+    reminder: null,
+  },
+  en: {
+    category: "document",
+    title: "Prescription · Amoxicillin and Paracetamol",
+    summary:
+      "A prescription for two medicines: Amoxicillin 500 mg, 1 capsule morning and evening for 7 days, and Paracetamol 500 mg when in pain. The doctor's name is hard to read.",
+    confidence: 0.82,
+    tags: ["prescription", "health", "medicines"],
+    facts: [
+      { label: "Medicines", value: "2" },
+      { label: "Treatment", value: "7 days" },
+      { label: "Date", value: "3 November 2026" },
+    ],
+    suggestions: [
+      { kind: "warning", title: "Follow the doctor's advice", detail: "Take the doses written on the prescription. If in doubt, ask your pharmacist." },
+      { kind: "tip", title: "Finish the course", detail: "An antibiotic is taken for the whole planned time, even if you feel better before." },
+    ],
+    questions: ["What is Amoxicillin for?", "Can I take it with food?", "What if I miss a dose?"],
+    nutrition: null,
+    recipe: null,
+    diet: null,
+    document: null,
+    vehicle: null,
+    parcel: null,
+    list: null,
+    plant: null,
+    medicine: {
+      kind: "prescription",
+      unreadable: "The doctor's name can't be read.",
+      items: [
+        {
+          name: "Amoxicillin",
+          strength: "500 mg",
+          dose: "1 capsule morning and evening",
+          timesPerDay: 2,
+          durationDays: 7,
+          precautions: ["Take at the start of a meal", "May upset the stomach"],
+          contraindications: ["Allergy to penicillins"],
+        },
+        {
+          name: "Paracetamol",
+          strength: "500 mg",
+          dose: "1 tablet when in pain, 3 a day at most",
+          timesPerDay: null,
+          durationDays: null,
+          precautions: ["No more than the written dose", "Beware of other medicines that contain it"],
+          contraindications: ["Serious liver disease"],
+        },
+      ],
+    },
+    reminder: null,
+  },
+};
+
+/**
+ * The demo prescription (the end-to-end tests serve it in place of a scan).
+ * Kept out of the auto rotation: it opens on its own tab, and the tests that
+ * scan in parallel expect the summary tab.
+ */
+export const mockPrescription = (locale: Locale): Analysis => prescriptionScan[locale];
 
 export function mockAnalysis(mode: ScanMode, locale: Locale): Analysis {
   if (mode !== "auto") return byMode[mode][locale];
