@@ -32,7 +32,8 @@
       "lists": "Lists",
       "settings": "Set|tings",
       "admin": "Admin"
-    }
+    },
+    "shop": "My shop"
   },
   "scan": {
     "greeting": {
@@ -316,14 +317,16 @@
         "expenses": "Expenses and income",
         "pockets": "Pockets",
         "loans": "Loans",
-        "parcels": "Parcels"
+        "parcels": "Parcels",
+        "shop": "My shop"
       },
       "hints": {
         "history": "All your analyses. Your parcels keep their photo.",
         "expenses": "Expenses, income, recurring items, budget and savings. Your pockets stay.",
         "pockets": "Your pockets and the transfers between them. Your expenses stay.",
         "loans": "All your loans, repayments and proofs.",
-        "parcels": "Every parcel you follow, and their reminders."
+        "parcels": "Every parcel you follow, and their reminders.",
+        "shop": "Your sales, your stock and your customers’ credit."
       },
       "empty": "Nothing to erase",
       "title": "{name}: erase everything?",
@@ -358,14 +361,21 @@
         "links": "The share links you sent are stopped",
         "parcels": "{count} parcels followed",
         "parcelsOne": "1 parcel followed",
-        "parcelReminders": "Their arrival reminders"
+        "parcelReminders": "Their arrival reminders",
+        "shopSales": "{count} sales",
+        "shopSalesOne": "1 sale",
+        "shopProducts": "{count} products in stock",
+        "shopProductsOne": "1 product in stock",
+        "shopPayments": "{count} customer payments",
+        "shopPaymentsOne": "1 customer payment"
       },
       "stays": {
         "history": "Your parcels (with their photo), your expenses, your loans and your lists.",
         "expenses": "Your pockets: their balance is worked out again without these lines. Your categories. Your scans, parcels and vehicles stay on their screens. The household's budget doesn't change.",
         "pockets": "Your expenses, income, savings and loans: they stay, without a pocket. You can add new pockets.",
         "loans": "The household's loans. Your pockets: the loans' moves leave them.",
-        "parcels": "Their scans stay in the history. Their prices and sales leave Expenses."
+        "parcels": "Their scans stay in the history. Their prices and sales leave Expenses.",
+        "shop": "Your other screens don’t change."
       },
       "everywhere": "With your account, it's erased on your other devices too. You can't undo it.",
       "final": "You can't undo it.",
@@ -377,7 +387,8 @@
         "expenses": "Expenses and income erased",
         "pockets": "Pockets erased",
         "loans": "Loans erased",
-        "parcels": "Parcels erased"
+        "parcels": "Parcels erased",
+        "shop": "My shop erased"
       },
       "offline": "No connection: the share links couldn't be stopped. Nothing is erased, try again online.",
       "failed": "Erasing didn't work. Try again."
@@ -427,7 +438,8 @@
           "plantes": "your plants and their check-ups",
           "foyer": "your household: its name, your role, and only the lines you wrote",
           "reglages": "your settings",
-          "compte": "your account: your e-mail, your plan, your subscriptions, the codes used, the family seats, the share links and the devices that get reminders"
+          "compte": "your account: your e-mail, your plan, your subscriptions, the codes used, the family seats, the share links and the devices that get reminders",
+          "boutique": "your shop: the products in stock, the sales and the customers’ payments"
         },
         "photosIn": "the photos, by screen; the JSON files give the path of each",
         "photosOut": "no photos in this copy (“With the photos” unticked)",
@@ -1093,7 +1105,8 @@
         "loans": "Loans",
         "expenses": "My expenses",
         "inventory": "My home",
-        "plants": "My plants"
+        "plants": "My plants",
+        "shop": "My shop"
       },
       "descriptions": {
         "reminders": "Reminders on scans (repeat, snooze), insurance and parcel arrivals.",
@@ -1107,7 +1120,8 @@
         "loans": "Who owes me, whom I owe: repayments, overdue loans, WhatsApp reminders. Nothing counts in the expenses.",
         "expenses": "The month’s budget, alone or as a household, and the AI’s month review.",
         "inventory": "The home inventory: items, warranties and their reminder, linked invoices, export for the insurer.",
-        "plants": "Plants, their watering suggested by the AI, the morning reminder and the diagnosis of a sick plant (one of the month's scans)."
+        "plants": "Plants, their watering suggested by the AI, the morning reminder and the diagnosis of a sick plant (one of the month's scans).",
+        "shop": "The small shopkeeper’s book: the day’s sales, the stock with an alert, the customers’ credit with a WhatsApp reminder, the totals of the day and the month."
       },
       "deepNeedsLimit": "Can’t save: {list} has no deep analysis quota (0 = no limit). First set a number per month above, in the plans’ prices and quotas. Free has no quota: no deep analysis."
     }
@@ -1610,7 +1624,8 @@
       "inventory": "My home: your items, their warranty and invoices, export for the insurer",
       "plants": "My plants: watering, morning reminder, diagnosis of a sick plant",
       "allPlan": "Everything in {plan}, plus:",
-      "family": "Up to {count} people of your family"
+      "family": "Up to {count} people of your family",
+      "shop": "My shop: the day’s sales, stock, customers’ credit"
     },
     "how": "How to subscribe",
     "step1": "Sign in",
@@ -1896,7 +1911,8 @@
     "expensesHint": "Monthly budget, what is left",
     "inventoryHint": "Items, warranties, invoices",
     "plantsHint": "Watering and reminders",
-    "pocketsHint": "Cash, mobile money, bank…"
+    "pocketsHint": "Cash, mobile money, bank…",
+    "shopHint": "Sales, stock and credit"
   },
   "food": {
     "title": "Food journal",
@@ -2218,6 +2234,10 @@
       "inventory": {
         "title": "My home",
         "body": "The things in your home with their invoice and warranty, a reminder before the end, and an export for the insurer."
+      },
+      "shop": {
+        "title": "My shop",
+        "body": "Your sales of the day, your stock with an alert when it runs low, and who owes you how much, with a WhatsApp reminder."
       }
     }
   },
@@ -3904,6 +3924,82 @@
       "markDone": "Mark as done",
       "markNew": "Back to new",
       "filterAll": "All"
+    }
+  },
+  "shop": {
+    "title": "My shop",
+    "subtitle": "Your sales, your stock and your customers’ credit.",
+    "locked": "My shop is included from the {plan} plan: the day’s sales, stock with an alert and customers’ credit.",
+    "totals": {
+      "label": "Totals",
+      "today": "Today",
+      "month": "This month",
+      "owed": "Owed to you",
+      "detail": "Collected {collected} · on credit {credit}",
+      "owedBy": "{count} customer(s)"
+    },
+    "tabs": {
+      "sales": "Sales",
+      "stock": "Stock",
+      "credit": "Credit"
+    },
+    "sale": {
+      "title": "New sale",
+      "new": "New sale",
+      "product": "Product",
+      "otherProduct": "Other product (type it)",
+      "name": "Product sold",
+      "qty": "Quantity",
+      "price": "Unit price (Ar)",
+      "payment": "Payment",
+      "paid": "Paid in full",
+      "credit": "On credit (the customer pays later)",
+      "paidNow": "Paid now (Ar)",
+      "customer": "Customer",
+      "phone": "Customer’s WhatsApp number (optional)",
+      "total": "Total: {amount}",
+      "save": "Save the sale",
+      "invalid": "Write the product, the quantity and the price.",
+      "needCustomer": "For a sale on credit, write the customer’s name.",
+      "emptyTitle": "No sale today",
+      "emptyBody": "Tap “New sale” to note your first sale of the day.",
+      "line": "{qty} × {price} · {time}",
+      "creditFor": "{name} still owes {rest}",
+      "delete": "Delete",
+      "deleteName": "Delete the sale of {name}"
+    },
+    "stock": {
+      "lowTitle": "{count} product(s) running out",
+      "low": "Almost gone: {qty} in stock",
+      "inStock": "{qty} in stock",
+      "emptyTitle": "No product in stock",
+      "emptyBody": "Add your products to follow what is left, and be warned when it runs low."
+    },
+    "product": {
+      "add": "Add a product",
+      "addTitle": "New product",
+      "editTitle": "Edit the product",
+      "edit": "Edit",
+      "name": "Product name",
+      "stock": "In stock",
+      "lowAt": "Warn me from",
+      "price": "Usual selling price (Ar, optional)",
+      "lowHint": "When the stock falls to this number or less, the product shows in the alert. Each sale takes off the quantity sold.",
+      "save": "Save",
+      "delete": "Delete the product",
+      "invalid": "Write the product name and the quantity in stock."
+    },
+    "credit": {
+      "title": "Collect a payment",
+      "collect": "Collect",
+      "remind": "Remind on WhatsApp",
+      "owes": "{name} owes you {amount}.",
+      "received": "Amount received (Ar)",
+      "save": "Save the payment",
+      "invalid": "Write an amount, at most what the customer owes.",
+      "emptyTitle": "Nobody owes you anything",
+      "emptyBody": "Sales on credit will show here, with what each customer still owes.",
+      "message": "Hello {name}, a small reminder: {amount} is still to be paid to the shop. Thank you!"
     }
   }
 }

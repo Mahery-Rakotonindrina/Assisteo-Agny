@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { motion } from "motion/react";
-import { BookOpen, Car, Download, Sprout, FolderLock, HandCoins, History, House, ListChecks, Package, ScanLine, Settings2, ShieldCheck, Smartphone, UserRound, Wallet, WalletCards } from "lucide-react";
+import { BookOpen, Car, Download, Sprout, FolderLock, HandCoins, History, House, ListChecks, Package, ScanLine, Settings2, ShieldCheck, Smartphone, Store, UserRound, Wallet, WalletCards } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { useAiStatus } from "@/hooks/useAiStatus";
 import { useAndroidDownload } from "@/hooks/useAndroidDownload";
@@ -34,6 +34,9 @@ const expensesLink = { href: "/expenses", key: "expenses", Icon: Wallet } as con
 /** "Mes poches", part of "Mes dépenses" (its plan only: the pockets are personal). */
 const pocketsLink = { href: "/pockets", key: "pockets", Icon: WalletCards } as const;
 
+/** "Ma boutique", shown only with the plan that includes it (Pro). */
+const shopLink = { href: "/boutique", key: "shop", Icon: Store } as const;
+
 /** "Prêts", shown only with a plan that includes it (Admin while tested), or to whoever kept loans (read only). */
 const loansLink = { href: "/loans", key: "loans", Icon: HandCoins } as const;
 
@@ -49,7 +52,7 @@ export function Sidebar() {
   const keptExpenses = useKeptExpenses(!has("expenses"));
   const keptLoans = useKeptLoans(!has("loans"));
   // The plan is null on the server and at hydration: the extra links only appear once it is read.
-  const shown = [...links.slice(0, 8), ...(has("expenses") || inHousehold || keptExpenses ? [expensesLink] : []), ...(has("expenses") ? [pocketsLink] : []), ...(has("loans") || keptLoans ? [loansLink] : []), ...links.slice(8), ...(isAdmin ? [adminLink] : [])];
+  const shown = [...links.slice(0, 8), ...(has("expenses") || inHousehold || keptExpenses ? [expensesLink] : []), ...(has("expenses") ? [pocketsLink] : []), ...(has("loans") || keptLoans ? [loansLink] : []), ...(has("shop") ? [shopLink] : []), ...links.slice(8), ...(isAdmin ? [adminLink] : [])];
   const android = useAndroidDownload();
   const { t } = useTranslation();
   const aiStatus = useAiStatus();

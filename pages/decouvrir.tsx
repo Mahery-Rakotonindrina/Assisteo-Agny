@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import type { CSSProperties } from "react";
-import { Apple, ArrowRight, BellRing, Briefcase, Camera, Car, ChevronDown, Coins, Download, FileDown, Files, FileText, HandCoins, House, ListChecks, MessageCircle, Package, ScanSearch, Sparkles, Sprout, Wallet, type LucideIcon } from "lucide-react";
+import { Apple, ArrowRight, BellRing, Briefcase, Camera, Car, ChevronDown, Coins, Download, FileDown, Files, FileText, HandCoins, House, ListChecks, MessageCircle, Package, ScanSearch, Sparkles, Sprout, Store, Wallet, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/Button";
 import { PlanBadge } from "@/components/PlanBadge";
 import { Seo } from "@/components/Seo";
@@ -32,6 +32,7 @@ const extraIcons: Record<DiscoverFeature, LucideIcon> = {
   inventory: House,
   plants: Sprout,
   reseller: Briefcase,
+  shop: Store,
   expenses: Wallet,
   loans: HandCoins,
 };
