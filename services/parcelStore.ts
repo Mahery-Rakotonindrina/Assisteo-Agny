@@ -84,6 +84,10 @@ const db = () => (store ??= createStore("assisteo-parcels", "parcels"));
 const listeners = new Set<() => void>();
 const notify = () => listeners.forEach((listener) => listener());
 
+// Parcels the user removed here (not those removed by a sync): their shares with the household stop (AccountProvider).
+const removalListeners = new Set<(ids: string[]) => void>();
+const removed = (ids: string[]) => removalListeners.forEach((listener) => listener(ids));
+
 // Signed in, deletions are kept until synced so they reach the other devices.
 let keepTombstones = false;
 
@@ -297,12 +301,23 @@ export const parcelStore = {
       await del(id, db());
       notify();
     }
+    removed([id]);
+  },
+
+  /** Calls back with the ids of the parcels the user removes on this device. */
+  onRemoved(listener: (ids: string[]) => void) {
+    removalListeners.add(listener);
+    return () => {
+      removalListeners.delete(listener);
+    };
   },
 
   /** "Remettre à zéro": every parcel followed (synced like any removal; their scans stay). */
   async removeAll() {
-    await removeRecords(db(), (await values<Parcel>(db())).filter((parcel) => !parcel.deletedAt), keepTombstones);
+    const live = (await values<Parcel>(db())).filter((parcel) => !parcel.deletedAt);
+    await removeRecords(db(), live, keepTombstones);
     notify();
+    removed(live.map((parcel) => parcel.id));
   },
 
   // ---- For the sync engine -----------------------------------------------------

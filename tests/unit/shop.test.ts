@@ -92,6 +92,8 @@ describe("the shop store", () => {
 
   it("takes the payments of a removed credit sale with it, everywhere", async () => {
     const first = (await shopStore.addSale({ name: "Riz", qty: 1, unitPriceMga: 10000, paidMga: 0, customer: "Rado" }))!;
+    // Two sales in the same millisecond have no set order: the second one comes later.
+    await new Promise((resolve) => setTimeout(resolve, 5));
     await shopStore.addSale({ name: "Huile", qty: 1, unitPriceMga: 6000, paidMga: 0, customer: "Rado" });
     // 12 000 pays the first sale (10 000) and 2 000 of the second.
     const payment = (await shopStore.addPayment("Rado", 12000))!;

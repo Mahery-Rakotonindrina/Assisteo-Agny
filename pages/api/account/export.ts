@@ -88,10 +88,12 @@ export async function accountExport(account: { id: string; email: string }, plan
       ["household_id", membership.household_id],
       ["user_id", id],
     ];
-    const [homes, expenses, loans] = await Promise.all([
+    const [homes, expenses, loans, shares] = await Promise.all([
       rows<{ data: { name?: string } | null }>("households", "data", [["id", membership.household_id]]),
       rows<SharedRow>("household_expenses", "id, data, updated_at, deleted_at", where),
       rows<SharedRow>("household_loans", "id, data, updated_at, deleted_at", where),
+      // The lists and parcels one shares with it (migration 0023): one's own only.
+      rows<SharedRow>("household_shares", "id, data, updated_at, deleted_at", where),
     ]);
     household = {
       name: homes[0]?.data?.name ?? "",
@@ -99,6 +101,7 @@ export async function accountExport(account: { id: string; email: string }, plan
       joinedAt: isoDate(membership.joined_at) ?? "",
       expenses: alive(expenses).map(exportSharedRow),
       loans: alive(loans).map(exportSharedRow),
+      shares: alive(shares).map(exportSharedRow),
     };
   }
 

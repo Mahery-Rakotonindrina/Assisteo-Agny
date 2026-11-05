@@ -385,3 +385,14 @@
     font-size: 0.78rem;
   }
 }
+
+// Shared with the household: by whom.
+.text .sharedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent-text);
+  overflow-wrap: break-word;
+}

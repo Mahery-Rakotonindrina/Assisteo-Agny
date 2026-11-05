@@ -33,6 +33,7 @@ export const RESTORE_KEYS = {
   household_invites: ["code"],
   household_expenses: ["household_id", "id"],
   household_loans: ["household_id", "id"],
+  household_shares: ["household_id", "id"],
   subscriptions: ["id"],
   feature_grants: ["id"],
   family_seats: ["id"],

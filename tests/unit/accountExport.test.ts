@@ -66,6 +66,10 @@ db.tables = {
     { household_id: "h1", user_id: other.id, id: "e3", data: { note: "other-member-line" }, updated_at: "2026-10-04T00:00:00Z", deleted_at: null },
   ],
   household_loans: [{ household_id: "h1", user_id: other.id, id: "l1", data: { person: "other-member-loan" }, updated_at: "2026-10-04T00:00:00Z", deleted_at: null }],
+  household_shares: [
+    { household_id: "h1", user_id: me.id, id: "list:s1", data: { title: "my-shared-list", userId: me.id }, updated_at: "2026-10-04T00:00:00Z", deleted_at: null },
+    { household_id: "h1", user_id: other.id, id: "list:s2", data: { title: "other-member-list" }, updated_at: "2026-10-04T00:00:00Z", deleted_at: null },
+  ],
   loan_shares: [
     { token_hash: "a".repeat(64), user_id: me.id, person: "Hery", snapshot: { secret: 1 }, created_at: "2026-10-05T00:00:00Z", updated_at: "2026-10-06T00:00:00Z", revoked_at: null },
     { token_hash: "b".repeat(64), user_id: other.id, person: "other-share", snapshot: {}, created_at: "2026-10-05T00:00:00Z", updated_at: "2026-10-06T00:00:00Z", revoked_at: null },
@@ -128,13 +132,13 @@ describe("GET /api/account/export", () => {
       featureGrants: [{ feature: "loans", startsAt: "2026-10-01T00:00:00.000Z", endsAt: "2026-12-01T00:00:00.000Z" }],
       offers: { trialUsed: true, pendingDiscount: { code: "BIENVENUE", percent: 20 }, referredBy: "pa…@gmail.com" },
       familySeats: { given: [{ member: "ma…@gmail.com" }], received: null },
-      household: { name: "Famille Rabe", role: "member", expenses: [{ id: "e1", amountMga: 5000, note: "my-line" }], loans: [] },
+      household: { name: "Famille Rabe", role: "member", expenses: [{ id: "e1", amountMga: 5000, note: "my-line" }], loans: [], shares: [{ id: "list:s1", title: "my-shared-list" }] },
       loanShareLinks: [{ person: "Hery", active: true }],
       notificationDevices: [{ platform: "android", updatedAt: "2026-10-07T00:00:00.000Z" }],
     });
 
     const text = JSON.stringify(body);
-    for (const secret of ["OTHER-REF", "admin-note", "grant-note", "owner@assisteo.mg", "mamy.rabe", "parrain.long", "other-member-line", "my-removed-line", "other-member-loan", "other-share", "fcm-token-secret", "other-token", "install-1", "aaaa", "400000", "\"u1\"", "\"u2\"", "soa@"]) {
+    for (const secret of ["OTHER-REF", "admin-note", "grant-note", "owner@assisteo.mg", "mamy.rabe", "parrain.long", "other-member-line", "my-removed-line", "other-member-loan", "other-member-list", "other-share", "fcm-token-secret", "other-token", "install-1", "aaaa", "400000", "\"u1\"", "\"u2\"", "soa@"]) {
       expect(text).not.toContain(secret);
     }
     // Every read is on the account itself (its id or e-mail), or on its own household.
