@@ -8,7 +8,7 @@ import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Analysis } from "@/lib/ai/schema";
 import { formatDate, toDateInput } from "@/lib/format";
-import { cleanCourse, defaultTimes, isActive, MAX_DAYS, planEnd, type MedicationCourse, type MedicationPlan } from "@/lib/medication";
+import { cleanCourse, defaultTimes, hasReadableName, isActive, MAX_DAYS, planEnd, type MedicationCourse, type MedicationPlan } from "@/lib/medication";
 import { haptics } from "@/services/device";
 import { historyStore } from "@/services/historyStore";
 import { requestNotificationPermission } from "@/services/notifications";
@@ -16,7 +16,7 @@ import type { HistoryEntry } from "@/types/history";
 import styles from "./Medicine.module.scss";
 
 type Medicine = NonNullable<Analysis["medicine"]>;
-type Draft = { on: boolean; name: string; dose: string; times: string[]; days: string };
+type Draft = { on: boolean; /** The name was not readable: the person types it. */ typed: boolean; name: string; dose: string; times: string[]; days: string };
 
 const PER_DAY = [1, 2, 3, 4] as const;
 
@@ -33,7 +33,9 @@ export function MedicationPlanner({ entry, medicine }: { entry: HistoryEntry; me
   const [stopping, setStopping] = useState(false);
 
   if (!has("reminders")) {
-    return <PlanLock plan={planFor("reminders")} text={t("medicine.locked", { plan: planName(planFor("reminders") ?? "lite") })} />;
+    // No plan sells the reminders now: PlanLock then says so by itself.
+    const lockedPlan = planFor("reminders");
+    return <PlanLock plan={planFor("reminders")} text={lockedPlan ? t("medicine.locked", { plan: planName(lockedPlan) }) : ""} />;
   }
 
   const plan = entry.medication;
@@ -78,7 +80,9 @@ function PlannerForm({ entry, medicine }: { entry: HistoryEntry; medicine: Medic
   // Ticked only when the prescription itself says how often and how long.
   const [drafts, setDrafts] = useState<Draft[]>(() =>
     medicine.items.map((item) => ({
-      on: Boolean(item.timesPerDay && item.durationDays),
+      // Never ticked for a name the scan could not read, until the person types it and ticks it.
+      on: hasReadableName(item.name) && Boolean(item.timesPerDay && item.durationDays),
+      typed: !hasReadableName(item.name),
       name: item.name,
       dose: item.dose ?? "",
       times: defaultTimes(item.timesPerDay),
@@ -117,11 +121,21 @@ function PlannerForm({ entry, medicine }: { entry: HistoryEntry; medicine: Medic
         <input type="date" value={start} onChange={(event) => setStart(event.target.value)} />
       </label>
       {drafts.map((draft, index) => (
-        <fieldset key={`${draft.name}-${index}`} className={styles.course} data-testid="medication-course">
+        <fieldset key={index} className={styles.course} data-testid="medication-course">
           <label className={styles.check}>
-            <input type="checkbox" checked={draft.on} onChange={(event) => set(index, { on: event.target.checked })} />
+            <input type="checkbox" checked={draft.on} disabled={!hasReadableName(draft.name)} onChange={(event) => set(index, { on: event.target.checked })} />
             <span>
-              <strong>{draft.name}</strong>
+              {draft.typed ? (
+                <input
+                  value={draft.name}
+                  onChange={(event) => set(index, { name: event.target.value.slice(0, 80), ...(event.target.value.trim() ? {} : { on: false }) })}
+                  placeholder={t("medicine.typeName")}
+                  aria-label={t("medicine.typeName")}
+                  data-testid="medication-name"
+                />
+              ) : (
+                <strong>{draft.name}</strong>
+              )}
               <small>{draft.dose || t("medicine.notWritten")}</small>
             </span>
           </label>

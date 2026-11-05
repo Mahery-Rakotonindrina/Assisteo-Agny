@@ -1,6 +1,7 @@
 import { Pill, TriangleAlert } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Analysis } from "@/lib/ai/schema";
+import { hasReadableName, unreadableNote } from "@/lib/medication";
 import styles from "./Medicine.module.scss";
 
 type Medicine = NonNullable<Analysis["medicine"]>;
@@ -28,7 +29,7 @@ export function MedicineCard({ medicine }: { medicine: Medicine }) {
       <MedicineDisclaimer />
       {medicine.unreadable && (
         <p className={styles.unreadable} data-testid="medicine-unreadable">
-          {t("medicine.unreadable", { what: medicine.unreadable })}
+          {t("medicine.unreadable", { what: unreadableNote(medicine.unreadable) })}
         </p>
       )}
       {medicine.items.length === 0 ? (
@@ -38,7 +39,7 @@ export function MedicineCard({ medicine }: { medicine: Medicine }) {
           {medicine.items.map((item, index) => (
             <li key={`${item.name}-${index}`} data-testid="medicine-item">
               <h3>
-                <Pill size={16} /> {item.name}
+                <Pill size={16} /> {hasReadableName(item.name) ? item.name : t("medicine.nameUnreadable")}
                 {item.strength && <small>{item.strength}</small>}
               </h3>
               <dl>

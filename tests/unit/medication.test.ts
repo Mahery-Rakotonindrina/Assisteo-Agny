@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { mockPrescription } from "@/lib/ai/mock";
 import { SYSTEM_PROMPT } from "@/lib/ai/prompt";
 import { AnalysisSchema, normalizeStoredAnalysis } from "@/lib/ai/schema";
-import { cleanCourse, defaultTimes, doseReminders, isActive, planEnd, type MedicationPlan } from "@/lib/medication";
+import { cleanCourse, defaultTimes, doseReminders, hasReadableName, isActive, planEnd, unreadableNote, type MedicationPlan } from "@/lib/medication";
 import { reconcileMedicationState, type MedicationReminderDeps, type ScheduledDoses } from "@/services/medicationReminders";
 import { tapTarget } from "@/services/notificationTap";
 
@@ -32,7 +32,8 @@ describe("the shared contract", () => {
 
   it("asks the engine never to invent a dose, to say what it cannot read, and not to recommend", () => {
     expect(SYSTEM_PROMPT).toMatch(/never deduce, complete or invent one/);
-    expect(SYSTEM_PROMPT).toMatch(/cannot be read with certainty, say what in unreadable/);
+    expect(SYSTEM_PROMPT).toMatch(/cannot be read with certainty, say what in the unreadable field/);
+    expect(SYSTEM_PROMPT).toMatch(/never replace it with a plausible or similar medicine: set its name to an empty string/);
     expect(SYSTEM_PROMPT).toMatch(/Never recommend, add, replace or advise against a medicine/);
     expect(SYSTEM_PROMPT).toMatch(/general information about the medicine, never advice for this person/);
   });
@@ -51,6 +52,19 @@ describe("dose reminders", () => {
     expect(cleanCourse({ name: "A", times: ["08:00"], days: 91 })).toBeNull();
     expect(cleanCourse({ name: "", times: ["08:00"], days: 3 })).toBeNull();
     expect(cleanCourse({ name: "A", times: ["x"], days: 3 })).toBeNull();
+  });
+
+  it("never offers a medicine whose name is unreadable", () => {
+    expect(hasReadableName("")).toBe(false);
+    expect(hasReadableName("  ")).toBe(false);
+    expect(hasReadableName("Amoxicilline")).toBe(true);
+    expect(cleanCourse({ name: "  ", times: ["08:00"], days: 3 })).toBeNull();
+  });
+
+  it("writes what could not be read without doubling its punctuation", () => {
+    expect(unreadableNote("Le nom de la 2e ligne.")).toBe("Le nom de la 2e ligne");
+    expect(unreadableNote("Le nom de la 2e ligne")).toBe("Le nom de la 2e ligne");
+    expect(unreadableNote(" la dose ... ")).toBe("la dose");
   });
 
   it("ends with the last dose", () => {

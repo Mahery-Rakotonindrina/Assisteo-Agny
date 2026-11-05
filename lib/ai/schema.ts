@@ -312,7 +312,7 @@ export const AnalysisSchema = z.object({
       items: z
         .array(
           z.object({
-            name: z.string().describe("The medicine's name exactly as written (brand or generic)."),
+            name: z.string().describe("The medicine's name exactly as written (brand or generic). An empty string when it cannot be read with certainty: never a plausible or similar name."),
             strength: z.string().nullable().describe("The strength as written, e.g. '500 mg', '250 mg/5 ml'; null if not written."),
             dose: z
               .string()

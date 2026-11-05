@@ -125,3 +125,9 @@ export function doseReminders(entries: Array<{ id: string; medication?: Medicati
 }
 
 export const doseKey = (entryId: string, at: number) => `${entryId}@${at}`;
+
+/** A medicine name the scan could read: unreadable names come back empty, and are never replaced by a plausible one. */
+export const hasReadableName = (name: string) => name.trim().length > 0;
+
+/** What the scan could not read, without its closing punctuation (the text around adds its own). */
+export const unreadableNote = (text: string) => text.trim().replace(/[\s.!?…:;,]+$/u, "");

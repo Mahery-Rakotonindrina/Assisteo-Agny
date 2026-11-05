@@ -3872,7 +3872,7 @@
     "tab": "Médicaments",
     "title": "Ce que dit l’ordonnance",
     "disclaimer": "Ces informations ne remplacent pas l’avis d’un médecin ou d’un pharmacien. Suis ce qui est écrit sur ton ordonnance et demande-leur en cas de doute.",
-    "unreadable": "Pas lisible avec certitude : {what} Vérifie avec ton pharmacien.",
+    "unreadable": "Pas lisible avec certitude : {what}. Vérifie avec ton pharmacien.",
     "none": "Aucun médicament n’a pu être lu sur la photo.",
     "dose": "Posologie",
     "duration": "Durée",
@@ -3902,6 +3902,8 @@
     "reminder": {
       "title": "C’est l’heure de ton médicament",
       "withDose": "{name} : {dose}"
-    }
+    },
+    "nameUnreadable": "Nom illisible",
+    "typeName": "Écris le nom du médicament"
   }
 }

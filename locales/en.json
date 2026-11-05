@@ -3872,7 +3872,7 @@
     "tab": "Medicines",
     "title": "What the prescription says",
     "disclaimer": "This information doesn't replace the advice of a doctor or a pharmacist. Follow what is written on your prescription and ask them if in doubt.",
-    "unreadable": "Not legible for sure: {what} Check with your pharmacist.",
+    "unreadable": "Not legible for sure: {what}. Check with your pharmacist.",
     "none": "No medicine could be read on the photo.",
     "dose": "Dosage",
     "duration": "Duration",
@@ -3902,6 +3902,8 @@
     "reminder": {
       "title": "Time for your medicine",
       "withDose": "{name}: {dose}"
-    }
+    },
+    "nameUnreadable": "Unreadable name",
+    "typeName": "Type the medicine’s name"
   }
 }
