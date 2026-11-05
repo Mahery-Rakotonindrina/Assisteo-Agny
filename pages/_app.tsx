@@ -8,6 +8,7 @@ import { Onboarding } from "@/components/Onboarding";
 import { ExpenseReminderKeeper } from "@/components/ExpenseReminderKeeper";
 import { LoanReminderKeeper } from "@/components/LoanReminderKeeper";
 import { LoanSharingKeeper } from "@/components/LoanSharingKeeper";
+import { MedicationReminderKeeper } from "@/components/MedicationReminderKeeper";
 import { ParcelReminderKeeper } from "@/components/ParcelReminderKeeper";
 import { PlantReminderKeeper } from "@/components/PlantReminderKeeper";
 import { ReminderKeeper } from "@/components/ReminderKeeper";
@@ -16,11 +17,13 @@ import { ShareReceiver } from "@/components/ShareReceiver";
 import { ToastProvider } from "@/components/Toast";
 import { UpdateGate } from "@/components/UpdateGate";
 import { VehicleReminderKeeper } from "@/components/VehicleReminderKeeper";
+import { WeeklySummaryKeeper } from "@/components/WeeklySummaryKeeper";
 import { HomeReminderKeeper } from "@/components/HomeReminderKeeper";
 import { useKeyboardReveal } from "@/hooks/useKeyboardReveal";
 import { useNativeBootstrap } from "@/hooks/useNativeBootstrap";
 import { AccountProvider } from "@/lib/account/AccountProvider";
 import { SettingsProvider } from "@/lib/settings/SettingsProvider";
+import { trackScreens } from "@/services/lastScreen";
 import { startOffline } from "@/services/offline";
 import "@/styles/globals.scss";
 import "@/styles/planColors.scss";
@@ -49,6 +52,8 @@ function Bootstrap() {
   useEffect(() => {
     void startOffline();
   }, []);
+  // Remembered for the feedback form: which screen the person came from.
+  useEffect(() => trackScreens(), []);
   return null;
 }
 
@@ -80,8 +85,10 @@ export default function App({ Component, pageProps }: AppProps) {
               <VehicleReminderKeeper />
               <HomeReminderKeeper />
               <ExpenseReminderKeeper />
+              <WeeklySummaryKeeper />
               <LoanReminderKeeper />
               <PlantReminderKeeper />
+              <MedicationReminderKeeper />
               <LoanSharingKeeper />
               <ScanQueueRunner />
               <ShareReceiver />

@@ -64,6 +64,8 @@ test.describe("scan", () => {
   test("collects a thumbs-down with a reason", async ({ page }) => {
     await prepare(page);
     await page.goto("/");
+    // A set mode: in "Auto" the demo answer follows a cursor shared by the tests running at the same time.
+    await page.getByRole("radiogroup", { name: "Mode" }).getByRole("radio", { name: "Aliment" }).click();
     await page.locator('input[type="file"]').setInputFiles("tests/e2e/fixtures/apple.jpg");
     await expect(page).toHaveURL(/\/result\?id=/, { timeout: 20_000 });
 

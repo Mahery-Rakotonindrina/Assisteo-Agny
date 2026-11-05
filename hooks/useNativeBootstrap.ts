@@ -6,6 +6,7 @@ import { useRouter } from "next/router";
 import { useEffect, useRef } from "react";
 import { useToast } from "@/components/Toast";
 import { formatDateTime } from "@/lib/format";
+import { parseAuthCallback, WEB_AUTH_CALLBACK_PATH } from "@/lib/googleSignIn";
 import { useSettings } from "@/lib/settings/SettingsProvider";
 import { handleNotificationTap } from "@/services/notificationTap";
 import { onNotificationTap } from "@/services/notifications";
@@ -42,6 +43,18 @@ export function useNativeBootstrap() {
         if (routerRef.current.pathname === "/" || !canGoBack) void App.exitApp();
         else routerRef.current.back();
       }).then((handle) => cleanups.push(() => void handle.remove()));
+      // Back from Google's sign-in in the browser (APP_AUTH_CALLBACK): the page that finishes it.
+      const openCallback = (link: string | undefined) => {
+        const callback = link ? parseAuthCallback(link) : null;
+        if (!callback) return;
+        const query: Record<string, string> = "code" in callback ? { code: callback.code } : { error: callback.error };
+        void routerRef.current.replace({ pathname: WEB_AUTH_CALLBACK_PATH, query });
+      };
+      void App.addListener("appUrlOpen", ({ url }) => openCallback(url)).then((handle) => cleanups.push(() => void handle.remove()));
+      // Android had closed the app meanwhile: it starts on that link.
+      void App.getLaunchUrl()
+        .then((launch) => openCallback(launch?.url))
+        .catch(() => undefined);
     } else {
       // Web fallback UI for Camera.takePhoto (in-page camera modal).
       void import("@ionic/pwa-elements/loader").then(({ defineCustomElements }) => defineCustomElements(window));

@@ -27,6 +27,8 @@ export type Settings = {
   parcelNotify: boolean;
   /** …at this hour (0-23), Madagascar time. */
   parcelNotifyHour: number;
+  /** The Sunday summary ("Ta semaine"): this device only, like its notifications. */
+  weeklySummary: boolean;
   haptics: boolean;
   /** Lighter photos on slow connections (this device only). */
   dataSaver: DataSaverPreference;
@@ -64,6 +66,7 @@ const defaults: Settings = {
   notifyOnResult: true,
   parcelNotify: true,
   parcelNotifyHour: 8,
+  weeklySummary: true,
   haptics: true,
   dataSaver: "auto",
   allergies: [],

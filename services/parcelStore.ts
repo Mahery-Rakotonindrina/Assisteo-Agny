@@ -1,6 +1,7 @@
 import { clear, createStore, del, get, set, values } from "idb-keyval";
 import type { ParcelStatus, ShippingMode } from "@/lib/ai/schema";
 import { encodeImage } from "@/lib/image";
+import { isFreightFee, type ParcelFreight, type ParcelLot } from "@/lib/parcelLots";
 import { parcelScanHasNews, parcelsFor, type ParcelInfo } from "@/lib/parcels";
 import type { HistoryEntry } from "@/types/history";
 import { createId } from "./historyStore";
@@ -68,6 +69,10 @@ export type Parcel = {
    * An older app keeps it as it is (it spreads the parcel when saving).
    */
   forResale?: boolean;
+  /** Resellers: freight by the kilo, also counted as the fee FREIGHT_FEE_ID (lib/parcelLots.ts). */
+  freight?: ParcelFreight;
+  /** Resellers: the shipment (lot, container) it travels in. */
+  lot?: ParcelLot;
   /** Sync bookkeeping, like the history. */
   deletedAt?: number;
   dirty?: boolean;
@@ -227,11 +232,61 @@ export const parcelStore = {
     await write({ ...current, forResale });
   },
 
-  /** Saves the price and fees in ariary. */
-  async setCosts(id: string, costs: { priceMga?: number; fees: ParcelFee[] }) {
+  /**
+   * Saves the price and fees in ariary. `freight`: the freight by the kilo,
+   * its fee then being in `fees` (see withFreightFee); null removes it;
+   * absent keeps it, and its fee too.
+   */
+  async setCosts(id: string, costs: { priceMga?: number; fees: ParcelFee[]; freight?: ParcelFreight | null }) {
     const current = await get<Parcel>(id, db());
     if (!current) return;
-    await write({ ...current, priceMga: costs.priceMga, fees: costs.fees });
+    const fees =
+      costs.freight === undefined ? [...(current.fees ?? []).filter(isFreightFee), ...costs.fees.filter((fee) => !isFreightFee(fee))] : costs.fees;
+    const freight = costs.freight === undefined ? current.freight : (costs.freight ?? undefined);
+    await write({ ...current, priceMga: costs.priceMga, fees, freight });
+  },
+
+  /**
+   * Puts these parcels in a shipment (null takes them out). A shipment with
+   * a mode sets theirs too: a container by sea carries its parcels by sea.
+   */
+  async setLot(ids: string[], lot: ParcelLot | null) {
+    for (const id of ids) {
+      const current = await get<Parcel>(id, db());
+      if (!current || current.deletedAt) continue;
+      await write({ ...current, lot: lot ?? undefined, shippingMode: lot?.mode ?? current.shippingMode });
+    }
+  },
+
+  /** Renames a shipment, or changes its mode or day, on every one of its parcels. */
+  async updateLot(lot: ParcelLot) {
+    const members = (await values<Parcel>(db())).filter((parcel) => !parcel.deletedAt && parcel.lot?.id === lot.id);
+    await parcelStore.setLot(
+      members.map((parcel) => parcel.id),
+      lot,
+    );
+  },
+
+  /**
+   * One status for every parcel of a shipment still on its way, added to their
+   * timelines like a status set by hand. "received" marks them received.
+   */
+  async setLotStatus(lotId: string, status: ParcelStatus | "received", statusLabel: string) {
+    const now = Date.now();
+    const members = (await values<Parcel>(db())).filter((parcel) => !parcel.deletedAt && parcel.lot?.id === lotId && !parcel.receivedAt);
+    for (const parcel of members) {
+      if (status === "received") {
+        await write({ ...parcel, receivedAt: now });
+        continue;
+      }
+      if (parcel.info.status === status) continue;
+      await write({
+        ...parcel,
+        info: { ...parcel.info, status, statusLabel },
+        timeline: [...parcel.timeline, { at: now, status, statusLabel, event: null, scanId: "" }],
+      });
+    }
+    return members.length;
   },
 
   async remove(id: string) {

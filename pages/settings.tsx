@@ -5,6 +5,7 @@ import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react
 import {
   BellRing,
   BookOpen,
+  CalendarCheck,
   Camera,
   Check,
   ChevronRight,
@@ -17,6 +18,7 @@ import {
   HeartPulse,
   ImageDown,
   Info,
+  LifeBuoy,
   Monitor,
   Moon,
   Package,
@@ -43,6 +45,7 @@ import { SegmentedControl } from "@/components/SegmentedControl";
 import { Seo } from "@/components/Seo";
 import { PlanBadge } from "@/components/PlanBadge";
 import { DataCopy } from "@/components/DataCopy";
+import { UserReportForm } from "@/components/UserReportForm";
 import { ScreenReset } from "@/components/ScreenReset";
 import { Toggle } from "@/components/Toggle";
 import { WebPushSettings } from "@/components/WebPushSettings";
@@ -139,6 +142,12 @@ export default function SettingsPage() {
       }
     }
     update({ parcelNotify: enabled });
+  };
+
+  const toggleWeekly = async (enabled: boolean) => {
+    // The card on the home screen needs no permission; the app's notification does (best effort).
+    if (enabled && permission !== "granted" && permission !== "unsupported") setPermission(await requestNotificationPermission());
+    update({ weeklySummary: enabled });
   };
 
   const sendTest = async () => {
@@ -381,6 +390,15 @@ export default function SettingsPage() {
                 </select>
               </Row>
             )}
+            <Row icon={<CalendarCheck />} label={t("weekly.setting")} hint={t(native ? "weekly.hintApp" : "weekly.hintWeb")}>
+              {canRemind ? (
+                <Toggle label={t("weekly.setting")} checked={settings.weeklySummary} onChange={(enabled) => void toggleWeekly(enabled)} />
+              ) : (
+                <Link href="/plans" aria-label={t("weekly.locked", { plan: planName(planFor("reminders") ?? "lite") })}>
+                  <PlanBadge plan={planFor("reminders")} />
+                </Link>
+              )}
+            </Row>
             <WebPushSettings />
             {permission === "denied" && <p className={styles.warning}>{t("settings.notificationsDenied")}</p>}
             <Row icon={<Vibrate />} label={t("settings.haptics")} hint={t("settings.hapticsHint")}>
@@ -408,6 +426,13 @@ export default function SettingsPage() {
             <Row icon={<Info />} label={t("settings.version")}>
               <span className={styles.value}>{appVersion}</span>
             </Row>
+            <Link href="/aide" className={styles.linkRow} data-testid="help-link">
+              <span className={styles.rowIcon}>
+                <LifeBuoy />
+              </span>
+              <span className={styles.linkLabel}>{t("help.open")}</span>
+              <ChevronRight size={16} />
+            </Link>
             <Link href="/privacy" className={styles.linkRow}>
               <span className={styles.rowIcon}>
                 <ShieldCheck />
@@ -422,6 +447,7 @@ export default function SettingsPage() {
               <span className={styles.linkLabel}>{t("legal.terms")}</span>
               <ChevronRight size={16} />
             </Link>
+            <UserReportForm rowClassName={styles.linkRow} labelClassName={styles.linkLabel} iconClassName={styles.rowIcon} />
             <p className={styles.privacy}>{t("settings.privacy")}</p>
           </Group>
         </div>
