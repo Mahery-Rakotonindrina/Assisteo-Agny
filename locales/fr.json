@@ -3923,5 +3923,214 @@
     "hintApp": "Chaque dimanche à 17 h : tes dépenses, tes colis arrivés et tes rappels de la semaine à venir. Calculé sur ton téléphone.",
     "hintWeb": "Le dimanche, une carte « Ta semaine » s’affiche sur l’accueil : tes dépenses, tes colis arrivés et tes rappels. Calculé sur ton appareil.",
     "locked": "Résumé du dimanche : à partir de l’offre {plan}"
+  },
+  "help": {
+    "title": "Aide",
+    "lead": "Les réponses aux questions fréquentes et des guides pas à pas.",
+    "metaTitle": "Aide Assisteo Agny : questions fréquentes et guides",
+    "metaDescription": "Comment scanner, suivre un colis, créer un compte ou utiliser l’app sans réseau : les réponses d’Assisteo Agny.",
+    "searchLabel": "Chercher dans l’aide",
+    "searchPlaceholder": "Chercher une question…",
+    "noResult": "Aucune réponse pour « {query} ». Essaie d’autres mots, ou écris-nous depuis les Réglages (« Donner mon avis / Signaler un problème »).",
+    "resultCount": "{count} réponse(s)",
+    "guidesTitle": "Comment ça marche",
+    "faqTitle": "Questions fréquentes",
+    "step": "Étape {n}",
+    "contact": "Tu ne trouves pas ta réponse ? Écris-nous depuis Réglages, « Donner mon avis / Signaler un problème ».",
+    "open": "Aide",
+    "topics": {
+      "scan": {
+        "title": "Scanner",
+        "questions": {
+          "what": {
+            "q": "Que puis-je scanner ?",
+            "a": "Un document, une facture, un plat ou un aliment, un colis, un véhicule, une plante ou un objet. Prends la photo : l’app te dit ce que c’est et ce que tu peux faire ensuite."
+          },
+          "blurry": {
+            "q": "La réponse est fausse ou pas claire, que faire ?",
+            "a": "Reprends la photo de plus près, bien éclairée, sans reflet. Tu peux aussi poser une question à l’IA sous le résultat. Si la réponse reste fausse, utilise le pouce vers le bas : ça nous aide à progresser."
+          },
+          "pages": {
+            "q": "Comment scanner un document de plusieurs pages ?",
+            "a": "Avec l’option « Plusieurs pages » (à partir de l’offre Premium) : tu ajoutes une photo par page, puis tu lances l’analyse une seule fois."
+          }
+        }
+      },
+      "plans": {
+        "title": "Offres",
+        "questions": {
+          "free": {
+            "q": "Qu’est-ce qui est gratuit ?",
+            "a": "Un essai avec des scans et des questions pour commencer, sans carte bancaire. Les offres Lite, Premium et Pro ajoutent plus de scans, des rappels et des outils en plus."
+          },
+          "pay": {
+            "q": "Comment payer une offre ?",
+            "a": "Par Mobile Money (MVola…) en ariary, depuis l’écran « Offres ». Il n’y a pas de renouvellement automatique : tu choisis quand continuer.",
+            "undefined": "Connecte-toi d’abord : ton offre est liée à ton e-mail. Dans « Les offres », paie par Mobile Money en ariary en suivant les instructions, puis envoie la référence de la transaction. L’offre s’active dès que le paiement est vérifié. Rien ne se renouvelle automatiquement."
+          },
+          "limit": {
+            "q": "J’ai utilisé tous mes scans, que faire ?",
+            "a": "Les scans reviennent chaque mois. Pour en avoir plus tout de suite, regarde les offres : chaque offre a son nombre de scans par mois.",
+            "undefined": "Avec l’essai gratuit, les scans offerts ne reviennent pas : pour continuer, choisis une offre dans « Les offres ». Avec une offre, ton compteur repart à zéro le 1er de chaque mois ; pour en avoir plus tout de suite, passe à une offre plus grande."
+          }
+        }
+      },
+      "parcels": {
+        "title": "Colis",
+        "questions": {
+          "add": {
+            "q": "Comment suivre un colis ?",
+            "a": "Scanne la page de suivi de ta commande (Temu, Shein, AliExpress, Pinduoduo…), puis touche « Ajouter à mes colis ». Le colis apparaît dans « Mes colis ». Rescanne la page plus tard pour mettre son statut à jour."
+          },
+          "status": {
+            "q": "Comment changer le statut d’un colis ?",
+            "a": "Rescanne la page de suivi : le statut se met à jour tout seul. Tu peux aussi toucher « Modifier » pour le changer à la main, ou « Marquer comme reçu » quand tu l’as récupéré."
+          },
+          "costs": {
+            "q": "Puis-je noter ce que le colis m’a coûté ?",
+            "a": "Oui, avec les frais du colis (à partir de l’offre Lite) : prix, transport, douane. L’app calcule le total."
+          }
+        }
+      },
+      "expenses": {
+        "title": "Dépenses",
+        "questions": {
+          "add": {
+            "q": "Comment noter une dépense ?",
+            "a": "Scanne le ticket ou la facture, ou saisis le montant à la main. L’app range la dépense dans une catégorie et la compte dans le mois."
+          },
+          "budget": {
+            "q": "Comment fixer un budget ?",
+            "a": "Dans l’écran « Mes dépenses », règle le budget du mois : l’app te montre ce qu’il reste et te prévient quand tu t’en approches."
+          },
+          "share": {
+            "q": "Puis-je partager mes dépenses avec ma famille ?",
+            "a": "Oui, avec un compte : tu peux inviter les membres de ton foyer à suivre les dépenses ensemble."
+          }
+        }
+      },
+      "loans": {
+        "title": "Prêts",
+        "questions": {
+          "add": {
+            "q": "Comment noter un prêt ou une dette ?",
+            "a": "Dans l’écran « Prêts », ajoute qui, combien et la date. Tu choisis si tu as prêté ou emprunté de l’argent."
+          },
+          "repay": {
+            "q": "Comment noter un remboursement ?",
+            "a": "Ouvre le prêt et ajoute un versement : le reste à rembourser se met à jour tout seul."
+          },
+          "remind": {
+            "q": "Puis-je être prévenu quand une échéance arrive ?",
+            "a": "Oui, dans l’app Android : si le prêt a une date à rendre, l’app te prévient la veille à 9 h, et le jour même pour relancer quelqu’un qui te doit de l’argent (« Me rappeler les échéances », dans « Prêts »). Il faut une offre avec les rappels (voir « Les offres »)."
+          }
+        }
+      },
+      "account": {
+        "title": "Compte",
+        "questions": {
+          "need": {
+            "q": "Faut-il un compte ?",
+            "a": "Non, tu peux utiliser l’app sans compte. Un compte (avec ton e-mail) sert à retrouver ton historique, tes colis et ton offre sur tous tes appareils."
+          },
+          "lost": {
+            "q": "J’ai changé de téléphone, comment retrouver mes données ?",
+            "a": "Connecte-toi avec le même compte : tes données se synchronisent. Sans compte, elles restent sur l’ancien appareil."
+          },
+          "delete": {
+            "q": "Comment supprimer mon compte ?",
+            "a": "Dans Réglages, section Compte, touche « Supprimer mon compte ». On t’envoie d’abord un code par e-mail pour vérifier que c’est toi. Ton compte et ses données sont effacés de nos serveurs et de cet appareil : c’est définitif."
+          }
+        }
+      },
+      "offline": {
+        "title": "Hors connexion",
+        "questions": {
+          "works": {
+            "q": "L’app marche-t-elle sans internet ?",
+            "a": "Tu peux consulter ton historique, tes colis et tes listes. Pour analyser une photo, il faut du réseau."
+          },
+          "queue": {
+            "q": "Que se passe-t-il si je scanne sans réseau ?",
+            "a": "La photo attend dans la file : dès que le réseau revient, l’analyse se fait et tu reçois le résultat."
+          },
+          "data": {
+            "q": "Comment économiser mes données mobiles ?",
+            "a": "Dans Réglages, choisis « Toujours » pour l’économie de données (« Auto » est le mode par défaut) : les photos sont plus légères et partent plus vite, même en 3G."
+          }
+        }
+      }
+    },
+    "guides": {
+      "scan": {
+        "title": "Scanner une photo",
+        "steps": {
+          "1": {
+            "t": "Prends la photo",
+            "b": "Cadre bien l’objet ou le document, avec de la lumière."
+          },
+          "2": {
+            "t": "L’IA analyse",
+            "b": "En quelques secondes, tu vois ce que c’est."
+          },
+          "3": {
+            "t": "Pose une question",
+            "b": "Demande un détail ou ce qu’il faut faire ensuite."
+          }
+        }
+      },
+      "parcel": {
+        "title": "Suivre un colis",
+        "steps": {
+          "1": {
+            "t": "Scanne la page de suivi",
+            "b": "Celle de ta commande sur Temu, Shein, AliExpress…"
+          },
+          "2": {
+            "t": "Ajoute le colis",
+            "b": "Il rejoint ta liste, avec son statut."
+          },
+          "3": {
+            "t": "Sois prévenu",
+            "b": "À partir de Lite, une notification le jour de livraison prévue (Réglages)."
+          }
+        }
+      },
+      "expense": {
+        "title": "Noter une dépense",
+        "steps": {
+          "1": {
+            "t": "Scanne le ticket",
+            "b": "Ou saisis le montant à la main."
+          },
+          "2": {
+            "t": "Vérifie la catégorie",
+            "b": "Corrige-la d’un geste si besoin."
+          },
+          "3": {
+            "t": "Regarde ton mois",
+            "b": "Le total et le budget restant se mettent à jour."
+          }
+        }
+      },
+      "account": {
+        "title": "Créer un compte",
+        "steps": {
+          "1": {
+            "t": "Ouvre les Réglages",
+            "b": "Touche « Se connecter »."
+          },
+          "2": {
+            "t": "Entre ton e-mail",
+            "b": "Tape le code reçu par e-mail (pas de mot de passe)."
+          },
+          "3": {
+            "t": "Retrouve tout",
+            "b": "Historique, colis et offre sur tous tes appareils."
+          }
+        }
+      }
+    },
+    "contactMail": "Ou par e-mail :"
   }
 }
