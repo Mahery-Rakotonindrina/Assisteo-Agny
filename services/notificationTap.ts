@@ -5,6 +5,7 @@ import { PARCEL_NOTIFICATION_PREFIX } from "./parcelReminders";
 import { PLANT_NOTIFICATION_PREFIX } from "./plantReminders";
 import { isSnoozeAction } from "./reminders";
 import { VEHICLE_NOTIFICATION_PREFIX } from "./vehicleReminders";
+import { WEEKLY_ENTRY_ID } from "./weeklySummary";
 import { HOME_ITEM_NOTIFICATION_PREFIX } from "./homeItemReminders";
 
 // What a tapped local notification does. One listener only (useNativeBootstrap):
@@ -24,6 +25,7 @@ type TapActions = {
 export function tapTarget(entryId: string): TapTarget {
   const loan = loanTapTarget(entryId);
   if (loan) return loan;
+  if (entryId === WEEKLY_ENTRY_ID) return { pathname: "/" };
   if (entryId.startsWith(PARCEL_NOTIFICATION_PREFIX)) return { pathname: "/parcels" };
   if (entryId.startsWith(VEHICLE_NOTIFICATION_PREFIX)) return { pathname: "/garage", query: { open: entryId.slice(VEHICLE_NOTIFICATION_PREFIX.length) } };
   if (entryId.startsWith(HOME_ITEM_NOTIFICATION_PREFIX)) return { pathname: "/inventory", query: { open: entryId.slice(HOME_ITEM_NOTIFICATION_PREFIX.length) } };
@@ -39,7 +41,7 @@ export function tapTarget(entryId: string): TapTarget {
  * fails, the scan opens so nothing is silently lost. Anything else opens.
  */
 export async function handleNotificationTap(entryId: string, actionId: string, notificationId: number, actions: TapActions) {
-  const isScan = ![PARCEL_NOTIFICATION_PREFIX, VEHICLE_NOTIFICATION_PREFIX, EXPENSE_NOTIFICATION_PREFIX, LOAN_NOTIFICATION_PREFIX, HOME_ITEM_NOTIFICATION_PREFIX, PLANT_NOTIFICATION_PREFIX].some((prefix) => entryId.startsWith(prefix));
+  const isScan = ![PARCEL_NOTIFICATION_PREFIX, VEHICLE_NOTIFICATION_PREFIX, EXPENSE_NOTIFICATION_PREFIX, LOAN_NOTIFICATION_PREFIX, HOME_ITEM_NOTIFICATION_PREFIX, PLANT_NOTIFICATION_PREFIX].some((prefix) => entryId.startsWith(prefix)) && entryId !== WEEKLY_ENTRY_ID;
   if (isSnoozeAction(actionId) && isScan) {
     const at = await actions.snooze(entryId, actionId, notificationId).catch(() => null);
     if (at !== null) {

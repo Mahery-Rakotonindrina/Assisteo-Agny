@@ -3906,6 +3906,24 @@
       "filterAll": "All"
     }
   },
+  "weekly": {
+    "title": "Your week",
+    "notifTitle": "Your week with Assisteo Agny",
+    "spent": "Spending: {amount}.",
+    "arrived": {
+      "one": "{count} parcel arrived.",
+      "other": "{count} parcels arrived."
+    },
+    "upcoming": {
+      "one": "{count} reminder next week.",
+      "other": "{count} reminders next week."
+    },
+    "close": "Close",
+    "setting": "Sunday summary",
+    "hintApp": "Every Sunday at 5 pm: your spending, the parcels that arrived and your reminders for the week ahead. Worked out on your phone.",
+    "hintWeb": "On Sundays, a “Your week” card shows on the home screen: your spending, the parcels that arrived and your reminders. Worked out on your device.",
+    "locked": "Sunday summary: from the {plan} plan"
+  },
   "help": {
     "title": "Help",
     "lead": "Answers to common questions and step-by-step guides.",
