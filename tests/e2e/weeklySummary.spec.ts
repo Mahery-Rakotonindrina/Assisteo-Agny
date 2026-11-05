@@ -35,7 +35,7 @@ async function seedArrivedParcel(page: Page) {
   });
 }
 
-test("on a Sunday, a subscriber sees the week's card, below the scan, and can close it", async ({ page }) => {
+test("on a Sunday, a subscriber sees the week's card, below the scan, and can close it", async ({ page, isMobile }) => {
   await prepare(page);
   await asPremium(page);
   await page.goto("/");
@@ -44,14 +44,16 @@ test("on a Sunday, a subscriber sees the week's card, below the scan, and can cl
   await page.goto("/");
   const card = page.getByTestId("week-card");
   await expect(card).toContainText("1 colis arrivé.");
-  // Under the scan button: never above it.
-  const scanButton = page.getByRole("button", { name: /Prendre une photo|Scanner/ }).first();
-  await expect(scanButton).toBeVisible();
-  const scan = await scanButton.boundingBox();
-  const box = await card.boundingBox();
-  expect(scan).not.toBeNull();
-  expect(box).not.toBeNull();
-  expect(box!.y).toBeGreaterThan(scan!.y);
+  // On a phone, under the photo button: never above it (a computer has a drop zone instead).
+  if (isMobile) {
+    const scanButton = page.getByRole("button", { name: "Prendre une photo" }).first();
+    await expect(scanButton).toBeVisible();
+    const scan = await scanButton.boundingBox();
+    const box = await card.boundingBox();
+    expect(scan).not.toBeNull();
+    expect(box).not.toBeNull();
+    expect(box!.y).toBeGreaterThan(scan!.y);
+  }
   await card.getByRole("button", { name: "Fermer" }).click();
   await expect(card).toHaveCount(0);
 });
