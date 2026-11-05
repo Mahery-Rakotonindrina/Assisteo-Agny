@@ -11,6 +11,7 @@ import {
   ExternalLink,
   FileSpreadsheet,
   MapPin,
+  MessageCircle,
   Package,
   Pencil,
   Plane,
@@ -44,9 +45,11 @@ import { easeOut, rise, stagger } from "@/lib/motion";
 import { deliveryState, formatDay } from "@/lib/parcelDelivery";
 import { exportFileName, parcelsWorkbook, XLSX_TYPE } from "@/lib/parcelExport";
 import { inPeriod, isForClient, isValidRange, parcelDate, type DayRange, type Period } from "@/lib/parcelReport";
+import { whatsappLink } from "@/lib/loans";
+import { clientPhone, parcelStatusMessage } from "@/lib/parcelMessage";
 import { compareParcels, matchesSearch, parcelStep, parcelSteps, parcelTone, shippingModeOf, trackingUrl } from "@/lib/parcels";
 import { shippingModes, type ShippingMode } from "@/lib/ai/schema";
-import { haptics } from "@/services/device";
+import { haptics, openExternal, shareText } from "@/services/device";
 import { shareParcel, unshareParcel } from "@/services/sharedParcels";
 import { isOwnShare, type SharedParcelRecord } from "@/lib/householdShares";
 import { shareFile } from "@/services/fileShare";
@@ -383,6 +386,7 @@ export default function ParcelsPage() {
                     parcel={parcel}
                     thumbnail={parcel.thumbnail ?? thumbnails.get(parcel.scanIds[0])}
                     clients={clients}
+                    phone={clientPhone(parcel, parcels)}
                     hasScan={hasScan}
                     reseller={reseller}
                     share={shareFor(parcel)}
@@ -402,6 +406,7 @@ export default function ParcelsPage() {
                     parcel={parcel}
                     thumbnail={parcel.thumbnail ?? thumbnails.get(parcel.scanIds[0])}
                     clients={clients}
+                    phone={clientPhone(parcel, parcels)}
                     hasScan={hasScan}
                     reseller={reseller}
                     share={shareFor(parcel)}
@@ -432,6 +437,8 @@ type ParcelRowProps = {
   parcel: Parcel;
   thumbnail?: string;
   clients: string[];
+  /** Pro: the client's phone number, its own or from another of their parcels. */
+  phone?: string;
   /** Whether a scan still exists in the history (to open it). */
   hasScan: (id: string) => boolean;
   received?: boolean;
@@ -473,7 +480,7 @@ function SharedParcelCard({ share, by }: { share: SharedParcelRecord; by: string
   );
 }
 
-function ParcelRow({ parcel, thumbnail, clients, hasScan, reseller, share, received = false, now, open, onToggle }: ParcelRowProps) {
+function ParcelRow({ parcel, thumbnail, clients, phone, hasScan, reseller, share, received = false, now, open, onToggle }: ParcelRowProps) {
   const { t, locale } = useTranslation();
   const toast = useToast();
   const card = useRef<HTMLElement>(null);
@@ -507,6 +514,20 @@ function ParcelRow({ parcel, thumbnail, clients, hasScan, reseller, share, recei
       : delivery.when === "late"
         ? t("parcels.expectedLate", { date: formatDay(delivery.day, locale, { weekday: false }) })
         : t("parcels.expected", { date: formatDay(delivery.day, locale) }));
+
+  // Pro: the status for the client, in their WhatsApp chat when their number is known, else shared.
+  const sendStatus = async () => {
+    haptics.tap();
+    const message = parcelStatusMessage(parcel, t, locale);
+    const link = whatsappLink(phone, message);
+    if (link) {
+      openExternal(link);
+      return;
+    }
+    const outcome = await shareText(t("parcelWhatsapp.shareTitle", { title: parcel.title }), message);
+    if (outcome === "copied") toast(t("parcelWhatsapp.copied"));
+    else if (outcome === "unavailable") toast(t("parcelWhatsapp.failed"), "error");
+  };
 
   const copy = async (value: string) => {
     try {
@@ -628,6 +649,11 @@ function ParcelRow({ parcel, thumbnail, clients, hasScan, reseller, share, recei
                 <Button variant="secondary" size="md" icon={<Pencil />} onClick={() => setEditing(true)}>
                   {t("parcels.edit")}
                 </Button>
+                {reseller && parcel.client?.trim() && (
+                  <Button variant="secondary" size="md" icon={<MessageCircle />} onClick={() => void sendStatus()} data-testid="parcel-send-status">
+                    {t("parcelWhatsapp.button")}
+                  </Button>
+                )}
                 {share && (
                   <Button
                     variant="secondary"

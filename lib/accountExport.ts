@@ -23,6 +23,8 @@ export type AccountExport = {
   notificationDevices: Array<{ platform: string; updatedAt: string }>;
   /** The feedback messages sent from the account (Settings), kept 12 months. */
   feedback: Array<{ sentAt: string; kind: string; message: string }>;
+  /** The referral: the installs and addresses seen on the account's scans (kept 90 days against abuse), the scans won and left, the friends who entered its code. */
+  referral: { devices: string[]; friendsInvited: number; scansWon: number; scansLeft: number };
 };
 
 const iso = (value: string | number | null | undefined) => (value === null || value === undefined || value === "" ? null : new Date(value).toISOString());

@@ -3,7 +3,8 @@ import { activeProvider } from "@/lib/ai/provider";
 import { InstallIdSchema, installIdHeader, type TrialResponse } from "@/lib/ai/schema";
 import { applyCors, clientIp, sendError } from "@/lib/server/http";
 import { rateLimit } from "@/lib/server/rateLimit";
-import { verifyUser } from "@/lib/server/supabaseAdmin";
+import { bonusScansLeft } from "@/lib/server/referralBonus";
+import { verifyAccount } from "@/lib/server/supabaseAdmin";
 import { getTrialUsage } from "@/lib/server/trialStore";
 
 /** How many free trial scans this install (and account, when signed in) has used on the server's AI key. */
@@ -22,8 +23,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   if (!installId.success) return sendError(res, 400, "invalid_request", "Missing install id.");
 
   res.setHeader("Cache-Control", "no-store");
-  res.status(200).json({
-    enabled: activeProvider !== "demo",
-    ...(await getTrialUsage({ installId: installId.data, userId: await verifyUser(req).catch(() => null) })),
-  } satisfies TrialResponse);
+  const account = await verifyAccount(req).catch(() => null);
+  const usage = await getTrialUsage({ installId: installId.data, userId: account?.id ?? null });
+  // Scans won through a referral extend the trial.
+  const bonus = account?.email && usage.limit > 0 ? await bonusScansLeft(account.email).catch(() => 0) : 0;
+  res.status(200).json({ enabled: activeProvider !== "demo", ...usage, limit: usage.limit + bonus } satisfies TrialResponse);
 }

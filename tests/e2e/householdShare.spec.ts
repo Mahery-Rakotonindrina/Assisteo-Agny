@@ -134,3 +134,26 @@ test("a parcel shared with the household: Ben's read only here, mine shared then
   await expect(page.getByText("Partage du colis arrêté")).toBeVisible();
   await expect(dress.getByTestId("parcel-share-household")).toBeVisible();
 });
+
+test("on a 320 px phone in very large text, the status for the client and the household share both fit", async ({ page }) => {
+  // A reseller (Admin has "reseller"): the parcel has a client, so « Envoyer le statut au client » shows too.
+  await page.route("**/api/plan", async (route) => {
+    const response = await route.fetch();
+    await route.fulfill({ response, json: { ...(await response.json()), plan: "unlimited", features: undefined } });
+  });
+  await page.addInitScript(() => {
+    const key = "CapacitorStorage.settings.v1";
+    const current = JSON.parse(localStorage.getItem(key) ?? "{}");
+    localStorage.setItem(key, JSON.stringify({ ...current, textSize: "xlarge", onboardingDone: true }));
+  });
+  const now = Date.now();
+  const info = { platform: null, orderNumber: null, trackingNumber: "YT2412345678", carrier: null, status: "in_transit", statusLabel: "En transit", lastEvent: null, items: [], total: null, seller: null, orderedAt: null, shippedAt: null, estimatedDelivery: null, destinationCity: null, shippingMode: null };
+  await put(page, "assisteo-parcels", "parcels", [{ id: "dress", title: "Robe rouge", client: "Rado", info, scanIds: [], timeline: [], createdAt: now, updatedAt: now, priceMga: 80000 } as { id: string }]);
+  await page.setViewportSize({ width: 320, height: 640 });
+  await page.goto("/parcels");
+  const dress = page.locator("article").filter({ hasText: "Robe rouge" });
+  await dress.getByRole("button", { name: /Robe rouge/ }).click();
+  await expect(dress.getByTestId("parcel-send-status")).toBeVisible();
+  await expect(dress.getByTestId("parcel-share-household")).toBeVisible();
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(0);
+});
