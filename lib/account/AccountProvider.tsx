@@ -10,7 +10,7 @@ import { accountKeyApi } from "@/services/accountKeyApi";
 import { cancelAllNotifications } from "@/services/notifications";
 import { listStore, sharedListStore } from "@/services/listStore";
 import { startSharedListSync, syncSharedLists } from "@/services/sharedLists";
-import { refreshSharedParcels, sharedParcelStore, startSharedParcelSync, syncSharedParcels } from "@/services/sharedParcels";
+import { refreshSharedParcels, sharedParcelStore, startSharedParcelSync, stopSharesOf, syncSharedParcels } from "@/services/sharedParcels";
 import { loanStore } from "@/services/loanStore";
 import { startLoanSync, syncLoans } from "@/services/loanSync";
 import { startListSync, syncLists } from "@/services/listSync";
@@ -152,9 +152,12 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     };
     follow();
     const unsubscribe = parcelStore.subscribe(follow);
+    // A parcel removed by the user here: its share stops (never because a parcel is not here yet).
+    const unsubscribeRemoved = parcelStore.onRemoved((ids) => void stopSharesOf(ids, userId).catch(() => undefined));
     return () => {
       clearTimeout(timer);
       unsubscribe();
+      unsubscribeRemoved();
       stops.forEach((stop) => stop());
     };
   }, [userId, householdId]);

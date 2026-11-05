@@ -542,9 +542,52 @@ export async function runRlsChecks(client) {
   await check("a leaver's shares leave the household", async () => ((await client.query("select deleted_at from public.household_shares where id = 'list:f1'")).rows[0]?.deleted_at ? null : "still live"));
   await check("a leaver reads the household's lists no more", async () => ((await count(finn, "select 1 from public.household_shares")) ? "visible" : null));
 
-  // Erin deletes her account: her shares leave the household (read only, tombstoned).
+  // What the app really sends (services/rowSync.ts): an upsert with its own user_id.
+  const upsertSql =
+    "insert into public.household_shares (household_id, kind, user_id, id, data, updated_at, deleted_at) values ($1, $2, $3, $4, $5, now(), $6) on conflict (household_id, id) do update set user_id = excluded.user_id, data = excluded.data, updated_at = excluded.updated_at, deleted_at = excluded.deleted_at";
   const [{ invite: gabyCode }] = await server("select public.create_household_invite($1, $2) as invite", [erin, family]);
   await server("select public.join_household($1, $2)", [gaby, gabyCode.code]);
+  await user(erin, shareSqlOf, [family, "list:l2", "list", sharedList("list:l2", false)]);
+  await user(erin, shareSqlOf, [family, "parcel:p2", "parcel", { id: "parcel:p2", sourceId: "p2", title: "Sac" }]);
+  await check("the app's upsert ticks another's list, the author stays", async () => {
+    await user(gaby, upsertSql, [family, "list", gaby, "list:l2", sharedList("list:l2", true), null]);
+    const rows = (await client.query("select user_id, data, deleted_at from public.household_shares where id = 'list:l2'")).rows;
+    return rows[0]?.user_id === erin && rows[0].data.items[0].done === true && rows[0].deleted_at === null ? null : `got ${JSON.stringify(rows[0])}`;
+  });
+  await check("the app's upsert of another's list with a tombstone stops nothing", async () => {
+    await user(gaby, upsertSql, [family, "list", gaby, "list:l2", sharedList("list:l2", true), new Date().toISOString()]);
+    return (await client.query("select deleted_at from public.household_shares where id = 'list:l2'")).rows[0]?.deleted_at === null ? null : "stopped";
+  });
+  await refused("the app's upsert can't change another's parcel", () => tryUser(gaby, upsertSql, [family, "parcel", gaby, "parcel:p2", { id: "parcel:p2", title: "Changé" }, null]), /row-level security/);
+  await refused("a share's data is kept small", () => tryUser(gaby, shareSqlOf, [family, "list:big", "list", { id: "list:big", text: "x".repeat(210000) }]), /check constraint/);
+
+  // The owner removes Gaby straight under the RLS of 0009 (not through the server): her shares leave too.
+  await user(gaby, shareSqlOf, [family, "parcel:g2", "parcel", { id: "parcel:g2", sourceId: "g2", title: "Montre" }]);
+  await check("the owner removes a member", async () => ((await user(erin, "delete from public.household_members where user_id = $1 returning user_id", [gaby])).length === 1 ? null : "not removed"));
+  await check("a member removed by the owner: her shares leave the household", async () => ((await client.query("select deleted_at from public.household_shares where id = 'parcel:g2'")).rows[0]?.deleted_at ? null : "still shared"));
+
+  // An account deleted: its shares leave the household, read only, without an author.
+  const hugo = randomUUID();
+  await client.query("insert into auth.users (id, email, created_at, email_confirmed_at) values ($1, 'hugo@example.com', now(), now())", [hugo]);
+  const [{ invite: hugoCode }] = await server("select public.create_household_invite($1, $2) as invite", [erin, family]);
+  await server("select public.join_household($1, $2)", [hugo, hugoCode.code]);
+  await user(hugo, shareSqlOf, [family, "list:h1", "list", sharedList("list:h1", false)]);
+  await user(hugo, shareSqlOf, [family, "parcel:h2", "parcel", { id: "parcel:h2", sourceId: "h2", title: "Casque" }]);
+  await client.query("delete from auth.users where id = $1", [hugo]);
+  await check("a deleted account's shares leave the household, without an author", async () => {
+    const rows = (await client.query("select id, user_id, deleted_at from public.household_shares where id in ('list:h1', 'parcel:h2') order by id")).rows;
+    return rows.length === 2 && rows.every((row) => row.user_id === null && row.deleted_at) ? null : `got ${JSON.stringify(rows)}`;
+  });
+  await check("a member's last tick on a list whose author is gone is taken, the list stays stopped", async () => {
+    await user(erin, upsertSql, [family, "list", erin, "list:h1", sharedList("list:h1", true), null]);
+    const rows = (await client.query("select user_id, deleted_at from public.household_shares where id = 'list:h1'")).rows;
+    return rows[0]?.user_id === null && rows[0].deleted_at ? null : `got ${JSON.stringify(rows[0])}`;
+  });
+  await check("nobody changes a parcel whose author is gone", async () => ((await user(erin, "update public.household_shares set data = '{}' where id = 'parcel:h2' returning id")).length ? "changed" : null));
+
+  // The household deleted: every member's lists come back.
+  const [{ invite: gabyAgain }] = await server("select public.create_household_invite($1, $2) as invite", [erin, family]);
+  await server("select public.join_household($1, $2)", [gaby, gabyAgain.code]);
   await user(gaby, shareSqlOf, [family, "list:g1", "list", sharedList("list:g1", false)]);
   await server("select public.delete_household($1, $2)", [erin, family]);
   await check("deleting the household gives each member their shared lists back", async () => ((await count(gaby, "select 1 from public.lists where id = 'g1' and deleted_at is null")) === 1 ? null : "not back"));

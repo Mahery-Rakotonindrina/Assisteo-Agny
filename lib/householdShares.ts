@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { parcelStatuses, shippingModes, type Analysis } from "@/lib/ai/schema";
 
 // Lists and parcels shared with the household (table "household_shares",
 // migration 0023). A shared list moves out of the personal ones while shared
@@ -56,13 +57,53 @@ const timelineEntry = z.object({
   event: z.object({ description: z.string().max(400), location: z.string().max(200).nullable(), at: z.string().max(40).nullable() }).nullable(),
 });
 
+/**
+ * What the household may read of a parcel's tracking: where it is and what
+ * is in it. Never what was paid (total, items' prices), nor the shop's
+ * references (order number, seller).
+ */
+const sharedInfoSchema = z.object({
+  status: z.enum(parcelStatuses),
+  statusLabel: z.string().max(200),
+  trackingNumber: z.string().max(80).nullable(),
+  carrier: z.string().max(120).nullable(),
+  platform: z.string().max(80).nullable(),
+  lastEvent: z.object({ description: z.string().max(400), location: z.string().max(200).nullable(), at: z.string().max(40).nullable() }).nullable(),
+  shippedAt: z.string().max(40).nullable(),
+  estimatedDelivery: z.string().max(40).nullable(),
+  destinationCity: z.string().max(120).nullable(),
+  shippingMode: z.enum(shippingModes).nullable(),
+  items: z.array(z.object({ name: z.string().max(200), variant: z.string().max(120).nullable(), quantity: z.number() })).max(50),
+});
+
+export type SharedParcelInfo = z.infer<typeof sharedInfoSchema>;
+
+type ParcelInfo = NonNullable<Analysis["parcel"]>;
+
+/** A parcel's tracking as the household reads it (see sharedInfoSchema): copied field by field, so a new field never leaks. */
+export function sharedParcelInfo(info: ParcelInfo): SharedParcelInfo {
+  return {
+    status: info.status,
+    statusLabel: info.statusLabel,
+    trackingNumber: info.trackingNumber,
+    carrier: info.carrier,
+    platform: info.platform,
+    lastEvent: info.lastEvent ? { description: info.lastEvent.description, location: info.lastEvent.location, at: info.lastEvent.at } : null,
+    shippedAt: info.shippedAt,
+    estimatedDelivery: info.estimatedDelivery,
+    destinationCity: info.destinationCity,
+    shippingMode: info.shippingMode ?? null,
+    items: info.items.slice(0, 50).map(({ name, variant, quantity }) => ({ name, variant, quantity })),
+  };
+}
+
 const sharedParcelSchema = z.object({
   id: z.string().startsWith(PARCEL_SHARE_PREFIX).max(120),
   sourceId: z.string().max(80),
   title: z.string().max(200),
   shippingMode: z.enum(["air", "sea"]).optional(),
   thumbnail: z.string().max(60_000).optional(),
-  info: z.record(z.string(), z.unknown()),
+  info: sharedInfoSchema,
   timeline: z.array(timelineEntry).max(200),
   receivedAt: z.number().optional(),
   createdAt: z.number(),
@@ -86,7 +127,7 @@ type ParcelLike = {
   title: string;
   shippingMode?: "air" | "sea";
   thumbnail?: string;
-  info: object;
+  info: ParcelInfo;
   timeline: Array<{ at: number; status: string; statusLabel: string; event: { description: string; location: string | null; at: string | null } | null }>;
   receivedAt?: number;
   createdAt: number;
@@ -105,7 +146,7 @@ export function parcelSnapshot(parcel: ParcelLike, householdId: string, me: stri
     title: parcel.title,
     ...(parcel.shippingMode && { shippingMode: parcel.shippingMode }),
     ...(parcel.thumbnail && parcel.thumbnail.length <= 60_000 && { thumbnail: parcel.thumbnail }),
-    info: { ...parcel.info } as Record<string, unknown>,
+    info: sharedParcelInfo(parcel.info),
     timeline: parcel.timeline.map(({ at, status, statusLabel, event }) => ({ at, status, statusLabel, event })),
     ...(parcel.receivedAt && { receivedAt: parcel.receivedAt }),
     createdAt: parcel.createdAt,
@@ -116,19 +157,18 @@ export function parcelSnapshot(parcel: ParcelLike, householdId: string, me: stri
 }
 
 /**
- * What the author's device does with its shared copies after a change of
- * its parcels: write again those whose parcel changed, stop those whose
- * parcel is gone. The others' copies are left alone.
+ * The user's parcels whose shared copy is older than them: to write again.
+ * A parcel missing here stops nothing: a device just signed in may not have
+ * it yet. A share stops only when its author removes the parcel
+ * (parcelStore.onRemoved) or stops it. The others' copies are left alone.
  */
 export function parcelShareUpdates<T extends ParcelLike>(shares: SharedParcelRecord[], parcels: T[], me: string | null) {
   const byId = new Map(parcels.map((parcel) => [parcel.id, parcel]));
   const rewrite: T[] = [];
-  const stop: string[] = [];
   for (const share of shares) {
     if (!isOwnShare(share, me)) continue;
     const parcel = byId.get(share.sourceId);
-    if (!parcel) stop.push(share.id);
-    else if (parcel.updatedAt > share.sourceUpdatedAt) rewrite.push(parcel);
+    if (parcel && parcel.updatedAt > share.sourceUpdatedAt) rewrite.push(parcel);
   }
-  return { rewrite, stop };
+  return rewrite;
 }

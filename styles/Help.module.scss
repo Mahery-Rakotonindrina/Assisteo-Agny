@@ -1,0 +1,198 @@
+@use "mixins" as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: 960px;
+  padding-bottom: 2rem;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 1rem;
+
+  h1 {
+    @include display(2.2rem);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  p {
+    color: var(--text-muted);
+  }
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 48px;
+  padding: 0 0.9rem;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  border: 1px solid var(--border);
+
+  &:focus-within {
+    border-color: var(--accent);
+  }
+
+  svg {
+    flex-shrink: 0;
+    color: var(--text-subtle);
+  }
+
+  input {
+    flex: 1;
+    min-width: 0;
+    height: 46px;
+    border: 0;
+    outline: none;
+    background: none;
+    color: var(--text);
+    @include field-font(1rem);
+  }
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  h2 {
+    @include display(1.6rem);
+  }
+}
+
+.count {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+.guides {
+  display: grid;
+  gap: 0.85rem;
+
+  @include desktop {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.guide {
+  @include card;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem 1.1rem;
+
+  h3 {
+    font-size: 1.05rem;
+  }
+
+  ol {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  li > span:last-child {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  small {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+  }
+}
+
+.stepIcon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+  color: var(--accent-text);
+}
+
+.topic {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 0.5rem;
+    font-size: 1.05rem;
+
+    svg {
+      color: var(--accent-text);
+    }
+  }
+}
+
+.question {
+  @include card;
+  padding: 0 1.1rem;
+
+  summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 44px;
+    padding: 0.9rem 0;
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    svg {
+      flex-shrink: 0;
+      color: var(--text-subtle);
+      transition: transform 0.2s var(--ease-out);
+    }
+  }
+
+  &[open] summary svg {
+    transform: rotate(180deg);
+  }
+
+  p {
+    padding-bottom: 1rem;
+    line-height: 1.55;
+    color: var(--text-muted);
+  }
+}
+
+.contact {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+
+  a {
+    color: var(--accent-text);
+    text-decoration: underline;
+  }
+}

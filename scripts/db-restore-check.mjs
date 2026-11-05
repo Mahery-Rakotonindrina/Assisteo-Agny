@@ -155,6 +155,11 @@ function sampleBackup() {
         // Noted by an account deleted since: kept, without its author.
         { household_id: household, id: "hrep-2", user_id: null, data: { kind: "repayment", loanId: "hloan-1", at: 1760100000000, amountMga: 5000, authorName: "Rasoa" }, updated_at: at(7), deleted_at: null },
       ],
+      // Migration 0023: a list shared (ticked by anyone), and a parcel copy whose author's account was deleted (tombstoned).
+      household_shares: [
+        { household_id: household, id: "list:l-1", kind: "list", user_id: anna, data: { id: "list:l-1", title: "Courses", kind: "shopping", items: [{ id: "i1", text: "Riz", done: true }], createdAt: 1759900000000, updatedAt: 1759900000000 }, updated_at: at(6), deleted_at: null },
+        { household_id: household, id: "parcel:p-1", kind: "parcel", user_id: null, data: { id: "parcel:p-1", sourceId: "p-1", title: "Robe", info: { status: "in_transit", statusLabel: "En transit", items: [] } }, updated_at: at(7), deleted_at: at(7) },
+      ],
       subscriptions: [
         { id: randomUUID(), email: "anna@example.com", plan: "premium", starts_at: at(1), ends_at: at(31), amount_mga: 15000, payment_method: "mvola", payment_ref: "REF-1", note: "Payé en avance", created_at: at(1), updated_at: at(1), features: { add: ["reseller", "parcelCosts"], remove: ["multiPage"] }, quotas: { scans: 500, deepPerMonth: 10 } },
         // A plan created from the Admin (migration 0015).

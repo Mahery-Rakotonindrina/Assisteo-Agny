@@ -13,6 +13,7 @@ import { NextReminder } from "@/components/NextReminder";
 import { PagesTray } from "@/components/PagesTray";
 import { PendingScans } from "@/components/PendingScans";
 import { Shortcuts } from "@/components/Shortcuts";
+import { WeekCard } from "@/components/WeekCard";
 import { PlanBadge } from "@/components/PlanBadge";
 import { PlanNotice } from "@/components/PlanWelcome";
 import { ScanStage } from "@/components/ScanStage";
@@ -298,6 +299,9 @@ export default function ScanPage() {
                 <Shortcuts entries={entries} />
               </motion.div>
             )}
+
+            {/* Sundays only, under the shortcuts: it never pushes the scan buttons down. */}
+            <WeekCard />
 
             {!historyLoading && recent.length === 0 && (
               <motion.section variants={rise} className={styles.recent}>

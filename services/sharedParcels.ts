@@ -78,13 +78,19 @@ export async function unshareParcel(parcelId: string) {
   await sharedParcelStore.remove(parcelShareId(parcelId));
 }
 
-/** After a change of the user's parcels: their copies follow, those of parcels removed stop. */
+/** After a change of the user's parcels: their copies follow (never stopped here, see parcelShareUpdates). */
 export async function refreshSharedParcels(parcels: Parcel[], me: string | null) {
-  const { rewrite, stop } = parcelShareUpdates(await sharedParcelStore.list(), parcels, me);
-  for (const id of stop) await sharedParcelStore.remove(id);
-  for (const parcel of rewrite) {
+  for (const parcel of parcelShareUpdates(await sharedParcelStore.list(), parcels, me)) {
     const current = await sharedParcelStore.shareOf(parcel.id);
     if (current?.householdId && current.userId) await shareParcel(parcel, current.householdId, current.userId);
+  }
+}
+
+/** Parcels the user removed: their own shares stop (another member's copy never). */
+export async function stopSharesOf(parcelIds: string[], me: string | null) {
+  for (const parcelId of parcelIds) {
+    const share = await sharedParcelStore.shareOf(parcelId);
+    if (share && isOwnShare(share, me)) await sharedParcelStore.remove(share.id);
   }
 }
 

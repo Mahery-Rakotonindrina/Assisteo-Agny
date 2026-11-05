@@ -3,24 +3,49 @@ import { describe, expect, it } from "vitest";
 import { acceptSharedList, acceptSharedParcel, isOwnShare, listIdOfShare, listShareId, parcelShareUpdates, parcelSnapshot } from "@/lib/householdShares";
 import { listStore, sharedListStore } from "@/services/listStore";
 import { detachSharedLists, shareList, unshareList } from "@/services/sharedLists";
-import { refreshSharedParcels, shareParcel, sharedParcelStore } from "@/services/sharedParcels";
-import type { Parcel } from "@/services/parcelStore";
+import { refreshSharedParcels, shareParcel, sharedParcelStore, stopSharesOf } from "@/services/sharedParcels";
+import { parcelStore, type Parcel } from "@/services/parcelStore";
 
+/** A parcel with every field filled: what was paid, the shop's references, the reseller's tools (freight, lot, client's number). */
 const parcel = (patch: Partial<Parcel> = {}): Parcel =>
   ({
     id: "p1",
     title: "Robe rouge",
     client: "Tante Voahangy",
     clientPhone: "034 11 111 11",
-    info: { status: "in_transit", statusLabel: "En transit", trackingNumber: "YT1", items: [] },
+    shippingMode: "sea",
+    info: {
+      platform: "Pinduoduo",
+      orderNumber: "ORDER-250918",
+      trackingNumber: "YT1",
+      carrier: "YunExpress",
+      status: "in_transit",
+      statusLabel: "En transit",
+      lastEvent: { description: "Parti de Guangzhou", location: "Guangzhou", at: "2026-10-20 10:00" },
+      items: [{ name: "Robe", variant: "Rouge, M", quantity: 2, price: "¥77.70" }],
+      total: "¥221.45",
+      seller: "Boutique Liang",
+      orderedAt: "2026-10-01",
+      shippedAt: "2026-10-03",
+      estimatedDelivery: "2026-11-30",
+      destinationCity: "Antananarivo",
+      shippingMode: "sea",
+    },
     scanIds: ["scan-1"],
     timeline: [{ at: 1, status: "in_transit", statusLabel: "En transit", event: null, scanId: "scan-1" }],
     createdAt: 1,
     updatedAt: 10,
     priceMga: 80_000,
-    fees: [{ id: "f", label: "Fret", amountMga: 9_000 }],
+    fees: [
+      { id: "f", label: "Douane", amountMga: 9_000 },
+      { id: "freight-kg", label: "Fret 2,5 kg × 12 000 Ar", amountMga: 30_000 },
+    ],
+    freight: { forwarder: "Trans Mada", weightKg: 2.5, rateMga: 12_000, mode: "sea" },
+    lot: { id: "lot-1", name: "Conteneur de novembre", mode: "sea", departedAt: "2026-11-02" },
     salePriceMga: 130_000,
     paidMga: 100_000,
+    soldAt: 5,
+    forResale: true,
     ...patch,
   }) as Parcel;
 
@@ -29,18 +54,36 @@ describe("what the household sees of a parcel", () => {
     const snapshot = parcelSnapshot(parcel(), "home", "anna");
     expect(snapshot).toMatchObject({ id: "parcel:p1", sourceId: "p1", title: "Robe rouge", householdId: "home", userId: "anna", sourceUpdatedAt: 10 });
     const text = JSON.stringify(snapshot);
-    expect(text).not.toMatch(/80000|9000|130000|100000|Fret|034|scan-1|priceMga|fees|salePriceMga|paidMga|Voahangy|client/);
+    // No money, no shop reference, nothing of the reseller's tools nor of their client.
+    for (const leak of [/80000|9000|30000|12000|130000|100000/, /¥|77\.70|221/, /ORDER-250918|Liang|orderNumber|seller|total|price/i, /Fret|Douane|Trans Mada|Conteneur|freight|lot|forwarder|weight/i, /034|Voahangy|client/i, /scan-1|soldAt|forResale|paidMga/]) {
+      expect(text).not.toMatch(leak);
+    }
+    // What it is and where: kept.
+    expect(snapshot.info).toEqual({
+      status: "in_transit",
+      statusLabel: "En transit",
+      trackingNumber: "YT1",
+      carrier: "YunExpress",
+      platform: "Pinduoduo",
+      lastEvent: { description: "Parti de Guangzhou", location: "Guangzhou", at: "2026-10-20 10:00" },
+      shippedAt: "2026-10-03",
+      estimatedDelivery: "2026-11-30",
+      destinationCity: "Antananarivo",
+      shippingMode: "sea",
+      items: [{ name: "Robe", variant: "Rouge, M", quantity: 2 }],
+    });
     expect(acceptSharedParcel({ ...snapshot, updatedAt: 11 })).not.toBeNull();
+    // A copy written by an older or altered app: what is not on the list is dropped on reading.
+    const altered = acceptSharedParcel({ ...snapshot, updatedAt: 11, priceMga: 1, info: { ...snapshot.info, total: "¥9", items: [{ name: "Robe", variant: null, quantity: 1, price: "¥9" }] } });
+    expect(JSON.stringify(altered)).not.toMatch(/¥|priceMga|total|price/);
   });
 
-  it("follows its parcel: written again after a change, stopped once the parcel is gone; the others' left alone", () => {
+  it("follows its parcel: written again after a change; a parcel not on this device yet stops nothing; the others' left alone", () => {
     const own = { ...parcelSnapshot(parcel(), "home", "anna"), updatedAt: 11 };
-    const gone = { ...parcelSnapshot(parcel({ id: "p2" }), "home", "anna"), updatedAt: 11 };
-    const others = { ...parcelSnapshot(parcel({ id: "p3" }), "home", "ben"), updatedAt: 11 };
-    const { rewrite, stop } = parcelShareUpdates([own, gone, others], [parcel({ updatedAt: 20 })], "anna");
-    expect(rewrite.map((item) => item.id)).toEqual(["p1"]);
-    expect(stop).toEqual(["parcel:p2"]);
-    expect(parcelShareUpdates([own], [parcel({ updatedAt: 10 })], "anna")).toEqual({ rewrite: [], stop: [] });
+    const notHereYet = { ...parcelSnapshot(parcel({ id: "p2" }), "home", "anna"), updatedAt: 11 };
+    const others = { ...parcelSnapshot(parcel({ id: "p3", updatedAt: 99 }), "home", "ben"), updatedAt: 11 };
+    expect(parcelShareUpdates([own, notHereYet, others], [parcel({ updatedAt: 20 }), parcel({ id: "p3", updatedAt: 200 })], "anna").map((item) => item.id)).toEqual(["p1"]);
+    expect(parcelShareUpdates([own], [parcel({ updatedAt: 10 })], "anna")).toEqual([]);
   });
 });
 
@@ -92,14 +135,42 @@ describe("sharing a list", () => {
 });
 
 describe("sharing a parcel", () => {
-  it("keeps the copy in step with the parcel, and stops it when the parcel is removed", async () => {
+  it("keeps the copy in step with the parcel; a device without the parcel yet keeps it; removing the parcel stops it", async () => {
     await sharedParcelStore.wipe();
     await shareParcel(parcel(), "home", "anna");
     await refreshSharedParcels([parcel({ updatedAt: 30, info: { ...parcel().info, status: "delivered" } })], "anna");
     const [copy] = await sharedParcelStore.list();
     expect(copy.info.status).toBe("delivered");
     expect(copy.sourceUpdatedAt).toBe(30);
+    // Just signed in: the parcels are not synced yet.
     await refreshSharedParcels([], "anna");
+    expect(await sharedParcelStore.list()).toHaveLength(1);
+    // Another member's copy is never stopped by me.
+    await stopSharesOf(["p1"], "ben");
+    expect(await sharedParcelStore.list()).toHaveLength(1);
+    await stopSharesOf(["p1"], "anna");
     expect(await sharedParcelStore.list()).toEqual([]);
+  });
+
+  it("tells who listens which parcels the user removed", async () => {
+    await parcelStore.wipe();
+    const seen: string[][] = [];
+    const stop = parcelStore.onRemoved((ids) => seen.push(ids));
+    const scan = (id: string, orderNumber: string) => ({
+      id,
+      createdAt: 1,
+      mode: "auto" as const,
+      thumbnail: "",
+      preview: "",
+      analysis: { parcel: { ...parcel().info, orderNumber, trackingNumber: null } , title: "Colis" } as never,
+      meta: { model: "demo", demo: true, durationMs: 1 },
+    });
+    const a = await parcelStore.add(scan("s1", "A-1"));
+    await parcelStore.add(scan("s2", "B-2"));
+    await parcelStore.remove(a.id);
+    await parcelStore.removeAll();
+    stop();
+    expect(seen.map((ids) => ids.length)).toEqual([1, 1]);
+    expect(seen[0]).toEqual([a.id]);
   });
 });

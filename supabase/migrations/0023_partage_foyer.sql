@@ -24,7 +24,9 @@ create table if not exists public.household_shares (
   deleted_at timestamptz,
   server_updated_at timestamptz not null default now(),
   primary key (household_id, id),
-  constraint household_shares_id_kind check (id like kind || ':%' and length(id) <= 120)
+  constraint household_shares_id_kind check (id like kind || ':%' and length(id) <= 120),
+  -- A list or a parcel copy with its small photo: a few kilobytes; 200 kB at most.
+  constraint household_shares_data_size check (octet_length(data::text) <= 200000)
 );
 
 drop trigger if exists household_shares_touch on public.household_shares;
@@ -34,13 +36,14 @@ create trigger household_shares_touch before insert or update on public.househol
 -- A member who ticks an item on another's list changes the row: the author,
 -- the kind and the household stay as they were, and only the author stops or
 -- resumes the sharing (another's tombstone is ignored). The server (no user:
--- triggers, service role) may.
+-- service role) and the other triggers (leaving, an account deleted) may: a
+-- member removed by the owner straight under the RLS of 0009 runs them as the owner.
 create or replace function public.household_shares_guard()
 returns trigger
 language plpgsql security definer set search_path = ''
 as $$
 begin
-  if auth.uid() is null then
+  if auth.uid() is null or pg_trigger_depth() > 1 then
     return new;
   end if;
   new.user_id := old.user_id;
@@ -96,7 +99,9 @@ create policy "household_shares: author inserts" on public.household_shares
 drop policy if exists "household_shares: members update lists, authors their parcels" on public.household_shares;
 create policy "household_shares: members update lists, authors their parcels" on public.household_shares
   for update to authenticated
-  using (user_id is not null and public.is_household_member(household_id) and (kind = 'list' or user_id = auth.uid()))
+  -- A list whose author is gone stays writable (its tombstone holds, see the guard): a member's last
+  -- tick sent after it is accepted, not refused at every sync.
+  using (public.is_household_member(household_id) and (kind = 'list' or user_id = auth.uid()))
   with check (public.is_household_member(household_id));
 
 -- ---- Leaving: one's lists come back as personal ones --------------------------------

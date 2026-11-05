@@ -10,7 +10,7 @@ function featureLines(feature: PlanFeature, deepPerMonth: number, t: Translate, 
     case "deepAnalysis":
       return [...(deepCount ? [deepLine(deepPerMonth, t, locale)] : []), t("plans.features.priority")];
     case "reseller":
-      return [t("plans.features.clients"), t("plans.features.reseller")];
+      return [t("plans.features.clients"), t("plans.features.reseller"), t("parcelLots.perk")];
     default:
       return [t(`plans.features.${feature}`)];
   }
