@@ -4132,5 +4132,14 @@
       }
     },
     "contactMail": "Ou par e-mail :"
+  },
+  "googleSignIn": {
+    "button": "Continuer avec Google",
+    "or": "ou",
+    "pageTitle": "Connexion",
+    "finishing": "Connexion avec Google…",
+    "signedIn": "Tu es connecté avec Google",
+    "failed": "La connexion avec Google n’a pas abouti. Réessaie, ou reçois un code par e-mail.",
+    "back": "Retour aux réglages"
   }
 }

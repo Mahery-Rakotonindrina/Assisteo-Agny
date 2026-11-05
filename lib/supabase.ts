@@ -27,6 +27,8 @@ export function supabase() {
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: false,
+      // "Continuer avec Google" comes back with a code to exchange (services/googleSignIn.ts); the e-mail codes are unchanged.
+      flowType: "pkce",
     },
   });
   return client;
