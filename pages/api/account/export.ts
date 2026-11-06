@@ -22,6 +22,8 @@ import { applyCors, clientIp, sendError } from "@/lib/server/http";
 import { getDiscount, parentOf, trialClaimed } from "@/lib/server/offerStore";
 import { resolvePlan, type ResolvedPlan } from "@/lib/server/plan";
 import { rateLimit } from "@/lib/server/rateLimit";
+import { referralData } from "@/lib/server/referralBonus";
+import { userReportsOf } from "@/lib/server/userReports";
 import { reportError } from "@/lib/server/reportError";
 import { accountsEnabled, supabaseAdmin, verifyAccount } from "@/lib/server/supabaseAdmin";
 
@@ -64,7 +66,7 @@ export function exportPlan({ current, customPlan, seat }: Pick<ResolvedPlan, "cu
 
 export async function accountExport(account: { id: string; email: string }, plan: Pick<ResolvedPlan, "current" | "customPlan" | "seat">, now = Date.now()): Promise<AccountExport> {
   const { id, email } = account;
-  const [subscriptions, grants, given, received, members, shares, devices, trial, discount, parent] = await Promise.all([
+  const [subscriptions, grants, given, received, members, shares, devices, trial, discount, parent, reports, referral] = await Promise.all([
     rows<SubscriptionRow>("subscriptions", "plan, starts_at, ends_at, amount_mga, payment_method, payment_ref, created_at", [["email", email]]),
     rows<GrantRow>("feature_grants", "feature, starts_at, ends_at", [["email", email]]),
     rows<SeatGivenRow>("family_seats", "member_email, created_at", [["owner_id", id]]),
@@ -75,6 +77,8 @@ export async function accountExport(account: { id: string; email: string }, plan
     trialClaimed(email).catch(() => false),
     getDiscount(email).catch(() => null),
     parentOf(email).catch(() => null),
+    userReportsOf(id).catch(() => []),
+    referralData(email).catch(() => ({ devices: [], friendsInvited: 0, scansWon: 0, scansLeft: 0 })),
   ]);
 
   let household: AccountExport["household"] = null;
@@ -84,10 +88,12 @@ export async function accountExport(account: { id: string; email: string }, plan
       ["household_id", membership.household_id],
       ["user_id", id],
     ];
-    const [homes, expenses, loans] = await Promise.all([
+    const [homes, expenses, loans, shares] = await Promise.all([
       rows<{ data: { name?: string } | null }>("households", "data", [["id", membership.household_id]]),
       rows<SharedRow>("household_expenses", "id, data, updated_at, deleted_at", where),
       rows<SharedRow>("household_loans", "id, data, updated_at, deleted_at", where),
+      // The lists and parcels one shares with it (migration 0023): one's own only.
+      rows<SharedRow>("household_shares", "id, data, updated_at, deleted_at", where),
     ]);
     household = {
       name: homes[0]?.data?.name ?? "",
@@ -95,6 +101,7 @@ export async function accountExport(account: { id: string; email: string }, plan
       joinedAt: isoDate(membership.joined_at) ?? "",
       expenses: alive(expenses).map(exportSharedRow),
       loans: alive(loans).map(exportSharedRow),
+      shares: alive(shares).map(exportSharedRow),
     };
   }
 
@@ -113,6 +120,8 @@ export async function accountExport(account: { id: string; email: string }, plan
     household,
     loanShareLinks: shares.map(exportShare),
     notificationDevices: devices.map(exportDevice),
+    referral,
+    feedback: reports.map((report) => ({ sentAt: new Date(report.at).toISOString(), kind: report.kind, message: report.message })),
   };
 }
 

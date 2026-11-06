@@ -230,6 +230,18 @@
   font-weight: 500;
 }
 
+// A row that opens something in place (feedback form) rather than a page.
+button.linkRow {
+  width: 100%;
+  min-height: 44px;
+  border: 0;
+  border-top: 1px solid var(--border);
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
 .brandFooter {
   // After every card, on a phone as on a computer.
   order: 99;

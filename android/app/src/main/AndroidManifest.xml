@@ -49,6 +49,15 @@
                 <data android:mimeType="image/*" />
             </intent-filter>
 
+            <!-- "Continuer avec Google": the browser comes back to the app with
+                 com.mahery.pocketassistant://auth-callback?code=… (lib/googleSignIn.ts). -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="com.mahery.pocketassistant" android:host="auth-callback" />
+            </intent-filter>
+
         </activity>
 
         <provider

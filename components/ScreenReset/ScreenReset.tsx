@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { useCallback, useState, type ReactNode } from "react";
-import { ChevronRight, Download, HandCoins, History, Package, Receipt, Trash2, Wallet } from "lucide-react";
+import { ChevronRight, Download, HandCoins, History, Package, Receipt, Store, Trash2, Wallet } from "lucide-react";
 import { Button } from "@/components/Button";
 import { ExpenseSheet } from "@/components/Expenses/ExpenseSheet";
 import { useToast } from "@/components/Toast";
@@ -9,10 +9,11 @@ import { useExpenseSources } from "@/hooks/useExpenseSources";
 import { useHistory } from "@/hooks/useHistory";
 import { useLoans } from "@/hooks/useLoans";
 import { useParcels } from "@/hooks/useParcels";
+import { useShop } from "@/hooks/useShop";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAccount } from "@/lib/account/AccountProvider";
-import { computedLineCount, expenseResetCounts, loanResetCounts, pocketResetCounts, type ResetScreen } from "@/lib/screenReset";
+import { computedLineCount, expenseResetCounts, loanResetCounts, pocketResetCounts, shopResetCounts, type ResetScreen } from "@/lib/screenReset";
 import { ResetOfflineError, resetScreen } from "@/services/screenReset";
 import styles from "./ScreenReset.module.scss";
 
@@ -22,6 +23,7 @@ const icons: Record<ResetScreen, ReactNode> = {
   pockets: <Wallet />,
   loans: <HandCoins />,
   parcels: <Package />,
+  shop: <Store />,
 };
 
 /** One line of "what goes": its key, with the "…One" form for a single one. */
@@ -42,6 +44,7 @@ export function ScreenReset() {
   const { records } = useExpenses();
   const { loans } = useLoans();
   const { parcels } = useParcels();
+  const { records: shopRecords } = useShop();
   const sources = useExpenseSources();
   const [open, setOpen] = useState<ResetScreen | null>(null);
   const [working, setWorking] = useState(false);
@@ -49,6 +52,7 @@ export function ScreenReset() {
   const expenseCounts = expenseResetCounts(records);
   const pocketCounts = pocketResetCounts(records);
   const loanCounts = loanResetCounts(loans);
+  const shopCounts = shopResetCounts(shopRecords);
   // The lines Dépenses takes from the scans, parcels, bills… since the last reset: only shown with "Mes dépenses".
   const computed = has("expenses") ? computedLineCount(sources) : 0;
 
@@ -65,6 +69,7 @@ export function ScreenReset() {
     pockets: [{ key: "pockets", count: pocketCounts.pockets }, { key: "moves", count: pocketCounts.moves }, { key: "picks", count: pocketCounts.picks }],
     loans: [{ key: "loans", count: loanCounts.loans }, { key: "repayments", count: loanCounts.repayments }, { key: "proofs", count: loanCounts.proofs }, { key: "links" }],
     parcels: [{ key: "parcels", count: parcels.length }, { key: "parcelReminders" }],
+    shop: [{ key: "shopSales", count: shopCounts.sales }, { key: "shopProducts", count: shopCounts.products }, { key: "shopPayments", count: shopCounts.payments }],
   };
   const hasData: Record<ResetScreen, boolean> = {
     history: entries.length > 0,
@@ -72,6 +77,7 @@ export function ScreenReset() {
     pockets: pocketCounts.pockets + pocketCounts.moves + pocketCounts.picks > 0,
     loans: loanCounts.loans > 0,
     parcels: parcels.length > 0,
+    shop: shopCounts.sales + shopCounts.products + shopCounts.payments > 0,
   };
   // A screen of a feature the plan doesn't have shows only when something is kept from it.
   const shown: Record<ResetScreen, boolean> = {
@@ -80,8 +86,9 @@ export function ScreenReset() {
     pockets: has("expenses") || hasData.pockets,
     loans: has("loans") || hasData.loans,
     parcels: true,
+    shop: has("shop") || hasData.shop,
   };
-  const screens = (["history", "expenses", "pockets", "loans", "parcels"] as const).filter((screen) => shown[screen]);
+  const screens = (["history", "expenses", "pockets", "loans", "parcels", "shop"] as const).filter((screen) => shown[screen]);
 
   const close = useCallback(() => {
     if (!working) setOpen(null);

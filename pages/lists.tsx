@@ -1,21 +1,24 @@
 import { useRouter } from "next/router";
 import { AnimatePresence, motion } from "motion/react";
 import { useState, type FormEvent } from "react";
-import { Check, ChevronDown, ClipboardList, ListChecks, Pencil, Plus, RotateCcw, ScanLine, Share2, ShoppingBasket, Trash2, X } from "lucide-react";
+import { Check, ChevronDown, ClipboardList, ListChecks, Pencil, Plus, RotateCcw, ScanLine, Share2, ShoppingBasket, Trash2, Users, X } from "lucide-react";
 import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
 import { CountedLink } from "@/components/Expenses/CountedLink";
 import { Seo } from "@/components/Seo";
 import { useToast } from "@/components/Toast";
 import { useHistory } from "@/hooks/useHistory";
-import { useLists } from "@/hooks/useLists";
+import { useHousehold } from "@/hooks/useHousehold";
+import { useLists, useSharedLists } from "@/hooks/useLists";
 import { useTranslation } from "@/hooks/useTranslation";
 import { listKinds } from "@/lib/ai/schema";
 import { formatAriary } from "@/lib/format";
+import { isOwnShare, LIST_SHARE_PREFIX } from "@/lib/householdShares";
 import { parseNumber } from "@/lib/money";
 import { easeOut, rise, stagger } from "@/lib/motion";
 import { haptics, shareText } from "@/services/device";
-import { compareLists, listProgress, listStore, listTotals, type ListKind, type SavedList } from "@/services/listStore";
+import { compareLists, listProgress, listStore, listTotals, sharedListStore, type ListKind, type SavedList } from "@/services/listStore";
+import { shareList, unshareList } from "@/services/sharedLists";
 import styles from "@/styles/Lists.module.scss";
 
 const kindIcons = { shopping: ShoppingBasket, todo: ListChecks, other: ClipboardList } satisfies Record<ListKind, unknown>;
@@ -27,7 +30,16 @@ const parsePrice = (value: FormDataEntryValue | string | null) => parseNumber(St
 export default function ListsPage() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { lists, isLoading } = useLists();
+  const { lists: personal, isLoading } = useLists();
+  // Shared with the household: every member's, ticked by anyone.
+  const { lists: shared } = useSharedLists();
+  const lists = [...personal, ...shared];
+  const household = useHousehold();
+  const sharing: Sharing = {
+    householdId: household?.household?.id ?? null,
+    me: household?.userId ?? null,
+    nameOf: (userId) => household?.household?.members.find((member) => member.userId === userId)?.label ?? null,
+  };
   const { entries, isLoading: historyLoading } = useHistory();
   const [creating, setCreating] = useState(false);
   // A list opened from a scan ("?open=…").
@@ -78,7 +90,7 @@ export default function ListsPage() {
             </motion.div>
             <motion.div variants={rise} className={styles.lists}>
               {sorted.map((list) => (
-                <ListCard key={list.id} list={list} initiallyOpen={list.id === opened} hasScan={hasScan} />
+                <ListCard key={list.id} list={list} initiallyOpen={list.id === opened} hasScan={hasScan} sharing={sharing} />
               ))}
             </motion.div>
           </>
@@ -126,9 +138,17 @@ function NewList({ onDone }: { onDone: () => void }) {
   );
 }
 
-function ListCard({ list, initiallyOpen, hasScan }: { list: SavedList; initiallyOpen: boolean; hasScan: (id: string) => boolean }) {
+/** The household the lists can be shared with, and who is who. */
+type Sharing = { householdId: string | null; me: string | null; nameOf: (userId: string | undefined) => string | null };
+
+function ListCard({ list, initiallyOpen, hasScan, sharing }: { list: SavedList; initiallyOpen: boolean; hasScan: (id: string) => boolean; sharing: Sharing }) {
   const { t, locale } = useTranslation();
   const toast = useToast();
+  // A list shared with the household lives in its own store; only its author stops sharing it or removes it.
+  const isShared = list.id.startsWith(LIST_SHARE_PREFIX);
+  const store = isShared ? sharedListStore : listStore;
+  const own = !isShared || isOwnShare(list, sharing.me);
+  const sharedBy = isShared && !own ? (sharing.nameOf(list.userId) ?? t("householdShare.someone")) : null;
   // Opened from a scan once the address is read (it isn't on the first render).
   const [openChoice, setOpen] = useState<boolean | null>(null);
   const open = openChoice ?? initiallyOpen;
@@ -149,7 +169,7 @@ function ListCard({ list, initiallyOpen, hasScan }: { list: SavedList; initially
     event.preventDefault();
     if (!text.trim()) return;
     haptics.tap();
-    await listStore.addItem(list.id, text, quantity, shopping ? parsePrice(price) : undefined);
+    await store.addItem(list.id, text, quantity, shopping ? parsePrice(price) : undefined);
     setText("");
     setQuantity("");
     setPrice("");
@@ -178,6 +198,11 @@ function ListCard({ list, initiallyOpen, hasScan }: { list: SavedList; initially
             {t(`lists.kinds.${list.kind}`)} · {finished ? t("lists.allDone") : t("lists.progress", { done, total })}
             {shopping && totals.estimated > 0 && <> · {formatAriary(totals.estimated, locale)}</>}
           </small>
+          {isShared && (
+            <small className={styles.sharedBadge} data-testid="list-shared">
+              <Users size={12} /> {sharedBy ? t("householdShare.list.sharedBy", { name: sharedBy }) : t("householdShare.list.sharedByMe")}
+            </small>
+          )}
         </span>
         <ChevronDown size={18} className={`${styles.chevron} ${open ? styles.chevronOpen : ""}`} />
       </button>
@@ -201,7 +226,7 @@ function ListCard({ list, initiallyOpen, hasScan }: { list: SavedList; initially
                   onSubmit={(event) => {
                     event.preventDefault();
                     const value = new FormData(event.currentTarget).get("title");
-                    void listStore.rename(list.id, String(value ?? ""));
+                    void store.rename(list.id, String(value ?? ""));
                     setRenaming(false);
                   }}
                 >
@@ -226,7 +251,7 @@ function ListCard({ list, initiallyOpen, hasScan }: { list: SavedList; initially
                         aria-label={item.text}
                         onClick={() => {
                           haptics.tap();
-                          void listStore.toggle(list.id, item.id);
+                          void store.toggle(list.id, item.id);
                         }}
                       >
                         {item.done && <Check size={14} strokeWidth={3} />}
@@ -237,7 +262,7 @@ function ListCard({ list, initiallyOpen, hasScan }: { list: SavedList; initially
                           onSubmit={(event) => {
                             event.preventDefault();
                             const data = new FormData(event.currentTarget);
-                            void listStore.editItem(list.id, item.id, {
+                            void store.editItem(list.id, item.id, {
                               text: String(data.get("text") ?? ""),
                               quantity: String(data.get("quantity") ?? ""),
                               priceMga: shopping ? parsePrice(data.get("price")) : item.priceMga,
@@ -268,7 +293,7 @@ function ListCard({ list, initiallyOpen, hasScan }: { list: SavedList; initially
                           {shopping && item.priceMga && <small className={styles.price}>{formatAriary(item.priceMga, locale)}</small>}
                         </button>
                       )}
-                      <button type="button" className={styles.iconButton} onClick={() => void listStore.removeItem(list.id, item.id)} aria-label={t("lists.removeItem", { item: item.text })}>
+                      <button type="button" className={styles.iconButton} onClick={() => void store.removeItem(list.id, item.id)} aria-label={t("lists.removeItem", { item: item.text })}>
                         <X size={15} />
                       </button>
                     </li>
@@ -289,7 +314,8 @@ function ListCard({ list, initiallyOpen, hasScan }: { list: SavedList; initially
                   {totals.unpriced > 0 && <small>{t("lists.unpriced", { count: totals.unpriced })}</small>}
                 </div>
               )}
-              {shopping && totals.spent > 0 && <CountedLink sourceKey={`list:${list.id}`} at={list.updatedAt} />}
+              {/* A shared list counts in nobody's own expenses. */}
+              {shopping && totals.spent > 0 && !isShared && <CountedLink sourceKey={`list:${list.id}`} at={list.updatedAt} />}
 
               <form className={shopping ? `${styles.addItem} ${styles.addItemPriced}` : styles.addItem} onSubmit={(event) => void add(event)}>
                 <input value={text} onChange={(event) => setText(event.target.value)} placeholder={t("lists.addItem")} aria-label={t("lists.addItem")} maxLength={200} />
@@ -318,35 +344,67 @@ function ListCard({ list, initiallyOpen, hasScan }: { list: SavedList; initially
                 </Button>
                 {done > 0 && (
                   <>
-                    <Button variant="secondary" size="md" icon={<RotateCcw />} onClick={() => void listStore.uncheckAll(list.id)}>
+                    <Button variant="secondary" size="md" icon={<RotateCcw />} onClick={() => void store.uncheckAll(list.id)}>
                       {t("lists.uncheckAll")}
                     </Button>
-                    <Button variant="secondary" size="md" icon={<Check />} onClick={() => void listStore.clearDone(list.id)}>
+                    <Button variant="secondary" size="md" icon={<Check />} onClick={() => void store.clearDone(list.id)}>
                       {t("lists.clearDone")}
                     </Button>
                   </>
+                )}
+                {!isShared && sharing.householdId && sharing.me && (
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    icon={<Users />}
+                    data-testid="list-share-household"
+                    onClick={() => {
+                      haptics.success();
+                      void shareList(list, sharing.householdId!, sharing.me!);
+                      toast(t("householdShare.list.shared"));
+                    }}
+                  >
+                    {t("householdShare.list.share")}
+                  </Button>
+                )}
+                {isShared && own && (
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    icon={<Users />}
+                    data-testid="list-unshare"
+                    onClick={() => {
+                      haptics.tap();
+                      void unshareList(list, sharing.me);
+                      toast(t("householdShare.list.stopped"));
+                    }}
+                  >
+                    {t("householdShare.list.stop")}
+                  </Button>
                 )}
                 {list.scanId && hasScan(list.scanId) && (
                   <Button variant="secondary" size="md" icon={<ScanLine />} href={`/result?id=${list.scanId}`}>
                     {t("lists.openScan")}
                   </Button>
                 )}
-                <Button
-                  variant={confirmRemove ? "danger" : "ghost"}
-                  size="md"
-                  icon={<Trash2 />}
-                  onClick={() => {
-                    if (!confirmRemove) {
-                      setConfirmRemove(true);
-                      return;
-                    }
-                    haptics.press();
-                    void listStore.remove(list.id);
-                    toast(t("lists.removed"));
-                  }}
-                >
-                  {confirmRemove ? t("lists.confirmRemove") : t("lists.remove")}
-                </Button>
+                {own && (
+                  <Button
+                    variant={confirmRemove ? "danger" : "ghost"}
+                    size="md"
+                    icon={<Trash2 />}
+                    onClick={() => {
+                      if (!confirmRemove) {
+                        setConfirmRemove(true);
+                        return;
+                      }
+                      haptics.press();
+                      void store.remove(list.id);
+                      toast(t("lists.removed"));
+                    }}
+                  >
+                    {confirmRemove ? t("lists.confirmRemove") : t("lists.remove")}
+                  </Button>
+                )}
               </div>
             </div>
           </motion.div>

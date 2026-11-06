@@ -25,6 +25,7 @@ export const RESTORE_KEYS = {
   expenses: ["user_id", "id"],
   loans: ["user_id", "id"],
   plants: ["user_id", "id"],
+  shop: ["user_id", "id"],
   loan_shares: ["token_hash"],
   // A household before what refers to it.
   households: ["id"],
@@ -32,6 +33,7 @@ export const RESTORE_KEYS = {
   household_invites: ["code"],
   household_expenses: ["household_id", "id"],
   household_loans: ["household_id", "id"],
+  household_shares: ["household_id", "id"],
   subscriptions: ["id"],
   feature_grants: ["id"],
   family_seats: ["id"],

@@ -124,6 +124,11 @@ function sampleBackup() {
         },
         { user_id: ben, id: "plant-2", data: { name: "Basilic", place: "outdoor", waterEveryDays: 2, scanIds: [], checks: [] }, updated_at: at(6), deleted_at: at(7) },
       ],
+      shop: [
+        { user_id: anna, id: "product-1", data: { kind: "product", name: "Riz 5 kg", stock: 12, lowAt: 3, priceMga: 18000, createdAt: 1759900000000 }, updated_at: at(6), deleted_at: null },
+        { user_id: anna, id: "sale-1", data: { kind: "sale", at: 1759900000000, productId: "product-1", name: "Riz 5 kg", qty: 2, unitPriceMga: 18000, paidMga: 20000, customer: "Rado", phone: "034 00 000 00", createdAt: 1759900000000 }, updated_at: at(6), deleted_at: null },
+        { user_id: ben, id: "payment-1", data: { kind: "payment", at: 1759900000000, customer: "Soa", amountMga: 5000, createdAt: 1759900000000 }, updated_at: at(6), deleted_at: at(7) },
+      ],
       loan_shares: [
         {
           token_hash: "a".repeat(64),
@@ -154,6 +159,11 @@ function sampleBackup() {
         { household_id: household, id: "hrep-1", user_id: ben, data: { kind: "repayment", loanId: "hloan-1", at: 1760000000000, amountMga: 20000, authorName: "Ben" }, updated_at: at(6), deleted_at: null },
         // Noted by an account deleted since: kept, without its author.
         { household_id: household, id: "hrep-2", user_id: null, data: { kind: "repayment", loanId: "hloan-1", at: 1760100000000, amountMga: 5000, authorName: "Rasoa" }, updated_at: at(7), deleted_at: null },
+      ],
+      // Migration 0023: a list shared (ticked by anyone), and a parcel copy whose author's account was deleted (tombstoned).
+      household_shares: [
+        { household_id: household, id: "list:l-1", kind: "list", user_id: anna, data: { id: "list:l-1", title: "Courses", kind: "shopping", items: [{ id: "i1", text: "Riz", done: true }], createdAt: 1759900000000, updatedAt: 1759900000000 }, updated_at: at(6), deleted_at: null },
+        { household_id: household, id: "parcel:p-1", kind: "parcel", user_id: null, data: { id: "parcel:p-1", sourceId: "p-1", title: "Robe", info: { status: "in_transit", statusLabel: "En transit", items: [] } }, updated_at: at(7), deleted_at: at(7) },
       ],
       subscriptions: [
         { id: randomUUID(), email: "anna@example.com", plan: "premium", starts_at: at(1), ends_at: at(31), amount_mga: 15000, payment_method: "mvola", payment_ref: "REF-1", note: "Payé en avance", created_at: at(1), updated_at: at(1), features: { add: ["reseller", "parcelCosts"], remove: ["multiPage"] }, quotas: { scans: 500, deepPerMonth: 10 } },

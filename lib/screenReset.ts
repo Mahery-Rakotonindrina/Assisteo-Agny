@@ -1,13 +1,14 @@
 import { byKind, RESET_ID, sourceItems, type ExpenseRecord, type SourceInputs, type SourceItem } from "@/lib/expenses";
 import { loanProofs } from "@/lib/loanProof";
 import type { Loan } from "@/lib/loans";
+import { byKind as shopByKind, type ShopRecord } from "@/lib/shop";
 
 // "Remettre à zéro" (Réglages): what each screen's reset removes, and what it
 // keeps. Pure, so it can be tested; services/screenReset.ts does the removing,
 // always through each store's synced removal (tombstones), never the
 // household's. "Historique" keeps its own (historyStore.clear).
 
-export const resetScreens = ["history", "expenses", "pockets", "loans", "parcels"] as const;
+export const resetScreens = ["history", "expenses", "pockets", "loans", "parcels", "shop"] as const;
 export type ResetScreen = (typeof resetScreens)[number];
 
 /**
@@ -45,6 +46,13 @@ export type PocketResetCounts = { pockets: number; moves: number; picks: number 
 /** What the "pockets" reset window lists: the pockets (archived ones too), the moves typed in and the pockets picked for a line. */
 export function pocketResetCounts(records: ExpenseRecord[]): PocketResetCounts {
   return { pockets: byKind(records, "wallet").length, moves: byKind(records, "transfer").length + byKind(records, "correction").length, picks: byKind(records, "walletPick").length };
+}
+
+export type ShopResetCounts = { sales: number; products: number; payments: number };
+
+/** What the "Ma boutique" reset window lists. */
+export function shopResetCounts(records: ShopRecord[]): ShopResetCounts {
+  return { sales: shopByKind(records, "sale").length, products: shopByKind(records, "product").length, payments: shopByKind(records, "payment").length };
 }
 
 export type LoanResetCounts = { loans: number; repayments: number; proofs: number };

@@ -8,7 +8,7 @@ import type { AccountExport } from "./accountExport";
 // stores that hold one are left out (EXPORT_DEVICE_SOURCES).
 
 /** The JSON files of the copy, one per screen (named in French, like LISEZ-MOI.txt). */
-export const copyFiles = ["historique", "en-attente", "depenses", "prets", "colis", "listes", "garage", "maison", "plantes", "foyer", "reglages", "compte"] as const;
+export const copyFiles = ["historique", "en-attente", "depenses", "prets", "colis", "listes", "garage", "maison", "plantes", "boutique", "foyer", "reglages", "compte"] as const;
 export type CopyFile = (typeof copyFiles)[number];
 
 /**
@@ -32,9 +32,12 @@ export const EXPORT_DATABASES = {
   "assisteo-vehicles": { store: "vehicles", file: "garage" },
   "assisteo-home": { store: "items", file: "maison" },
   "assisteo-plants": { store: "plants", file: "plantes" },
+  "assisteo-shop": { store: "shop", file: "boutique" },
   "assisteo-household": { store: "state", file: "foyer" },
   "assisteo-household-expenses": { store: "expenses", file: "foyer" },
   "assisteo-household-loans": { store: "loans", file: "foyer" },
+  "assisteo-household-lists": { store: "lists", file: "foyer" },
+  "assisteo-household-parcels": { store: "parcels", file: "foyer" },
 } as const satisfies Record<string, { store: string; file: CopyFile | null }>;
 
 export type ExportDatabase = keyof typeof EXPORT_DATABASES;
@@ -50,6 +53,8 @@ export const EXPORT_DEVICE_SOURCES: Record<string, CopyFile | `left out: ${strin
   "services/loanReminders.ts": "reglages",
   "services/objectAd.ts": "reglages",
   "services/fx.ts": "reglages",
+  "services/pendingReferral.ts": "left out: a referral code received by a link, not the person's data",
+  "services/weeklySummary.ts": "left out: only the id of a scheduled notification, a technical identifier",
   "services/aiKeyStore.ts": "left out: the personal AI key is a secret",
   "lib/supabase.ts": "left out: the session's tokens are secrets",
   "services/trial.ts": "left out: the install id, a technical identifier",
@@ -60,8 +65,10 @@ export const EXPORT_DEVICE_SOURCES: Record<string, CopyFile | `left out: ${strin
   "services/homeItemReminders.ts": "left out: the notifications scheduled on this device",
   "services/parcelReminders.ts": "left out: the notifications scheduled on this device",
   "services/plantReminders.ts": "left out: the notifications scheduled on this device",
+  "services/medicationReminders.ts": "left out: the notifications scheduled on this device",
   "services/vehicleReminders.ts": "left out: the notifications scheduled on this device",
   "services/webPushTakeover.ts": "left out: a technical switch",
+  "services/googleSignIn.ts": "left out: the page to go back to after signing in with Google",
   "hooks/useDismissed.ts": "left out: the tips closed",
   "components/UpdateGate/UpdateGate.tsx": "left out: the update notice closed",
   "pages/history.tsx": "left out: a tip shown",
@@ -183,6 +190,9 @@ function contents({ databases, settings }: LocalData, account: AccountExport | n
         household: { name: state.household.name, role: state.household.role },
         expenses: list(mine(read("assisteo-household-expenses"), me), "foyer"),
         loans: list(mine(read("assisteo-household-loans"), me), "foyer"),
+        // The lists and parcels one shares with it (the others' stay theirs).
+        lists: list(mine(read("assisteo-household-lists"), me), "foyer"),
+        parcels: list(mine(read("assisteo-household-parcels"), me), "foyer"),
       }
     : undefined;
 
@@ -196,6 +206,7 @@ function contents({ databases, settings }: LocalData, account: AccountExport | n
     garage: some(read("assisteo-vehicles")) ? { vehicles: list(read("assisteo-vehicles"), "garage") } : undefined,
     maison: some(read("assisteo-home")) ? { items: list(read("assisteo-home"), "maison") } : undefined,
     plantes: some(read("assisteo-plants")) ? { plants: list(read("assisteo-plants"), "plantes") } : undefined,
+    boutique: some(read("assisteo-shop")) ? { records: list(read("assisteo-shop"), "boutique") } : undefined,
     foyer: household,
     reglages: readable(settings, "reglages", [], { list: null, taken: photos.taken }),
     compte: account ? readable(account, "compte", [], { list: null, taken: photos.taken }) : undefined,

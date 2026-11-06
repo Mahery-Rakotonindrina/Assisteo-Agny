@@ -32,7 +32,8 @@
       "lists": "Listes",
       "settings": "Ré|glages",
       "admin": "Admin"
-    }
+    },
+    "shop": "Ma boutique"
   },
   "scan": {
     "greeting": {
@@ -316,14 +317,16 @@
         "expenses": "Dépenses et revenus",
         "pockets": "Poches",
         "loans": "Prêts",
-        "parcels": "Colis"
+        "parcels": "Colis",
+        "shop": "Ma boutique"
       },
       "hints": {
         "history": "Toutes tes analyses. Tes colis gardent leur photo.",
         "expenses": "Dépenses, revenus, récurrentes, budget et épargne. Tes poches restent.",
         "pockets": "Tes poches et les virements entre elles. Tes dépenses restent.",
         "loans": "Tous tes prêts, remboursements et preuves.",
-        "parcels": "Tous les colis que tu suis, et leurs rappels."
+        "parcels": "Tous les colis que tu suis, et leurs rappels.",
+        "shop": "Tes ventes, ton stock et le crédit de tes clients."
       },
       "empty": "Rien à effacer",
       "title": "{name} : tout effacer ?",
@@ -358,14 +361,21 @@
         "links": "Les liens de partage envoyés sont arrêtés",
         "parcels": "{count} colis suivis",
         "parcelsOne": "1 colis suivi",
-        "parcelReminders": "Leurs rappels d’arrivée"
+        "parcelReminders": "Leurs rappels d’arrivée",
+        "shopSales": "{count} ventes",
+        "shopSalesOne": "1 vente",
+        "shopProducts": "{count} produits en stock",
+        "shopProductsOne": "1 produit en stock",
+        "shopPayments": "{count} paiements de clients",
+        "shopPaymentsOne": "1 paiement de client"
       },
       "stays": {
         "history": "Tes colis (avec leur photo), tes dépenses, tes prêts et tes listes.",
         "expenses": "Tes poches : leur solde est recalculé sans ces lignes. Tes catégories. Tes scans, colis et véhicules restent dans leurs écrans. Le budget du foyer ne change pas.",
         "pockets": "Tes dépenses, revenus, épargne et prêts : ils restent, sans poche. Tu pourras ajouter de nouvelles poches.",
         "loans": "Les prêts du foyer. Tes poches : les mouvements des prêts en sortent.",
-        "parcels": "Leurs scans restent dans l’historique. Leurs prix et ventes sortent de Dépenses."
+        "parcels": "Leurs scans restent dans l’historique. Leurs prix et ventes sortent de Dépenses.",
+        "shop": "Tes autres écrans ne changent pas."
       },
       "everywhere": "Avec ton compte, c’est effacé aussi sur tes autres appareils. Tu ne pourras pas revenir en arrière.",
       "final": "Tu ne pourras pas revenir en arrière.",
@@ -377,7 +387,8 @@
         "expenses": "Dépenses et revenus effacés",
         "pockets": "Poches effacées",
         "loans": "Prêts effacés",
-        "parcels": "Colis effacés"
+        "parcels": "Colis effacés",
+        "shop": "Ma boutique effacée"
       },
       "offline": "Pas de connexion : les liens de partage n’ont pas pu être arrêtés. Rien n’est effacé, réessaie avec internet.",
       "failed": "L’effacement n’a pas abouti. Réessaie."
@@ -427,7 +438,8 @@
           "plantes": "tes plantes et leurs diagnostics",
           "foyer": "ton foyer : son nom, ton rôle, et seulement les lignes que tu as écrites",
           "reglages": "tes réglages",
-          "compte": "ton compte : ton e-mail, ton offre, tes abonnements, les codes utilisés, les places famille, les liens de partage et les appareils qui reçoivent les rappels"
+          "compte": "ton compte : ton e-mail, ton offre, tes abonnements, les codes utilisés, les places famille, les liens de partage et les appareils qui reçoivent les rappels",
+          "boutique": "ta boutique : les produits en stock, les ventes et les paiements des clients"
         },
         "photosIn": "les photos, rangées par écran ; les fichiers JSON indiquent le chemin de chacune",
         "photosOut": "pas de photos dans cette copie (case « Avec les photos » décochée)",
@@ -1093,7 +1105,8 @@
         "loans": "Prêts",
         "expenses": "Mes dépenses",
         "inventory": "Ma maison",
-        "plants": "Mes plantes"
+        "plants": "Mes plantes",
+        "shop": "Ma boutique"
       },
       "descriptions": {
         "reminders": "Rappels sur les scans (répétition, report), l’assurance et l’arrivée des colis.",
@@ -1107,7 +1120,8 @@
         "loans": "Qui me doit, à qui je dois : remboursements, retards, relance WhatsApp. Rien n’est compté dans les dépenses.",
         "expenses": "Le budget du mois, seul ou en foyer, et le bilan du mois par l’IA.",
         "inventory": "L’inventaire de la maison : objets, garanties et leur rappel, factures liées, export pour l’assurance.",
-        "plants": "Les plantes, leur arrosage proposé par l’IA, le rappel du matin et le diagnostic d’une plante malade (un scan du mois)."
+        "plants": "Les plantes, leur arrosage proposé par l’IA, le rappel du matin et le diagnostic d’une plante malade (un scan du mois).",
+        "shop": "Le carnet du petit commerçant : les ventes du jour, le stock avec alerte, le crédit des clients avec rappel WhatsApp, les totaux du jour et du mois."
       },
       "deepNeedsLimit": "Impossible d’enregistrer : {list} n’a pas de quota d’analyses approfondies (0 = sans limite). Mets d’abord un nombre par mois plus haut, dans les prix et quotas des offres. Gratuit n’a pas de quota : pas d’analyse approfondie."
     }
@@ -1610,7 +1624,8 @@
       "inventory": "Ma maison : tes objets, leur garantie et leurs factures, export pour l’assurance",
       "plants": "Mes plantes : arrosage, rappel le matin, diagnostic d’une plante malade",
       "allPlan": "Tout {plan}, et :",
-      "family": "Jusqu’à {count} personnes de ta famille"
+      "family": "Jusqu’à {count} personnes de ta famille",
+      "shop": "Ma boutique : ventes du jour, stock, crédit des clients"
     },
     "how": "Comment s’abonner",
     "step1": "Connecte-toi",
@@ -1896,7 +1911,8 @@
     "expensesHint": "Budget du mois, ce qu’il reste",
     "inventoryHint": "Objets, garanties, factures",
     "plantsHint": "Arrosage et rappels",
-    "pocketsHint": "Espèces, MVola, banque…"
+    "pocketsHint": "Espèces, MVola, banque…",
+    "shopHint": "Ventes, stock et crédit"
   },
   "food": {
     "title": "Journal alimentaire",
@@ -2218,6 +2234,10 @@
       "inventory": {
         "title": "Ma maison",
         "body": "Les objets de ta maison avec leur facture et leur garantie, un rappel avant la fin, et un export pour l’assurance."
+      },
+      "shop": {
+        "title": "Ma boutique",
+        "body": "Tes ventes du jour, ton stock avec alerte quand il est bas, et qui te doit combien, avec un rappel par WhatsApp."
       }
     }
   },
@@ -3867,5 +3887,495 @@
     "step1": "Dans Safari, touche le bouton Partager (le carré avec une flèche).",
     "step2": "Choisis « Sur l’écran d’accueil », puis « Ajouter ».",
     "step3": "Ouvre Assisteo depuis sa nouvelle icône et reviens ici."
+  },
+  "userReport": {
+    "open": "Donner mon avis / Signaler un problème",
+    "title": "Ton avis nous aide",
+    "kindLabel": "Type de message",
+    "kinds": {
+      "problem": "Un problème",
+      "idea": "Une idée"
+    },
+    "messageLabel": "Ton message",
+    "placeholderProblem": "Que s’est-il passé ? Sur quel écran ?",
+    "placeholderIdea": "Qu’est-ce qui te serait utile ?",
+    "contactLabel": "Ton e-mail ou ton numéro (facultatif)",
+    "hint": "Le message part avec l’écran d’où tu viens, la version de l’app et ton appareil. Pas de photo.",
+    "hintSignedIn": "Le message part avec l’écran d’où tu viens, la version de l’app, ton appareil et l’e-mail de ton compte. Pas de photo.",
+    "send": "Envoyer",
+    "cancel": "Annuler",
+    "tooShort": "Écris au moins quelques mots.",
+    "sent": "Merci, ton message est bien parti.",
+    "failed": "Impossible d’envoyer pour l’instant. Réessaie plus tard.",
+    "tooMany": "Tu as déjà envoyé plusieurs messages. Réessaie dans une heure.",
+    "admin": {
+      "title": "Avis et problèmes",
+      "subtitle": "Les messages envoyés depuis les Réglages (les 300 derniers).",
+      "empty": "Aucun message pour l’instant.",
+      "more": "Voir {count} de plus",
+      "anonymous": "Anonyme",
+      "screen": "Écran : {screen}",
+      "status": {
+        "new": "Nouveau",
+        "read": "Lu",
+        "done": "Traité"
+      },
+      "markRead": "Marquer lu",
+      "markDone": "Marquer traité",
+      "markNew": "Remettre en nouveau",
+      "filterAll": "Tous"
+    }
+  },
+  "weekly": {
+    "title": "Ta semaine",
+    "notifTitle": "Ta semaine avec Assisteo Agny",
+    "spent": "Dépenses : {amount}.",
+    "arrived": {
+      "one": "{count} colis arrivé.",
+      "other": "{count} colis arrivés."
+    },
+    "upcoming": {
+      "one": "{count} rappel la semaine prochaine.",
+      "other": "{count} rappels la semaine prochaine."
+    },
+    "close": "Fermer",
+    "setting": "Résumé du dimanche",
+    "hintApp": "Chaque dimanche à 17 h : tes dépenses, tes colis arrivés et tes rappels de la semaine à venir. Calculé sur ton téléphone.",
+    "hintWeb": "Le dimanche, une carte « Ta semaine » s’affiche sur l’accueil : tes dépenses, tes colis arrivés et tes rappels. Calculé sur ton appareil.",
+    "locked": "Résumé du dimanche : à partir de l’offre {plan}"
+  },
+  "help": {
+    "title": "Aide",
+    "lead": "Les réponses aux questions fréquentes et des guides pas à pas.",
+    "metaTitle": "Aide Assisteo Agny : questions fréquentes et guides",
+    "metaDescription": "Comment scanner, suivre un colis, créer un compte ou utiliser l’app sans réseau : les réponses d’Assisteo Agny.",
+    "searchLabel": "Chercher dans l’aide",
+    "searchPlaceholder": "Chercher une question…",
+    "noResult": "Aucune réponse pour « {query} ». Essaie d’autres mots, ou écris-nous depuis les Réglages (« Donner mon avis / Signaler un problème »).",
+    "resultCount": "{count} réponse(s)",
+    "guidesTitle": "Comment ça marche",
+    "faqTitle": "Questions fréquentes",
+    "step": "Étape {n}",
+    "contact": "Tu ne trouves pas ta réponse ? Écris-nous depuis Réglages, « Donner mon avis / Signaler un problème ».",
+    "open": "Aide",
+    "topics": {
+      "scan": {
+        "title": "Scanner",
+        "questions": {
+          "what": {
+            "q": "Que puis-je scanner ?",
+            "a": "Un document, une facture, un plat ou un aliment, un colis, un véhicule, une plante ou un objet. Prends la photo : l’app te dit ce que c’est et ce que tu peux faire ensuite."
+          },
+          "blurry": {
+            "q": "La réponse est fausse ou pas claire, que faire ?",
+            "a": "Reprends la photo de plus près, bien éclairée, sans reflet. Tu peux aussi poser une question à l’IA sous le résultat. Si la réponse reste fausse, utilise le pouce vers le bas : ça nous aide à progresser."
+          },
+          "pages": {
+            "q": "Comment scanner un document de plusieurs pages ?",
+            "a": "Avec l’option « Plusieurs pages » (à partir de l’offre Premium) : tu ajoutes une photo par page, puis tu lances l’analyse une seule fois."
+          }
+        }
+      },
+      "plans": {
+        "title": "Offres",
+        "questions": {
+          "free": {
+            "q": "Qu’est-ce qui est gratuit ?",
+            "a": "Un essai avec des scans et des questions pour commencer, sans carte bancaire. Les offres Lite, Premium et Pro ajoutent plus de scans, des rappels et des outils en plus."
+          },
+          "pay": {
+            "q": "Comment payer une offre ?",
+            "a": "Par Mobile Money (MVola…) en ariary, depuis l’écran « Offres ». Il n’y a pas de renouvellement automatique : tu choisis quand continuer.",
+            "undefined": "Connecte-toi d’abord : ton offre est liée à ton e-mail. Dans « Les offres », paie par Mobile Money en ariary en suivant les instructions, puis envoie la référence de la transaction. L’offre s’active dès que le paiement est vérifié. Rien ne se renouvelle automatiquement."
+          },
+          "limit": {
+            "q": "J’ai utilisé tous mes scans, que faire ?",
+            "a": "Les scans reviennent chaque mois. Pour en avoir plus tout de suite, regarde les offres : chaque offre a son nombre de scans par mois.",
+            "undefined": "Avec l’essai gratuit, les scans offerts ne reviennent pas : pour continuer, choisis une offre dans « Les offres ». Avec une offre, ton compteur repart à zéro le 1er de chaque mois ; pour en avoir plus tout de suite, passe à une offre plus grande."
+          }
+        }
+      },
+      "parcels": {
+        "title": "Colis",
+        "questions": {
+          "add": {
+            "q": "Comment suivre un colis ?",
+            "a": "Scanne la page de suivi de ta commande (Temu, Shein, AliExpress, Pinduoduo…), puis touche « Ajouter à mes colis ». Le colis apparaît dans « Mes colis ». Rescanne la page plus tard pour mettre son statut à jour."
+          },
+          "status": {
+            "q": "Comment changer le statut d’un colis ?",
+            "a": "Rescanne la page de suivi : le statut se met à jour tout seul. Tu peux aussi toucher « Modifier » pour le changer à la main, ou « Marquer comme reçu » quand tu l’as récupéré."
+          },
+          "costs": {
+            "q": "Puis-je noter ce que le colis m’a coûté ?",
+            "a": "Oui, avec les frais du colis (à partir de l’offre Lite) : prix, transport, douane. L’app calcule le total."
+          }
+        }
+      },
+      "expenses": {
+        "title": "Dépenses",
+        "questions": {
+          "add": {
+            "q": "Comment noter une dépense ?",
+            "a": "Scanne le ticket ou la facture, ou saisis le montant à la main. L’app range la dépense dans une catégorie et la compte dans le mois."
+          },
+          "budget": {
+            "q": "Comment fixer un budget ?",
+            "a": "Dans l’écran « Mes dépenses », règle le budget du mois : l’app te montre ce qu’il reste et te prévient quand tu t’en approches."
+          },
+          "share": {
+            "q": "Puis-je partager mes dépenses avec ma famille ?",
+            "a": "Oui, avec un compte : tu peux inviter les membres de ton foyer à suivre les dépenses ensemble."
+          }
+        }
+      },
+      "loans": {
+        "title": "Prêts",
+        "questions": {
+          "add": {
+            "q": "Comment noter un prêt ou une dette ?",
+            "a": "Dans l’écran « Prêts », ajoute qui, combien et la date. Tu choisis si tu as prêté ou emprunté de l’argent."
+          },
+          "repay": {
+            "q": "Comment noter un remboursement ?",
+            "a": "Ouvre le prêt et ajoute un versement : le reste à rembourser se met à jour tout seul."
+          },
+          "remind": {
+            "q": "Puis-je être prévenu quand une échéance arrive ?",
+            "a": "Oui, dans l’app Android : si le prêt a une date à rendre, l’app te prévient la veille à 9 h, et le jour même pour relancer quelqu’un qui te doit de l’argent (« Me rappeler les échéances », dans « Prêts »). Il faut une offre avec les rappels (voir « Les offres »)."
+          }
+        }
+      },
+      "account": {
+        "title": "Compte",
+        "questions": {
+          "need": {
+            "q": "Faut-il un compte ?",
+            "a": "Non, tu peux utiliser l’app sans compte. Un compte (avec ton e-mail) sert à retrouver ton historique, tes colis et ton offre sur tous tes appareils."
+          },
+          "lost": {
+            "q": "J’ai changé de téléphone, comment retrouver mes données ?",
+            "a": "Connecte-toi avec le même compte : tes données se synchronisent. Sans compte, elles restent sur l’ancien appareil."
+          },
+          "delete": {
+            "q": "Comment supprimer mon compte ?",
+            "a": "Dans Réglages, section Compte, touche « Supprimer mon compte ». On t’envoie d’abord un code par e-mail pour vérifier que c’est toi. Ton compte et ses données sont effacés de nos serveurs et de cet appareil : c’est définitif."
+          }
+        }
+      },
+      "offline": {
+        "title": "Hors connexion",
+        "questions": {
+          "works": {
+            "q": "L’app marche-t-elle sans internet ?",
+            "a": "Tu peux consulter ton historique, tes colis et tes listes. Pour analyser une photo, il faut du réseau."
+          },
+          "queue": {
+            "q": "Que se passe-t-il si je scanne sans réseau ?",
+            "a": "La photo attend dans la file : dès que le réseau revient, l’analyse se fait et tu reçois le résultat."
+          },
+          "data": {
+            "q": "Comment économiser mes données mobiles ?",
+            "a": "Dans Réglages, choisis « Toujours » pour l’économie de données (« Auto » est le mode par défaut) : les photos sont plus légères et partent plus vite, même en 3G."
+          }
+        }
+      }
+    },
+    "guides": {
+      "scan": {
+        "title": "Scanner une photo",
+        "steps": {
+          "1": {
+            "t": "Prends la photo",
+            "b": "Cadre bien l’objet ou le document, avec de la lumière."
+          },
+          "2": {
+            "t": "L’IA analyse",
+            "b": "En quelques secondes, tu vois ce que c’est."
+          },
+          "3": {
+            "t": "Pose une question",
+            "b": "Demande un détail ou ce qu’il faut faire ensuite."
+          }
+        }
+      },
+      "parcel": {
+        "title": "Suivre un colis",
+        "steps": {
+          "1": {
+            "t": "Scanne la page de suivi",
+            "b": "Celle de ta commande sur Temu, Shein, AliExpress…"
+          },
+          "2": {
+            "t": "Ajoute le colis",
+            "b": "Il rejoint ta liste, avec son statut."
+          },
+          "3": {
+            "t": "Sois prévenu",
+            "b": "À partir de Lite, une notification le jour de livraison prévue (Réglages)."
+          }
+        }
+      },
+      "expense": {
+        "title": "Noter une dépense",
+        "steps": {
+          "1": {
+            "t": "Scanne le ticket",
+            "b": "Ou saisis le montant à la main."
+          },
+          "2": {
+            "t": "Vérifie la catégorie",
+            "b": "Corrige-la d’un geste si besoin."
+          },
+          "3": {
+            "t": "Regarde ton mois",
+            "b": "Le total et le budget restant se mettent à jour."
+          }
+        }
+      },
+      "account": {
+        "title": "Créer un compte",
+        "steps": {
+          "1": {
+            "t": "Ouvre les Réglages",
+            "b": "Touche « Se connecter »."
+          },
+          "2": {
+            "t": "Entre ton e-mail",
+            "b": "Tape le code reçu par e-mail (pas de mot de passe)."
+          },
+          "3": {
+            "t": "Retrouve tout",
+            "b": "Historique, colis et offre sur tous tes appareils."
+          }
+        }
+      }
+    },
+    "contactMail": "Ou par e-mail :"
+  },
+  "googleSignIn": {
+    "button": "Continuer avec Google",
+    "or": "ou",
+    "pageTitle": "Connexion",
+    "finishing": "Connexion avec Google…",
+    "signedIn": "Tu es connecté avec Google",
+    "failed": "La connexion avec Google n’a pas abouti. Réessaie, ou reçois un code par e-mail.",
+    "back": "Retour aux réglages"
+  },
+  "medicine": {
+    "tab": "Médicaments",
+    "title": "Ce que dit l’ordonnance",
+    "disclaimer": "Ces informations ne remplacent pas l’avis d’un médecin ou d’un pharmacien. Suis ce qui est écrit sur ton ordonnance et demande-leur en cas de doute.",
+    "unreadable": "Pas lisible avec certitude : {what}. Vérifie avec ton pharmacien.",
+    "none": "Aucun médicament n’a pu être lu sur la photo.",
+    "dose": "Posologie",
+    "duration": "Durée",
+    "notWritten": "Pas écrite sur la photo : demande à ton médecin ou à ton pharmacien",
+    "days": "{count} jour(s)",
+    "precautions": "Précautions habituelles",
+    "contraindications": "Contre-indications courantes (informations générales)",
+    "remindersTitle": "Rappels de prise",
+    "plannerHint": "Coche les médicaments à te rappeler, vérifie les heures et le nombre de jours, puis crée les rappels. Rien n’est créé sans ton accord.",
+    "start": "Premier jour",
+    "perDay": "Prises par jour",
+    "perDayOption": "{count} par jour",
+    "daysLabel": "Pendant combien de jours",
+    "daysPlaceholder": "Ex. : 7",
+    "timeLabel": "Heure de la prise {number}",
+    "needDays": "Indique le nombre de jours écrit sur l’ordonnance.",
+    "create": "Créer les rappels de prise",
+    "saved": "Rappels créés jusqu’au {date}",
+    "savedShort": "Rappels créés",
+    "savedNoNotifications": "Rappels enregistrés, mais les notifications sont bloquées : autorise-les dans les réglages du téléphone.",
+    "activeUntil": "Rappels de prise jusqu’au {date}",
+    "courseLine": "À {times}, pendant {count} jour(s)",
+    "stop": "Arrêter les rappels",
+    "confirmStop": "Oui, arrêter les rappels",
+    "stopped": "Rappels de prise arrêtés",
+    "locked": "Les rappels de prise : avec l’offre {plan}.",
+    "reminder": {
+      "title": "C’est l’heure de ton médicament",
+      "withDose": "{name} : {dose}"
+    },
+    "nameUnreadable": "Nom illisible",
+    "typeName": "Écris le nom du médicament"
+  },
+  "parcelLots": {
+    "perk": "Fret au kilo par transitaire et colis groupés par envoi (lot ou conteneur)",
+    "locked": "Prix de vente, paiement du client, bénéfice, fret au kilo et envois groupés : avec l’offre {plan}.",
+    "tab": "Envois",
+    "freightTitle": "Fret au kilo",
+    "forwarder": "Transitaire",
+    "forwarderPlaceholder": "Ex. : Trans Mada Express",
+    "weight": "Poids du colis en kilos",
+    "rate": "Tarif du transitaire en ariary par kilo",
+    "perKg": "Ar/kg",
+    "freightAmount": "Fret : {amount}, compté dans les frais",
+    "freightHint": "Note le poids et le tarif du transitaire : le fret s’ajoute aux frais. Son tarif est retenu pour tes prochains colis.",
+    "freightFee": "Fret {weight} kg × {rate}",
+    "new": "Nouvel envoi",
+    "empty": "Aucun envoi pour l’instant. Crée un envoi (un lot ou un conteneur) et ranges-y tes colis : tu vois son total et tu changes le statut de tous ses colis d’un coup.",
+    "departed": "Départ le {date}",
+    "noDate": "Date de départ pas notée",
+    "parcelsCount": "Colis",
+    "count": "{count} · {ongoing} en route",
+    "weightTotal": "Poids",
+    "freightTotal": "Fret",
+    "paid": "Payé",
+    "due": "Reste",
+    "kg": "{weight} kg",
+    "statusLabel": "Statut de tous ses colis",
+    "received": "Reçu (dans mes mains)",
+    "apply": "Appliquer",
+    "applied": "Statut changé pour {count} colis",
+    "nothingToUpdate": "Tous ses colis sont déjà reçus",
+    "editNamed": "Modifier l’envoi {name}",
+    "showParcels": "Voir ses {count} colis",
+    "hideParcels": "Masquer ses colis",
+    "sheetEdit": "Modifier l’envoi",
+    "name": "Nom de l’envoi",
+    "namePlaceholder": "Ex. : Conteneur de novembre",
+    "modeNone": "Pas encore choisi",
+    "departedAt": "Date de départ",
+    "parcels": "Ses colis",
+    "noParcels": "Aucun colis en route à ranger.",
+    "inOther": "Déjà dans « {name} »",
+    "save": "Enregistrer l’envoi",
+    "saved": "Envoi enregistré",
+    "remove": "Supprimer l’envoi",
+    "confirmRemove": "Oui, supprimer (les colis restent)",
+    "removed": "Envoi supprimé, ses colis restent dans Mes colis",
+    "badge": "Envoi : {name}",
+    "columns": {
+      "lot": "Envoi",
+      "weightKg": "Poids (kg)"
+    },
+    "rateMode": "Tarif retenu pour le mode : {mode}"
+  },
+  "parcelWhatsapp": {
+    "button": "Envoyer le statut au client",
+    "phone": "Numéro WhatsApp du client",
+    "phoneHint": "Pour lui envoyer le statut de ses colis directement sur WhatsApp. Retenu pour ses autres colis.",
+    "greeting": "Bonjour {name},",
+    "greetingNoName": "Bonjour,",
+    "status": "Colis « {title} » : {status}.",
+    "atForwarder": "livré chez le transitaire, pas encore arrivé ici",
+    "tracking": "N° de suivi : {number}",
+    "due": "Reste à payer : {amount}",
+    "allPaid": "Tout est payé, merci !",
+    "shareTitle": "Colis « {title} »",
+    "copied": "Message copié : colle-le dans la conversation du client",
+    "failed": "Impossible de partager le message"
+  },
+  "referralBonus": {
+    "body": "Invite un ami : quand il entre ton code dans « J’ai un code » puis fait son premier scan, vous gagnez chacun {scans} scans. Et si une offre est payée ensuite, tu reçois 1 mois offert.",
+    "message": "Je t’invite sur Assisteo Agny : on gagne chacun {scans} scans ! L’app t’aide à comprendre ce que tu photographies. Ouvre ce lien, crée ton compte : mon code {code} sera déjà rempli dans « J’ai un code ». Fais ensuite ton premier scan. {link}",
+    "friends": "Amis invités : {invited} (premier scan fait : {rewarded})",
+    "won": "Scans gagnés : {won} · il t’en reste {left}",
+    "admin": {
+      "title": "Parrainage",
+      "subtitle": "Ce que gagnent le parrain et son ami quand l’ami a un compte confirmé et fait son premier scan. Une fois par ami, par installation, et pas de parrainage de soi-même.",
+      "scans": "Scans gagnés par chacun (0 = parrainage par scans coupé)",
+      "cap": "Amis récompensés par parrain et par mois (au-delà, l’ami gagne, pas le parrain)",
+      "rewarded": "{count} amis récompensés depuis le début.",
+      "save": "Enregistrer",
+      "saved": "Parrainage enregistré."
+    }
+  },
+  "shop": {
+    "title": "Ma boutique",
+    "subtitle": "Tes ventes, ton stock et le crédit de tes clients.",
+    "locked": "Ma boutique est incluse à partir de l’offre {plan} : ventes du jour, stock avec alerte et crédit des clients.",
+    "totals": {
+      "label": "Totaux",
+      "today": "Aujourd’hui",
+      "month": "Ce mois-ci",
+      "owed": "On te doit",
+      "detail": "Encaissé {collected} · à crédit {credit}",
+      "owedBy": "{count} client(s)"
+    },
+    "tabs": {
+      "sales": "Ventes",
+      "stock": "Stock",
+      "credit": "Crédit"
+    },
+    "sale": {
+      "title": "Nouvelle vente",
+      "new": "Nouvelle vente",
+      "product": "Produit",
+      "otherProduct": "Autre produit (à écrire)",
+      "name": "Produit vendu",
+      "qty": "Quantité",
+      "price": "Prix unitaire (Ar)",
+      "payment": "Paiement",
+      "paid": "Payé en entier",
+      "credit": "À crédit (le client paiera plus tard)",
+      "paidNow": "Payé maintenant (Ar)",
+      "customer": "Client",
+      "phone": "Numéro WhatsApp du client (facultatif)",
+      "total": "Total : {amount}",
+      "save": "Enregistrer la vente",
+      "invalid": "Écris le produit, la quantité et le prix.",
+      "needCustomer": "Pour une vente à crédit, écris le nom du client.",
+      "emptyTitle": "Aucune vente aujourd’hui",
+      "emptyBody": "Touche « Nouvelle vente » pour noter ta première vente du jour.",
+      "line": "{qty} × {price} · {time}",
+      "creditFor": "{name} doit encore {rest}",
+      "delete": "Supprimer",
+      "deleteName": "Supprimer la vente de {name}",
+      "confirmDelete": "Oui, supprimer cette vente"
+    },
+    "stock": {
+      "lowTitle": "{count} produit(s) bientôt en rupture",
+      "low": "Presque fini : {qty} en stock",
+      "inStock": "{qty} en stock",
+      "emptyTitle": "Aucun produit en stock",
+      "emptyBody": "Ajoute tes produits pour suivre ce qu’il te reste, et être prévenu quand il est bas."
+    },
+    "product": {
+      "add": "Ajouter un produit",
+      "addTitle": "Nouveau produit",
+      "editTitle": "Modifier le produit",
+      "edit": "Modifier",
+      "name": "Nom du produit",
+      "stock": "En stock",
+      "lowAt": "Prévenir à partir de",
+      "price": "Prix de vente habituel (Ar, facultatif)",
+      "lowHint": "Quand le stock tombe à ce nombre ou moins, le produit apparaît dans l’alerte. Chaque vente enlève la quantité vendue.",
+      "save": "Enregistrer",
+      "delete": "Supprimer le produit",
+      "invalid": "Écris le nom du produit et la quantité en stock."
+    },
+    "credit": {
+      "title": "Encaisser un paiement",
+      "collect": "Encaisser",
+      "remind": "Relancer sur WhatsApp",
+      "owes": "{name} te doit {amount}.",
+      "received": "Montant reçu (Ar)",
+      "save": "Enregistrer le paiement",
+      "invalid": "Écris un montant, au plus ce que le client doit.",
+      "emptyTitle": "Personne ne te doit rien",
+      "emptyBody": "Les ventes à crédit apparaîtront ici, avec ce que chaque client doit encore.",
+      "message": "Bonjour {name}, petit rappel : il reste {amount} à payer à la boutique. Merci !"
+    }
+  },
+  "householdShare": {
+    "someone": "un membre du foyer",
+    "list": {
+      "share": "Partager avec le foyer",
+      "shared": "Liste partagée : les membres du foyer la voient et la cochent",
+      "sharedBy": "Partagée par {name}",
+      "sharedByMe": "Partagée avec le foyer",
+      "stop": "Arrêter le partage",
+      "stopped": "Partage arrêté : la liste n’est plus qu’à toi"
+    },
+    "parcel": {
+      "share": "Partager avec le foyer",
+      "shared": "Colis partagé avec le foyer, sans ses prix",
+      "stop": "Arrêter le partage",
+      "stopped": "Partage du colis arrêté",
+      "fromHousehold": "Partagés par ton foyer",
+      "sharedBy": "Partagé par {name}"
+    }
   }
 }

@@ -4,6 +4,8 @@ import { ApiError } from "@/types/api";
 import { authHeaders } from "./account";
 import { detachHousehold } from "./householdExpenseStore";
 import { detachHouseholdLoans } from "./householdLoanStore";
+import { detachSharedLists } from "./sharedLists";
+import { detachSharedParcels } from "./sharedParcels";
 import { httpClient } from "./httpClient";
 
 // The user's household ("Mes dépenses" shared), as the server last told it.
@@ -45,6 +47,8 @@ async function apply(response: HouseholdResponse) {
   if (!id || (householdOnDevice && householdOnDevice !== id)) {
     await detachHousehold(response.userId);
     await detachHouseholdLoans(response.userId);
+    await detachSharedLists(response.userId);
+    await detachSharedParcels();
   }
   householdOnDevice = id;
   const next: HouseholdSnapshot = { signedOut: false, userId: response.userId, household: response.household, stale: false };

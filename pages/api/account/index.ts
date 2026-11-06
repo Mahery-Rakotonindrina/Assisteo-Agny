@@ -2,6 +2,8 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { applyCors, clientIp, sendError } from "@/lib/server/http";
 import { rateLimit } from "@/lib/server/rateLimit";
 import { codeIsRecent } from "@/lib/server/recentSignIn";
+import { deleteReferralData } from "@/lib/server/referralBonus";
+import { deleteUserReportsOf } from "@/lib/server/userReports";
 import { accountsEnabled, supabaseAdmin, verifiedClaims } from "@/lib/server/supabaseAdmin";
 
 // Deletes the signed-in user's account for good: photos first (storage is not
@@ -63,6 +65,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const { error } = await storage.remove(paths.slice(index, index + PAGE));
       if (error) throw error;
     }
+    // The feedback messages sent from this account go with it.
+    await deleteUserReportsOf(userId);
+    // The installs and addresses kept against abuse, the scans won and the friends go with it.
+    if (typeof verified.claims.email === "string") await deleteReferralData(verified.claims.email.toLowerCase());
     const { error } = await supabaseAdmin().auth.admin.deleteUser(userId);
     if (error) throw error;
   } catch {

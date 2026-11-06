@@ -20,7 +20,7 @@ const permissionIcons: Record<PermissionKind, ReactNode> = {
 };
 
 // Also the page a borrower opens from a shared loan: they may not use the app at all.
-const legalRoutes = new Set(["/privacy", "/terms", "/pret"]);
+const legalRoutes = new Set(["/privacy", "/terms", "/pret", "/aide"]);
 
 /**
  * First-run walkthrough on phones: explains each device permission and asks

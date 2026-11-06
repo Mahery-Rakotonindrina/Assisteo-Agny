@@ -5,6 +5,7 @@ import { loanSharing } from "./loanSharing";
 import { loanStore } from "./loanStore";
 import { keepParcelThumbnails } from "./parcelLinking";
 import { parcelStore } from "./parcelStore";
+import { shopStore } from "./shopStore";
 
 // "Remettre à zéro" (Réglages): one screen's personal data removed, through
 // each store's synced removal (signed in, tombstones reach the other devices).
@@ -43,6 +44,9 @@ export async function resetScreen(screen: ResetScreen) {
       return;
     case "parcels":
       await parcelStore.removeAll();
+      return;
+    case "shop":
+      await shopStore.removeAll();
       return;
   }
 }

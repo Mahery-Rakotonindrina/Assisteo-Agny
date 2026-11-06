@@ -8,13 +8,17 @@ import { deleteAccountOnServer, onSessionChange, signOutAccount } from "@/servic
 import { aiKeyStore } from "@/services/aiKeyStore";
 import { accountKeyApi } from "@/services/accountKeyApi";
 import { cancelAllNotifications } from "@/services/notifications";
-import { listStore } from "@/services/listStore";
+import { listStore, sharedListStore } from "@/services/listStore";
+import { startSharedListSync, syncSharedLists } from "@/services/sharedLists";
+import { refreshSharedParcels, sharedParcelStore, startSharedParcelSync, stopSharesOf, syncSharedParcels } from "@/services/sharedParcels";
 import { loanStore } from "@/services/loanStore";
 import { startLoanSync, syncLoans } from "@/services/loanSync";
 import { startListSync, syncLists } from "@/services/listSync";
 import { vehicleStore } from "@/services/vehicleStore";
 import { plantStore } from "@/services/plantStore";
 import { startPlantSync, syncPlants } from "@/services/plantSync";
+import { shopStore } from "@/services/shopStore";
+import { startShopSync, syncShop } from "@/services/shopSync";
 import { startVehicleSync, syncVehicles } from "@/services/vehicleSync";
 import { homeItemStore } from "@/services/homeItemStore";
 import { startHomeItemSync, syncHomeItems } from "@/services/homeItemSync";
@@ -120,6 +124,12 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     return startPlantSync(userId);
   }, [userId]);
 
+  // "Ma boutique" (fails quietly before migration 0022).
+  useEffect(() => {
+    if (!userId) return;
+    return startShopSync(userId);
+  }, [userId]);
+
   // "Prêts".
   useEffect(() => {
     if (!userId) return;
@@ -136,6 +146,28 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!userId || !householdId) return;
     return startHouseholdExpenseSync(userId, householdId);
+  }, [userId, householdId]);
+
+  // The lists and parcels shared with the household (fail quietly before migration 0023).
+  useEffect(() => {
+    if (!userId || !householdId) return;
+    const stops = [startSharedListSync(userId, householdId), startSharedParcelSync(userId, householdId)];
+    // The copies of one's shared parcels follow them (a moment after a change, from here or synced).
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const follow = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => void parcelStore.list().then((parcels) => refreshSharedParcels(parcels, userId)).catch(() => undefined), 1500);
+    };
+    follow();
+    const unsubscribe = parcelStore.subscribe(follow);
+    // A parcel removed by the user here: its share stops (never because a parcel is not here yet).
+    const unsubscribeRemoved = parcelStore.onRemoved((ids) => void stopSharesOf(ids, userId).catch(() => undefined));
+    return () => {
+      clearTimeout(timer);
+      unsubscribe();
+      unsubscribeRemoved();
+      stops.forEach((stop) => stop());
+    };
   }, [userId, householdId]);
 
   // History.
@@ -218,11 +250,14 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         syncVehicles(userId).catch(() => undefined),
         syncHomeItems(userId).catch(() => undefined),
         syncPlants(userId).catch(() => undefined),
+        syncShop(userId).catch(() => undefined),
         syncLoans(userId).catch(() => undefined),
         syncExpenses(userId).catch(() => undefined),
         householdId ? syncHouseholdExpenses(userId, householdId).catch(() => undefined) : undefined,
         // Fails quietly before migration 0012.
         householdId ? syncHouseholdLoans(userId, householdId).catch(() => undefined) : undefined,
+        householdId ? syncSharedLists(userId, householdId).catch(() => undefined) : undefined,
+        householdId ? syncSharedParcels(userId, householdId).catch(() => undefined) : undefined,
       ]);
   }, [userId, householdId]);
 
@@ -241,10 +276,13 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await vehicleStore.wipe();
     await homeItemStore.wipe();
     await plantStore.wipe();
+    await shopStore.wipe();
     await loanStore.wipe();
     await expenseStore.wipe();
     await householdExpenseStore.wipe();
     await householdLoanStore.wipe();
+    await sharedListStore.wipe();
+    await sharedParcelStore.wipe();
     await loanSharing.wipe();
     await householdStore.wipe();
     await wipeReviews().catch(() => undefined);
@@ -268,10 +306,13 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await vehicleStore.wipe();
     await homeItemStore.wipe();
     await plantStore.wipe();
+    await shopStore.wipe();
     await loanStore.wipe();
     await expenseStore.wipe();
     await householdExpenseStore.wipe();
     await householdLoanStore.wipe();
+    await sharedListStore.wipe();
+    await sharedParcelStore.wipe();
     await loanSharing.wipe();
     await householdStore.wipe();
     await wipeReviews().catch(() => undefined);

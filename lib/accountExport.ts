@@ -16,11 +16,15 @@ export type AccountExport = {
   offers: { trialUsed: boolean; pendingDiscount: { code: string; percent: number; since: string } | null; referredBy: string | null };
   familySeats: { given: Array<{ member: string; since: string }>; received: { owner: string; since: string } | null };
   /** The household: its name, one's role, and only one's own shared lines. */
-  household: { name: string; role: string; joinedAt: string; expenses: unknown[]; loans: unknown[] } | null;
+  household: { name: string; role: string; joinedAt: string; expenses: unknown[]; loans: unknown[]; shares: unknown[] } | null;
   /** The loans' share links made by the account: no token (the server keeps only its hash anyway). */
   loanShareLinks: Array<{ person: string; createdAt: string; updatedAt: string; active: boolean }>;
   /** The devices that receive reminders: no token nor key. */
   notificationDevices: Array<{ platform: string; updatedAt: string }>;
+  /** The feedback messages sent from the account (Settings), kept 12 months. */
+  feedback: Array<{ sentAt: string; kind: string; message: string }>;
+  /** The referral: the installs and addresses seen on the account's scans (kept 90 days against abuse), the scans won and left, the friends who entered its code. */
+  referral: { devices: string[]; friendsInvited: number; scansWon: number; scansLeft: number };
 };
 
 const iso = (value: string | number | null | undefined) => (value === null || value === undefined || value === "" ? null : new Date(value).toISOString());

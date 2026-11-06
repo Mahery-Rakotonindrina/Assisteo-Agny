@@ -1,0 +1,190 @@
+@use "../../styles/mixins" as *;
+
+// "Ma boutique": the page, its totals, lists and forms. Fields are 16 px, buttons 44 px.
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  max-width: 720px;
+}
+
+.header {
+  padding-top: 1.25rem;
+
+  @include desktop {
+    padding-top: 0;
+  }
+
+  h1 {
+    @include display(2.6rem);
+  }
+
+  p {
+    margin-top: 0.3rem;
+    color: var(--text-muted);
+  }
+}
+
+.totals {
+  @include card;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.75rem;
+  padding: 0.9rem;
+}
+
+.total {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+
+  small {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+
+  strong {
+    font-size: 1.15rem;
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+  }
+
+  span {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    overflow-wrap: anywhere;
+  }
+}
+
+.alert {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in srgb, var(--cat-food) 55%, transparent);
+  background: color-mix(in srgb, var(--cat-food) 12%, transparent);
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  @include card;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: var(--radius-md);
+
+  &[data-low] {
+    border-color: color-mix(in srgb, var(--cat-food) 55%, transparent);
+  }
+}
+
+.line {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+
+  > span:first-child {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  small {
+    color: var(--text-muted);
+  }
+
+  > strong {
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.hint {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+}
+
+.empty {
+  padding: 1rem 0.5rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+// ---- Forms ----------------------------------------------------------------------
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  gap: 0.6rem;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  select,
+  input {
+    height: 2.75rem;
+    padding: 0 0.65rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+    font-size: 1rem;
+    color-scheme: light dark;
+    outline: none;
+    min-width: 0;
+
+    &:focus {
+      border-color: var(--accent-mark);
+    }
+  }
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+.sum {
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
