@@ -320,7 +320,7 @@
         "loans": "Loans",
         "parcels": "Parcels",
         "shop": "My shop",
-        "health": "Emergency card"
+        "health": "My health"
       },
       "hints": {
         "history": "All your analyses. Your parcels keep their photo.",
@@ -329,7 +329,7 @@
         "loans": "All your loans, repayments and proofs.",
         "parcels": "Every parcel you follow, and their reminders.",
         "shop": "Your sales, your stock and your customers’ credit.",
-        "health": "Your blood group, your allergies, the person to call."
+        "health": "Your emergency card and your appointments."
       },
       "empty": "Nothing to erase",
       "title": "{name}: erase everything?",
@@ -371,7 +371,9 @@
         "shopProductsOne": "1 product in stock",
         "shopPayments": "{count} customer payments",
         "shopPaymentsOne": "1 customer payment",
-        "emergencyCard": "Your emergency card"
+        "emergencyCard": "Your emergency card",
+        "appointments": "{count} appointments",
+        "appointmentsOne": "1 appointment"
       },
       "stays": {
         "history": "Your parcels (with their photo), your expenses, your loans and your lists.",
@@ -394,7 +396,7 @@
         "loans": "Loans erased",
         "parcels": "Parcels erased",
         "shop": "My shop erased",
-        "health": "Emergency card erased"
+        "health": "Emergency card and appointments erased"
       },
       "offline": "No connection: the share links couldn't be stopped. Nothing is erased, try again online.",
       "failed": "Erasing didn't work. Try again."
@@ -4097,6 +4099,10 @@
           "where": {
             "q": "Where do I find my treatments?",
             "a": "In “My health” (menu, or the home shortcut): your emergency card, your current treatments, the next dose, and all your prescriptions."
+          },
+          "appointments": {
+            "q": "How do I not forget a doctor's appointment?",
+            "a": "In “My health”, tap “Add an appointment”: the day, the time, the doctor and the place. From Lite, you get a reminder the day before at 6 pm and another one 2 h before. Past appointments stay folded at the bottom of the list."
           }
         }
       }
@@ -4476,6 +4482,41 @@
         "updated": "Updated on {date}",
         "copied": "Card copied: paste it in a message",
         "failed": "Couldn't share the card"
+      }
+    },
+    "appointments": {
+      "title": "Appointments",
+      "add": "Add an appointment",
+      "edit": "Edit the appointment",
+      "editShort": "Edit",
+      "remove": "Delete",
+      "removeConfirm": "Yes, delete",
+      "empty": "No upcoming appointment. Add the next one: you'll get a reminder the day before and 2 h before.",
+      "past": "Past ({count})",
+      "day": "Day",
+      "hour": "Time",
+      "whenMissing": "Pick the day and time of the appointment.",
+      "who": "Doctor or department",
+      "whoHint": "Dr Rabe, dentist, maternity…",
+      "place": "Place",
+      "placeHint": "Practice, hospital, area…",
+      "note": "Reason or note",
+      "noteHint": "Bring the health booklet, fasting…",
+      "save": "Save",
+      "cancel": "Cancel",
+      "added": "Appointment added",
+      "updated": "Appointment changed",
+      "removed": "Appointment deleted",
+      "reminded": "Reminder the day before at 6 pm and 2 h before",
+      "remindedSoon": "Reminder 2 h before",
+      "locked": "Appointment reminders are included from {plan}.",
+      "reminders": {
+        "someone": "your appointment",
+        "titleEve": "Tomorrow: {who}",
+        "eve": "Appointment {when}",
+        "titleSoon": "In 2 h: {who}",
+        "soon": "Appointment at {time}",
+        "where": ", {place}"
       }
     }
   }

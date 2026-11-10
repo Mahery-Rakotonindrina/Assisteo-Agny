@@ -320,7 +320,7 @@
         "loans": "Prêts",
         "parcels": "Colis",
         "shop": "Ma boutique",
-        "health": "Fiche d’urgence"
+        "health": "Ma santé"
       },
       "hints": {
         "history": "Toutes tes analyses. Tes colis gardent leur photo.",
@@ -329,7 +329,7 @@
         "loans": "Tous tes prêts, remboursements et preuves.",
         "parcels": "Tous les colis que tu suis, et leurs rappels.",
         "shop": "Tes ventes, ton stock et le crédit de tes clients.",
-        "health": "Ton groupe sanguin, tes allergies, la personne à prévenir."
+        "health": "Ta fiche d’urgence et tes rendez-vous."
       },
       "empty": "Rien à effacer",
       "title": "{name} : tout effacer ?",
@@ -371,7 +371,9 @@
         "shopProductsOne": "1 produit en stock",
         "shopPayments": "{count} paiements de clients",
         "shopPaymentsOne": "1 paiement de client",
-        "emergencyCard": "Ta fiche d’urgence"
+        "emergencyCard": "Ta fiche d’urgence",
+        "appointments": "{count} rendez-vous",
+        "appointmentsOne": "1 rendez-vous"
       },
       "stays": {
         "history": "Tes colis (avec leur photo), tes dépenses, tes prêts et tes listes.",
@@ -394,7 +396,7 @@
         "loans": "Prêts effacés",
         "parcels": "Colis effacés",
         "shop": "Ma boutique effacée",
-        "health": "Fiche d’urgence effacée"
+        "health": "Fiche d’urgence et rendez-vous effacés"
       },
       "offline": "Pas de connexion : les liens de partage n’ont pas pu être arrêtés. Rien n’est effacé, réessaie avec internet.",
       "failed": "L’effacement n’a pas abouti. Réessaie."
@@ -4097,6 +4099,10 @@
           "where": {
             "q": "Où retrouver mes traitements ?",
             "a": "Dans « Ma santé » (menu, ou raccourci sur l’accueil) : ta fiche d’urgence, tes traitements en cours, la prochaine prise, et toutes tes ordonnances."
+          },
+          "appointments": {
+            "q": "Comment ne pas oublier un rendez-vous chez le médecin ?",
+            "a": "Dans « Ma santé », touche « Ajouter un rendez-vous » : le jour, l’heure, le médecin et le lieu. À partir de Lite, tu reçois un rappel la veille à 18 h et un autre 2 h avant. Les rendez-vous passés restent repliés en bas de la liste."
           }
         }
       }
@@ -4476,6 +4482,41 @@
         "updated": "Mise à jour le {date}",
         "copied": "Fiche copiée : colle-la dans un message",
         "failed": "Impossible de partager la fiche"
+      }
+    },
+    "appointments": {
+      "title": "Rendez-vous",
+      "add": "Ajouter un rendez-vous",
+      "edit": "Modifier le rendez-vous",
+      "editShort": "Modifier",
+      "remove": "Supprimer",
+      "removeConfirm": "Oui, supprimer",
+      "empty": "Aucun rendez-vous à venir. Ajoute le prochain : tu auras un rappel la veille et 2 h avant.",
+      "past": "Passés ({count})",
+      "day": "Jour",
+      "hour": "Heure",
+      "whenMissing": "Choisis le jour et l’heure du rendez-vous.",
+      "who": "Médecin ou service",
+      "whoHint": "Dr Rabe, dentiste, maternité…",
+      "place": "Lieu",
+      "placeHint": "Cabinet, hôpital, quartier…",
+      "note": "Motif ou note",
+      "noteHint": "Apporter le carnet de santé, à jeun…",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "added": "Rendez-vous ajouté",
+      "updated": "Rendez-vous modifié",
+      "removed": "Rendez-vous supprimé",
+      "reminded": "Rappel la veille à 18 h et 2 h avant",
+      "remindedSoon": "Rappel 2 h avant",
+      "locked": "Les rappels de rendez-vous sont inclus à partir de {plan}.",
+      "reminders": {
+        "someone": "ton rendez-vous",
+        "titleEve": "Demain : {who}",
+        "eve": "Rendez-vous {when}",
+        "titleSoon": "Dans 2 h : {who}",
+        "soon": "Rendez-vous à {time}",
+        "where": ", {place}"
       }
     }
   }

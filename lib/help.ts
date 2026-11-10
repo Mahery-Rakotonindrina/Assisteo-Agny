@@ -5,7 +5,7 @@ export const helpTopics = [
   { id: "scan", questions: ["what", "blurry", "pages"] },
   { id: "plans", questions: ["free", "pay", "limit"] },
   { id: "parcels", questions: ["add", "status", "costs"] },
-  { id: "health", questions: ["where"] },
+  { id: "health", questions: ["where", "appointments"] },
   // Expenses and loans are Admin-only for now: the page shows them only to a plan that opens them (public page, no promise nobody can use).
   { id: "expenses", questions: ["add", "budget", "share"], feature: "expenses" },
   { id: "loans", questions: ["add", "repay", "remind"], feature: "loans" },

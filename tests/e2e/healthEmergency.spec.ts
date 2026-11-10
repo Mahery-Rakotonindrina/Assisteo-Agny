@@ -113,7 +113,7 @@ test("the emergency card: filled, read again after a reload, called, shared, the
   await row.click();
   await expect(page.getByTestId("reset-window")).toContainText("Ta fiche d’urgence");
   await page.getByTestId("reset-confirm").click();
-  await expect(page.getByText("Fiche d’urgence effacée")).toBeVisible();
+  await expect(page.getByText("Fiche d’urgence et rendez-vous effacés")).toBeVisible();
   await expect(row).toHaveCount(0);
   await page.goto("/sante");
   await expect(page.getByTestId("emergency-fill")).toBeVisible();

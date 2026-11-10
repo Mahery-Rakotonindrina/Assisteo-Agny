@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { motion } from "motion/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BellOff, BellRing, Check, ChevronRight, Clock, FileDown, FileText, Pill, ScanLine, Share2 } from "lucide-react";
+import { Appointments } from "@/components/Appointments";
 import { Button } from "@/components/Button";
 import { EmergencyCard } from "@/components/EmergencyCard";
 import { EmptyState } from "@/components/EmptyState";
@@ -31,9 +33,9 @@ const SCAN_HREF = "/?mode=document";
 /**
  * "Ma santé": the treatments in progress with their next dose, and the
  * prescriptions and medicine boxes scanned. Everything comes from the
- * history (the scans and their dose plans), but the emergency card, kept in
- * the settings. The list and the card are for everyone; dose reminders from
- * Lite, like on a scan.
+ * history (the scans and their dose plans), but the emergency card and the
+ * appointments, kept in the settings. The lists and the card are for
+ * everyone; reminders (doses, appointments) from Lite, like on a scan.
  */
 export default function HealthPage() {
   const { t, locale } = useTranslation();
@@ -45,6 +47,13 @@ export default function HealthPage() {
   const reminders = has("reminders");
   const { treatments, scans } = healthOverview(entries, now);
   const empty = !isLoading && scans.length === 0;
+  const router = useRouter();
+  const show = router.query.show;
+
+  // An appointment's notification: its section in sight.
+  useEffect(() => {
+    if (show === "appointments") document.getElementById("appointments")?.scrollIntoView({ block: "start" });
+  }, [show]);
 
   // "Partager mes traitements": as a message, or as a PDF, with the medical warning.
   const share = async (as: "text" | "pdf") => {
@@ -78,6 +87,10 @@ export default function HealthPage() {
 
         <motion.div variants={rise}>
           <EmergencyCard />
+        </motion.div>
+
+        <motion.div variants={rise}>
+          <Appointments />
         </motion.div>
 
         {empty ? (

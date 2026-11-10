@@ -1,3 +1,4 @@
+import { APPOINTMENT_NOTIFICATION_PREFIX } from "@/lib/appointments";
 import { LOAN_NOTIFICATION_PREFIX, loanTapTarget } from "@/lib/loanReminders";
 import { EVENING_ENTRY_ID } from "./eveningReminder";
 import { EXPENSE_NOTIFICATION_PREFIX } from "./expenseReminders";
@@ -35,6 +36,8 @@ export function tapTarget(entryId: string): TapTarget {
   if (entryId.startsWith(PLANT_NOTIFICATION_PREFIX)) return { pathname: "/plants" };
   // A dose to take, or the last day: "Ma santé", the treatments in sight.
   if (entryId.startsWith(MEDICATION_NOTIFICATION_PREFIX)) return { pathname: "/sante" };
+  // A medical appointment: "Ma santé", its appointments.
+  if (entryId.startsWith(APPOINTMENT_NOTIFICATION_PREFIX)) return { pathname: "/sante", query: { show: "appointments" } };
   if (entryId === EVENING_ENTRY_ID) return { pathname: "/expenses", query: { add: "expense" } };
   if (entryId.startsWith(EXPENSE_NOTIFICATION_PREFIX)) return { pathname: "/expenses" };
   return { pathname: "/result", query: { id: entryId, reminded: "1" } };
@@ -46,7 +49,7 @@ export function tapTarget(entryId: string): TapTarget {
  * fails, the scan opens so nothing is silently lost. Anything else opens.
  */
 export async function handleNotificationTap(entryId: string, actionId: string, notificationId: number, actions: TapActions) {
-  const isScan = ![PARCEL_NOTIFICATION_PREFIX, VEHICLE_NOTIFICATION_PREFIX, EXPENSE_NOTIFICATION_PREFIX, LOAN_NOTIFICATION_PREFIX, HOME_ITEM_NOTIFICATION_PREFIX, PLANT_NOTIFICATION_PREFIX, MEDICATION_NOTIFICATION_PREFIX].some((prefix) => entryId.startsWith(prefix)) && entryId !== WEEKLY_ENTRY_ID;
+  const isScan = ![PARCEL_NOTIFICATION_PREFIX, VEHICLE_NOTIFICATION_PREFIX, EXPENSE_NOTIFICATION_PREFIX, LOAN_NOTIFICATION_PREFIX, HOME_ITEM_NOTIFICATION_PREFIX, PLANT_NOTIFICATION_PREFIX, MEDICATION_NOTIFICATION_PREFIX, APPOINTMENT_NOTIFICATION_PREFIX].some((prefix) => entryId.startsWith(prefix)) && entryId !== WEEKLY_ENTRY_ID;
   // "J'ai pris": ticked from the notification; if that fails, "Ma santé" opens.
   if (actionId === TAKEN_ACTION && entryId.startsWith(MEDICATION_NOTIFICATION_PREFIX)) {
     if (await takenFromNotification(entryId, notificationId).catch(() => false)) {

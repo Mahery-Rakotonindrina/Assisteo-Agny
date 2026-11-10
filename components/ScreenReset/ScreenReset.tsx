@@ -13,6 +13,7 @@ import { useShop } from "@/hooks/useShop";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAccount } from "@/lib/account/AccountProvider";
+import { liveAppointments, removeAllAppointments } from "@/lib/appointments";
 import { blankCard, isCardEmpty } from "@/lib/emergencyCard";
 import { useSettings } from "@/lib/settings/SettingsProvider";
 import { computedLineCount, expenseResetCounts, loanResetCounts, pocketResetCounts, shopResetCounts, type ResetScreen } from "@/lib/screenReset";
@@ -51,6 +52,8 @@ export function ScreenReset() {
   const sources = useExpenseSources();
   const { settings, update } = useSettings();
   const hasCard = !isCardEmpty(settings.emergencyCard);
+  const appointmentCount = liveAppointments(settings.appointments).length;
+  const hasHealth = hasCard || appointmentCount > 0;
   const [open, setOpen] = useState<ResetScreen | null>(null);
   const [working, setWorking] = useState(false);
 
@@ -75,7 +78,7 @@ export function ScreenReset() {
     loans: [{ key: "loans", count: loanCounts.loans }, { key: "repayments", count: loanCounts.repayments }, { key: "proofs", count: loanCounts.proofs }, { key: "links" }],
     parcels: [{ key: "parcels", count: parcels.length }, { key: "parcelReminders" }],
     shop: [{ key: "shopSales", count: shopCounts.sales }, { key: "shopProducts", count: shopCounts.products }, { key: "shopPayments", count: shopCounts.payments }],
-    health: [{ key: "emergencyCard" }],
+    health: [...(hasCard ? [{ key: "emergencyCard" }] : []), { key: "appointments", count: appointmentCount }],
   };
   const hasData: Record<ResetScreen, boolean> = {
     history: entries.length > 0,
@@ -84,7 +87,7 @@ export function ScreenReset() {
     loans: loanCounts.loans > 0,
     parcels: parcels.length > 0,
     shop: shopCounts.sales + shopCounts.products + shopCounts.payments > 0,
-    health: hasCard,
+    health: hasHealth,
   };
   // A screen of a feature the plan doesn't have shows only when something is kept from it.
   const shown: Record<ResetScreen, boolean> = {
@@ -94,8 +97,8 @@ export function ScreenReset() {
     loans: has("loans") || hasData.loans,
     parcels: true,
     shop: has("shop") || hasData.shop,
-    // Ma santé's emergency card: only once written.
-    health: hasCard,
+    // Ma santé's emergency card and appointments: only once written.
+    health: hasHealth,
   };
   const screens = (["history", "expenses", "pockets", "loans", "parcels", "shop", "health"] as const).filter((screen) => shown[screen]);
 
@@ -106,8 +109,11 @@ export function ScreenReset() {
   const confirm = async (screen: ResetScreen) => {
     setWorking(true);
     try {
-      // The emergency card is a setting: emptied here, with its date so the other devices follow.
-      if (screen === "health") update({ emergencyCard: blankCard(Date.now()) });
+      // The emergency card and the appointments are settings: emptied here, dated so the other devices follow.
+      if (screen === "health") {
+        const now = Date.now();
+        update({ ...(settings.emergencyCard && { emergencyCard: blankCard(now) }), ...(settings.appointments && { appointments: removeAllAppointments(settings.appointments, now) }) });
+      }
       else await resetScreen(screen);
       setOpen(null);
       toast(t(`settings.reset.done.${screen}`));
