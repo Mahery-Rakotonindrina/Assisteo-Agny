@@ -6,19 +6,31 @@
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
+  min-width: 0;
 }
 
+// One line that scrolls sideways (a household can be long), never wider than the screen.
 .chips {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 0.45rem;
+  min-width: 0;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  padding-block: 2px;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .chip {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  max-width: 100%;
+  flex: none;
+  max-width: 14rem;
   min-height: 2.75rem;
   padding: 0.35rem 0.95rem;
   border-radius: 999px;
@@ -29,7 +41,9 @@
   font-weight: 700;
   line-height: 1.2;
   text-align: left;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   cursor: pointer;
 
   svg {
@@ -41,6 +55,12 @@
     background: var(--accent-soft);
     color: var(--accent-text);
   }
+}
+
+.label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .add {

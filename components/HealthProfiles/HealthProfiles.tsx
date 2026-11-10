@@ -57,6 +57,9 @@ export function HealthProfiles({ selected, onSelect, entries }: { selected: stri
     toast(t("health.profiles.removed", { name: profile.name }));
   };
 
+  // "1 an", "2 ans"; nothing under a year (the "…One" form, like the other counted texts).
+  const ageText = (age: number | null) => (!age || age < 1 ? null : age === 1 ? t("health.profiles.ageOne") : t("health.profiles.age", { count: age }));
+
   if (!ready) return null;
 
   return (
@@ -66,8 +69,8 @@ export function HealthProfiles({ selected, onSelect, entries }: { selected: stri
           {t("health.profiles.me")}
         </button>
         {profiles.map((profile) => (
-          <button key={profile.id} type="button" className={styles.chip} aria-pressed={selected === profile.id} onClick={() => onSelect(profile.id)} data-testid="health-profile" data-profile={profile.id}>
-            {profile.name}
+          <button key={profile.id} type="button" className={styles.chip} aria-pressed={selected === profile.id} onClick={() => onSelect(profile.id)} data-testid="health-profile" data-profile={profile.id} title={profile.name}>
+            <span className={styles.label}>{profile.name}</span>
           </button>
         ))}
         <button type="button" className={`${styles.chip} ${styles.add}`} onClick={() => setSheet({ kind: "edit", profile: null })} data-testid="health-profile-add">
@@ -80,7 +83,7 @@ export function HealthProfiles({ selected, onSelect, entries }: { selected: stri
         <div className={styles.current} data-testid="health-profile-current">
           <p>
             <strong>{current.name}</strong>
-            <span>{[t(`health.profiles.relations.${current.relation}`), ageOf(current, now) !== null && t("health.profiles.age", { count: ageOf(current, now)! })].filter(Boolean).join(" · ")}</span>
+            <span>{[t(`health.profiles.relations.${current.relation}`), ageText(ageOf(current, now))].filter(Boolean).join(" · ")}</span>
           </p>
           <div className={styles.actions}>
             <Button variant="secondary" icon={<Pencil />} onClick={() => setSheet({ kind: "edit", profile: current })} data-testid="health-profile-edit">

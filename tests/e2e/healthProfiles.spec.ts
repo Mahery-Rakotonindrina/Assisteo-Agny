@@ -42,6 +42,15 @@ test("a relative: added, their appointment and card, the screen filtered, then r
   await expect(chip(page, "Rado")).toHaveAttribute("aria-pressed", "true");
   const age = new Date().getFullYear() - 2019;
   await expect(page.getByTestId("health-profile-current")).toContainText(`Enfant · ${age} ans`);
+  // One year old: singular; under a year: no age.
+  await page.getByTestId("health-profile-edit").click();
+  await page.getByTestId("health-profile-year").fill(String(new Date().getFullYear() - 1));
+  await page.getByTestId("health-profile-save").click();
+  await expect(page.getByTestId("health-profile-current").locator("p > span")).toHaveText("Enfant · 1 an");
+  await page.getByTestId("health-profile-edit").click();
+  await page.getByTestId("health-profile-year").fill(String(new Date().getFullYear()));
+  await page.getByTestId("health-profile-save").click();
+  await expect(page.getByTestId("health-profile-current").locator("p > span")).toHaveText("Enfant");
   const card = page.getByTestId("emergency-card");
   await expect(card.getByRole("heading", { name: "Fiche d’urgence de Rado" })).toBeVisible();
 
@@ -175,7 +184,24 @@ test("« Pour qui ? » fits a 320 px phone in very large text", async ({ page })
 
   const bar = page.getByTestId("health-profiles");
   await expect.poll(overflow).toBeLessThanOrEqual(0);
-  for (const button of await bar.locator("button").all()) {
+  const barBox = (await bar.boundingBox())!;
+  expect(barBox.x + barBox.width).toBeLessThanOrEqual(320);
+  // The chips: one line that scrolls sideways, each 44 px high.
+  const chips = await bar.getByRole("group").locator("button").all();
+  const tops = new Set<number>();
+  for (const button of chips) {
+    const box = (await button.boundingBox())!;
+    expect(box.height).toBeGreaterThanOrEqual(44);
+    tops.add(Math.round(box.y));
+  }
+  expect(tops.size).toBe(1);
+  const group = bar.getByRole("group");
+  expect(await group.evaluate((element) => element.scrollWidth > element.clientWidth)).toBe(true);
+  await chip(page, "Hanitra").scrollIntoViewIfNeeded();
+  await chip(page, "Hanitra").click();
+  await expect(chip(page, "Hanitra")).toHaveAttribute("aria-pressed", "true");
+  await expect.poll(overflow).toBeLessThanOrEqual(0);
+  for (const button of await bar.getByTestId("health-profile-current").locator("button").all()) {
     const box = (await button.boundingBox())!;
     expect(box.height).toBeGreaterThanOrEqual(44);
     expect(box.x + box.width).toBeLessThanOrEqual(320);

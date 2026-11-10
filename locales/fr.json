@@ -4549,6 +4549,7 @@
       "birthYear": "Année de naissance (facultatif)",
       "birthYearHint": "2019",
       "age": "{count} ans",
+      "ageOne": "1 an",
       "save": "Enregistrer",
       "cancel": "Annuler",
       "added": "{name} ajouté(e)",

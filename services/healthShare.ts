@@ -35,7 +35,8 @@ export async function exportTreatmentsPdf(treatments: Array<Treatment<HistoryEnt
 // "Partager ma fiche" (fiche d'urgence): only by the person's choice, as a message.
 
 export function shareEmergencyCard(card: EmergencyCard, t: Translate, locale: Locale, name: string | null = null) {
-  return shareText(t("health.emergency.share.heading"), cardText(card, t, (at) => formatDate(at, locale), name), { copyTitle: false });
+  // A relative's card: their first name in the share sheet's title too.
+  return shareText(name ? t("health.emergency.share.headingOf", { name }) : t("health.emergency.share.heading"), cardText(card, t, (at) => formatDate(at, locale), name), { copyTitle: false });
 }
 
 /** The card in WhatsApp: the person picks whom to send it to. */
