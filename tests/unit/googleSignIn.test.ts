@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { APP_AUTH_CALLBACK, callbackFrom, googleEnabled, parseAuthCallback, safeReturnPath } from "@/lib/googleSignIn";
+import { APP_AUTH_CALLBACK, callbackFrom, googleEnabled, parseAuthCallback, safeReturnPath, usedCodes, withUsedCode } from "@/lib/googleSignIn";
 
 describe("Continuer avec Google", () => {
   it("is shown only when Supabase says Google is on", () => {
@@ -28,5 +28,15 @@ describe("Continuer avec Google", () => {
     expect(safeReturnPath("https://evil.example")).toBe("/");
     expect(safeReturnPath("/auth-callback?code=x")).toBe("/");
     expect(safeReturnPath(null)).toBe("/");
+  });
+
+  it("keeps the last codes exchanged, so a replayed link is spotted", () => {
+    expect(usedCodes(null)).toEqual([]);
+    expect(usedCodes("not json")).toEqual([]);
+    expect(usedCodes('{"a":1}')).toEqual([]);
+    let raw: string | null = null;
+    for (const code of ["a", "b", "c", "d", "e", "f"]) raw = withUsedCode(raw, code);
+    expect(usedCodes(raw)).toEqual(["b", "c", "d", "e", "f"]);
+    expect(usedCodes(withUsedCode(raw, "c"))).toEqual(["b", "d", "e", "f", "c"]);
   });
 });

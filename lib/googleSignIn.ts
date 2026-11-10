@@ -45,3 +45,19 @@ export function safeReturnPath(value: string | null | undefined) {
   if (!value || !value.startsWith("/") || value.startsWith("//") || value.startsWith(WEB_AUTH_CALLBACK_PATH)) return "/";
   return value;
 }
+
+/** The codes already exchanged are kept (the last few), so a link replayed by Android is never tried twice. */
+const KEPT_CODES = 5;
+
+/** Parses the kept codes (a JSON list in storage); anything else: none. */
+export function usedCodes(raw: string | null): string[] {
+  try {
+    const list: unknown = JSON.parse(raw ?? "[]");
+    return Array.isArray(list) ? list.filter((item): item is string => typeof item === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+/** The kept codes with this one added (the oldest drop off). */
+export const withUsedCode = (raw: string | null, code: string) => JSON.stringify([...usedCodes(raw).filter((kept) => kept !== code), code].slice(-KEPT_CODES));

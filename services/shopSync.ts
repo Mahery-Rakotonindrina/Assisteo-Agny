@@ -3,7 +3,8 @@ import { shopStore, type ShopRecord } from "./shopStore";
 
 // Syncs "Ma boutique" with the account (table "shop", see services/rowSync.ts).
 
-const shop = createRowSync<ShopRecord>("shop", shopStore);
+// Incremental: a shop grows with every sale and removal (services/rowSync.ts).
+const shop = createRowSync<ShopRecord>("shop", shopStore, { incremental: true });
 
 export const syncShop = shop.sync;
 

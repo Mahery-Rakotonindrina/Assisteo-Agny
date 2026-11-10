@@ -184,14 +184,23 @@ async function grant(email: string, scans: number) {
 
 /** What an account sees: friends invited and rewarded, scans won and left. */
 export async function referralSummary(email: string): Promise<ReferralSummary> {
-  const [config, invited, rewarded, scansWon, scansLeft] = await Promise.all([
+  const [config, invited, rewarded, scansWon, scansLeft, thisMonth] = await Promise.all([
     getReferralConfig(),
     members(childrenKey(email)),
     members(rewardedKey(email)),
     get(wonKey(email)),
     get(bonusKey(email)),
+    get(monthKey(email)),
   ]);
-  return { invited: invited.length, rewarded: rewarded.length, scansWon, scansLeft: Math.max(0, scansLeft), scansEach: config.scans };
+  return {
+    invited: invited.length,
+    rewarded: rewarded.length,
+    scansWon,
+    scansLeft: Math.max(0, scansLeft),
+    scansEach: config.scans,
+    capPerMonth: config.capPerMonth,
+    capReached: config.scans > 0 && thisMonth >= config.capPerMonth,
+  };
 }
 
 /** What is kept about an account for the anti-abuse checks and the screen: the installs and addresses seen (90 days), the scans won and left, the friends. For the copy of its data. */

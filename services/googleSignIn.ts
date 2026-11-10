@@ -1,5 +1,6 @@
-import { APP_AUTH_CALLBACK, googleEnabled, safeReturnPath, WEB_AUTH_CALLBACK_PATH } from "@/lib/googleSignIn";
+import { APP_AUTH_CALLBACK, googleEnabled, safeReturnPath, usedCodes, WEB_AUTH_CALLBACK_PATH, withUsedCode } from "@/lib/googleSignIn";
 import { accountsAvailable, supabase } from "@/lib/supabase";
+import { getSession } from "./account";
 import { isNative, openExternal } from "./device";
 
 // "Continuer avec Google" (Supabase OAuth, PKCE). Shown only when Google is
@@ -9,6 +10,7 @@ import { isNative, openExternal } from "./device";
 // (APP_AUTH_CALLBACK, handled in useNativeBootstrap), then the same page.
 
 const RETURN_KEY = "google-return.v1";
+const CODES_KEY = "google-codes.v1";
 
 let available: Promise<boolean> | null = null;
 
@@ -67,9 +69,30 @@ export function finishGoogleSignIn(code: string) {
   return running;
 }
 
+/** Whether this code was already exchanged on this device (a launch link Android replays after killing the app). */
+export function googleCodeUsed(code: string) {
+  try {
+    return usedCodes(localStorage.getItem(CODES_KEY)).includes(code);
+  } catch {
+    return false;
+  }
+}
+
+function rememberCode(code: string) {
+  try {
+    localStorage.setItem(CODES_KEY, withUsedCode(localStorage.getItem(CODES_KEY), code));
+  } catch {
+    // Private mode: only the page's own once-only guard remains.
+  }
+}
+
 async function exchange(code: string): Promise<{ returnTo: string } | { error: true }> {
+  // A code is good once. Already used, or refused while the person is signed in anyway (a replayed link): no failure to show.
+  const signedIn = async () => Boolean(await getSession().catch(() => null));
+  if (googleCodeUsed(code)) return (await signedIn()) ? { returnTo: "/" } : { error: true };
+  rememberCode(code);
   const { error } = await supabase().auth.exchangeCodeForSession(code);
-  if (error) return { error: true };
+  if (error) return (await signedIn()) ? { returnTo: "/" } : { error: true };
   let returnTo = "/";
   try {
     returnTo = safeReturnPath(localStorage.getItem(RETURN_KEY));
