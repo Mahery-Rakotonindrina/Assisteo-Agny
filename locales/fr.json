@@ -4508,6 +4508,7 @@
       "updated": "Rendez-vous modifié",
       "removed": "Rendez-vous supprimé",
       "reminded": "Rappel la veille à 18 h et 2 h avant",
+      "remindedSoon": "Rappel 2 h avant",
       "locked": "Les rappels de rendez-vous sont inclus à partir de {plan}.",
       "reminders": {
         "someone": "ton rendez-vous",

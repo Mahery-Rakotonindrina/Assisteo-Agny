@@ -5,13 +5,14 @@ import {
   mergeAppointments,
   normalizeAppointments,
   removeAllAppointments,
+  remindedKinds,
   removeAppointment,
   saveAppointment,
   splitAppointments,
   TOMBSTONE_MS,
   type Appointment,
 } from "@/lib/appointments";
-import { healthChanged, healthPayload, mergeHealth } from "@/lib/healthSync";
+import { healthChanged, healthPayload, mergeHealth, planSettingsSync, type SettingsRow } from "@/lib/healthSync";
 import { resetScreens } from "@/lib/screenReset";
 import { syncedSettingKeys } from "@/lib/settings/SettingsProvider";
 import { reconcileAppointmentReminderState, type ScheduledAppointmentReminders } from "@/services/appointmentReminders";
@@ -160,5 +161,77 @@ describe("Rendez-vous", () => {
     });
     expect(snoozed).toBe(false);
     expect(opened).toEqual([{ pathname: "/sante", query: { show: "appointments" } }]);
+  });
+it("says only what will really ring", () => {
+    const now = at(10, 12);
+    expect(remindedKinds(appt("a", at(12, 9)), now)).toEqual(["eve", "soon"]);
+    expect(remindedKinds(appt("a", at(11, 9)), at(10, 19))).toEqual(["soon"]);
+    expect(remindedKinds(appt("a", at(10, 13)), now)).toEqual([]);
+    expect(remindedKinds(appt("a", at(9, 13)), now)).toEqual([]);
+  });
+
+  it("schedules the reminders again in the new language", async () => {
+    let scheduled: ScheduledAppointmentReminders = {};
+    const cancelled: number[] = [];
+    const titles: string[] = [];
+    let nextId = 1;
+    const deps = {
+      permission: async () => "granted",
+      notify: async (options: { title: string }) => {
+        titles.push(options.title);
+        return nextId++;
+      },
+      cancel: async (id: number) => {
+        cancelled.push(id);
+      },
+      pending: async () => null,
+      load: () => scheduled,
+      save: (next: ScheduledAppointmentReminders) => {
+        scheduled = next;
+      },
+    };
+    const list = [appt("a", at(12, 9))];
+    await reconcileAppointmentReminderState(list, () => ({ title: "Demain", body: "" }), deps, { now: at(10, 12), language: "fr" });
+    await reconcileAppointmentReminderState(list, () => ({ title: "Tomorrow", body: "" }), deps, { now: at(10, 12), language: "en" });
+    expect(cancelled).toEqual([1, 2]);
+    expect(titles).toEqual(["Demain", "Demain", "Tomorrow", "Tomorrow"]);
+  });
+
+  it("never loses an appointment between two devices: the account's is read and merged before each send", () => {
+    const keys = ["locale", "theme", "emergencyCard", "appointments"];
+    const now = at(10, 12);
+    let server: SettingsRow = null;
+    // Both devices start from the same, then each adds one without seeing the other's.
+    const send = (device: Record<string, unknown> & { updatedAt: number }) => {
+      const plan = planSettingsSync(device, server, keys, now);
+      const next = { ...device, ...(plan.apply?.patch ?? {}), updatedAt: plan.apply?.updatedAt ?? device.updatedAt };
+      if (plan.write) server = { data: plan.write.data, updatedAt: plan.write.updatedAt };
+      return next;
+    };
+    let phone: Record<string, unknown> & { updatedAt: number } = { locale: "fr", theme: "system", emergencyCard: null, appointments: [appt("p", at(12, 9), { updatedAt: 100 })], updatedAt: 100 };
+    let computer: Record<string, unknown> & { updatedAt: number } = { locale: "fr", theme: "dark", emergencyCard: null, appointments: [appt("c", at(13, 9), { updatedAt: 200 })], updatedAt: 200 };
+    phone = send(phone);
+    computer = send(computer);
+    phone = send(phone);
+    const ids = (device: Record<string, unknown>) => (device.appointments as Appointment[]).map((item) => item.id);
+    expect(ids(computer)).toEqual(["p", "c"]);
+    expect(ids(phone)).toEqual(["p", "c"]);
+    expect(((server as unknown as { data: { appointments: Appointment[] } }).data.appointments).map((item) => item.id)).toEqual(["p", "c"]);
+    // The plain settings: the newer side wins.
+    expect(phone.theme).toBe("dark");
+    // A removal on one reaches the other.
+    computer = send({ ...computer, appointments: removeAppointment(computer.appointments as Appointment[], "p", now), updatedAt: 300 });
+    phone = send(phone);
+    expect(splitAppointments(phone.appointments as Appointment[], now).upcoming.map((item) => item.id)).toEqual(["c"]);
+  });
+
+  it("sends again what an older app erased from the account, and nothing when all is the same", () => {
+    const keys = ["locale", "appointments"];
+    const device = { locale: "fr", appointments: [appt("a", at(12, 9))], updatedAt: 100 };
+    const erased = planSettingsSync(device, { data: { locale: "en" }, updatedAt: 200 }, keys, at(10, 12));
+    expect(erased.apply?.patch).toMatchObject({ locale: "en", appointments: device.appointments });
+    expect(erased.write).toEqual({ data: { locale: "en", appointments: device.appointments }, updatedAt: 200 });
+    const same = planSettingsSync(device, { data: { locale: "fr", appointments: device.appointments }, updatedAt: 100 }, keys, at(10, 12));
+    expect(same).toEqual({ apply: null, write: null });
   });
 });

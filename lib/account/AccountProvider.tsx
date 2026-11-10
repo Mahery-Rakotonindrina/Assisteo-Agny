@@ -1,12 +1,13 @@
+import { App } from "@capacitor/app";
 import type { Session } from "@supabase/supabase-js";
 import Router from "next/router";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
-import { pick } from "@/lib/account/pick";
-import { healthChanged, healthPayload, mergeHealth, noHealth } from "@/lib/healthSync";
+import { noHealth, planSettingsSync } from "@/lib/healthSync";
 import { syncedSettingKeys, useSettings, type SyncedSettings } from "@/lib/settings/SettingsProvider";
 import { accountsAvailable, supabase } from "@/lib/supabase";
 import { deleteAccountOnServer, onSessionChange, signOutAccount } from "@/services/account";
 import { aiKeyStore } from "@/services/aiKeyStore";
+import { isNative } from "@/services/device";
 import { accountKeyApi } from "@/services/accountKeyApi";
 import { cancelAllNotifications } from "@/services/notifications";
 import { listStore, sharedListStore } from "@/services/listStore";
@@ -53,10 +54,6 @@ type AccountContextValue = {
 
 const AccountContext = createContext<AccountContextValue | null>(null);
 
-/** What goes to user_settings: no emergency card or appointments yet (null) leaves the account's untouched. */
-function syncedData(settings: SyncedSettings) {
-  return healthPayload<Partial<SyncedSettings>>(pick(settings, syncedSettingKeys));
-}
 
 /**
  * Wires the signed-in account to the device: history sync, settings and the
@@ -191,45 +188,59 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     };
   }, [userId]);
 
-  // Settings: newest side wins on sign-in, then local changes are pushed.
+  // Settings: always read the account's first, then merge (lib/healthSync.ts):
+  // the newer side wins for the plain settings, the emergency card and the
+  // appointments are merged, so a device left open never erases what another
+  // wrote. Done at sign-in, before each send and when the app comes back; one
+  // at a time.
+  const settingsChain = useRef<Promise<void>>(Promise.resolve());
+  // Signed out (or another account) meanwhile: what was read is not applied.
+  const ownerRef = useRef(userId);
+  useEffect(() => {
+    ownerRef.current = userId;
+  }, [userId]);
+  const syncSettings = useCallback(
+    (owner: string) => {
+      const run = async () => {
+        const { data, error } = await supabase().from("user_settings").select("data, updated_at").maybeSingle();
+        if (error) return;
+        const row = data ? { data: data.data, updatedAt: new Date(data.updated_at).getTime() } : null;
+        if (ownerRef.current !== owner) return;
+        const plan = planSettingsSync(settingsRef.current, row, syncedSettingKeys, Date.now());
+        if (plan.apply) update(plan.apply.patch as Partial<SyncedSettings>, { fromSync: true, updatedAt: plan.apply.updatedAt });
+        if (plan.write) await supabase().from("user_settings").upsert({ user_id: owner, data: plan.write.data, updated_at: new Date(plan.write.updatedAt).toISOString() });
+      };
+      const next = settingsChain.current.then(run).catch(() => undefined);
+      settingsChain.current = next;
+      return next;
+    },
+    [update],
+  );
+
   useEffect(() => {
     if (!userId || !ready) return;
     let cancelled = false;
-    void (async () => {
-      const { data } = await supabase().from("user_settings").select("data, updated_at").maybeSingle();
-      if (cancelled) return;
-      const local = settingsRef.current;
-      const remoteAt = data ? new Date(data.updated_at).getTime() : 0;
-      const remote = pick((data?.data ?? {}) as Partial<SyncedSettings>, syncedSettingKeys);
-      // The emergency card and the appointments go by their own dates: an older app writes the settings without them.
-      const health = mergeHealth(local, remote, Date.now());
-      if (data && remoteAt > local.updatedAt) {
-        update({ ...remote, ...health }, { fromSync: true, updatedAt: remoteAt });
-      } else {
-        if (healthChanged(local, health)) update(health, { fromSync: true });
-        if (local.updatedAt > remoteAt) {
-          await supabase()
-            .from("user_settings")
-            .upsert({ user_id: userId, data: syncedData({ ...local, ...health }), updated_at: new Date(local.updatedAt).toISOString() });
-        }
-      }
+    void syncSettings(userId).then(() => {
       if (!cancelled) setSettingsReady(true);
-    })().catch(() => setSettingsReady(true));
+    });
+    const resume = () => {
+      if (document.visibilityState === "visible") void syncSettings(userId);
+    };
+    document.addEventListener("visibilitychange", resume);
+    const appResume = isNative() ? App.addListener("resume", () => void syncSettings(userId)) : null;
     return () => {
       cancelled = true;
       setSettingsReady(false);
+      document.removeEventListener("visibilitychange", resume);
+      void appResume?.then((handle) => handle.remove());
     };
-  }, [userId, ready, update]);
+  }, [userId, ready, syncSettings]);
 
   useEffect(() => {
     if (!userId || !settingsReady || !settings.updatedAt) return;
-    const timer = setTimeout(() => {
-      void supabase()
-        .from("user_settings")
-        .upsert({ user_id: userId, data: syncedData(settings), updated_at: new Date(settings.updatedAt).toISOString() });
-    }, 800);
+    const timer = setTimeout(() => void syncSettings(userId), 800);
     return () => clearTimeout(timer);
-  }, [userId, settingsReady, settings]);
+  }, [userId, settingsReady, settings, syncSettings]);
 
   // Own AI key: reconcile on sign-in, then mirror local saves and removals.
   useEffect(() => {
@@ -300,6 +311,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await wipeReviews().catch(() => undefined);
     await aiKeyStore.clear({ fromSync: true });
     await signOutAccount();
+    ownerRef.current = null;
     // The emergency card and the appointments are the account's, like the scans: not left on the device.
     // After the sign-out, so the account's copy is never overwritten.
     update(noHealth, { fromSync: true });
@@ -332,6 +344,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await householdStore.wipe();
     await wipeReviews().catch(() => undefined);
     await aiKeyStore.clear({ fromSync: true });
+    ownerRef.current = null;
     update(noHealth, { fromSync: true });
     await cancelAllNotifications();
     // The user no longer exists on the server: only forget the session here.

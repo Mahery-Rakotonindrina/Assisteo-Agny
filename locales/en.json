@@ -4508,6 +4508,7 @@
       "updated": "Appointment changed",
       "removed": "Appointment deleted",
       "reminded": "Reminder the day before at 6 pm and 2 h before",
+      "remindedSoon": "Reminder 2 h before",
       "locked": "Appointment reminders are included from {plan}.",
       "reminders": {
         "someone": "your appointment",

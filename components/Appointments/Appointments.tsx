@@ -9,7 +9,7 @@ import { useToast } from "@/components/Toast";
 import { useNow } from "@/hooks/useNow";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
-import { APPOINTMENT_TEXT_MAX, appointmentTime, removeAppointment, saveAppointment, splitAppointments, type Appointment } from "@/lib/appointments";
+import { APPOINTMENT_TEXT_MAX, appointmentTime, remindedKinds, removeAppointment, saveAppointment, splitAppointments, type Appointment } from "@/lib/appointments";
 import { formatDay, formatTime, toDateInput } from "@/lib/format";
 import { useSettings } from "@/lib/settings/SettingsProvider";
 import { haptics } from "@/services/device";
@@ -65,7 +65,7 @@ export function Appointments() {
       {upcoming.length > 0 && (
         <ul className={styles.list}>
           {upcoming.map((appointment) => (
-            <AppointmentCard key={appointment.id} appointment={appointment} reminders={reminders} onEdit={() => setEditing(appointment)} onRemove={() => remove(appointment)} />
+            <AppointmentCard key={appointment.id} appointment={appointment} reminders={reminders} now={now} onEdit={() => setEditing(appointment)} onRemove={() => remove(appointment)} />
           ))}
         </ul>
       )}
@@ -74,7 +74,7 @@ export function Appointments() {
           <summary>{t("health.appointments.past", { count: past.length })}</summary>
           <ul className={styles.list}>
             {past.map((appointment) => (
-              <AppointmentCard key={appointment.id} appointment={appointment} past onEdit={() => setEditing(appointment)} onRemove={() => remove(appointment)} />
+              <AppointmentCard key={appointment.id} appointment={appointment} past now={now} onEdit={() => setEditing(appointment)} onRemove={() => remove(appointment)} />
             ))}
           </ul>
         </details>
@@ -89,9 +89,11 @@ export function Appointments() {
   );
 }
 
-function AppointmentCard({ appointment, past, reminders, onEdit, onRemove }: { appointment: Appointment; past?: boolean; reminders?: boolean; onEdit: () => void; onRemove: () => void }) {
+function AppointmentCard({ appointment, past, reminders, now, onEdit, onRemove }: { appointment: Appointment; past?: boolean; reminders?: boolean; now: number; onEdit: () => void; onRemove: () => void }) {
   const { t, locale } = useTranslation();
   const [confirm, setConfirm] = useState(false);
+  // Only what will really ring: nothing once both moments are gone by.
+  const kinds = reminders && !past ? remindedKinds(appointment, now) : [];
 
   return (
     <li className={styles.card} data-testid="appointment" data-past={past || undefined}>
@@ -113,9 +115,9 @@ function AppointmentCard({ appointment, past, reminders, onEdit, onRemove }: { a
         </p>
       )}
       {appointment.note && <p className={styles.note}>{appointment.note}</p>}
-      {reminders && !past && (
-        <p className={styles.reminder}>
-          <BellRing size={14} aria-hidden /> <span>{t("health.appointments.reminded")}</span>
+      {kinds.length > 0 && (
+        <p className={styles.reminder} data-testid="appointment-reminded">
+          <BellRing size={14} aria-hidden /> <span>{t(kinds.includes("eve") ? "health.appointments.reminded" : "health.appointments.remindedSoon")}</span>
         </p>
       )}
       <div className={styles.actions}>

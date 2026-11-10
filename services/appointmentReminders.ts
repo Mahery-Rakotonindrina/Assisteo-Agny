@@ -27,16 +27,18 @@ export type AppointmentReminderDeps = {
 /**
  * Brings the scheduled reminders in line with the appointments and the plan:
  * cancels the ones no longer wanted (all of them without the plan),
- * schedules the missing ones. Never asks for permission.
+ * schedules the missing ones. Never asks for permission. `language`: the
+ * texts' language, part of each key, so a change of language schedules them
+ * again in the new one.
  */
 export async function reconcileAppointmentReminderState(
   appointments: Appointment[] | null,
   texts: (reminder: AppointmentReminder) => Texts,
   deps: AppointmentReminderDeps,
-  { enabled = true, now = Date.now() }: { enabled?: boolean; now?: number } = {},
+  { enabled = true, now = Date.now(), language = "" }: { enabled?: boolean; now?: number; language?: string } = {},
 ) {
   const scheduled = deps.load();
-  const wanted = new Map(appointmentReminders(appointments, now, enabled).map((reminder) => [reminder.key, reminder]));
+  const wanted = new Map(appointmentReminders(appointments, now, enabled).map((reminder) => [`${language}|${reminder.key}`, reminder]));
   // Without the plan: cancelled even without the permission (nothing to keep).
   if (wanted.size > 0 && (await deps.permission()) !== "granted") return;
   const pending = wanted.size > 0 ? await deps.pending() : null;
@@ -77,6 +79,6 @@ const deviceDeps: AppointmentReminderDeps = {
 };
 
 /** Reconciles this device's appointment reminders. */
-export function reconcileAppointmentReminders(appointments: Appointment[] | null, texts: (reminder: AppointmentReminder) => Texts, enabled: boolean) {
-  return reconcileAppointmentReminderState(appointments, texts, deviceDeps, { enabled }).catch(() => undefined);
+export function reconcileAppointmentReminders(appointments: Appointment[] | null, texts: (reminder: AppointmentReminder) => Texts, enabled: boolean, language: string) {
+  return reconcileAppointmentReminderState(appointments, texts, deviceDeps, { enabled, language }).catch(() => undefined);
 }

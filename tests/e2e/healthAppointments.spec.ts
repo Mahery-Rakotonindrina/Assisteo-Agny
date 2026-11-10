@@ -109,6 +109,20 @@ test("appointments: added, read again after a reload, changed, the past ones fol
   await expect(page.getByTestId("appointment")).toHaveCount(0);
 });
 
+test("the reminder line says only what will really ring", async ({ page }) => {
+  await page.clock.install({ time: new Date(2026, 10, 10, 12) });
+  await prepare(page);
+  await pretendPlan(page, "lite");
+  await page.goto("/sante");
+  await addAppointment(page, { on: "2026-11-10", at: "13:30", who: "Dans une heure et demie" });
+  await addAppointment(page, { on: "2026-11-10", at: "20:00", who: "Ce soir" });
+  await addAppointment(page, { on: "2026-11-11", at: "09:00", who: "Demain matin" });
+  const card = (who: string) => page.getByTestId("appointment").filter({ hasText: who });
+  await expect(card("Dans une heure et demie").getByTestId("appointment-reminded")).toHaveCount(0);
+  await expect(card("Ce soir").getByTestId("appointment-reminded")).toHaveText("Rappel 2 h avant");
+  await expect(card("Demain matin").getByTestId("appointment-reminded")).toHaveText("Rappel la veille à 18 h et 2 h avant");
+});
+
 test("on the free plan, the appointments are kept but their reminders show the plan's lock", async ({ page }) => {
   await prepare(page);
   await page.goto("/sante");

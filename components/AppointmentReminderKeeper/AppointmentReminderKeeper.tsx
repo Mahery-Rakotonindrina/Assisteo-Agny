@@ -34,9 +34,9 @@ export function AppointmentReminderKeeper() {
 
   useEffect(() => {
     if (!ready || !known) return;
-    const timer = setTimeout(() => void reconcileAppointmentReminders(appointments, texts, enabled), 1700);
+    const timer = setTimeout(() => void reconcileAppointmentReminders(appointments, texts, enabled, locale), 1700);
     return () => clearTimeout(timer);
-  }, [ready, known, enabled, appointments, texts]);
+  }, [ready, known, enabled, appointments, texts, locale]);
 
   return null;
 }

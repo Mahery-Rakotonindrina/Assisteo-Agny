@@ -151,6 +151,11 @@ export type AppointmentReminder = {
   entryId: string;
 };
 
+/** What will really ring for one appointment: the day before and/or 2 h before (what its card says). */
+export function remindedKinds(appointment: Appointment, now: number): AppointmentReminderKind[] {
+  return appointmentReminders([appointment], now).map((reminder) => reminder.kind);
+}
+
 /**
  * The notifications to ring, the soonest first: the day before at 18 h and
  * 2 h before, only those still to come. None without the plan.
