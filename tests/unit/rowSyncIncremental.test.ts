@@ -4,7 +4,7 @@ import { forgetSyncCursor, readSyncCursor } from "@/services/syncCursor";
 
 // A fake Supabase table that answers what rowSync asks: rows after a time, ordered, by pages; removals older than a date erased.
 type Row = { id: string; data: Record<string, unknown>; updated_at: string; deleted_at: string | null; server_updated_at: string };
-const server = vi.hoisted(() => ({ rows: [] as Row[], reads: [] as Array<{ after: string | null; count: number }>, swept: [] as string[] }));
+const server = vi.hoisted(() => ({ rows: [] as Row[], reads: [] as Array<{ after: string | null; count: number }>, swept: [] as string[], asked: [] as string[][], hideFromPages: new Set<string>() }));
 vi.mock("@/lib/supabase", () => ({
   supabase: () => ({
     from: () => ({
@@ -16,8 +16,13 @@ vi.mock("@/lib/supabase", () => ({
             return builder;
           },
           order: () => builder,
+          // The checking read of ids the full read didn't show.
+          in: async (_column: string, ids: string[]) => {
+            server.asked.push(ids);
+            return { data: server.rows.filter((row) => ids.includes(row.id)).map((row) => ({ id: row.id })), error: null };
+          },
           range: async (from: number, to: number) => {
-            const list = server.rows.filter((row) => !after || row.server_updated_at > after).sort((a, b) => a.server_updated_at.localeCompare(b.server_updated_at) || a.id.localeCompare(b.id));
+            const list = server.rows.filter((row) => !server.hideFromPages.has(row.id) && (!after || row.server_updated_at > after)).sort((a, b) => a.server_updated_at.localeCompare(b.server_updated_at) || a.id.localeCompare(b.id));
             const page = list.slice(from, to + 1);
             if (from === 0) server.reads.push({ after, count: list.length });
             return { data: page, error: null };
@@ -27,11 +32,14 @@ vi.mock("@/lib/supabase", () => ({
       },
       upsert: async () => ({ error: null }),
       delete: () => ({
-        lt: async (_column: string, value: string) => {
-          server.swept.push(value);
-          server.rows = server.rows.filter((row) => !(row.deleted_at && row.deleted_at < value));
-          return { error: null };
-        },
+        // Removals older than a date by the server's clock.
+        not: () => ({
+          lt: async (column: string, value: string) => {
+            server.swept.push(`${column}:${value}`);
+            server.rows = server.rows.filter((row) => !(row.deleted_at && row.server_updated_at < value));
+            return { error: null };
+          },
+        }),
       }),
     }),
   }),
@@ -61,6 +69,8 @@ beforeEach(() => {
   server.rows = [];
   server.reads = [];
   server.swept = [];
+  server.asked = [];
+  server.hideFromPages = new Set();
   storage.clear();
   vi.stubGlobal("localStorage", { getItem: (key: string) => storage.get(key) ?? null, setItem: (key: string, value: string) => void storage.set(key, value), removeItem: (key: string) => void storage.delete(key) });
 });
@@ -129,8 +139,33 @@ describe("incremental sync", () => {
     const sync = createRowSync<Item>("shop", store, { incremental: true });
     await sync.sync("user-1");
     expect(server.rows.map((item) => item.id).sort()).toEqual(["live", "recent"]);
-    expect(Date.parse(server.swept[0])).toBeLessThan(now - KEEP_REMOVALS_MS + 5000);
+    expect(server.swept[0]).toMatch(/^server_updated_at:/);
+    expect(Date.parse(server.swept[0].replace("server_updated_at:", ""))).toBeLessThan(now - KEEP_REMOVALS_MS + 5000);
     await sync.sync("user-1");
     expect(server.swept).toHaveLength(1);
+  });
+
+  it("keeps a local copy the full read missed but the server still has, and removes the one it really lost", async () => {
+    const t0 = Date.now() - 20 * 24 * 3600_000;
+    server.rows = [row("a", t0), row("slipped", t0), row("lost", t0)];
+    const { map, store } = memoryStore();
+    const sync = createRowSync<Item>("shop", store, { incremental: true });
+    await sync.sync("user-1");
+    expect([...map.keys()].sort()).toEqual(["a", "lost", "slipped"]);
+    storage.set("rowsync-cursor.v1.shop", JSON.stringify({ uid: "user-1", at: t0, fullAt: Date.now() - FULL_READ_EVERY_MS - 1000, purgeAt: Date.now() }));
+    // The full read doesn't show "slipped" (it moved between two pages), and "lost" is really gone from the server.
+    server.hideFromPages.add("slipped");
+    server.rows = server.rows.filter((item) => item.id !== "lost");
+    await sync.sync("user-1");
+    expect(server.asked.flat().sort()).toEqual(["lost", "slipped"]);
+    expect([...map.keys()].sort()).toEqual(["a", "slipped"]);
+  });
+
+  it("sweeps by the server's clock: a removal dated long ago by a wrong phone clock stays", async () => {
+    const now = Date.now();
+    server.rows = [row("wrongclock", now - 1000, { deleted_at: iso(now - 200 * 24 * 3600_000) })];
+    const { store } = memoryStore();
+    await createRowSync<Item>("shop", store, { incremental: true }).sync("user-1");
+    expect(server.rows.map((item) => item.id)).toEqual(["wrongclock"]);
   });
 });

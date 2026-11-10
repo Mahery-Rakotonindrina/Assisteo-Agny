@@ -61,3 +61,6 @@ export function usedCodes(raw: string | null): string[] {
 
 /** The kept codes with this one added (the oldest drop off). */
 export const withUsedCode = (raw: string | null, code: string) => JSON.stringify([...usedCodes(raw).filter((kept) => kept !== code), code].slice(-KEPT_CODES));
+
+/** The kept codes without this one (an exchange cut by the network can be tried again). */
+export const withoutUsedCode = (raw: string | null, code: string) => JSON.stringify(usedCodes(raw).filter((kept) => kept !== code));

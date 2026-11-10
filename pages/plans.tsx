@@ -281,7 +281,7 @@ export default function PlansPage() {
             <h2>
               <Gift size={18} /> {t("plans.referral.title")}
             </h2>
-            <p>{scansEach === 0 ? t("plans.referral.body") : referral?.capReached ? t("referralBonus.bodyCapped", { scans: scansEach, cap: referral.capPerMonth }) : t("referralBonus.body", { scans: scansEach, cap: referral?.capPerMonth ?? 0 })}</p>
+            <p>{scansEach === 0 ? t("plans.referral.body") : referral?.capPerMonth === 0 ? t("referralBonus.bodyFriendOnly", { scans: scansEach }) : referral?.capReached ? t("referralBonus.bodyCapped", { scans: scansEach, cap: referral.capPerMonth }) : t("referralBonus.body", { scans: scansEach, cap: referral?.capPerMonth ?? 0 })}</p>
             <p className={styles.referralCode}>{referralCode}</p>
             <ReferralStats onSummary={(summary) => {
                 setScansEach(summary.scansEach);

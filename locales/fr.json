@@ -4161,7 +4161,8 @@
     "finishing": "Connexion avec Google…",
     "signedIn": "Tu es connecté avec Google",
     "failed": "La connexion avec Google n’a pas abouti. Réessaie, ou reçois un code par e-mail.",
-    "back": "Retour aux réglages"
+    "back": "Retour aux réglages",
+    "alreadySignedIn": "Tu étais déjà connecté : la connexion avec Google n’a pas été refaite. Pour changer de compte, déconnecte-toi d’abord."
   },
   "medicine": {
     "tab": "Médicaments",
@@ -4282,7 +4283,8 @@
       "save": "Enregistrer",
       "saved": "Parrainage enregistré."
     },
-    "bodyCapped": "Invite un ami : quand il entre ton code puis fait son premier scan, il gagne {scans} scans. Tu as atteint le plafond de ce mois ({cap} amis) : toi, tu regagneras des scans le mois prochain."
+    "bodyCapped": "Invite un ami : quand il entre ton code puis fait son premier scan, il gagne {scans} scans. Tu as atteint le plafond de ce mois ({cap} amis) : toi, tu regagneras des scans le mois prochain.",
+    "bodyFriendOnly": "Invite un ami : quand il entre ton code dans « J’ai un code » puis fait son premier scan, il gagne {scans} scans. Et si une offre est payée ensuite, tu reçois 1 mois offert."
   },
   "shop": {
     "title": "Ma boutique",

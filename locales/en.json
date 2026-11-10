@@ -4161,7 +4161,8 @@
     "finishing": "Signing in with Google…",
     "signedIn": "You're signed in with Google",
     "failed": "Signing in with Google didn't work. Try again, or get a code by e-mail.",
-    "back": "Back to settings"
+    "back": "Back to settings",
+    "alreadySignedIn": "You were already signed in: the Google sign-in was not done again. To switch account, sign out first."
   },
   "medicine": {
     "tab": "Medicines",
@@ -4282,7 +4283,8 @@
       "save": "Save",
       "saved": "Referral saved."
     },
-    "bodyCapped": "Invite a friend: when they enter your code then make their first scan, they win {scans} scans. You reached this month’s cap ({cap} friends): you’ll win scans again next month."
+    "bodyCapped": "Invite a friend: when they enter your code then make their first scan, they win {scans} scans. You reached this month’s cap ({cap} friends): you’ll win scans again next month.",
+    "bodyFriendOnly": "Invite a friend: when they enter your code in “I have a code” then make their first scan, they win {scans} scans. And if they later pay for a plan, you get 1 month free."
   },
   "shop": {
     "title": "My shop",

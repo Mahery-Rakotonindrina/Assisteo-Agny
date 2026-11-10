@@ -53,6 +53,8 @@ export const FULL_READ_EVERY_MS = 7 * 24 * 3600_000;
 /** Incremental sync: removals older than this are erased from the server. */
 export const KEEP_REMOVALS_MS = 90 * 24 * 3600_000;
 const SWEEP_EVERY_MS = 24 * 3600_000;
+/** Ids asked about in one request. */
+const ASK_BATCH = 100;
 
 /** What is stored server-side: the record without device bookkeeping. */
 function toData<T extends SyncedRecord>(record: T) {
@@ -65,6 +67,23 @@ function toData<T extends SyncedRecord>(record: T) {
 export function createRowSync<T extends SyncedRecord>(table: string, store: SyncedStore<T>, options: RowSyncOptions<T> = {}) {
   const { match, withAuthor, canPush, accept, incremental = false } = options;
   let running: Promise<void> | null = null;
+
+  /** Which of these ids the server has (any state); all of them when it can't be asked, so nothing is removed on a doubt. */
+  async function idsOnServer(ids: string[]) {
+    const found = new Set<string>();
+    try {
+      for (let start = 0; start < ids.length; start += ASK_BATCH) {
+        let query = supabase().from(table).select("id").in("id", ids.slice(start, start + ASK_BATCH));
+        if (match) query = query.match(match);
+        const { data, error } = await query;
+        if (error) return new Set(ids);
+        for (const row of (data ?? []) as unknown as Array<{ id: string }>) found.add(row.id);
+      }
+    } catch {
+      return new Set(ids);
+    }
+    return found;
+  }
 
   function sync(uid: string) {
     running ??= (async () => {
@@ -93,11 +112,13 @@ export function createRowSync<T extends SyncedRecord>(table: string, store: Sync
       // A full read tells what the server no longer has (removals swept after 90 days): a local copy it never sent is gone.
       if (incremental && full) {
         const onServer = new Set(rows.map((row) => row.id));
-        for (const local of await store.raw()) {
-          if (!local.dirty && !onServer.has(local.id)) {
-            await store.rawDelete(local.id);
-            changed = true;
-          }
+        const missing = (await store.raw()).filter((local) => !local.dirty && !onServer.has(local.id)).map((local) => local.id);
+        // A row changed elsewhere during a long read can slip between two pages: ask the server again before removing anything.
+        const stillThere = await idsOnServer(missing);
+        for (const id of missing) {
+          if (stillThere.has(id)) continue;
+          await store.rawDelete(id);
+          changed = true;
         }
       }
 
@@ -126,7 +147,8 @@ export function createRowSync<T extends SyncedRecord>(table: string, store: Sync
         let purgeAt = cursor?.purgeAt ?? 0;
         if (startedAt - purgeAt > SWEEP_EVERY_MS) {
           // Removals everyone has had time to receive: erased from the server (best effort).
-          let sweep = db.from(table).delete().lt("deleted_at", new Date(startedAt - KEEP_REMOVALS_MS).toISOString());
+          // By the server's clock (server_updated_at), never the device's: a phone with a wrong date can't make a removal look old.
+          let sweep = db.from(table).delete().not("deleted_at", "is", null).lt("server_updated_at", new Date(startedAt - KEEP_REMOVALS_MS).toISOString());
           if (match) sweep = sweep.match(match);
           const { error: sweepError } = await sweep;
           if (!sweepError) purgeAt = startedAt;

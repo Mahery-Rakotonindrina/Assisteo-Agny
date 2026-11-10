@@ -199,7 +199,8 @@ export async function referralSummary(email: string): Promise<ReferralSummary> {
     scansLeft: Math.max(0, scansLeft),
     scansEach: config.scans,
     capPerMonth: config.capPerMonth,
-    capReached: config.scans > 0 && thisMonth >= config.capPerMonth,
+    // A cap of 0 means the referrer never wins: not "reached", the text says so on its own.
+    capReached: config.scans > 0 && config.capPerMonth > 0 && thisMonth >= config.capPerMonth,
   };
 }
 

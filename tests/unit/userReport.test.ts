@@ -144,6 +144,14 @@ describe("eviction and who sees the contacts", () => {
     expect(kept).not.toContain("handled");
   });
 
+  it("counts in the global limit only the messages an address's own limit let through", async () => {
+    // One address hammering: only its first 20 are accepted, the rest refused by its own limit and not counted for everyone.
+    for (let index = 0; index < 100; index += 1) await call(valid, {}, "30.0.0.1");
+    // Everyone else can still write (the global places left are those of the other addresses).
+    expect((await call(valid, {}, "30.0.0.2")).status).toBe(204);
+    expect((await call(valid, {}, "30.0.0.3")).status).toBe(204);
+  });
+
   it("limits all the messages together, whatever the address", async () => {
     let refused = 0;
     for (let index = 0; index < 130; index += 1) {

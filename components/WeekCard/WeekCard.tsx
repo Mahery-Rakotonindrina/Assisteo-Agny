@@ -26,11 +26,10 @@ export function WeekCard() {
 function Card() {
   const { t } = useTranslation();
   // The end of today, fixed when the card appears: the summary is worked out once, then when the data change (not every minute).
-  const [at] = useState(() => {
-    const today = new Date();
-    return new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1).getTime() - 1;
-  });
-  const summary = useWeekSummary(at);
+  const [opened] = useState(() => Date.now());
+  const at = new Date(new Date(opened).getFullYear(), new Date(opened).getMonth(), new Date(opened).getDate() + 1).getTime() - 1;
+  // The reminders from now on count as "to come", the ones later today too.
+  const summary = useWeekSummary(at, opened);
   const lines = useWeekLines(summary);
   // Closed for this week only.
   const [closed, close] = useDismissed(`weekly.${weekStart(at)}`);

@@ -63,6 +63,14 @@ describe("the week's summary", () => {
     expect(summary.upcoming).toBe(2);
   });
 
+  it("counts the reminders later the same day when asked from the card opening", () => {
+    const endOfSunday = new Date(2026, 10, 1, 23, 59).getTime();
+    const opened = new Date(2026, 10, 1, 10).getTime();
+    const reminders = [new Date(2026, 10, 1, 8).getTime(), new Date(2026, 10, 1, 18).getTime(), new Date(2026, 10, 3, 9).getTime()];
+    expect(weekSummary({ at: endOfSunday, spending: null, parcels: [], reminders }).upcoming).toBe(1);
+    expect(weekSummary({ at: endOfSunday, spending: null, parcels: [], reminders, upcomingFrom: opened }).upcoming).toBe(2);
+  });
+
   it("is empty when there is nothing to tell", () => {
     expect(summaryIsEmpty(weekSummary({ at, spending: [], parcels: [], reminders: [] }))).toBe(true);
     expect(summaryIsEmpty({ spentMga: 0, arrived: 1, upcoming: 0 })).toBe(false);
