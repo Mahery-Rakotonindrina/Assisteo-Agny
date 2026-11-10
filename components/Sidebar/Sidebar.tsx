@@ -6,7 +6,6 @@ import { Logo } from "@/components/Logo";
 import { useAiStatus } from "@/hooks/useAiStatus";
 import { useAndroidDownload } from "@/hooks/useAndroidDownload";
 import { useKeptExpenses } from "@/hooks/useExpenses";
-import { useHasHealth } from "@/hooks/useHealth";
 import { useInHousehold } from "@/hooks/useHousehold";
 import { useInstallPrompt } from "@/hooks/useInstallPrompt";
 import { useKeptLoans } from "@/hooks/useLoans";
@@ -29,7 +28,7 @@ const links = [
   { href: "/settings", key: "settings", Icon: Settings2 },
 ] as const;
 
-/** "Ma santé", shown once a prescription or a medicine box was scanned. */
+/** "Ma santé", for everyone: the emergency card is there. */
 const healthLink = { href: "/sante", key: "health", Icon: HeartPulse } as const;
 
 /** "Mes dépenses", shown only with a plan that includes it (Admin while tested). */
@@ -55,9 +54,8 @@ export function Sidebar() {
   // Without the feature, one's kept expenses stay reachable (read only).
   const keptExpenses = useKeptExpenses(!has("expenses"));
   const keptLoans = useKeptLoans(!has("loans"));
-  const hasHealth = useHasHealth();
   // The plan is null on the server and at hydration: the extra links only appear once it is read.
-  const shown = [...links.slice(0, 8), ...(hasHealth ? [healthLink] : []), ...(has("expenses") || inHousehold || keptExpenses ? [expensesLink] : []), ...(has("expenses") ? [pocketsLink] : []), ...(has("loans") || keptLoans ? [loansLink] : []), ...(has("shop") ? [shopLink] : []), ...links.slice(8), ...(isAdmin ? [adminLink] : [])];
+  const shown = [...links.slice(0, 8), healthLink, ...(has("expenses") || inHousehold || keptExpenses ? [expensesLink] : []), ...(has("expenses") ? [pocketsLink] : []), ...(has("loans") || keptLoans ? [loansLink] : []), ...(has("shop") ? [shopLink] : []), ...links.slice(8), ...(isAdmin ? [adminLink] : [])];
   const android = useAndroidDownload();
   const { t } = useTranslation();
   const aiStatus = useAiStatus();

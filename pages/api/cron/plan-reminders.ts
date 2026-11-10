@@ -71,12 +71,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const [devices, settings] = userIds.length
       ? await Promise.all([
           db.from("push_devices").select("user_id, device_id, token, scheduled, platform").in("user_id", userIds),
-          db.from("user_settings").select("user_id, data").in("user_id", userIds),
+          // Only the language: the rest of the settings (the emergency card) is never read here.
+          db.from("user_settings").select("user_id, locale:data->>locale").in("user_id", userIds),
         ])
       : [{ data: [], error: null }, { data: [] }];
     if (devices.error) throw devices.error;
     const locales = new Map<string, PushLocale>(
-      (settings.data ?? []).map((row) => [row.user_id as string, (row.data as { locale?: string } | null)?.locale === "en" ? "en" : "fr"]),
+      (settings.data ?? []).map((row) => [row.user_id as string, (row as { locale?: string | null }).locale === "en" ? "en" : "fr"]),
     );
 
     let sent = 0;

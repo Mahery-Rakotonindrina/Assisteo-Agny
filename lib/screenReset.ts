@@ -8,7 +8,7 @@ import { byKind as shopByKind, type ShopRecord } from "@/lib/shop";
 // always through each store's synced removal (tombstones), never the
 // household's. "Historique" keeps its own (historyStore.clear).
 
-export const resetScreens = ["history", "expenses", "pockets", "loans", "parcels", "shop"] as const;
+export const resetScreens = ["history", "expenses", "pockets", "loans", "parcels", "shop", "health"] as const;
 export type ResetScreen = (typeof resetScreens)[number];
 
 /**

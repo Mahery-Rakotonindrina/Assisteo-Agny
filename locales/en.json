@@ -319,7 +319,8 @@
         "pockets": "Pockets",
         "loans": "Loans",
         "parcels": "Parcels",
-        "shop": "My shop"
+        "shop": "My shop",
+        "health": "Emergency card"
       },
       "hints": {
         "history": "All your analyses. Your parcels keep their photo.",
@@ -327,7 +328,8 @@
         "pockets": "Your pockets and the transfers between them. Your expenses stay.",
         "loans": "All your loans, repayments and proofs.",
         "parcels": "Every parcel you follow, and their reminders.",
-        "shop": "Your sales, your stock and your customers’ credit."
+        "shop": "Your sales, your stock and your customers’ credit.",
+        "health": "Your blood group, your allergies, the person to call."
       },
       "empty": "Nothing to erase",
       "title": "{name}: erase everything?",
@@ -368,7 +370,8 @@
         "shopProducts": "{count} products in stock",
         "shopProductsOne": "1 product in stock",
         "shopPayments": "{count} customer payments",
-        "shopPaymentsOne": "1 customer payment"
+        "shopPaymentsOne": "1 customer payment",
+        "emergencyCard": "Your emergency card"
       },
       "stays": {
         "history": "Your parcels (with their photo), your expenses, your loans and your lists.",
@@ -376,7 +379,8 @@
         "pockets": "Your expenses, income, savings and loans: they stay, without a pocket. You can add new pockets.",
         "loans": "The household's loans. Your pockets: the loans' moves leave them.",
         "parcels": "Their scans stay in the history. Their prices and sales leave Expenses.",
-        "shop": "Your other screens don’t change."
+        "shop": "Your other screens don’t change.",
+        "health": "Your prescriptions stay in the history, your treatments in “My health”."
       },
       "everywhere": "With your account, it's erased on your other devices too. You can't undo it.",
       "final": "You can't undo it.",
@@ -389,7 +393,8 @@
         "pockets": "Pockets erased",
         "loans": "Loans erased",
         "parcels": "Parcels erased",
-        "shop": "My shop erased"
+        "shop": "My shop erased",
+        "health": "Emergency card erased"
       },
       "offline": "No connection: the share links couldn't be stopped. Nothing is erased, try again online.",
       "failed": "Erasing didn't work. Try again."
@@ -438,7 +443,7 @@
           "maison": "your home inventory",
           "plantes": "your plants and their check-ups",
           "foyer": "your household: its name, your role, and only the lines you wrote",
-          "reglages": "your settings",
+          "reglages": "your settings and your emergency card",
           "compte": "your account: your e-mail, your plan, your subscriptions, the codes used, the family seats, the share links and the devices that get reminders",
           "boutique": "your shop: the products in stock, the sales and the customers’ payments"
         },
@@ -4091,7 +4096,7 @@
         "questions": {
           "where": {
             "q": "Where do I find my treatments?",
-            "a": "In “My health” (menu, or the home shortcut once you scanned a prescription): your current treatments, the next dose, and all your prescriptions."
+            "a": "In “My health” (menu, or the home shortcut): your emergency card, your current treatments, the next dose, and all your prescriptions."
           }
         }
       }
@@ -4414,7 +4419,7 @@
     "remindersOn": "Dose reminders on",
     "createReminders": "Create dose reminders",
     "shortcutOngoing": "{count} treatment(s) in progress",
-    "shortcutHint": "Your prescriptions and treatments",
+    "shortcutHint": "Your emergency card and treatments",
     "taken": "I took it",
     "takenDone": "Dose ticked",
     "today": "Today's doses",
@@ -4434,6 +4439,44 @@
       "line": "{name}: {dose}, at {times}, until {date}",
       "copied": "List copied: paste it in a message",
       "failed": "Couldn't share the list"
+    },
+    "emergency": {
+      "title": "Emergency card",
+      "lead": "What anyone helping you needs to know: readable even offline.",
+      "empty": "Fill it in a minute: your blood group, your allergies, who to call.",
+      "fill": "Fill in my card",
+      "edit": "Edit",
+      "blood": "Blood group",
+      "bloodUnknown": "I don't know",
+      "bloodPick": "Pick…",
+      "allergies": "Allergies",
+      "allergiesHint": "Separate them with commas: penicillin, peanuts…",
+      "conditions": "Long-term illnesses or treatments",
+      "conditionsHint": "Diabetes, asthma, blood pressure…",
+      "contact": "Person to call",
+      "contactName": "Their name",
+      "contactRelation": "Who they are to you",
+      "contactRelationHint": "My sister, my husband…",
+      "contactPhone": "Their phone",
+      "note": "Note",
+      "noteHint": "Anything else first responders should know",
+      "notFilled": "Not filled in",
+      "call": "Call {name}",
+      "callPlain": "Call",
+      "save": "Save",
+      "cancel": "Cancel",
+      "saved": "Card saved",
+      "privacy": "Your card stays on your phone. With an account, it follows your devices. It only goes elsewhere if you share it.",
+      "updated": "Updated on {date}",
+      "share": {
+        "button": "Share my card",
+        "whatsapp": "WhatsApp",
+        "heading": "My emergency card",
+        "line": "{label}: {value}",
+        "updated": "Updated on {date}",
+        "copied": "Card copied: paste it in a message",
+        "failed": "Couldn't share the card"
+      }
     }
   }
 }
