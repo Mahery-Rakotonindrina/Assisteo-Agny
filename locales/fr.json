@@ -33,7 +33,8 @@
       "settings": "Ré|glages",
       "admin": "Admin"
     },
-    "shop": "Ma boutique"
+    "shop": "Ma boutique",
+    "health": "Ma santé"
   },
   "scan": {
     "greeting": {
@@ -2136,6 +2137,10 @@
       "list": {
         "title": "Listes et papiers",
         "body": "Une liste de courses en photo devient une liste à cocher, avec les prix en ariary. CNI, assurances et garanties sont rangées, avec une alerte avant l’expiration."
+      },
+      "health": {
+        "title": "Ma santé",
+        "body": "Scanne une ordonnance : ce qu’elle dit, des rappels de prise, et tes traitements au même endroit. Ça ne remplace pas l’avis d’un médecin."
       }
     },
     "examplesTitle": "Vois ce que l’IA répond",
@@ -4080,6 +4085,15 @@
             "a": "Dans Réglages, choisis « Toujours » pour l’économie de données (« Auto » est le mode par défaut) : les photos sont plus légères et partent plus vite, même en 3G."
           }
         }
+      },
+      "health": {
+        "title": "Santé",
+        "questions": {
+          "where": {
+            "q": "Où retrouver mes traitements ?",
+            "a": "Dans « Ma santé » (menu, ou raccourci sur l’accueil dès ta première ordonnance scannée) : tes traitements en cours, la prochaine prise, et toutes tes ordonnances."
+          }
+        }
       }
     },
     "guides": {
@@ -4385,5 +4399,41 @@
   "whatsappPhone": {
     "placeholder": "034 12 345 67",
     "invalid": "WhatsApp ne trouvera pas ce numéro. Pour l’étranger, mets l’indicatif : +33 6…"
+  },
+  "health": {
+    "title": "Ma santé",
+    "lead": "Tes traitements en cours et tes ordonnances scannées.",
+    "scan": "Scanner une ordonnance",
+    "emptyTitle": "Rien pour l’instant",
+    "emptyBody": "Scanne une ordonnance ou une boîte de médicament : tu retrouveras ici ce qu’elle dit, et tes rappels de prise.",
+    "ongoing": "En cours",
+    "prescriptions": "Mes ordonnances",
+    "until": "Jusqu’au {date} · {count} jour(s) restant(s)",
+    "next": "Prochaine prise : {when}",
+    "open": "Voir l’ordonnance",
+    "remindersOn": "Rappels de prise en cours",
+    "createReminders": "Créer des rappels de prise",
+    "shortcutOngoing": "{count} traitement(s) en cours",
+    "shortcutHint": "Tes ordonnances et tes traitements",
+    "taken": "J’ai pris",
+    "takenDone": "Prise cochée",
+    "today": "Les prises d’aujourd’hui",
+    "doseTaken": "Prise ✓",
+    "doseMissed": "Pas encore cochée : si tu l’as prise, coche-la",
+    "week": "{taken} prise(s) cochée(s) sur {due} cette semaine",
+    "lastDay": {
+      "title": "Dernier jour demain : {names}",
+      "body": "Ton traitement se termine demain.",
+      "renew": "Ton traitement se termine demain : l’ordonnance se renouvelle, pense à racheter."
+    },
+    "share": {
+      "button": "Partager",
+      "pdf": "PDF",
+      "heading": "Mes traitements en cours",
+      "caption": "Au {date}",
+      "line": "{name} : {dose}, à {times}, jusqu’au {date}",
+      "copied": "Liste copiée : colle-la dans un message",
+      "failed": "Impossible de partager la liste"
+    }
   }
 }

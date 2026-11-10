@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { mockPrescription } from "@/lib/ai/mock";
 import { SYSTEM_PROMPT } from "@/lib/ai/prompt";
 import { AnalysisSchema, normalizeStoredAnalysis } from "@/lib/ai/schema";
-import { cleanCourse, defaultTimes, doseReminders, hasReadableName, isActive, planEnd, unreadableNote, type MedicationPlan } from "@/lib/medication";
-import { reconcileMedicationState, type MedicationReminderDeps, type ScheduledDoses } from "@/services/medicationReminders";
+import { canTake, cleanCourse, defaultTimes, doseReminders, endingCourses, mergeTaken, hasReadableName, isActive, lastDayNotice, MAX_TAKEN, planEnd, todayDoses, unreadableNote, weekAdherence, withTaken, type MedicationPlan } from "@/lib/medication";
+import { medicationLink, reconcileMedicationState, type MedicationReminderDeps, type ScheduledDoses } from "@/services/medicationReminders";
 import { tapTarget } from "@/services/notificationTap";
 
 const at = (day: number, hour: number, minute = 0) => new Date(2026, 10, day, hour, minute).getTime();
@@ -79,7 +79,12 @@ describe("dose reminders", () => {
     expect(reminders[0]).toEqual({ entryId: "scan", at: at(4, 20), medicines: [{ name: "Amoxicilline", dose: "1 gélule matin et soir" }] });
     expect(reminders[1]).toEqual({ entryId: "scan", at: at(5, 8), medicines: [{ name: "Amoxicilline", dose: "1 gélule matin et soir" }, { name: "Vitamine C" }] });
     expect(reminders.at(-1)?.at).toBe(at(10, 20));
-    expect(reminders).toHaveLength(13);
+    // 13 doses, and the evening before the last day.
+    expect(reminders).toHaveLength(14);
+    expect(reminders.filter((reminder) => reminder.kind === "lastDay")).toEqual([
+      // Vitamin C ended on the 5th: only the amoxicillin ends on the last day.
+      { entryId: "scan", at: at(9, 19), kind: "lastDay", medicines: [{ name: "Amoxicilline" }] },
+    ]);
     expect(doseReminders([{ id: "scan", medication: plan }], at(4, 9), false)).toEqual([]);
   });
 
@@ -90,8 +95,10 @@ describe("dose reminders", () => {
     let next = 1;
     const deps: MedicationReminderDeps = {
       permission: async () => "granted",
-      notify: async ({ entryId }) => {
-        expect(entryId).toBe("med:scan");
+      notify: async ({ entryId, actionTypeId }) => {
+        // A dose: its moment in the link and the "J'ai pris" button; the last-day notice: the scan alone.
+        if (actionTypeId) expect(entryId).toMatch(/^med:scan@\d+$/);
+        else expect(entryId).toBe("med:scan");
         scheduled.push(next);
         return next++;
       },
@@ -107,16 +114,89 @@ describe("dose reminders", () => {
     const texts = () => ({ title: "Médicament", body: "Amoxicilline" });
     const entries = [{ id: "scan", medication: plan }];
     await reconcileMedicationState(entries, texts, deps, { now: at(4, 9) });
-    expect(scheduled).toHaveLength(13);
+    expect(scheduled).toHaveLength(14);
     await reconcileMedicationState(entries, texts, deps, { now: at(4, 9) });
-    expect(scheduled).toHaveLength(13);
+    expect(scheduled).toHaveLength(14);
     // Stopped: everything cancelled.
     await reconcileMedicationState([{ id: "scan" }], texts, deps, { now: at(4, 9) });
-    expect(cancelled).toHaveLength(13);
+    expect(cancelled).toHaveLength(14);
     expect(saved).toEqual({});
   });
 
-  it("opens the prescription's scan when a dose notification is tapped", () => {
-    expect(tapTarget("med:abc")).toEqual({ pathname: "/result", query: { id: "abc" } });
+  it("opens « Ma santé » when a dose notification is tapped, and reads the dose's moment in its link", () => {
+    expect(tapTarget("med:abc")).toEqual({ pathname: "/sante" });
+    expect(tapTarget("med:abc@1762236000000")).toEqual({ pathname: "/sante" });
+    expect(medicationLink("med:abc@1762236000000")).toEqual({ scanId: "abc", at: 1762236000000 });
+    expect(medicationLink("med:abc")).toEqual({ scanId: "abc", at: null });
+    expect(medicationLink("plant:x")).toBeNull();
+  });
+
+  it("ticks « J'ai pris »: counts the week's doses, shows today's gently, keeps a bounded list", () => {
+    // 6 Nov 21:00: the doses of 4 Nov 08:00 to 6 Nov 20:00 are due (6 + 2 of vitamin C at the same moments).
+    const now = at(6, 21);
+    expect(weekAdherence(plan, now)).toEqual({ due: 6, taken: 0 });
+    let ticked = withTaken(plan, at(5, 8));
+    ticked = withTaken(ticked, at(5, 8));
+    ticked = withTaken(ticked, at(6, 8));
+    expect(ticked.taken).toEqual([at(5, 8), at(6, 8)]);
+    expect(weekAdherence(ticked, now)).toEqual({ due: 6, taken: 2 });
+    expect(todayDoses(ticked, now).map((dose) => [dose.at, dose.state])).toEqual([
+      [at(6, 8), "taken"],
+      [at(6, 20), "missed"],
+    ]);
+    expect(todayDoses(ticked, at(6, 9)).map((dose) => dose.state)).toEqual(["taken", "upcoming"]);
+    let many = plan;
+    for (let i = 0; i < MAX_TAKEN + 20; i += 1) many = withTaken(many, i);
+    expect(many.taken).toHaveLength(MAX_TAKEN);
+    expect(many.taken?.[0]).toBe(20);
+  });
+
+  it("says the last day the evening before, and to buy more when the prescription is renewed", () => {
+    expect(lastDayNotice(plan)).toBe(at(9, 19));
+    const [notice] = doseReminders([{ id: "scan", medication: { ...plan, renew: true } }], at(9, 9)).filter((reminder) => reminder.kind === "lastDay");
+    expect(notice).toMatchObject({ at: at(9, 19), renew: true });
+    // A one-day treatment: no notice.
+    expect(lastDayNotice({ start: "2026-11-04", createdAt: 0, courses: [{ name: "A", times: ["08:00"], days: 1 }] })).toBeNull();
+  });
+});
+
+describe("ticking a dose safely", () => {
+  it("never rings a moment already ticked, and only ticks a dose gone by or within the hour", () => {
+    const ticked = withTaken(plan, at(5, 8));
+    const moments = doseReminders([{ id: "scan", medication: ticked }], at(4, 21)).map((reminder) => reminder.at);
+    expect(moments).not.toContain(at(5, 8));
+    expect(moments).toContain(at(5, 20));
+    expect(canTake(at(5, 8), at(5, 7, 1))).toBe(true);
+    expect(canTake(at(5, 8), at(5, 6, 59))).toBe(false);
+    expect(canTake(at(6, 8), at(5, 8))).toBe(false);
+    // Today's list says which ones can be ticked now.
+    expect(todayDoses(plan, at(5, 9)).map((dose) => [dose.state, dose.canTake])).toEqual([
+      ["missed", true],
+      ["upcoming", false],
+    ]);
+  });
+
+  it("keeps the doses ticked on two devices when the plan is the same, not those of an older plan", () => {
+    const here = { ...plan, createdAt: 5, taken: [at(5, 8)] };
+    const there = { ...plan, createdAt: 5, taken: [at(5, 20), at(5, 8)] };
+    expect(mergeTaken(here, there)?.taken).toEqual([at(5, 8), at(5, 20)]);
+    // Nothing new: the same object (nothing to write, nothing to send back).
+    expect(mergeTaken(there, here)).toBe(there);
+    const older = { ...plan, createdAt: 1, taken: [at(4, 8)] };
+    expect(mergeTaken(here, older)).toBe(here);
+    expect(mergeTaken(undefined, there)).toBeUndefined();
+  });
+
+  it("does not count the doses before the plan was made", () => {
+    const madeAt9 = { ...plan, createdAt: at(4, 21) };
+    expect(weekAdherence(madeAt9, at(5, 9))).toEqual({ due: 1, taken: 0 });
+    expect(todayDoses(madeAt9, at(4, 22))).toEqual([]);
+  });
+
+  it("names on the last-day notice only the medicines that really end that day", () => {
+    const mixed: MedicationPlan = { ...plan, courses: [{ name: "Amoxicilline", times: ["08:00"], days: 7 }, { name: "Paracétamol", times: ["08:00"], days: 3 }] };
+    expect(endingCourses(mixed).map((course) => course.name)).toEqual(["Amoxicilline"]);
+    const [notice] = doseReminders([{ id: "scan", medication: mixed }], at(9, 9)).filter((reminder) => reminder.kind === "lastDay");
+    expect(notice.medicines).toEqual([{ name: "Amoxicilline" }]);
   });
 });

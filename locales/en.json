@@ -33,7 +33,8 @@
       "settings": "Set|tings",
       "admin": "Admin"
     },
-    "shop": "My shop"
+    "shop": "My shop",
+    "health": "My health"
   },
   "scan": {
     "greeting": {
@@ -2136,6 +2137,10 @@
       "list": {
         "title": "Lists and papers",
         "body": "A photo of a shopping list becomes a checklist, with prices in ariary. ID cards, insurance and warranties are filed, with an alert before they expire."
+      },
+      "health": {
+        "title": "My health",
+        "body": "Scan a prescription: what it says, dose reminders, and your treatments in one place. It doesn't replace a doctor's advice."
       }
     },
     "examplesTitle": "See what the AI answers",
@@ -4080,6 +4085,15 @@
             "a": "In Settings, choose “Always” for the data saver (“Auto” is the default mode): photos are lighter and leave faster, even on 3G."
           }
         }
+      },
+      "health": {
+        "title": "Health",
+        "questions": {
+          "where": {
+            "q": "Where do I find my treatments?",
+            "a": "In “My health” (menu, or the home shortcut once you scanned a prescription): your current treatments, the next dose, and all your prescriptions."
+          }
+        }
       }
     },
     "guides": {
@@ -4385,5 +4399,41 @@
   "whatsappPhone": {
     "placeholder": "034 12 345 67",
     "invalid": "WhatsApp won't find this number. For abroad, add the country code: +33 6…"
+  },
+  "health": {
+    "title": "My health",
+    "lead": "Your current treatments and the prescriptions you scanned.",
+    "scan": "Scan a prescription",
+    "emptyTitle": "Nothing yet",
+    "emptyBody": "Scan a prescription or a medicine box: you'll find here what it says, and your dose reminders.",
+    "ongoing": "In progress",
+    "prescriptions": "My prescriptions",
+    "until": "Until {date} · {count} day(s) left",
+    "next": "Next dose: {when}",
+    "open": "See the prescription",
+    "remindersOn": "Dose reminders on",
+    "createReminders": "Create dose reminders",
+    "shortcutOngoing": "{count} treatment(s) in progress",
+    "shortcutHint": "Your prescriptions and treatments",
+    "taken": "I took it",
+    "takenDone": "Dose ticked",
+    "today": "Today's doses",
+    "doseTaken": "Taken ✓",
+    "doseMissed": "Not ticked yet: if you took it, tick it",
+    "week": "{taken} of {due} dose(s) ticked this week",
+    "lastDay": {
+      "title": "Last day tomorrow: {names}",
+      "body": "Your treatment ends tomorrow.",
+      "renew": "Your treatment ends tomorrow: the prescription can be renewed, remember to buy more."
+    },
+    "share": {
+      "button": "Share",
+      "pdf": "PDF",
+      "heading": "My current treatments",
+      "caption": "As of {date}",
+      "line": "{name}: {dose}, at {times}, until {date}",
+      "copied": "List copied: paste it in a message",
+      "failed": "Couldn't share the list"
+    }
   }
 }

@@ -56,8 +56,8 @@ export function MedicationPlanner({ entry, medicine }: { entry: HistoryEntry; me
           <BellRing size={16} /> {t("medicine.activeUntil", { date: formatDate(end, locale) })}
         </p>
         <ul className={styles.courses}>
-          {plan.courses.map((course) => (
-            <li key={course.name}>
+          {plan.courses.map((course, index) => (
+            <li key={`${index}-${course.name}`}>
               <strong>{course.name}</strong>
               <span>{t("medicine.courseLine", { times: course.times.join(", "), count: course.days })}</span>
             </li>
@@ -101,7 +101,8 @@ function PlannerForm({ entry, medicine }: { entry: HistoryEntry; medicine: Medic
     if (!valid || saving) return;
     setSaving(true);
     try {
-      const plan: MedicationPlan = { start, courses: courses as MedicationCourse[], createdAt: Date.now() };
+      // A prescription to renew: the last-day notice says to buy more.
+      const plan: MedicationPlan = { start, courses: courses as MedicationCourse[], createdAt: Date.now(), ...(medicine.renewal && { renew: true }) };
       const permission = await requestNotificationPermission().catch(() => "denied" as const);
       await historyStore.update(entry.id, { medication: plan });
       haptics.success();

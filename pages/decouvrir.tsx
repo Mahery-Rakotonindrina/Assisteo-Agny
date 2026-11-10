@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import type { CSSProperties } from "react";
-import { Apple, ArrowRight, LifeBuoy, BellRing, Briefcase, Camera, Car, ChevronDown, Coins, Download, FileDown, Files, FileText, HandCoins, House, ListChecks, MessageCircle, Package, ScanSearch, Sparkles, Sprout, Store, Wallet, type LucideIcon } from "lucide-react";
+import { Apple, ArrowRight, HeartPulse, LifeBuoy, BellRing, Briefcase, Camera, Car, ChevronDown, Coins, Download, FileDown, Files, FileText, HandCoins, House, ListChecks, MessageCircle, Package, ScanSearch, Sparkles, Sprout, Store, Wallet, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/Button";
 import { PlanBadge } from "@/components/PlanBadge";
 import { Seo } from "@/components/Seo";
@@ -21,6 +21,8 @@ const features = [
   { id: "vehicle", icon: Car },
   { id: "object", icon: Sprout },
   { id: "list", icon: ListChecks },
+  // "Ma santé": no category of its own, the documents' colour.
+  { id: "health", icon: HeartPulse, tint: "document" },
 ] as const;
 const extraIcons: Record<DiscoverFeature, LucideIcon> = {
   reminders: BellRing,
@@ -82,15 +84,18 @@ export default function DiscoverPage() {
         <motion.section variants={rise} className={styles.section}>
           <h2>{t("discover.featuresTitle")}</h2>
           <ul className={styles.features}>
-            {features.map(({ id, icon: Icon }) => (
-              <li key={id} className={styles.feature} style={{ "--tint": `var(--cat-${id})` } as CSSProperties}>
+            {features.map((feature) => {
+              const { id, icon: Icon } = feature;
+              return (
+              <li key={id} className={styles.feature} style={{ "--tint": `var(--cat-${"tint" in feature ? feature.tint : id})` } as CSSProperties}>
                 <span className={styles.featureIcon}>
                   <Icon size={20} />
                 </span>
                 <h3>{t(`discover.features.${id}.title`)}</h3>
                 <p>{t(`discover.features.${id}.body`)}</p>
               </li>
-            ))}
+              );
+            })}
           </ul>
         </motion.section>
 
