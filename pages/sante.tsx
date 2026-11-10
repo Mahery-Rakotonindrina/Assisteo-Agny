@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { useState } from "react";
 import { BellOff, BellRing, Check, ChevronRight, Clock, FileDown, FileText, Pill, ScanLine, Share2 } from "lucide-react";
 import { Button } from "@/components/Button";
+import { EmergencyCard } from "@/components/EmergencyCard";
 import { EmptyState } from "@/components/EmptyState";
 import { MedicineDisclaimer } from "@/components/Medicine";
 import { PlanBadge } from "@/components/PlanBadge";
@@ -30,8 +31,9 @@ const SCAN_HREF = "/?mode=document";
 /**
  * "Ma santé": the treatments in progress with their next dose, and the
  * prescriptions and medicine boxes scanned. Everything comes from the
- * history (the scans and their dose plans): nothing is stored apart. The list
- * is for everyone; dose reminders from Lite, like on a scan.
+ * history (the scans and their dose plans), but the emergency card, kept in
+ * the settings. The list and the card are for everyone; dose reminders from
+ * Lite, like on a scan.
  */
 export default function HealthPage() {
   const { t, locale } = useTranslation();
@@ -72,6 +74,10 @@ export default function HealthPage() {
 
         <motion.div variants={rise}>
           <MedicineDisclaimer />
+        </motion.div>
+
+        <motion.div variants={rise}>
+          <EmergencyCard />
         </motion.div>
 
         {empty ? (

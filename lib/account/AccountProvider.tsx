@@ -2,6 +2,7 @@ import type { Session } from "@supabase/supabase-js";
 import Router from "next/router";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { pick } from "@/lib/account/pick";
+import { newerCard } from "@/lib/emergencyCard";
 import { syncedSettingKeys, useSettings, type SyncedSettings } from "@/lib/settings/SettingsProvider";
 import { accountsAvailable, supabase } from "@/lib/supabase";
 import { deleteAccountOnServer, onSessionChange, signOutAccount } from "@/services/account";
@@ -51,6 +52,13 @@ type AccountContextValue = {
 };
 
 const AccountContext = createContext<AccountContextValue | null>(null);
+
+/** What goes to user_settings: no emergency card yet (null) leaves the account's untouched. */
+function syncedData(settings: SyncedSettings) {
+  const data: Partial<SyncedSettings> = pick(settings, syncedSettingKeys);
+  if (!data.emergencyCard) delete data.emergencyCard;
+  return data;
+}
 
 /**
  * Wires the signed-in account to the device: history sync, settings and the
@@ -194,12 +202,18 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       if (cancelled) return;
       const local = settingsRef.current;
       const remoteAt = data ? new Date(data.updated_at).getTime() : 0;
+      const remote = pick((data?.data ?? {}) as Partial<SyncedSettings>, syncedSettingKeys);
+      // The emergency card goes by its own date: an older app writes the settings without it.
+      const card = newerCard(local.emergencyCard, remote.emergencyCard);
       if (data && remoteAt > local.updatedAt) {
-        update(pick(data.data as Partial<SyncedSettings>, syncedSettingKeys), { fromSync: true, updatedAt: remoteAt });
-      } else if (local.updatedAt > remoteAt) {
-        await supabase()
-          .from("user_settings")
-          .upsert({ user_id: userId, data: pick(local, syncedSettingKeys), updated_at: new Date(local.updatedAt).toISOString() });
+        update({ ...remote, emergencyCard: card }, { fromSync: true, updatedAt: remoteAt });
+      } else {
+        if (JSON.stringify(card) !== JSON.stringify(local.emergencyCard)) update({ emergencyCard: card }, { fromSync: true });
+        if (local.updatedAt > remoteAt) {
+          await supabase()
+            .from("user_settings")
+            .upsert({ user_id: userId, data: syncedData({ ...local, emergencyCard: card }), updated_at: new Date(local.updatedAt).toISOString() });
+        }
       }
       if (!cancelled) setSettingsReady(true);
     })().catch(() => setSettingsReady(true));
@@ -214,7 +228,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     const timer = setTimeout(() => {
       void supabase()
         .from("user_settings")
-        .upsert({ user_id: userId, data: pick(settings, syncedSettingKeys), updated_at: new Date(settings.updatedAt).toISOString() });
+        .upsert({ user_id: userId, data: syncedData(settings), updated_at: new Date(settings.updatedAt).toISOString() });
     }, 800);
     return () => clearTimeout(timer);
   }, [userId, settingsReady, settings]);
@@ -288,7 +302,10 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await wipeReviews().catch(() => undefined);
     await aiKeyStore.clear({ fromSync: true });
     await signOutAccount();
-  }, [syncRows]);
+    // The emergency card is the account's, like the scans: not left on the device.
+    // After the sign-out, so the account's copy is never overwritten.
+    update({ emergencyCard: null }, { fromSync: true });
+  }, [syncRows, update]);
 
   const deleteAccount = useCallback(async () => {
     // Stop pushing first so nothing is re-uploaded while the server deletes.
@@ -317,10 +334,11 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await householdStore.wipe();
     await wipeReviews().catch(() => undefined);
     await aiKeyStore.clear({ fromSync: true });
+    update({ emergencyCard: null }, { fromSync: true });
     await cancelAllNotifications();
     // The user no longer exists on the server: only forget the session here.
     await signOutAccount().catch(() => undefined);
-  }, [userId]);
+  }, [userId, update]);
 
   const value = useMemo<AccountContextValue>(
     () => ({

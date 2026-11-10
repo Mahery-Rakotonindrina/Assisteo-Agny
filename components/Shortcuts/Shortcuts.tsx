@@ -42,7 +42,7 @@ export function Shortcuts({ entries }: { entries: HistoryEntry[] }) {
   const toWater = plants.filter((plant) => needsWater(plant, now)).length;
   const garageDue = vehicles.reduce((count, vehicle) => count + dueReminders(vehicle, now).length, 0);
   const { items: homeItems } = useHomeItems();
-  // "Ma santé", once a prescription or a medicine box was scanned: the treatments in progress.
+  // "Ma santé", for everyone (the emergency card): the treatments in progress, if any.
   const health = healthOverview(entries, now);
 
   return (
@@ -119,15 +119,13 @@ export function Shortcuts({ entries }: { entries: HistoryEntry[] }) {
           </small>
         </span>
       </Link>
-      {health.scans.length > 0 && (
-        <Link href="/sante" className={styles.shortcut} style={{ "--tone": "var(--danger)" } as React.CSSProperties} data-testid="shortcut-health">
-          <HeartPulse size={18} />
-          <span>
-            <strong>{t("health.title")}</strong>
-            <small>{health.treatments.length > 0 ? t("health.shortcutOngoing", { count: health.treatments.length }) : t("health.shortcutHint")}</small>
-          </span>
-        </Link>
-      )}
+      <Link href="/sante" className={styles.shortcut} style={{ "--tone": "var(--danger)" } as React.CSSProperties} data-testid="shortcut-health">
+        <HeartPulse size={18} />
+        <span>
+          <strong>{t("health.title")}</strong>
+          <small>{health.treatments.length > 0 ? t("health.shortcutOngoing", { count: health.treatments.length }) : t("health.shortcutHint")}</small>
+        </span>
+      </Link>
       {has("shop") && (
         <Link href="/boutique" className={styles.shortcut} style={{ "--tone": "var(--cat-object)" } as React.CSSProperties}>
           <Store size={18} />

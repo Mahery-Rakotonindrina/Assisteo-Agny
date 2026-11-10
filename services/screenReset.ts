@@ -48,5 +48,8 @@ export async function resetScreen(screen: ResetScreen) {
     case "shop":
       await shopStore.removeAll();
       return;
+    case "health":
+      // The emergency card is a setting: ScreenReset empties it (useSettings), dated so the emptying syncs.
+      return;
   }
 }

@@ -1,9 +1,10 @@
 import type { Locale } from "@/i18n.config";
+import { cardText, type EmergencyCard } from "@/lib/emergencyCard";
 import { formatDate } from "@/lib/format";
 import { treatmentLines, treatmentsText, type Treatment } from "@/lib/health";
 import { pdfFileName, PdfWriter } from "@/lib/pdf";
 import type { HistoryEntry } from "@/types/history";
-import { shareText } from "./device";
+import { openExternal, shareText } from "./device";
 import { shareFile } from "./fileShare";
 
 // "Partager mes traitements" (Ma santé): the treatments in progress, as a
@@ -29,4 +30,15 @@ export async function exportTreatmentsPdf(treatments: Array<Treatment<HistoryEnt
   }
   const bytes = pdf.finish(t("pdf.footer"));
   return shareFile(pdfFileName(t("health.share.heading")), bytes, "application/pdf", t("health.share.heading"));
+}
+
+// "Partager ma fiche" (fiche d'urgence): only by the person's choice, as a message.
+
+export function shareEmergencyCard(card: EmergencyCard, t: Translate, locale: Locale) {
+  return shareText(t("health.emergency.share.heading"), cardText(card, t, (at) => formatDate(at, locale)), { copyTitle: false });
+}
+
+/** The card in WhatsApp: the person picks whom to send it to. */
+export function whatsappEmergencyCard(card: EmergencyCard, t: Translate, locale: Locale) {
+  openExternal(`https://wa.me/?text=${encodeURIComponent(cardText(card, t, (at) => formatDate(at, locale)))}`);
 }

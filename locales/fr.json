@@ -319,7 +319,8 @@
         "pockets": "Poches",
         "loans": "Prêts",
         "parcels": "Colis",
-        "shop": "Ma boutique"
+        "shop": "Ma boutique",
+        "health": "Fiche d’urgence"
       },
       "hints": {
         "history": "Toutes tes analyses. Tes colis gardent leur photo.",
@@ -327,7 +328,8 @@
         "pockets": "Tes poches et les virements entre elles. Tes dépenses restent.",
         "loans": "Tous tes prêts, remboursements et preuves.",
         "parcels": "Tous les colis que tu suis, et leurs rappels.",
-        "shop": "Tes ventes, ton stock et le crédit de tes clients."
+        "shop": "Tes ventes, ton stock et le crédit de tes clients.",
+        "health": "Ton groupe sanguin, tes allergies, la personne à prévenir."
       },
       "empty": "Rien à effacer",
       "title": "{name} : tout effacer ?",
@@ -368,7 +370,8 @@
         "shopProducts": "{count} produits en stock",
         "shopProductsOne": "1 produit en stock",
         "shopPayments": "{count} paiements de clients",
-        "shopPaymentsOne": "1 paiement de client"
+        "shopPaymentsOne": "1 paiement de client",
+        "emergencyCard": "Ta fiche d’urgence"
       },
       "stays": {
         "history": "Tes colis (avec leur photo), tes dépenses, tes prêts et tes listes.",
@@ -376,7 +379,8 @@
         "pockets": "Tes dépenses, revenus, épargne et prêts : ils restent, sans poche. Tu pourras ajouter de nouvelles poches.",
         "loans": "Les prêts du foyer. Tes poches : les mouvements des prêts en sortent.",
         "parcels": "Leurs scans restent dans l’historique. Leurs prix et ventes sortent de Dépenses.",
-        "shop": "Tes autres écrans ne changent pas."
+        "shop": "Tes autres écrans ne changent pas.",
+        "health": "Tes ordonnances restent dans l’historique, tes traitements dans « Ma santé »."
       },
       "everywhere": "Avec ton compte, c’est effacé aussi sur tes autres appareils. Tu ne pourras pas revenir en arrière.",
       "final": "Tu ne pourras pas revenir en arrière.",
@@ -389,7 +393,8 @@
         "pockets": "Poches effacées",
         "loans": "Prêts effacés",
         "parcels": "Colis effacés",
-        "shop": "Ma boutique effacée"
+        "shop": "Ma boutique effacée",
+        "health": "Fiche d’urgence effacée"
       },
       "offline": "Pas de connexion : les liens de partage n’ont pas pu être arrêtés. Rien n’est effacé, réessaie avec internet.",
       "failed": "L’effacement n’a pas abouti. Réessaie."
@@ -438,7 +443,7 @@
           "maison": "l’inventaire de ta maison",
           "plantes": "tes plantes et leurs diagnostics",
           "foyer": "ton foyer : son nom, ton rôle, et seulement les lignes que tu as écrites",
-          "reglages": "tes réglages",
+          "reglages": "tes réglages et ta fiche d’urgence",
           "compte": "ton compte : ton e-mail, ton offre, tes abonnements, les codes utilisés, les places famille, les liens de partage et les appareils qui reçoivent les rappels",
           "boutique": "ta boutique : les produits en stock, les ventes et les paiements des clients"
         },
@@ -4091,7 +4096,7 @@
         "questions": {
           "where": {
             "q": "Où retrouver mes traitements ?",
-            "a": "Dans « Ma santé » (menu, ou raccourci sur l’accueil dès ta première ordonnance scannée) : tes traitements en cours, la prochaine prise, et toutes tes ordonnances."
+            "a": "Dans « Ma santé » (menu, ou raccourci sur l’accueil) : ta fiche d’urgence, tes traitements en cours, la prochaine prise, et toutes tes ordonnances."
           }
         }
       }
@@ -4414,7 +4419,7 @@
     "remindersOn": "Rappels de prise en cours",
     "createReminders": "Créer des rappels de prise",
     "shortcutOngoing": "{count} traitement(s) en cours",
-    "shortcutHint": "Tes ordonnances et tes traitements",
+    "shortcutHint": "Ta fiche d’urgence et tes traitements",
     "taken": "J’ai pris",
     "takenDone": "Prise cochée",
     "today": "Les prises d’aujourd’hui",
@@ -4434,6 +4439,44 @@
       "line": "{name} : {dose}, à {times}, jusqu’au {date}",
       "copied": "Liste copiée : colle-la dans un message",
       "failed": "Impossible de partager la liste"
+    },
+    "emergency": {
+      "title": "Fiche d’urgence",
+      "lead": "Ce qu’il faut savoir si on doit t’aider : lisible même sans connexion.",
+      "empty": "Remplis-la en une minute : ton groupe sanguin, tes allergies, qui prévenir.",
+      "fill": "Remplir ma fiche",
+      "edit": "Modifier",
+      "blood": "Groupe sanguin",
+      "bloodUnknown": "Je ne sais pas",
+      "bloodPick": "Choisis…",
+      "allergies": "Allergies",
+      "allergiesHint": "Sépare-les par des virgules : pénicilline, arachide…",
+      "conditions": "Maladies ou traitements de fond",
+      "conditionsHint": "Diabète, asthme, tension…",
+      "contact": "Personne à prévenir",
+      "contactName": "Son nom",
+      "contactRelation": "Qui c’est pour toi",
+      "contactRelationHint": "Ma sœur, mon mari…",
+      "contactPhone": "Son téléphone",
+      "note": "Note",
+      "noteHint": "Ce que les secours doivent savoir d’autre",
+      "notFilled": "Pas rempli",
+      "call": "Appeler {name}",
+      "callPlain": "Appeler",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "saved": "Fiche enregistrée",
+      "privacy": "Ta fiche reste sur ton téléphone. Avec un compte, elle suit tes appareils. Elle ne part ailleurs que si tu la partages.",
+      "updated": "Mise à jour le {date}",
+      "share": {
+        "button": "Partager ma fiche",
+        "whatsapp": "WhatsApp",
+        "heading": "Ma fiche d’urgence",
+        "line": "{label} : {value}",
+        "updated": "Mise à jour le {date}",
+        "copied": "Fiche copiée : colle-la dans un message",
+        "failed": "Impossible de partager la fiche"
+      }
     }
   }
 }
