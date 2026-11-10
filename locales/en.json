@@ -4381,5 +4381,9 @@
       "fromHousehold": "Shared by your household",
       "sharedBy": "Shared by {name}"
     }
+  },
+  "whatsappPhone": {
+    "placeholder": "034 12 345 67",
+    "invalid": "WhatsApp won't find this number. For abroad, add the country code: +33 6…"
   }
 }

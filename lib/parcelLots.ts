@@ -31,6 +31,8 @@ export type ParcelLot = {
   mode?: ShippingMode;
   /** Departure day, "YYYY-MM-DD". */
   departedAt?: string;
+  /** When its details were last changed (a rename…): the latest wins on every parcel. Missing on older ones. */
+  updatedAt?: number;
 };
 
 type Fee = { id: string; label: string; amountMga: number };
@@ -118,9 +120,26 @@ export type LotSummary<T> = {
 };
 
 /**
+ * Each shipment's latest details: the most recently changed. A lot without
+ * a date (written by an older app, which renames without one) counts from
+ * its parcel's last change: its rename is kept, not undone by an older one
+ * that had a date. The details chosen carry that date from then on, so the
+ * choice stays the same on every device.
+ */
+export function latestLots(parcels: Array<{ lot?: ParcelLot; updatedAt: number }>) {
+  const latest = new Map<string, { lot: ParcelLot; at: number }>();
+  for (const parcel of parcels) {
+    if (!parcel.lot?.id) continue;
+    const at = parcel.lot.updatedAt ?? parcel.updatedAt;
+    const current = latest.get(parcel.lot.id);
+    if (!current || at > current.at) latest.set(parcel.lot.id, { lot: parcel.lot, at });
+  }
+  return new Map([...latest].map(([id, { lot, at }]) => [id, { ...lot, updatedAt: at }]));
+}
+
+/**
  * The shipments and their totals, the latest departure first (those without
- * a day last, by name). A shipment's details are those of its most recently
- * updated parcel (they are all rewritten together).
+ * a day last, by name). A shipment's details are its latest (latestLots).
  */
 export function lotSummaries<T extends Groupable>(parcels: T[]): LotSummary<T>[] {
   const groups = new Map<string, T[]>();
@@ -128,9 +147,10 @@ export function lotSummaries<T extends Groupable>(parcels: T[]): LotSummary<T>[]
     if (!parcel.lot?.id) continue;
     groups.set(parcel.lot.id, [...(groups.get(parcel.lot.id) ?? []), parcel]);
   }
+  const latest = latestLots(parcels);
   return [...groups.values()]
     .map((members) => {
-      const lot = [...members].sort((a, b) => b.updatedAt - a.updatedAt)[0].lot!;
+      const lot = latest.get(members[0].lot!.id)!;
       const sold = members.filter((parcel) => parcel.salePriceMga);
       return {
         lot,

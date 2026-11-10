@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import fr from "@/locales/fr.json";
 import { whatsappLink } from "@/lib/loans";
-import { clientPhone, parcelStatusMessage } from "@/lib/parcelMessage";
+import { clientPhone, parcelStatusMessage, phoneToSave } from "@/lib/parcelMessage";
 
 // The real French texts, to read the message as the client will.
 const t = (key: string, params: Record<string, string | number> = {}) => {
@@ -52,5 +52,24 @@ describe("the status sent to a client", () => {
     expect(clientPhone({ client: "Hery", updatedAt: 0 }, others)).toBeUndefined();
     expect(clientPhone({ updatedAt: 0 }, others)).toBeUndefined();
     expect(whatsappLink("034 22 222 22", "Bonjour Rado,\nColis")).toBe("https://wa.me/261342222222?text=Bonjour%20Rado%2C%0AColis");
+  });
+});
+
+describe("the client's number saved from the edit sheet", () => {
+  const base = { phone: "034 22 222 22", client: "Rado", originalClient: "Rado", valid: true };
+
+  it("not touched: the parcel keeps its own, nothing goes to the client's other parcels", () => {
+    expect(phoneToSave({ ...base, touched: false })).toEqual({ own: undefined, propagate: false });
+  });
+
+  it("another client: never the previous client's number, never given to the new client's parcels", () => {
+    expect(phoneToSave({ ...base, touched: false, client: "Rabe" })).toEqual({ own: "", propagate: false });
+    expect(phoneToSave({ ...base, touched: true, client: "Rabe" })).toEqual({ own: "034 22 222 22", propagate: false });
+  });
+
+  it("corrected by hand for the same client: theirs, on their other parcels too; unless it can't be used", () => {
+    expect(phoneToSave({ ...base, touched: true, client: " rado " })).toEqual({ own: "034 22 222 22", propagate: true });
+    expect(phoneToSave({ ...base, touched: true, phone: "06 12 34 56 78", valid: false })).toEqual({ own: "06 12 34 56 78", propagate: false });
+    expect(phoneToSave({ ...base, touched: true, phone: " " })).toEqual({ own: "", propagate: false });
   });
 });
