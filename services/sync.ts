@@ -38,7 +38,7 @@ type Row = {
  * What the user adds to a scan (meals eaten, paper kind…) travels in the meta column with
  * the analysis's own meta: no schema change needed for each new field.
  */
-const userFields = ["meals", "paper", "expiresOn", "expense", "favorite", "folder", "reminderRepeat", "ad", "medication"] as const satisfies ReadonlyArray<keyof HistoryEntry>;
+const userFields = ["meals", "paper", "expiresOn", "expense", "favorite", "folder", "reminderRepeat", "ad", "medication", "profileId"] as const satisfies ReadonlyArray<keyof HistoryEntry>;
 type UserFields = Pick<HistoryEntry, (typeof userFields)[number]>;
 type RowMeta = HistoryEntry["meta"] & Partial<UserFields>;
 

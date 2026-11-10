@@ -5,6 +5,7 @@ import type { Allergen, Diet } from "@/lib/ai/schema";
 import { noMask, type BalanceMask } from "@/lib/balanceMask";
 import type { Appointment } from "@/lib/appointments";
 import type { EmergencyCard } from "@/lib/emergencyCard";
+import type { HealthProfile } from "@/lib/healthProfiles";
 import { defaultFoodGoals, type FoodGoals } from "@/lib/food";
 import { setDataSaverPreference, type DataSaverPreference } from "@/services/dataSaver";
 import { setHapticsEnabled } from "@/services/device";
@@ -43,8 +44,12 @@ export type Settings = {
   emergencyCard: EmergencyCard | null;
   /** Medical appointments (Ma santé), each with its date, removals as tombstones (lib/appointments.ts): null until one is written. */
   appointments: Appointment[] | null;
+  /** "Pour qui ?" (Ma santé): the relatives followed, each with their date (lib/healthProfiles.ts); null until one is added. */
+  healthProfiles: HealthProfile[] | null;
   /** The first-run permission walkthrough has been completed or skipped. */
   onboardingDone: boolean;
+  /** "Ma santé": the person last picked ("Pour qui ?"), this device only. */
+  healthPerson: string;
   /** Pocket balances shown as stars: this device only (a matter of discretion), never synced. */
   hiddenBalances: BalanceMask;
   /** Last change to the synced fields, to settle edits from two devices. */
@@ -52,7 +57,7 @@ export type Settings = {
 };
 
 /** Preferences that follow the account across devices (the rest is per device). */
-export const syncedSettingKeys = ["locale", "theme", "notifyOnResult", "parcelNotify", "parcelNotifyHour", "haptics", "allergies", "diets", "foodGoals", "emergencyCard", "appointments"] as const;
+export const syncedSettingKeys = ["locale", "theme", "notifyOnResult", "parcelNotify", "parcelNotifyHour", "haptics", "allergies", "diets", "foodGoals", "emergencyCard", "appointments", "healthProfiles"] as const;
 export type SyncedSettings = Pick<Settings, (typeof syncedSettingKeys)[number]>;
 
 type SettingsContextValue = {
@@ -80,7 +85,9 @@ const defaults: Settings = {
   foodGoals: defaultFoodGoals,
   emergencyCard: null,
   appointments: null,
+  healthProfiles: null,
   onboardingDone: false,
+  healthPerson: "me",
   hiddenBalances: noMask,
   updatedAt: 0,
 };

@@ -34,11 +34,11 @@ export async function exportTreatmentsPdf(treatments: Array<Treatment<HistoryEnt
 
 // "Partager ma fiche" (fiche d'urgence): only by the person's choice, as a message.
 
-export function shareEmergencyCard(card: EmergencyCard, t: Translate, locale: Locale) {
-  return shareText(t("health.emergency.share.heading"), cardText(card, t, (at) => formatDate(at, locale)), { copyTitle: false });
+export function shareEmergencyCard(card: EmergencyCard, t: Translate, locale: Locale, name: string | null = null) {
+  return shareText(t("health.emergency.share.heading"), cardText(card, t, (at) => formatDate(at, locale), name), { copyTitle: false });
 }
 
 /** The card in WhatsApp: the person picks whom to send it to. */
-export function whatsappEmergencyCard(card: EmergencyCard, t: Translate, locale: Locale) {
-  openExternal(`https://wa.me/?text=${encodeURIComponent(cardText(card, t, (at) => formatDate(at, locale)))}`);
+export function whatsappEmergencyCard(card: EmergencyCard, t: Translate, locale: Locale, name: string | null = null) {
+  openExternal(`https://wa.me/?text=${encodeURIComponent(cardText(card, t, (at) => formatDate(at, locale), name))}`);
 }

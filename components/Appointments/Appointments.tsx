@@ -4,6 +4,7 @@ import { Button } from "@/components/Button";
 import { ExpenseSheet } from "@/components/Expenses/ExpenseSheet";
 import sheetStyles from "@/components/Expenses/Expenses.module.scss";
 import formStyles from "@/components/EmergencyCard/EmergencyCard.module.scss";
+import { WhoField } from "@/components/HealthProfiles/WhoField";
 import { PlanLock } from "@/components/PlanLock";
 import { useToast } from "@/components/Toast";
 import { useNow } from "@/hooks/useNow";
@@ -11,6 +12,7 @@ import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { APPOINTMENT_TEXT_MAX, appointmentTime, remindedKinds, removeAppointment, saveAppointment, splitAppointments, type Appointment } from "@/lib/appointments";
 import { formatDay, formatTime, toDateInput } from "@/lib/format";
+import { ME, ownerOf } from "@/lib/healthProfiles";
 import { useSettings } from "@/lib/settings/SettingsProvider";
 import { haptics } from "@/services/device";
 import { createId } from "@/services/historyStore";
@@ -27,9 +29,10 @@ type Editing = null | "new" | Appointment;
  * "Rendez-vous" in Ma santé: the next appointments first, the past ones
  * folded. Written in a bottom sheet; kept in the settings (on the device,
  * synced with the account). The list is for everyone, the reminders (the
- * day before at 18 h, 2 h before) from Lite.
+ * day before at 18 h, 2 h before) from Lite. Only those of the person
+ * picked at the top of the screen ("Pour qui ?").
  */
-export function Appointments() {
+export function Appointments({ profileId = ME }: { profileId?: string }) {
   const { t } = useTranslation();
   const toast = useToast();
   const { settings, ready, update } = useSettings();
@@ -37,7 +40,8 @@ export function Appointments() {
   const reminders = has("reminders");
   const now = useNow(60_000);
   const [editing, setEditing] = useState<Editing>(null);
-  const { upcoming, past } = splitAppointments(settings.appointments, now);
+  const mine = (settings.appointments ?? []).filter((item) => ownerOf(item.profileId, settings.healthProfiles) === profileId);
+  const { upcoming, past } = splitAppointments(mine, now);
 
   const save = async (id: string | null, draft: Parameters<typeof saveAppointment>[2]) => {
     haptics.success();
@@ -82,7 +86,7 @@ export function Appointments() {
 
       <ExpenseSheet open={editing !== null} title={t(editing === "new" ? "health.appointments.add" : "health.appointments.edit")} onClose={() => setEditing(null)}>
         {editing !== null && (
-          <AppointmentForm appointment={editing === "new" ? null : editing} onSave={(draft) => void save(editing === "new" ? null : editing.id, draft)} onCancel={() => setEditing(null)} />
+          <AppointmentForm appointment={editing === "new" ? null : editing} owner={editing === "new" ? profileId : ownerOf(editing.profileId, settings.healthProfiles)} onSave={(draft) => void save(editing === "new" ? null : editing.id, draft)} onCancel={() => setEditing(null)} />
         )}
       </ExpenseSheet>
     </section>
@@ -140,7 +144,17 @@ function AppointmentCard({ appointment, past, reminders, now, onEdit, onRemove }
   );
 }
 
-function AppointmentForm({ appointment, onSave, onCancel }: { appointment: Appointment | null; onSave: (draft: Parameters<typeof saveAppointment>[2]) => void; onCancel: () => void }) {
+function AppointmentForm({
+  appointment,
+  owner,
+  onSave,
+  onCancel,
+}: {
+  appointment: Appointment | null;
+  owner: string;
+  onSave: (draft: Parameters<typeof saveAppointment>[2]) => void;
+  onCancel: () => void;
+}) {
   const { t } = useTranslation();
   const at = appointment?.at;
   const [day, setDay] = useState(() => (at ? toDateInput(at) : ""));
@@ -149,6 +163,7 @@ function AppointmentForm({ appointment, onSave, onCancel }: { appointment: Appoi
   const [place, setPlace] = useState(appointment?.place ?? "");
   const [note, setNote] = useState(appointment?.note ?? "");
   const [missing, setMissing] = useState(false);
+  const [forWho, setForWho] = useState(owner);
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -157,11 +172,12 @@ function AppointmentForm({ appointment, onSave, onCancel }: { appointment: Appoi
       setMissing(true);
       return;
     }
-    onSave({ at: time, who, place, note });
+    onSave({ at: time, who, place, note, profileId: forWho });
   };
 
   return (
     <form className={`${sheetStyles.form} ${formStyles.form}`} onSubmit={submit} noValidate data-testid="appointment-form">
+      <WhoField value={forWho} onChange={setForWho} />
       <div className={styles.pair}>
         <label>
           {t("health.appointments.day")}

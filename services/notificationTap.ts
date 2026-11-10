@@ -4,7 +4,7 @@ import { EVENING_ENTRY_ID } from "./eveningReminder";
 import { EXPENSE_NOTIFICATION_PREFIX } from "./expenseReminders";
 import { PARCEL_NOTIFICATION_PREFIX } from "./parcelReminders";
 import { PLANT_NOTIFICATION_PREFIX } from "./plantReminders";
-import { MEDICATION_NOTIFICATION_PREFIX, TAKEN_ACTION, takenFromNotification } from "./medicationReminders";
+import { MEDICATION_NOTIFICATION_PREFIX, medicationLink, TAKEN_ACTION, takenFromNotification } from "./medicationReminders";
 import { isSnoozeAction } from "./reminders";
 import { VEHICLE_NOTIFICATION_PREFIX } from "./vehicleReminders";
 import { WEEKLY_ENTRY_ID } from "./weeklySummary";
@@ -35,9 +35,16 @@ export function tapTarget(entryId: string): TapTarget {
   if (entryId.startsWith(HOME_ITEM_NOTIFICATION_PREFIX)) return { pathname: "/inventory", query: { open: entryId.slice(HOME_ITEM_NOTIFICATION_PREFIX.length) } };
   if (entryId.startsWith(PLANT_NOTIFICATION_PREFIX)) return { pathname: "/plants" };
   // A dose to take, or the last day: "Ma santé", the treatments in sight.
-  if (entryId.startsWith(MEDICATION_NOTIFICATION_PREFIX)) return { pathname: "/sante" };
+  // The scan says whose it is: "Ma santé" opens on that person (pages/sante.tsx, personFromLink).
+  if (entryId.startsWith(MEDICATION_NOTIFICATION_PREFIX)) {
+    const scanId = medicationLink(entryId)?.scanId;
+    return scanId ? { pathname: "/sante", query: { scan: scanId } } : { pathname: "/sante" };
+  }
   // A medical appointment: "Ma santé", its appointments.
-  if (entryId.startsWith(APPOINTMENT_NOTIFICATION_PREFIX)) return { pathname: "/sante", query: { show: "appointments" } };
+  if (entryId.startsWith(APPOINTMENT_NOTIFICATION_PREFIX)) {
+    const id = entryId.slice(APPOINTMENT_NOTIFICATION_PREFIX.length);
+    return { pathname: "/sante", query: { show: "appointments", ...(id && { appt: id }) } };
+  }
   if (entryId === EVENING_ENTRY_ID) return { pathname: "/expenses", query: { add: "expense" } };
   if (entryId.startsWith(EXPENSE_NOTIFICATION_PREFIX)) return { pathname: "/expenses" };
   return { pathname: "/result", query: { id: entryId, reminded: "1" } };

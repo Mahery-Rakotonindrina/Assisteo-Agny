@@ -329,7 +329,7 @@
         "loans": "Tous tes prêts, remboursements et preuves.",
         "parcels": "Tous les colis que tu suis, et leurs rappels.",
         "shop": "Tes ventes, ton stock et le crédit de tes clients.",
-        "health": "Ta fiche d’urgence et tes rendez-vous."
+        "health": "Ta fiche d’urgence, tes rendez-vous et tes proches."
       },
       "empty": "Rien à effacer",
       "title": "{name} : tout effacer ?",
@@ -373,7 +373,9 @@
         "shopPaymentsOne": "1 paiement de client",
         "emergencyCard": "Ta fiche d’urgence",
         "appointments": "{count} rendez-vous",
-        "appointmentsOne": "1 rendez-vous"
+        "appointmentsOne": "1 rendez-vous",
+        "healthProfiles": "{count} proches (avec leur fiche d’urgence)",
+        "healthProfilesOne": "1 proche (avec sa fiche d’urgence)"
       },
       "stays": {
         "history": "Tes colis (avec leur photo), tes dépenses, tes prêts et tes listes.",
@@ -4103,6 +4105,10 @@
           "appointments": {
             "q": "Comment ne pas oublier un rendez-vous chez le médecin ?",
             "a": "Dans « Ma santé », touche « Ajouter un rendez-vous » : le jour, l’heure, le médecin et le lieu. À partir de Lite, tu reçois un rappel la veille à 18 h et un autre 2 h avant. Les rendez-vous passés restent repliés en bas de la liste."
+          },
+          "family": {
+            "q": "Comment suivre la santé de mes enfants ou de mes parents ?",
+            "a": "En haut de « Ma santé », touche « Ajouter un proche » : son prénom, le lien, son année de naissance si tu veux. Touche son nom pour voir ses traitements, ses ordonnances, ses rendez-vous et sa fiche d’urgence. Quand tu crées des rappels de prise ou un rendez-vous, choisis « Pour qui ? » : la notification commence par son prénom."
           }
         }
       }
@@ -4481,8 +4487,11 @@
         "line": "{label} : {value}",
         "updated": "Mise à jour le {date}",
         "copied": "Fiche copiée : colle-la dans un message",
-        "failed": "Impossible de partager la fiche"
-      }
+        "failed": "Impossible de partager la fiche",
+        "headingOf": "Fiche d’urgence de {name}"
+      },
+      "titleOf": "Fiche d’urgence de {name}",
+      "emptyOf": "Remplis celle de {name} : son groupe sanguin, ses allergies, qui prévenir."
     },
     "appointments": {
       "title": "Rendez-vous",
@@ -4518,6 +4527,40 @@
         "soon": "Rendez-vous à {time}",
         "where": ", {place}"
       }
+    },
+    "profiles": {
+      "forWho": "Pour qui ?",
+      "me": "Moi",
+      "add": "Ajouter un proche",
+      "edit": "Modifier",
+      "editTitle": "Modifier {name}",
+      "remove": "Supprimer",
+      "removeTitle": "Supprimer {name} ?",
+      "removeConfirm": "Oui, supprimer",
+      "name": "Prénom",
+      "nameMissing": "Écris son prénom.",
+      "relation": "Lien",
+      "relations": {
+        "child": "Enfant",
+        "parent": "Parent",
+        "partner": "Conjoint",
+        "other": "Autre"
+      },
+      "birthYear": "Année de naissance (facultatif)",
+      "birthYearHint": "2019",
+      "age": "{count} ans",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "added": "{name} ajouté(e)",
+      "updated": "{name} modifié(e)",
+      "removed": "{name} supprimé(e)",
+      "backAppointments": "Ses {count} rendez-vous reviennent à « Moi »",
+      "backAppointmentsOne": "Son rendez-vous revient à « Moi »",
+      "backScans": "Ses {count} ordonnances et traitements reviennent à « Moi »",
+      "backScansOne": "Son ordonnance et ses traitements reviennent à « Moi »",
+      "cardGoes": "La fiche d’urgence de {name} est effacée",
+      "nothingElse": "Rien d’autre ne change.",
+      "named": "{name} : {text}"
     }
   }
 }

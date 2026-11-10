@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { BellOff, BellRing } from "lucide-react";
 import { Button } from "@/components/Button";
+import { WhoField } from "@/components/HealthProfiles/WhoField";
 import { PlanLock } from "@/components/PlanLock";
 import { useToast } from "@/components/Toast";
 import { useNow } from "@/hooks/useNow";
@@ -8,6 +9,7 @@ import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Analysis } from "@/lib/ai/schema";
 import { formatDate, toDateInput } from "@/lib/format";
+import { ME } from "@/lib/healthProfiles";
 import { cleanCourse, defaultTimes, hasReadableName, isActive, MAX_DAYS, planEnd, type MedicationCourse, type MedicationPlan } from "@/lib/medication";
 import { haptics } from "@/services/device";
 import { historyStore } from "@/services/historyStore";
@@ -90,6 +92,8 @@ function PlannerForm({ entry, medicine }: { entry: HistoryEntry; medicine: Medic
     })),
   );
   const [saving, setSaving] = useState(false);
+  // "Pour qui ?": "Moi" unless the scan already belongs to a relative.
+  const [forWho, setForWho] = useState(entry.profileId ?? ME);
   const set = (index: number, patch: Partial<Draft>) => setDrafts((current) => current.map((draft, i) => (i === index ? { ...draft, ...patch } : draft)));
 
   const courses = drafts
@@ -104,7 +108,7 @@ function PlannerForm({ entry, medicine }: { entry: HistoryEntry; medicine: Medic
       // A prescription to renew: the last-day notice says to buy more.
       const plan: MedicationPlan = { start, courses: courses as MedicationCourse[], createdAt: Date.now(), ...(medicine.renewal && { renew: true }) };
       const permission = await requestNotificationPermission().catch(() => "denied" as const);
-      await historyStore.update(entry.id, { medication: plan });
+      await historyStore.update(entry.id, { medication: plan, profileId: forWho === ME ? undefined : forWho });
       haptics.success();
       const end = planEnd(plan);
       if (permission !== "granted") toast(t("medicine.savedNoNotifications"), "error");
@@ -117,6 +121,7 @@ function PlannerForm({ entry, medicine }: { entry: HistoryEntry; medicine: Medic
   return (
     <div className={styles.planner} data-testid="medication-planner">
       <p className={styles.muted}>{t("medicine.plannerHint")}</p>
+      <WhoField value={forWho} onChange={setForWho} />
       <label className={styles.field}>
         <span>{t("medicine.start")}</span>
         <input type="date" value={start} onChange={(event) => setStart(event.target.value)} />

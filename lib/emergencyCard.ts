@@ -98,9 +98,10 @@ export function telHref(phone: string) {
 type Translate = (key: string, params?: Record<string, string | number>) => string;
 
 /** The card as a message: only what is filled in, then the date it was written. */
-export function cardText(card: EmergencyCard, t: Translate, date: (at: number) => string) {
+export function cardText(card: EmergencyCard, t: Translate, date: (at: number) => string, name: string | null = null) {
   const line = (key: string, value: string) => t("health.emergency.share.line", { label: t(`health.emergency.${key}`), value });
-  const lines = [t("health.emergency.share.heading")];
+  // A relative's card ("Pour qui ?"): their first name in the heading.
+  const lines = [name ? t("health.emergency.share.headingOf", { name }) : t("health.emergency.share.heading")];
   if (card.bloodGroup) lines.push(line("blood", card.bloodGroup === "unknown" ? t("health.emergency.bloodUnknown") : bloodLabel(card.bloodGroup)));
   if (card.allergies) lines.push(line("allergies", allergyTags(card.allergies).join(", ")));
   if (card.conditions) lines.push(line("conditions", card.conditions));

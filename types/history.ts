@@ -43,6 +43,8 @@ export type HistoryEntry = {
   reminderFiredAt?: number;
   /** A prescription or medicine box: the dose reminders the user confirmed (synced). */
   medication?: MedicationPlan;
+  /** "Pour qui ?" (Ma santé): a relative's profile (lib/healthProfiles.ts); none for "Moi" (synced). */
+  profileId?: string;
   /** Follow-up conversation about this scan. */
   chat?: ChatEntry[];
   /** Starred by the user, and the folder they put it in (synced). */
