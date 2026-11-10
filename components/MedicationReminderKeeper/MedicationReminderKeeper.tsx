@@ -3,7 +3,7 @@ import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSettings } from "@/lib/settings/SettingsProvider";
 import { historyStore } from "@/services/historyStore";
-import { reconcileMedicationReminders, type MedicationReminderTexts } from "@/services/medicationReminders";
+import { reconcileMedicationReminders, registerMedicationActions, type MedicationReminderTexts } from "@/services/medicationReminders";
 
 /**
  * Keeps the dose notifications (prescriptions, medicine boxes) in line with
@@ -19,17 +19,25 @@ export function MedicationReminderKeeper() {
   const known = plan !== null;
   const enabled = has("reminders");
   const texts = useCallback<MedicationReminderTexts>(
-    ({ medicines }) => ({
-      title: t("medicine.reminder.title"),
-      body: medicines.map(({ name, dose }) => (dose ? t("medicine.reminder.withDose", { name, dose }) : name)).join(" · "),
-    }),
+    ({ medicines, kind, renew }) =>
+      kind === "lastDay"
+        ? {
+            title: t("health.lastDay.title", { names: medicines.map(({ name }) => name).join(", ") }),
+            body: renew ? t("health.lastDay.renew") : t("health.lastDay.body"),
+          }
+        : {
+            title: t("medicine.reminder.title"),
+            body: medicines.map(({ name, dose }) => (dose ? t("medicine.reminder.withDose", { name, dose }) : name)).join(" · "),
+          },
     [t],
   );
   const latest = useRef<MedicationReminderTexts>(texts);
 
   useEffect(() => {
     latest.current = texts;
-  }, [texts]);
+    // The "J'ai pris" button of the dose notifications, in the user's language.
+    void registerMedicationActions(t("health.taken")).catch(() => undefined);
+  }, [texts, t]);
 
   useEffect(() => {
     if (!ready || !known) return;

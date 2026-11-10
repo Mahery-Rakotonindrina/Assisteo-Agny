@@ -101,7 +101,8 @@ function PlannerForm({ entry, medicine }: { entry: HistoryEntry; medicine: Medic
     if (!valid || saving) return;
     setSaving(true);
     try {
-      const plan: MedicationPlan = { start, courses: courses as MedicationCourse[], createdAt: Date.now() };
+      // A prescription to renew: the last-day notice says to buy more.
+      const plan: MedicationPlan = { start, courses: courses as MedicationCourse[], createdAt: Date.now(), ...(medicine.renewal && { renew: true }) };
       const permission = await requestNotificationPermission().catch(() => "denied" as const);
       await historyStore.update(entry.id, { medication: plan });
       haptics.success();

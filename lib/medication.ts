@@ -20,6 +20,10 @@ export type MedicationPlan = {
   start: string;
   courses: MedicationCourse[];
   createdAt: number;
+  /** The doses ticked "J'ai pris": the moments (as in the reminders), at most MAX_TAKEN. */
+  taken?: number[];
+  /** The prescription says it can be renewed: the last-day notice adds "pense à racheter". */
+  renew?: boolean;
 };
 
 /** The longest course a plan accepts (a long treatment is set again later). */
@@ -99,7 +103,67 @@ export type DoseReminder = {
   at: number;
   /** The medicines of that moment, with their dose. */
   medicines: Array<{ name: string; dose?: string }>;
+  /** "lastDay": the evening before the last day of treatment (its medicines, and whether to buy more). */
+  kind?: "lastDay";
+  /** lastDay: the prescription can be renewed. */
+  renew?: boolean;
 };
+
+/** Ticked doses kept at most (a 90-day course at 6 a day would be more: the oldest go first). */
+export const MAX_TAKEN = 400;
+/** The last-day notice: the evening before, at this hour. */
+export const LAST_DAY_HOUR = 19;
+/** How far back "this week" counts the doses taken. */
+const WEEK = 7 * DAY;
+
+/** Every moment of the plan (doses at the same time are one moment), with its medicines, in order. */
+export function doseMoments(plan: MedicationPlan) {
+  const moments = new Map<number, Array<{ name: string; dose?: string }>>();
+  for (const course of plan.courses) {
+    for (const at of courseDoses(plan.start, course)) moments.set(at, [...(moments.get(at) ?? []), { name: course.name, ...(course.dose && { dose: course.dose }) }]);
+  }
+  return [...moments.entries()].sort(([a], [b]) => a - b).map(([at, medicines]) => ({ at, medicines }));
+}
+
+/** The plan with this moment ticked "J'ai pris" (once; the oldest dropped past MAX_TAKEN). */
+export function withTaken(plan: MedicationPlan, at: number): MedicationPlan {
+  const taken = [...new Set([...(plan.taken ?? []), at])].sort((a, b) => a - b).slice(-MAX_TAKEN);
+  return { ...plan, taken };
+}
+
+/** The doses due in the last 7 days (now included) and how many were ticked: "12 prises sur 14 cette semaine". */
+export function weekAdherence(plan: MedicationPlan, now: number) {
+  const taken = new Set(plan.taken ?? []);
+  const due = doseMoments(plan).filter(({ at }) => at <= now && at > now - WEEK);
+  return { due: due.length, taken: due.filter(({ at }) => taken.has(at)).length };
+}
+
+export type DoseState = "taken" | "missed" | "upcoming";
+
+/** Today's moments and where each stands: ticked, gone by without a tick, or still to come. */
+export function todayDoses(plan: MedicationPlan, now: number) {
+  const day = new Date(now);
+  const start = new Date(day.getFullYear(), day.getMonth(), day.getDate()).getTime();
+  const end = new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1).getTime();
+  const taken = new Set(plan.taken ?? []);
+  return doseMoments(plan)
+    .filter(({ at }) => at >= start && at < end)
+    .map(({ at, medicines }) => ({ at, medicines, state: (taken.has(at) ? "taken" : at <= now ? "missed" : "upcoming") as DoseState }));
+}
+
+/**
+ * The evening before the last day of treatment, at LAST_DAY_HOUR: when to
+ * say "Dernier jour demain". Null for a one-day plan, or without doses.
+ */
+export function lastDayNotice(plan: MedicationPlan) {
+  const end = planEnd(plan);
+  const first = doseMoments(plan)[0]?.at;
+  if (end === null || first === undefined) return null;
+  const last = new Date(end);
+  const notice = new Date(last.getFullYear(), last.getMonth(), last.getDate() - 1, LAST_DAY_HOUR).getTime();
+  // Before the treatment's first day: nothing to say (it lasts a day).
+  return notice > first ? notice : null;
+}
 
 /**
  * The doses of the next HORIZON_DAYS, one reminder per scan and moment (two
@@ -111,6 +175,17 @@ export function doseReminders(entries: Array<{ id: string; medication?: Medicati
   const reminders = new Map<string, DoseReminder>();
   for (const entry of entries) {
     if (!entry.medication) continue;
+    // The evening before the last day: which medicines end, and whether to buy more.
+    const notice = lastDayNotice(entry.medication);
+    if (notice !== null && notice > now && notice <= until) {
+      reminders.set(`${doseKey(entry.id, notice)}:last`, {
+        entryId: entry.id,
+        at: notice,
+        kind: "lastDay",
+        medicines: entry.medication.courses.map((course) => ({ name: course.name })),
+        ...(entry.medication.renew && { renew: true }),
+      });
+    }
     for (const course of entry.medication.courses) {
       for (const at of courseDoses(entry.medication.start, course)) {
         if (at <= now || at > until) continue;
@@ -121,10 +196,13 @@ export function doseReminders(entries: Array<{ id: string; medication?: Medicati
       }
     }
   }
-  return [...reminders.values()].sort((a, b) => a.at - b.at || a.entryId.localeCompare(b.entryId));
+  return [...reminders.values()].sort((a, b) => a.at - b.at || a.entryId.localeCompare(b.entryId) || (a.kind ?? "").localeCompare(b.kind ?? ""));
 }
 
 export const doseKey = (entryId: string, at: number) => `${entryId}@${at}`;
+
+/** A reminder's own key (a dose and the last-day notice may fall at the same time). */
+export const reminderKey = (reminder: Pick<DoseReminder, "entryId" | "at" | "kind">) => `${doseKey(reminder.entryId, reminder.at)}${reminder.kind === "lastDay" ? ":last" : ""}`;
 
 /** A medicine name the scan could read: unreadable names come back empty, and are never replaced by a plausible one. */
 export const hasReadableName = (name: string) => name.trim().length > 0;
