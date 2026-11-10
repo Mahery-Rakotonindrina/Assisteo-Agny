@@ -49,7 +49,7 @@ export async function resetScreen(screen: ResetScreen) {
       await shopStore.removeAll();
       return;
     case "health":
-      // The emergency card is a setting: ScreenReset empties it (useSettings), dated so the emptying syncs.
+      // The emergency card and the appointments are settings: ScreenReset empties them (useSettings), dated so the emptying syncs.
       return;
   }
 }

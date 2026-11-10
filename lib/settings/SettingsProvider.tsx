@@ -3,6 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { defaultLocale, locales, type Locale } from "@/i18n.config";
 import type { Allergen, Diet } from "@/lib/ai/schema";
 import { noMask, type BalanceMask } from "@/lib/balanceMask";
+import type { Appointment } from "@/lib/appointments";
 import type { EmergencyCard } from "@/lib/emergencyCard";
 import { defaultFoodGoals, type FoodGoals } from "@/lib/food";
 import { setDataSaverPreference, type DataSaverPreference } from "@/services/dataSaver";
@@ -40,6 +41,8 @@ export type Settings = {
   foodGoals: FoodGoals;
   /** "Fiche d'urgence" (Ma santé), with its own date (lib/emergencyCard.ts): null until written. */
   emergencyCard: EmergencyCard | null;
+  /** Medical appointments (Ma santé), each with its date, removals as tombstones (lib/appointments.ts): null until one is written. */
+  appointments: Appointment[] | null;
   /** The first-run permission walkthrough has been completed or skipped. */
   onboardingDone: boolean;
   /** Pocket balances shown as stars: this device only (a matter of discretion), never synced. */
@@ -49,7 +52,7 @@ export type Settings = {
 };
 
 /** Preferences that follow the account across devices (the rest is per device). */
-export const syncedSettingKeys = ["locale", "theme", "notifyOnResult", "parcelNotify", "parcelNotifyHour", "haptics", "allergies", "diets", "foodGoals", "emergencyCard"] as const;
+export const syncedSettingKeys = ["locale", "theme", "notifyOnResult", "parcelNotify", "parcelNotifyHour", "haptics", "allergies", "diets", "foodGoals", "emergencyCard", "appointments"] as const;
 export type SyncedSettings = Pick<Settings, (typeof syncedSettingKeys)[number]>;
 
 type SettingsContextValue = {
@@ -76,6 +79,7 @@ const defaults: Settings = {
   diets: [],
   foodGoals: defaultFoodGoals,
   emergencyCard: null,
+  appointments: null,
   onboardingDone: false,
   hiddenBalances: noMask,
   updatedAt: 0,

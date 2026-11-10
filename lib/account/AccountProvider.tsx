@@ -2,7 +2,7 @@ import type { Session } from "@supabase/supabase-js";
 import Router from "next/router";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { pick } from "@/lib/account/pick";
-import { newerCard } from "@/lib/emergencyCard";
+import { healthChanged, healthPayload, mergeHealth, noHealth } from "@/lib/healthSync";
 import { syncedSettingKeys, useSettings, type SyncedSettings } from "@/lib/settings/SettingsProvider";
 import { accountsAvailable, supabase } from "@/lib/supabase";
 import { deleteAccountOnServer, onSessionChange, signOutAccount } from "@/services/account";
@@ -53,11 +53,9 @@ type AccountContextValue = {
 
 const AccountContext = createContext<AccountContextValue | null>(null);
 
-/** What goes to user_settings: no emergency card yet (null) leaves the account's untouched. */
+/** What goes to user_settings: no emergency card or appointments yet (null) leaves the account's untouched. */
 function syncedData(settings: SyncedSettings) {
-  const data: Partial<SyncedSettings> = pick(settings, syncedSettingKeys);
-  if (!data.emergencyCard) delete data.emergencyCard;
-  return data;
+  return healthPayload<Partial<SyncedSettings>>(pick(settings, syncedSettingKeys));
 }
 
 /**
@@ -203,16 +201,16 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       const local = settingsRef.current;
       const remoteAt = data ? new Date(data.updated_at).getTime() : 0;
       const remote = pick((data?.data ?? {}) as Partial<SyncedSettings>, syncedSettingKeys);
-      // The emergency card goes by its own date: an older app writes the settings without it.
-      const card = newerCard(local.emergencyCard, remote.emergencyCard);
+      // The emergency card and the appointments go by their own dates: an older app writes the settings without them.
+      const health = mergeHealth(local, remote, Date.now());
       if (data && remoteAt > local.updatedAt) {
-        update({ ...remote, emergencyCard: card }, { fromSync: true, updatedAt: remoteAt });
+        update({ ...remote, ...health }, { fromSync: true, updatedAt: remoteAt });
       } else {
-        if (JSON.stringify(card) !== JSON.stringify(local.emergencyCard)) update({ emergencyCard: card }, { fromSync: true });
+        if (healthChanged(local, health)) update(health, { fromSync: true });
         if (local.updatedAt > remoteAt) {
           await supabase()
             .from("user_settings")
-            .upsert({ user_id: userId, data: syncedData({ ...local, emergencyCard: card }), updated_at: new Date(local.updatedAt).toISOString() });
+            .upsert({ user_id: userId, data: syncedData({ ...local, ...health }), updated_at: new Date(local.updatedAt).toISOString() });
         }
       }
       if (!cancelled) setSettingsReady(true);
@@ -302,9 +300,9 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await wipeReviews().catch(() => undefined);
     await aiKeyStore.clear({ fromSync: true });
     await signOutAccount();
-    // The emergency card is the account's, like the scans: not left on the device.
+    // The emergency card and the appointments are the account's, like the scans: not left on the device.
     // After the sign-out, so the account's copy is never overwritten.
-    update({ emergencyCard: null }, { fromSync: true });
+    update(noHealth, { fromSync: true });
   }, [syncRows, update]);
 
   const deleteAccount = useCallback(async () => {
@@ -334,7 +332,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await householdStore.wipe();
     await wipeReviews().catch(() => undefined);
     await aiKeyStore.clear({ fromSync: true });
-    update({ emergencyCard: null }, { fromSync: true });
+    update(noHealth, { fromSync: true });
     await cancelAllNotifications();
     // The user no longer exists on the server: only forget the session here.
     await signOutAccount().catch(() => undefined);
