@@ -5,6 +5,7 @@ import { ArrowLeft, BadgePercent, Check, Copy, ExternalLink, Gift, LogIn, Messag
 import { Button } from "@/components/Button";
 import { PlanIcon } from "@/components/PlanBadge";
 import { ReferralStats } from "@/components/ReferralStats";
+import type { ReferralSummary } from "@/lib/referralBonus";
 import { Seo } from "@/components/Seo";
 import { useToast } from "@/components/Toast";
 import { useAccount } from "@/lib/account/AccountProvider";
@@ -37,6 +38,7 @@ export default function PlansPage() {
   const [code, setCode] = useState("");
   // What each of the two wins by a referral (set in Admin); 0 until known or when switched off.
   const [scansEach, setScansEach] = useState(0);
+  const [referral, setReferral] = useState<ReferralSummary | null>(null);
   const [busy, setBusy] = useState<"trial" | "code" | null>(null);
 
   // An invitation link (/plans?ref=CODE): the code is kept on the device (until the person is signed in), then filled in.
@@ -279,9 +281,12 @@ export default function PlansPage() {
             <h2>
               <Gift size={18} /> {t("plans.referral.title")}
             </h2>
-            <p>{scansEach > 0 ? t("referralBonus.body", { scans: scansEach }) : t("plans.referral.body")}</p>
+            <p>{scansEach === 0 ? t("plans.referral.body") : referral?.capPerMonth === 0 ? t("referralBonus.bodyFriendOnly", { scans: scansEach }) : referral?.capReached ? t("referralBonus.bodyCapped", { scans: scansEach, cap: referral.capPerMonth }) : t("referralBonus.body", { scans: scansEach, cap: referral?.capPerMonth ?? 0 })}</p>
             <p className={styles.referralCode}>{referralCode}</p>
-            <ReferralStats onSummary={(summary) => setScansEach(summary.scansEach)} />
+            <ReferralStats onSummary={(summary) => {
+                setScansEach(summary.scansEach);
+                setReferral(summary);
+              }} />
             <div className={styles.contact}>
               <Button variant="secondary" size="md" icon={<MessageCircle />} onClick={whatsappReferral}>
                 {t("plans.referral.whatsapp")}

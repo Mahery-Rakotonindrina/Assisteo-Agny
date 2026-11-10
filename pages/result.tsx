@@ -92,6 +92,7 @@ import { parcelsFor, sameParcel } from "@/lib/parcels";
 import { formatDateTime, formatDay } from "@/lib/format";
 import { easeOut, pop, rise, spring, stagger } from "@/lib/motion";
 import { useSettings } from "@/lib/settings/SettingsProvider";
+import { analysisShareLines } from "@/lib/shareLines";
 import { haptics, shareText } from "@/services/device";
 import { historyStore } from "@/services/historyStore";
 import { listStore } from "@/services/listStore";
@@ -353,22 +354,7 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
 
   const share = async () => {
     haptics.tap();
-    const lines = [
-      analysis.summary,
-      "",
-      ...analysis.facts.map((fact) => `• ${fact.label}: ${fact.value}`),
-      "",
-      ...analysis.suggestions.map((suggestion) => `→ ${suggestion.title}: ${suggestion.detail}`),
-      ...(analysis.recipe
-        ? [
-            "",
-            `🍳 ${analysis.recipe.name}`,
-            ...analysis.recipe.ingredients.map((ingredient) => `- ${ingredient.quantity} ${ingredient.name}`),
-            "",
-            ...analysis.recipe.steps.map((step, index) => `${index + 1}. ${step}`),
-          ]
-        : []),
-    ];
+    const lines = analysisShareLines(analysis, t("medicine.disclaimer"));
     const outcome = await shareText(analysis.title, lines.join("\n"));
     if (outcome === "copied") toast(t("result.copied"));
   };

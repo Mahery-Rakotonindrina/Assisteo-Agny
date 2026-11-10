@@ -95,6 +95,15 @@ describe("the referral bonus", () => {
     expect(await scan(second, "install-cap-2-000000", "10.0.4.2")).toBe("rewarded");
     expect(await store.bonusScansLeft(second)).toBe(5);
     expect(await store.bonusScansLeft(referrer)).toBe(5);
+    // The screen says so: friends still win, the referrer no more this month.
+    expect(await store.referralSummary(referrer)).toMatchObject({ capReached: true, capPerMonth: 1, scansEach: 5 });
+    expect(await store.referralSummary(second)).toMatchObject({ capReached: false });
+  });
+
+  it("does not call a cap of 0 \"reached\"", async () => {
+    await store.setReferralConfig({ scans: 5, capPerMonth: 0 });
+    expect(await scan(await friend(), "install-zero-000001", "10.0.9.1")).toBe("rewarded");
+    expect(await store.referralSummary(referrer)).toMatchObject({ capReached: false, capPerMonth: 0 });
   });
 
   it("spends the won scans one by one, and gives one back", async () => {

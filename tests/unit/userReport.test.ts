@@ -16,7 +16,7 @@ vi.mock("@/lib/server/supabaseAdmin", () => ({
 
 const { addUserReport, deleteUserReportsOf, readUserReports, REPORTS_KEEP_MS, REPORTS_MAX, resetUserReports, setUserReportStatus, userReportsOf } = await import("@/lib/server/userReports");
 const { default: reportRoute } = await import("@/pages/api/reports");
-const { deviceLabel, UserReportSchema } = await import("@/lib/userReport");
+const { deviceLabel, reportsForAdmin, UserReportSchema } = await import("@/lib/userReport");
 
 function call(body: unknown, headers: Record<string, string> = {}, ip = "1.1.1.1") {
   const req = { method: "POST", body, headers: { "x-forwarded-for": ip, ...headers } } as unknown as NextApiRequest;
@@ -125,5 +125,49 @@ describe("POST /api/reports", () => {
     // Its own words: reports sent in the same millisecond have no set order.
     expect((await call({ ...valid, message: "Envoyé sans e-mail confirmé" }, { authorization: "Bearer unconfirmed" }, "6.6.6.6")).status).toBe(204);
     expect((await readUserReports()).find((report) => report.message === "Envoyé sans e-mail confirmé")).toMatchObject({ email: null });
+  });
+});
+
+describe("eviction and who sees the contacts", () => {
+  it("evicts the handled reports first, the unread ones last", async () => {
+    const now = Date.now();
+    // The oldest are unread; a few newer ones are done: the done ones go first when the list is full.
+    const unread = await addUserReport({ ...fields, message: "unread-old" }, now - 500000);
+    for (let index = 0; index < REPORTS_MAX - 2; index += 1) await addUserReport({ ...fields, message: `n${index}` }, now - 400000 + index);
+    const handled = await addUserReport({ ...fields, message: "handled" }, now - 300000);
+    await setUserReportStatus(handled.id, "done");
+    await addUserReport({ ...fields, message: "latest" }, now - 1000);
+    const kept = (await readUserReports()).map((report) => report.message);
+    expect(kept).toHaveLength(REPORTS_MAX);
+    expect(kept).toContain(unread.message);
+    expect(kept).toContain("latest");
+    expect(kept).not.toContain("handled");
+  });
+
+  it("counts in the global limit only the messages an address's own limit let through", async () => {
+    // One address hammering: only its first 20 are accepted, the rest refused by its own limit and not counted for everyone.
+    for (let index = 0; index < 100; index += 1) await call(valid, {}, "30.0.0.1");
+    // Everyone else can still write (the global places left are those of the other addresses).
+    expect((await call(valid, {}, "30.0.0.2")).status).toBe(204);
+    expect((await call(valid, {}, "30.0.0.3")).status).toBe(204);
+  });
+
+  it("limits all the messages together, whatever the address", async () => {
+    let refused = 0;
+    for (let index = 0; index < 130; index += 1) {
+      const result = await call(valid, {}, `20.1.${Math.floor(index / 200)}.${index}`);
+      if (result.status === 429) refused += 1;
+    }
+    expect(refused).toBeGreaterThan(0);
+  });
+
+  it("shows the e-mails and contacts to the owner only", async () => {
+    await addUserReport({ ...fields, email: "a@example.com", contact: "034 00 000 00", message: "private" });
+    const reports = await readUserReports();
+    expect(reportsForAdmin(reports, true)).toEqual({ reports });
+    const other = reportsForAdmin(reports, false);
+    expect(other.contactsHidden).toBe(true);
+    expect(other.reports[0]).toMatchObject({ message: "private", email: null, contact: null });
+    expect(JSON.stringify(other)).not.toContain("a@example.com");
   });
 });

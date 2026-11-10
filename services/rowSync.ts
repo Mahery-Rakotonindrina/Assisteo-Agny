@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { readSyncCursor, writeSyncCursor } from "./syncCursor";
 
 // Syncs a small per-user collection ("Mes colis", "Mes listes") with a table
 // of JSON rows (user_id, id, data, updated_at, deleted_at). A family keeps a
@@ -18,7 +19,7 @@ export type SyncedStore<T extends SyncedRecord> = {
   setKeepTombstones(value: boolean): void;
 };
 
-type Row<T> = { id: string; data: T; updated_at: string; deleted_at: string | null; user_id?: string };
+type Row<T> = { id: string; data: T; updated_at: string; deleted_at: string | null; user_id?: string; server_updated_at?: string };
 
 export type RowSyncOptions<T> = {
   /** Columns that pick the rows (the household's id): read with them, written with them. */
@@ -29,6 +30,13 @@ export type RowSyncOptions<T> = {
   canPush?: (record: T, uid: string) => boolean;
   /** Checks a pulled record (shared rows: written by others); null skips it. */
   accept?: (record: T) => T | null;
+  /**
+   * Reads only what changed on the server since the last sync (its
+   * `server_updated_at`, a little before to be safe), the whole table once a
+   * week, and sweeps the removals older than 90 days. For tables that grow
+   * (the shop). Needs the `server_updated_at` column.
+   */
+  incremental?: boolean;
 };
 
 /** The server's cap on the rows of one answer (Supabase's max rows). */
@@ -37,6 +45,16 @@ export const PULL_PAGE = 1000;
 export const PUSH_BATCH = 200;
 
 const time = (value: string | null) => (value ? new Date(value).getTime() : 0);
+
+/** Incremental sync: read again from this long before the last row seen (a transaction can commit late). */
+export const CURSOR_OVERLAP_MS = 5 * 60_000;
+/** Incremental sync: the whole table is read again this often (the removals swept meanwhile, a clock gone wrong). */
+export const FULL_READ_EVERY_MS = 7 * 24 * 3600_000;
+/** Incremental sync: removals older than this are erased from the server. */
+export const KEEP_REMOVALS_MS = 90 * 24 * 3600_000;
+const SWEEP_EVERY_MS = 24 * 3600_000;
+/** Ids asked about in one request. */
+const ASK_BATCH = 100;
 
 /** What is stored server-side: the record without device bookkeeping. */
 function toData<T extends SyncedRecord>(record: T) {
@@ -47,24 +65,62 @@ function toData<T extends SyncedRecord>(record: T) {
 }
 
 export function createRowSync<T extends SyncedRecord>(table: string, store: SyncedStore<T>, options: RowSyncOptions<T> = {}) {
-  const { match, withAuthor, canPush, accept } = options;
+  const { match, withAuthor, canPush, accept, incremental = false } = options;
   let running: Promise<void> | null = null;
+
+  /** Which of these ids the server has (any state); all of them when it can't be asked, so nothing is removed on a doubt. */
+  async function idsOnServer(ids: string[]) {
+    const found = new Set<string>();
+    try {
+      for (let start = 0; start < ids.length; start += ASK_BATCH) {
+        let query = supabase().from(table).select("id").in("id", ids.slice(start, start + ASK_BATCH));
+        if (match) query = query.match(match);
+        const { data, error } = await query;
+        if (error) return new Set(ids);
+        for (const row of (data ?? []) as unknown as Array<{ id: string }>) found.add(row.id);
+      }
+    } catch {
+      return new Set(ids);
+    }
+    return found;
+  }
 
   function sync(uid: string) {
     running ??= (async () => {
       const db = supabase();
-      const columns: string = withAuthor ? "id, data, updated_at, deleted_at, user_id" : "id, data, updated_at, deleted_at";
+      const columns: string = [withAuthor ? "id, data, updated_at, deleted_at, user_id" : "id, data, updated_at, deleted_at", incremental ? "server_updated_at" : ""].filter(Boolean).join(", ");
+      const cursor = incremental ? readSyncCursor(table, uid) : null;
+      const startedAt = Date.now();
+      // Whole table: the first time, then once a week; else what changed since the last sync.
+      const full = !incremental || !cursor || startedAt - cursor.fullAt > FULL_READ_EVERY_MS;
       // The server answers 1000 rows at most: read page by page (a screen reset leaves many tombstones).
       const rows: Row<T>[] = [];
       for (let from = 0; ; from += PULL_PAGE) {
-        const query = db.from(table).select(columns);
-        const { data, error } = await (match ? query.match(match) : query).order("id").range(from, from + PULL_PAGE - 1);
+        let query = db.from(table).select(columns);
+        if (match) query = query.match(match);
+        if (incremental && !full && cursor) query = query.gt("server_updated_at", new Date(cursor.at - CURSOR_OVERLAP_MS).toISOString());
+        // Same-time rows (one batch) come in a stable order from page to page.
+        const ordered = incremental ? query.order("server_updated_at").order("id") : query.order("id");
+        const { data, error } = await ordered.range(from, from + PULL_PAGE - 1);
         if (error) throw error;
         const page = (data ?? []) as unknown as Row<T>[];
         rows.push(...page);
         if (page.length < PULL_PAGE) break;
       }
       let changed = false;
+
+      // A full read tells what the server no longer has (removals swept after 90 days): a local copy it never sent is gone.
+      if (incremental && full) {
+        const onServer = new Set(rows.map((row) => row.id));
+        const missing = (await store.raw()).filter((local) => !local.dirty && !onServer.has(local.id)).map((local) => local.id);
+        // A row changed elsewhere during a long read can slip between two pages: ask the server again before removing anything.
+        const stillThere = await idsOnServer(missing);
+        for (const id of missing) {
+          if (stillThere.has(id)) continue;
+          await store.rawDelete(id);
+          changed = true;
+        }
+      }
 
       // Pull: take the server's version unless this device has a newer edit.
       for (const row of rows) {
@@ -84,6 +140,20 @@ export function createRowSync<T extends SyncedRecord>(table: string, store: Sync
           await store.rawPut(accepted);
           changed = true;
         }
+      }
+
+      if (incremental) {
+        const newest = rows.reduce((latest, row) => Math.max(latest, time(row.server_updated_at ?? null)), cursor?.at ?? 0);
+        let purgeAt = cursor?.purgeAt ?? 0;
+        if (startedAt - purgeAt > SWEEP_EVERY_MS) {
+          // Removals everyone has had time to receive: erased from the server (best effort).
+          // By the server's clock (server_updated_at), never the device's: a phone with a wrong date can't make a removal look old.
+          let sweep = db.from(table).delete().not("deleted_at", "is", null).lt("server_updated_at", new Date(startedAt - KEEP_REMOVALS_MS).toISOString());
+          if (match) sweep = sweep.match(match);
+          const { error: sweepError } = await sweep;
+          if (!sweepError) purgeAt = startedAt;
+        }
+        writeSyncCursor(table, { uid, at: newest, fullAt: full ? startedAt : (cursor?.fullAt ?? startedAt), purgeAt });
       }
 
       // Push, a batch at a time (a screen reset marks hundreds of rows at once).

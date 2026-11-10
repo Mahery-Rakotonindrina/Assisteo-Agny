@@ -40,10 +40,20 @@ async function remove(ids: string[]) {
   await redis.hdel(KEY, ...ids);
 }
 
-/** Erases the reports older than 12 months, and the oldest beyond the cap. Returns the ones kept, newest first. */
+/** Beyond the cap, the ones handled go first (done, then read), the unread ones last: a flood can't push out what nobody has seen. */
+const evictionRank = { done: 0, read: 1, new: 2 } as const;
+
+/** Erases the reports older than 12 months, and beyond the cap the handled ones first, the oldest first. Returns the ones kept, newest first. */
 async function prune(now: number): Promise<StoredReport[]> {
   const all = (await readAll()).sort(newestFirst);
-  const kept = all.filter((report) => report.at > now - REPORTS_KEEP_MS).slice(0, REPORTS_MAX);
+  const fresh = all.filter((report) => report.at > now - REPORTS_KEEP_MS);
+  const evicted = new Set(
+    [...fresh]
+      .sort((a, b) => evictionRank[a.status] - evictionRank[b.status] || a.at - b.at)
+      .slice(0, Math.max(0, fresh.length - REPORTS_MAX))
+      .map((report) => report.id),
+  );
+  const kept = fresh.filter((report) => !evicted.has(report.id));
   const keptIds = new Set(kept.map((report) => report.id));
   await remove(all.filter((report) => !keptIds.has(report.id)).map((report) => report.id));
   return kept;
