@@ -7,6 +7,11 @@ import { sharedParcelStore } from "@/services/sharedParcels";
 // fields) starts with it instead of an empty list, then reads it again.
 // Never on the server, nor at hydration: nothing is read before an effect.
 let lastRead: Parcel[] | null = null;
+// Any change (a sync, signing out: wipe), even with no screen showing the
+// parcels, forgets it: never a list of before, nor another account's.
+parcelStore.subscribe(() => {
+  lastRead = null;
+});
 
 /** Followed parcels, kept in sync with the store. */
 export function useParcels() {

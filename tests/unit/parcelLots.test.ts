@@ -196,6 +196,20 @@ describe("the parcel store", () => {
     expect((await parcelStore.rawGet(b.id))!.updatedAt).toBe(before);
   });
 
+  it("keeps an older app's rename (a lot without a date): it counts from its parcel's last change", async () => {
+    await parcelStore.wipe();
+    const a = await parcelStore.add(scan("s1", "A-1"));
+    const b = await parcelStore.add(scan("s2", "B-2"));
+    await parcelStore.setLot([a.id, b.id], { id: "l1", name: "Conteneur", updatedAt: 1000 });
+    // Renamed on an older app: no date on the lot, the parcel changed later.
+    await parcelStore.rawPut({ ...(await parcelStore.rawGet(b.id))!, lot: { id: "l1", name: "Conteneur renommé" }, updatedAt: Date.now() + 1000 });
+    await parcelStore.reconcileLots();
+    const lots = (await parcelStore.list()).map((item) => item.lot);
+    expect(lots.map((lot) => lot?.name)).toEqual(["Conteneur renommé", "Conteneur renommé"]);
+    // From then on it carries a date: the same choice everywhere.
+    expect(lots.every((lot) => typeof lot?.updatedAt === "number" && lot.updatedAt > 1000)).toBe(true);
+  });
+
   it("gives a client's corrected number to their other parcels that had one", async () => {
     await parcelStore.wipe();
     const a = await parcelStore.add(scan("s1", "A-1"));

@@ -149,6 +149,12 @@ test("no share sheet: the message is copied as it is; a foreign number without i
   await hat.getByRole("button", { name: /Chapeau/ }).click();
   await hat.getByRole("button", { name: "Modifier" }).click();
   await expect(page.getByRole("dialog").getByLabel("Numéro WhatsApp du client")).toHaveValue("034 22 222 22");
+  // Another client: never Rado's number (Voahangy has none); back to Rado: his.
+  const clientField = page.getByRole("dialog").getByPlaceholder("Ex. Rado, Tante Voahangy…");
+  await clientField.fill("Voahangy");
+  await expect(page.getByRole("dialog").getByLabel("Numéro WhatsApp du client")).toHaveValue("");
+  await clientField.fill("Rado");
+  await expect(page.getByRole("dialog").getByLabel("Numéro WhatsApp du client")).toHaveValue("034 22 222 22");
   await page.getByRole("dialog").getByLabel("Numéro WhatsApp du client").fill("034 33 333 33");
   await page.getByRole("dialog").getByRole("button", { name: "Enregistrer" }).click();
   await expect(page.getByRole("dialog")).toBeHidden();

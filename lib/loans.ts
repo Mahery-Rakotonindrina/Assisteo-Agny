@@ -360,8 +360,10 @@ export function dayFromInput(value: string) {
 export function whatsappNumber(phone: string | undefined) {
   if (!phone) return null;
   const trimmed = phone.trim();
-  const digits = trimmed.replace(/\D/g, "");
-  const international = trimmed.startsWith("+") ? digits : digits.startsWith("00") ? digits.slice(2) : null;
+  // "+261 034…": the national 0 kept after the country code is dropped (261 34…).
+  const malagasyZero = (value: string) => value.replace(/^2610(?=[23]\d{8}$)/, "261");
+  const digits = malagasyZero(trimmed.replace(/\D/g, ""));
+  const international = trimmed.startsWith("+") ? digits : digits.startsWith("00") ? malagasyZero(digits.slice(2)) : null;
   if (international !== null) return international.length >= 8 && international.length <= 15 && !international.startsWith("0") ? international : null;
   if (/^0[23]\d{8}$/.test(digits)) return `261${digits.slice(1)}`;
   if (/^3\d{8}$/.test(digits)) return `261${digits}`;

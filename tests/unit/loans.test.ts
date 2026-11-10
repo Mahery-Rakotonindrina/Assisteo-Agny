@@ -185,6 +185,10 @@ describe("WhatsApp", () => {
     // Every Malagasy mobile prefix, and +261.
     for (const prefix of ["032", "033", "034", "037", "038"]) expect(whatsappNumber(`${prefix} 12 345 67`)).toBe(`261${prefix.slice(1)}1234567`);
     expect(whatsappNumber("+261 38 12 345 67")).toBe("261381234567");
+    // The national 0 kept after +261: dropped.
+    expect(whatsappNumber("+261 034 12 345 67")).toBe("261341234567");
+    expect(whatsappNumber("00261 034 12 345 67")).toBe("261341234567");
+    expect(whatsappNumber("261 034 12 345 67")).toBe("261341234567");
     expect(whatsappProblem("33612345678")).toBe(false);
     expect(whatsappProblem("07 12 34 56 78")).toBe(true);
     expect(whatsappProblem("06 12 34 56 78")).toBe(true);

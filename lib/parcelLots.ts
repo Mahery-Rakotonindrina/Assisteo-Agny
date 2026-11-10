@@ -120,18 +120,21 @@ export type LotSummary<T> = {
 };
 
 /**
- * Each shipment's latest details: the most recently changed (lot.updatedAt),
- * else those of its most recently updated parcel.
+ * Each shipment's latest details: the most recently changed. A lot without
+ * a date (written by an older app, which renames without one) counts from
+ * its parcel's last change: its rename is kept, not undone by an older one
+ * that had a date. The details chosen carry that date from then on, so the
+ * choice stays the same on every device.
  */
 export function latestLots(parcels: Array<{ lot?: ParcelLot; updatedAt: number }>) {
-  const latest = new Map<string, { lot: ParcelLot; at: number; parcelAt: number }>();
+  const latest = new Map<string, { lot: ParcelLot; at: number }>();
   for (const parcel of parcels) {
     if (!parcel.lot?.id) continue;
-    const at = parcel.lot.updatedAt ?? 0;
+    const at = parcel.lot.updatedAt ?? parcel.updatedAt;
     const current = latest.get(parcel.lot.id);
-    if (!current || at > current.at || (at === current.at && parcel.updatedAt > current.parcelAt)) latest.set(parcel.lot.id, { lot: parcel.lot, at, parcelAt: parcel.updatedAt });
+    if (!current || at > current.at) latest.set(parcel.lot.id, { lot: parcel.lot, at });
   }
-  return new Map([...latest].map(([id, { lot }]) => [id, lot]));
+  return new Map([...latest].map(([id, { lot, at }]) => [id, { ...lot, updatedAt: at }]));
 }
 
 /**
