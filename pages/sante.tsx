@@ -164,8 +164,8 @@ function TreatmentCard({ treatment }: { treatment: Treatment<HistoryEntry> }) {
     <li className={styles.card} data-testid="health-treatment">
       <h3>{entry.analysis.title}</h3>
       <ul className={styles.courses}>
-        {plan.courses.map((course) => (
-          <li key={course.name}>
+        {plan.courses.map((course, index) => (
+          <li key={`${index}-${course.name}`}>
             <Pill size={15} aria-hidden />
             <span>
               <strong>{course.name}</strong>
@@ -193,7 +193,7 @@ function TreatmentCard({ treatment }: { treatment: Treatment<HistoryEntry> }) {
                   {dose.state === "taken" ? t("health.doseTaken") : dose.state === "missed" ? t("health.doseMissed") : dose.medicines.map((medicine) => medicine.name).join(" · ")}
                 </small>
               </span>
-              {dose.state !== "taken" && (
+              {dose.state !== "taken" && dose.canTake && (
                 <Button variant="secondary" size="md" icon={<Check />} onClick={() => void take(dose.at)} data-testid="health-take">
                   {t("health.taken")}
                 </Button>

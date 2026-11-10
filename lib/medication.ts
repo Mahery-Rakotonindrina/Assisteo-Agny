@@ -134,7 +134,8 @@ export function withTaken(plan: MedicationPlan, at: number): MedicationPlan {
 /** The doses due in the last 7 days (now included) and how many were ticked: "12 prises sur 14 cette semaine". */
 export function weekAdherence(plan: MedicationPlan, now: number) {
   const taken = new Set(plan.taken ?? []);
-  const due = doseMoments(plan).filter(({ at }) => at <= now && at > now - WEEK);
+  // The doses before the plan was made are not counted: nobody was asked to tick them.
+  const due = doseMoments(plan).filter(({ at }) => at <= now && at > now - WEEK && at >= plan.createdAt);
   return { due: due.length, taken: due.filter(({ at }) => taken.has(at)).length };
 }
 
@@ -147,8 +148,39 @@ export function todayDoses(plan: MedicationPlan, now: number) {
   const end = new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1).getTime();
   const taken = new Set(plan.taken ?? []);
   return doseMoments(plan)
-    .filter(({ at }) => at >= start && at < end)
-    .map(({ at, medicines }) => ({ at, medicines, state: (taken.has(at) ? "taken" : at <= now ? "missed" : "upcoming") as DoseState }));
+    .filter(({ at }) => at >= start && at < end && at >= plan.createdAt)
+    .map(({ at, medicines }) => ({ at, medicines, state: (taken.has(at) ? "taken" : at <= now ? "missed" : "upcoming") as DoseState, canTake: canTake(at, now) }));
+}
+
+/** How early a dose may be ticked: an hour before its time. */
+export const TAKE_EARLY = 3_600_000;
+
+/** Whether "J'ai pris" may tick this moment: one gone by, or within the hour. Never tomorrow's (a dose taken twice). */
+export const canTake = (at: number, now: number) => at <= now + TAKE_EARLY;
+
+/**
+ * The same plan on two devices (made at the same moment): the doses ticked
+ * on either. Another plan (made again since): `base` as it is.
+ */
+export function mergeTaken(base: MedicationPlan | undefined, other: MedicationPlan | undefined) {
+  if (!base || !other || base.createdAt !== other.createdAt || !other.taken?.length) return base;
+  const taken = [...new Set([...(base.taken ?? []), ...other.taken])].sort((a, b) => a - b).slice(-MAX_TAKEN);
+  return taken.length === (base.taken?.length ?? 0) ? base : { ...base, taken };
+}
+
+/** The medicines whose last dose falls on the plan's last day. */
+export function endingCourses(plan: MedicationPlan) {
+  const end = planEnd(plan);
+  if (end === null) return [];
+  const last = new Date(end);
+  const sameDay = (at: number) => {
+    const date = new Date(at);
+    return date.getFullYear() === last.getFullYear() && date.getMonth() === last.getMonth() && date.getDate() === last.getDate();
+  };
+  return plan.courses.filter((course) => {
+    const doses = courseDoses(plan.start, course);
+    return doses.length > 0 && sameDay(Math.max(...doses));
+  });
 }
 
 /**
@@ -182,13 +214,16 @@ export function doseReminders(entries: Array<{ id: string; medication?: Medicati
         entryId: entry.id,
         at: notice,
         kind: "lastDay",
-        medicines: entry.medication.courses.map((course) => ({ name: course.name })),
+        // Only the medicines whose last dose falls on that last day (another may have ended days before).
+        medicines: endingCourses(entry.medication).map((course) => ({ name: course.name })),
         ...(entry.medication.renew && { renew: true }),
       });
     }
+    // A moment already ticked "J'ai pris" never rings: the dose must not be taken twice.
+    const taken = new Set(entry.medication.taken ?? []);
     for (const course of entry.medication.courses) {
       for (const at of courseDoses(entry.medication.start, course)) {
-        if (at <= now || at > until) continue;
+        if (at <= now || at > until || taken.has(at)) continue;
         const key = doseKey(entry.id, at);
         const reminder = reminders.get(key) ?? { entryId: entry.id, at, medicines: [] };
         reminder.medicines.push({ name: course.name, ...(course.dose && { dose: course.dose }) });

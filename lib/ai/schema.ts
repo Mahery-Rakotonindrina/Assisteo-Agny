@@ -328,7 +328,7 @@ export const AnalysisSchema = z.object({
       renewal: z
         .boolean()
         .nullable()
-        .describe("True when the prescription says it may be renewed (« à renouveler », « renouvelable », « QSP 3 mois », « à renouveler 2 fois »); false when it is written that it is not; null when nothing is written."),
+        .describe("True only when the prescription says it may be renewed (« à renouveler », « renouvelable 2 fois »); « QSP 3 mois » (enough for 3 months) is a quantity, not a renewal; false when it is written that it is not; null when nothing is written."),
     })
     .nullable()
     .describe("Only for a medical prescription (ordonnance) or a medicine box, blister or leaflet; null otherwise."),

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { mockPrescription } from "@/lib/ai/mock";
 import { SYSTEM_PROMPT } from "@/lib/ai/prompt";
 import { AnalysisSchema, normalizeStoredAnalysis } from "@/lib/ai/schema";
-import { cleanCourse, defaultTimes, doseReminders, hasReadableName, isActive, lastDayNotice, MAX_TAKEN, planEnd, todayDoses, unreadableNote, weekAdherence, withTaken, type MedicationPlan } from "@/lib/medication";
+import { canTake, cleanCourse, defaultTimes, doseReminders, endingCourses, mergeTaken, hasReadableName, isActive, lastDayNotice, MAX_TAKEN, planEnd, todayDoses, unreadableNote, weekAdherence, withTaken, type MedicationPlan } from "@/lib/medication";
 import { medicationLink, reconcileMedicationState, type MedicationReminderDeps, type ScheduledDoses } from "@/services/medicationReminders";
 import { tapTarget } from "@/services/notificationTap";
 
@@ -82,7 +82,8 @@ describe("dose reminders", () => {
     // 13 doses, and the evening before the last day.
     expect(reminders).toHaveLength(14);
     expect(reminders.filter((reminder) => reminder.kind === "lastDay")).toEqual([
-      { entryId: "scan", at: at(9, 19), kind: "lastDay", medicines: [{ name: "Amoxicilline" }, { name: "Vitamine C" }] },
+      // Vitamin C ended on the 5th: only the amoxicillin ends on the last day.
+      { entryId: "scan", at: at(9, 19), kind: "lastDay", medicines: [{ name: "Amoxicilline" }] },
     ]);
     expect(doseReminders([{ id: "scan", medication: plan }], at(4, 9), false)).toEqual([]);
   });
@@ -156,5 +157,46 @@ describe("dose reminders", () => {
     expect(notice).toMatchObject({ at: at(9, 19), renew: true });
     // A one-day treatment: no notice.
     expect(lastDayNotice({ start: "2026-11-04", createdAt: 0, courses: [{ name: "A", times: ["08:00"], days: 1 }] })).toBeNull();
+  });
+});
+
+describe("ticking a dose safely", () => {
+  it("never rings a moment already ticked, and only ticks a dose gone by or within the hour", () => {
+    const ticked = withTaken(plan, at(5, 8));
+    const moments = doseReminders([{ id: "scan", medication: ticked }], at(4, 21)).map((reminder) => reminder.at);
+    expect(moments).not.toContain(at(5, 8));
+    expect(moments).toContain(at(5, 20));
+    expect(canTake(at(5, 8), at(5, 7, 1))).toBe(true);
+    expect(canTake(at(5, 8), at(5, 6, 59))).toBe(false);
+    expect(canTake(at(6, 8), at(5, 8))).toBe(false);
+    // Today's list says which ones can be ticked now.
+    expect(todayDoses(plan, at(5, 9)).map((dose) => [dose.state, dose.canTake])).toEqual([
+      ["missed", true],
+      ["upcoming", false],
+    ]);
+  });
+
+  it("keeps the doses ticked on two devices when the plan is the same, not those of an older plan", () => {
+    const here = { ...plan, createdAt: 5, taken: [at(5, 8)] };
+    const there = { ...plan, createdAt: 5, taken: [at(5, 20), at(5, 8)] };
+    expect(mergeTaken(here, there)?.taken).toEqual([at(5, 8), at(5, 20)]);
+    // Nothing new: the same object (nothing to write, nothing to send back).
+    expect(mergeTaken(there, here)).toBe(there);
+    const older = { ...plan, createdAt: 1, taken: [at(4, 8)] };
+    expect(mergeTaken(here, older)).toBe(here);
+    expect(mergeTaken(undefined, there)).toBeUndefined();
+  });
+
+  it("does not count the doses before the plan was made", () => {
+    const madeAt9 = { ...plan, createdAt: at(4, 21) };
+    expect(weekAdherence(madeAt9, at(5, 9))).toEqual({ due: 1, taken: 0 });
+    expect(todayDoses(madeAt9, at(4, 22))).toEqual([]);
+  });
+
+  it("names on the last-day notice only the medicines that really end that day", () => {
+    const mixed: MedicationPlan = { ...plan, courses: [{ name: "Amoxicilline", times: ["08:00"], days: 7 }, { name: "Paracétamol", times: ["08:00"], days: 3 }] };
+    expect(endingCourses(mixed).map((course) => course.name)).toEqual(["Amoxicilline"]);
+    const [notice] = doseReminders([{ id: "scan", medication: mixed }], at(9, 9)).filter((reminder) => reminder.kind === "lastDay");
+    expect(notice.medicines).toEqual([{ name: "Amoxicilline" }]);
   });
 });

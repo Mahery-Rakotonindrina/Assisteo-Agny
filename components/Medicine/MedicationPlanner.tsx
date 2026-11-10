@@ -56,8 +56,8 @@ export function MedicationPlanner({ entry, medicine }: { entry: HistoryEntry; me
           <BellRing size={16} /> {t("medicine.activeUntil", { date: formatDate(end, locale) })}
         </p>
         <ul className={styles.courses}>
-          {plan.courses.map((course) => (
-            <li key={course.name}>
+          {plan.courses.map((course, index) => (
+            <li key={`${index}-${course.name}`}>
               <strong>{course.name}</strong>
               <span>{t("medicine.courseLine", { times: course.times.join(", "), count: course.days })}</span>
             </li>

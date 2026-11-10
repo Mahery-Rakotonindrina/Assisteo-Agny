@@ -33,9 +33,10 @@ async function seedPrescription(page: Page) {
   }, mockPrescription("fr"));
 }
 
-const yesterday = () => {
-  const date = new Date(Date.now() - 86_400_000);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+/** Today at this time (the browser's clock is set by the test). */
+const today = (hour: number, minute = 0) => {
+  const date = new Date();
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate(), hour, minute);
 };
 
 test("empty: what it is for, the warning, and the scan in document mode", async ({ page }) => {
@@ -49,6 +50,8 @@ test("empty: what it is for, the warning, and the scan in document mode", async 
 
 test("a prescription scanned: listed, its reminders created, followed in « En cours », ticked, shared, then stopped", async ({ page, context, isMobile }) => {
   await context.grantPermissions(["notifications"]);
+  // The reminders are made at 07:00; « Ma santé » is looked at at 08:30 (the 08:00 dose gone by, the 20:00 one to come).
+  await page.clock.install({ time: today(7) });
   await prepare(page);
   await pretendPlan(page, "lite");
   // What leaves the app when sharing.
@@ -75,21 +78,27 @@ test("a prescription scanned: listed, its reminders created, followed in « En c
   await expect(prescriptions).toContainText("Amoxicilline, Paracétamol");
   await expect(page.getByTestId("health-treatments")).toHaveCount(0);
 
-  // Reminders are created on the scan, confirmed there; started yesterday, so doses are already due.
+  // Reminders are created on the scan, confirmed there, starting today.
   await prescriptions.getByRole("link", { name: "Créer des rappels de prise" }).click();
   await expect(page).toHaveURL(/\/result\?id=rx/);
-  const planner = page.getByTestId("medication-planner");
-  await planner.getByLabel("Premier jour").fill(yesterday());
-  await planner.getByTestId("medication-save").click();
+  await page.getByTestId("medication-planner").getByTestId("medication-save").click();
   await expect(page.getByText(/^Rappels créés jusqu’au/)).toBeVisible();
 
+  await page.clock.setSystemTime(today(8, 30));
   await page.goto("/sante");
   const treatment = page.getByTestId("health-treatment");
   await expect(treatment).toHaveCount(1);
   await expect(treatment).toContainText("Amoxicilline");
-  await expect(treatment).toContainText(/Jusqu’au .+ · 6 jour\(s\) restant\(s\)/);
+  await expect(treatment).toContainText(/Jusqu’au .+ · 7 jour\(s\) restant\(s\)/);
   await expect(treatment.getByTestId("health-next")).toContainText("Prochaine prise :");
-  await expect(treatment.getByTestId("health-week")).toHaveText(/^\s*0 prise\(s\) cochée\(s\) sur [1-9]\d* cette semaine$/);
+  await expect(treatment.getByTestId("health-week")).toHaveText(/^\s*0 prise\(s\) cochée\(s\) sur 1 cette semaine$/);
+  // 08:00 gone by, said gently, can be ticked; 20:00 to come, not yet (no dose taken twice).
+  const doses = treatment.getByTestId("health-dose");
+  await expect(doses).toHaveCount(2);
+  await expect(doses.nth(0)).toHaveAttribute("data-state", "missed");
+  await expect(doses.nth(0)).toContainText("Pas encore cochée : si tu l’as prise, coche-la");
+  await expect(doses.nth(1)).toHaveAttribute("data-state", "upcoming");
+  await expect(doses.nth(1).getByTestId("health-take")).toHaveCount(0);
   await expect(prescriptions).toContainText("Rappels de prise en cours");
 
   // « J'ai pris » on today's first dose.
@@ -98,6 +107,7 @@ test("a prescription scanned: listed, its reminders created, followed in « En c
   await expect(page.getByText("Prise cochée")).toBeVisible();
   await expect(treatment.getByTestId("health-dose").first()).toHaveAttribute("data-state", "taken");
   await expect(treatment.getByTestId("health-dose").first().getByTestId("health-take")).toHaveCount(0);
+  await expect(treatment.getByTestId("health-week")).toHaveText(/^\s*1 prise\(s\) cochée\(s\) sur 1 cette semaine$/);
 
   // Shared: the treatments and the warning, nothing else.
   await page.getByTestId("health-share").click();

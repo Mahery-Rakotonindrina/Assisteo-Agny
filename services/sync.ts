@@ -1,6 +1,7 @@
 import { Preferences } from "@capacitor/preferences";
 import { AnalysisSchema, normalizeStoredAnalysis, type ScanMode } from "@/lib/ai/schema";
 import { pick } from "@/lib/account/pick";
+import { mergeTaken } from "@/lib/medication";
 import { supabase } from "@/lib/supabase";
 import type { HistoryEntry } from "@/types/history";
 import { isSavingData } from "./dataSaver";
@@ -125,8 +126,14 @@ async function fillPendingPreviews() {
 async function applyRemote(row: Row) {
   const local = await historyStore.rawGet(row.id);
   const remoteUpdated = time(row.updated_at) ?? 0;
-  // A newer local edit wins: it will be pushed right after.
-  if (local?.dirty && (local.updatedAt ?? 0) > remoteUpdated) return;
+  const remote = fromRowMeta(row.meta);
+  // A newer local edit wins: it will be pushed right after, with the doses
+  // ticked on the other device too (the same plan: both kept).
+  if (local?.dirty && (local.updatedAt ?? 0) > remoteUpdated) {
+    const medication = mergeTaken(local.medication, remote.medication);
+    if (medication !== local.medication) await historyStore.rawPut({ ...local, medication }, { silent: true });
+    return;
+  }
 
   if (row.deleted_at) {
     if (local) await historyStore.rawDelete(row.id, { silent: true });
@@ -141,13 +148,18 @@ async function applyRemote(row: Row) {
     local?.preview && local.thumbnail ? { preview: local.preview, thumbnail: local.thumbnail, previewPending: local.previewPending } : await downloadPhotos(row);
   if (!photos) return;
 
+  // The other device's plan, with the doses ticked here that it lacks (then sent back).
+  const medication = mergeTaken(remote.medication, local?.medication);
+  const ticksToSend = medication !== remote.medication;
+
   await historyStore.rawPut(
     {
       id: row.id,
       createdAt: time(row.created_at) ?? Date.now(),
       mode: row.mode as ScanMode,
       analysis: analysis.data,
-      ...fromRowMeta(row.meta),
+      ...remote,
+      medication,
       reminderAt: time(row.reminder_at),
       chat: Array.isArray(row.chat) && row.chat.length > 0 ? row.chat : undefined,
       // Notifications are scheduled per device: keep this device's own one.
@@ -160,9 +172,9 @@ async function applyRemote(row: Row) {
       transcript: local?.transcript,
       translations: local?.translations,
       ...photos,
-      updatedAt: remoteUpdated,
-      // A pending remote shrink (see photoStorage) must survive this pull.
-      dirty: Boolean(local?.compactRemote),
+      updatedAt: ticksToSend ? Date.now() : remoteUpdated,
+      // A pending remote shrink (see photoStorage) must survive this pull; so must ticks only made here.
+      dirty: Boolean(local?.compactRemote) || ticksToSend,
       compactRemote: local?.compactRemote,
       remote: { preview: row.preview_path!, thumbnail: row.thumbnail_path! },
     },

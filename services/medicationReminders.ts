@@ -1,4 +1,4 @@
-import { doseReminders, reminderKey, withTaken, type DoseReminder, type MedicationPlan } from "@/lib/medication";
+import { canTake, doseReminders, reminderKey, withTaken, type DoseReminder, type MedicationPlan } from "@/lib/medication";
 import { cancelNotification, dismissNotification, getNotificationPermission, notify, pendingNotificationIds, registerNotificationActions } from "./notifications";
 import { historyStore } from "./historyStore";
 
@@ -25,8 +25,13 @@ export function medicationLink(entryId: string) {
   return { scanId, at: at && Number.isFinite(moment) ? moment : null };
 }
 
-/** "J'ai pris": this moment of the scan's plan is ticked (on the screen, or from the notification). */
-export async function markDoseTaken(scanId: string, at: number) {
+/**
+ * "J'ai pris": this moment of the scan's plan is ticked (on the screen, or
+ * from the notification): a dose gone by or within the hour, never later. Its
+ * notification is then cancelled (the keeper reconciles on the change).
+ */
+export async function markDoseTaken(scanId: string, at: number, now = Date.now()) {
+  if (!canTake(at, now)) return false;
   const entry = await historyStore.get(scanId);
   if (!entry?.medication) return false;
   await historyStore.update(scanId, { medication: withTaken(entry.medication, at) });
