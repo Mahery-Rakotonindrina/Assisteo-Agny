@@ -12,6 +12,7 @@ import { parcelStatuses, type ParcelStatus, type ShippingMode } from "@/lib/ai/s
 import { spring } from "@/lib/motion";
 import { shippingModeOf, type ParcelInfo } from "@/lib/parcels";
 import { haptics } from "@/services/device";
+import { whatsappProblem } from "@/lib/loans";
 import { parcelStore, type Parcel } from "@/services/parcelStore";
 import styles from "./ParcelEditSheet.module.scss";
 
@@ -21,6 +22,8 @@ type Props = {
   onClose: () => void;
   /** Names already used, suggested while typing the client. */
   clients: string[];
+  /** The client's WhatsApp number: the parcel's own, or the one typed on another of their parcels. */
+  knownPhone?: string;
 };
 
 type DraftItem = { name: string; variant: string; quantity: string; price: string };
@@ -40,16 +43,16 @@ const pickedUpAt = (day: string) => {
 };
 
 /** Lets the user correct or complete everything about a parcel. */
-export function ParcelEditSheet({ parcel, open, onClose, clients }: Props) {
+export function ParcelEditSheet({ parcel, open, onClose, clients, knownPhone }: Props) {
   const mounted = useSyncExternalStore(noSubscribe, () => true, () => false);
   if (!mounted) return null;
   return createPortal(
-    <AnimatePresence>{open && <Form key={parcel.id} parcel={parcel} onClose={onClose} clients={clients} />}</AnimatePresence>,
+    <AnimatePresence>{open && <Form key={parcel.id} parcel={parcel} onClose={onClose} clients={clients} knownPhone={knownPhone} />}</AnimatePresence>,
     document.body,
   );
 }
 
-function Form({ parcel, onClose, clients }: Omit<Props, "open">) {
+function Form({ parcel, onClose, clients, knownPhone }: Omit<Props, "open">) {
   const backdrop = useSheetKeyboard();
   const { t } = useTranslation();
   const { has, planFor, name: planName } = usePlan();
@@ -58,7 +61,9 @@ function Form({ parcel, onClose, clients }: Omit<Props, "open">) {
   const { info } = parcel;
   const [title, setTitle] = useState(parcel.title);
   const [client, setClient] = useState(parcel.client ?? "");
-  const [clientPhone, setClientPhone] = useState(parcel.clientPhone ?? "");
+  // The number WhatsApp will use, shown even when it comes from another parcel of the client.
+  const [clientPhone, setClientPhone] = useState(parcel.clientPhone ?? knownPhone ?? "");
+  const phoneProblem = whatsappProblem(clientPhone);
   const [status, setStatus] = useState<ParcelStatus>(info.status);
   // Sea or air: automatic (read on a scan, or guessed) unless the user picks one.
   const [shipping, setShipping] = useState<ShippingMode | "auto">(parcel.shippingMode ?? "auto");
@@ -114,6 +119,8 @@ function Form({ parcel, onClose, clients }: Omit<Props, "open">) {
     // An untouched day keeps the exact time it was marked received.
     const receivedAt = receivedDay === initialReceivedDay ? undefined : receivedDay ? pickedUpAt(receivedDay) : null;
     await parcelStore.edit(parcel.id, { title, client, clientPhone: reseller ? clientPhone : undefined, info: next, receivedAt, shippingMode: shipping === "auto" ? null : shipping });
+    // A number corrected here is the client's: their other parcels take it too.
+    if (reseller && client.trim() && clientPhone.trim()) await parcelStore.setClientPhone(client, clientPhone, parcel.id);
     haptics.success();
     setSaving(false);
     onClose();
@@ -165,7 +172,21 @@ function Form({ parcel, onClose, clients }: Omit<Props, "open">) {
         </Field>
         {reseller && client.trim() && (
           <Field label={t("parcelWhatsapp.phone")} hint={t("parcelWhatsapp.phoneHint")}>
-            <input type="tel" inputMode="tel" autoComplete="off" value={clientPhone} onChange={(event) => setClientPhone(event.target.value.slice(0, 24))} placeholder="034 12 345 67" />
+            <input
+              type="tel"
+              inputMode="tel"
+              autoComplete="off"
+              value={clientPhone}
+              onChange={(event) => setClientPhone(event.target.value.slice(0, 24))}
+              placeholder={t("whatsappPhone.placeholder")}
+              aria-invalid={phoneProblem}
+              aria-describedby={phoneProblem ? "parcel-phone-problem" : undefined}
+            />
+            {phoneProblem && (
+              <small id="parcel-phone-problem" className={styles.problem} role="alert">
+                {t("whatsappPhone.invalid")}
+              </small>
+            )}
           </Field>
         )}
         <Field label={t("parcels.fields.status")}>

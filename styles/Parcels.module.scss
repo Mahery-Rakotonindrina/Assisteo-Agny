@@ -270,6 +270,16 @@
   gap: 0.5rem;
 }
 
+// Long labels (« Envoyer le statut au client ») wrap at 320 px instead of running off the screen.
+.actions > a,
+.actions > button {
+  max-width: 100%;
+  white-space: normal;
+  text-align: center;
+  line-height: 1.25;
+  padding-block: 0.4rem;
+}
+
 .totalAll {
   font-weight: 600;
   color: var(--accent-text) !important;

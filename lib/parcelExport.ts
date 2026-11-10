@@ -54,7 +54,7 @@ export function parcelRows(parcels: Parcel[], t: Translate, locale: Locale): Par
       carrier: info.carrier,
       shipping: ((mode) => (mode ? t(`parcel.shipping.${mode}`) : null))(shippingModeOf(parcel).mode),
       lot: parcel.lot?.name ?? null,
-      weightKg: parcel.freight?.weightKg || null,
+      weightKg: parcel.freight?.weightKg ? grams(parcel.freight.weightKg) : null,
       status: parcel.receivedAt ? t("parcels.receivedLabel") : t(`parcel.statuses.${info.status}`),
       orderedAt: excelDay(eventTime(info.orderedAt)),
       receivedAt: excelDay(parcel.receivedAt ?? null),
@@ -98,6 +98,12 @@ const parcelColumns: Array<{ key: keyof ParcelRow; width: number; kind?: "money"
   { key: "weightKg", width: 11, kind: "weight" },
 ];
 
+/** Kilos with one to three decimals: "2.5", "3.0", "0.333". */
+export const WEIGHT = "#,##0.0##";
+
+/** A weight rounded to the gram. */
+const grams = (kilos: number) => Math.round(kilos * 1000) / 1000;
+
 /** The workbook's bytes (.xlsx). */
 export async function parcelsWorkbook(parcels: Parcel[], t: Translate, locale: Locale, heading: ExportHeading): Promise<ArrayBuffer> {
   const Excel = await loadExcel();
@@ -124,7 +130,9 @@ export async function parcelsWorkbook(parcels: Parcel[], t: Translate, locale: L
       name: label(key),
       filterButton: true,
       ...(index === 0 && { totalsRowLabel: t("parcels.export.total") }),
-      ...((kind === "money" || kind === "weight") && { totalsRowFunction: "sum" as const, totalsRowResult: sum(rows.map((row) => row[key] as number | null)) }),
+      ...(kind === "money" && { totalsRowFunction: "sum" as const, totalsRowResult: sum(rows.map((row) => row[key] as number | null)) }),
+      // Kilos to the gram: no 0,30000000000000004 in the total.
+      ...(kind === "weight" && { totalsRowFunction: "sum" as const, totalsRowResult: grams(sum(rows.map((row) => row[key] as number | null))) }),
     })),
     rows: rows.map((row) => parcelColumns.map(({ key }) => row[key] ?? "")),
   });
@@ -136,7 +144,8 @@ export async function parcelsWorkbook(parcels: Parcel[], t: Translate, locale: L
       const cell = sheet.getCell(line, index + 1);
       if (kind === "money") cell.numFmt = ARIARY;
       if (kind === "day") cell.numFmt = DAY;
-      if (kind === "money" && line === TOP + rows.length + 1) cell.font = { bold: true };
+      if (kind === "weight") cell.numFmt = WEIGHT;
+      if ((kind === "money" || kind === "weight") && line === TOP + rows.length + 1) cell.font = { bold: true };
     }
   });
 

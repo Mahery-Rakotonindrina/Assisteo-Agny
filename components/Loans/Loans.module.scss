@@ -569,6 +569,17 @@
 }
 
 // "Combien ?": the amount, in big.
+// A WhatsApp number that can't be used as it is: how to write it.
+.field input[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+
+.phoneProblem {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--danger);
+}
+
 .field input.bigInput {
   height: 3.25rem;
   font-size: max(16px, 1.5rem);

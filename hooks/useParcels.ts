@@ -3,15 +3,21 @@ import type { SharedParcelRecord } from "@/lib/householdShares";
 import { parcelStore, type Parcel } from "@/services/parcelStore";
 import { sharedParcelStore } from "@/services/sharedParcels";
 
+// The last list read: a component mounted later (a parcel opened: its freight
+// fields) starts with it instead of an empty list, then reads it again.
+// Never on the server, nor at hydration: nothing is read before an effect.
+let lastRead: Parcel[] | null = null;
+
 /** Followed parcels, kept in sync with the store. */
 export function useParcels() {
-  const [parcels, setParcels] = useState<Parcel[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [parcels, setParcels] = useState<Parcel[]>(() => lastRead ?? []);
+  const [isLoading, setIsLoading] = useState(() => lastRead === null);
 
   useEffect(() => {
     let cancelled = false;
     const load = () =>
       parcelStore.list().then((list) => {
+        lastRead = list;
         if (cancelled) return;
         setParcels(list);
         setIsLoading(false);

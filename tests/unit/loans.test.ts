@@ -19,6 +19,7 @@ import {
   searchPeople,
   whatsappLink,
   whatsappNumber,
+  whatsappProblem,
   type Loan,
 } from "@/lib/loans";
 import { defaultFeatureSettings, hasFeature, planFor, withFeatureDefaults, type FeatureSettings } from "@/lib/plans";
@@ -168,6 +169,29 @@ describe("WhatsApp", () => {
     expect(whatsappNumber("+33 6 12 34 56 78")).toBe("33612345678");
     expect(whatsappNumber("12")).toBeNull();
     expect(whatsappNumber(undefined)).toBeNull();
+  });
+
+  it("refuses only a foreign number written the national way (starting with 0), instead of opening a stranger's chat", () => {
+    expect(whatsappNumber("06 12 34 56 78")).toBeNull();
+    expect(whatsappNumber("07 12 34 56 78")).toBeNull();
+    expect(whatsappNumber("612345678")).toBeNull();
+    expect(whatsappNumber("+0612345678")).toBeNull();
+    // With the country code but without "+": as people often write it.
+    expect(whatsappNumber("33612345678")).toBe("33612345678");
+    expect(whatsappNumber("33 6 12 34 56 78")).toBe("33612345678");
+    expect(whatsappNumber("261341234567")).toBe("261341234567");
+    expect(whatsappNumber("261 34 12 345 67")).toBe("261341234567");
+    expect(whatsappNumber("0033 6 12 34 56 78")).toBe("33612345678");
+    // Every Malagasy mobile prefix, and +261.
+    for (const prefix of ["032", "033", "034", "037", "038"]) expect(whatsappNumber(`${prefix} 12 345 67`)).toBe(`261${prefix.slice(1)}1234567`);
+    expect(whatsappNumber("+261 38 12 345 67")).toBe("261381234567");
+    expect(whatsappProblem("33612345678")).toBe(false);
+    expect(whatsappProblem("07 12 34 56 78")).toBe(true);
+    expect(whatsappProblem("06 12 34 56 78")).toBe(true);
+    expect(whatsappProblem("+33 6 12 34 56 78")).toBe(false);
+    expect(whatsappProblem("034 12 345 67")).toBe(false);
+    expect(whatsappProblem("  ")).toBe(false);
+    expect(whatsappProblem(undefined)).toBe(false);
   });
 
   it("opens the chat with the message written", () => {

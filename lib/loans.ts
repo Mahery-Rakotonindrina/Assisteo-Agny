@@ -351,19 +351,28 @@ export function dayFromInput(value: string) {
 
 /**
  * A phone number as WhatsApp wants it: digits only, with the country code.
- * A Malagasy number "034 12 345 67" (or "34 12 345 67") becomes 261341234567;
- * one written with "+" or "00" keeps its own code. Null when it can't be one.
+ * A Malagasy number "034 12 345 67" (or "34 12 345 67", "261 34…") becomes
+ * 261341234567; one written with "+" or "00", or with 11 digits or more not
+ * starting with 0 (33612345678), keeps its own code. A foreign number written
+ * the national way ("06 12 34 56 78") is null: it would open a stranger's
+ * chat (see whatsappProblem).
  */
 export function whatsappNumber(phone: string | undefined) {
   if (!phone) return null;
   const trimmed = phone.trim();
-  let digits = trimmed.replace(/\D/g, "");
-  if (trimmed.startsWith("+")) return digits.length >= 8 && digits.length <= 15 ? digits : null;
-  if (digits.startsWith("00")) digits = digits.slice(2);
-  else if (/^0[23]\d{8}$/.test(digits)) digits = `261${digits.slice(1)}`;
-  else if (/^3\d{8}$/.test(digits)) digits = `261${digits}`;
-  return digits.length >= 8 && digits.length <= 15 ? digits : null;
+  const digits = trimmed.replace(/\D/g, "");
+  const international = trimmed.startsWith("+") ? digits : digits.startsWith("00") ? digits.slice(2) : null;
+  if (international !== null) return international.length >= 8 && international.length <= 15 && !international.startsWith("0") ? international : null;
+  if (/^0[23]\d{8}$/.test(digits)) return `261${digits.slice(1)}`;
+  if (/^3\d{8}$/.test(digits)) return `261${digits}`;
+  if (/^261[23]\d{8}$/.test(digits)) return digits;
+  // Written with its country code but without "+" (33612345678): taken as it is.
+  if (digits.length >= 11 && digits.length <= 15 && !digits.startsWith("0")) return digits;
+  return null;
 }
+
+/** A number typed that WhatsApp can't use as it is: the field says how to write it. */
+export const whatsappProblem = (phone: string | undefined) => Boolean(phone?.trim()) && whatsappNumber(phone) === null;
 
 /** "Relancer sur WhatsApp": the chat with the message already written; null without a usable number. */
 export function whatsappLink(phone: string | undefined, message: string) {

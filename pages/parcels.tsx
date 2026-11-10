@@ -76,6 +76,10 @@ export default function ParcelsPage() {
   useEffect(() => {
     void keepParcelThumbnails().catch(() => undefined);
   }, []);
+  // One name per shipment on every device (a rename here, a parcel changed on another device).
+  useEffect(() => {
+    if (parcels.some((parcel) => parcel.lot)) void parcelStore.reconcileLots().catch(() => undefined);
+  }, [parcels]);
   // A scan deleted from the history can no longer be opened from its parcel.
   const scanIds = new Set(entries.map((entry) => entry.id));
   const hasScan = (id: string) => historyLoading || scanIds.has(id);
@@ -524,7 +528,8 @@ function ParcelRow({ parcel, thumbnail, clients, phone, hasScan, reseller, share
       openExternal(link);
       return;
     }
-    const outcome = await shareText(t("parcelWhatsapp.shareTitle", { title: parcel.title }), message);
+    // Pasted as it is in the client's chat: no title above « Bonjour… ».
+    const outcome = await shareText(t("parcelWhatsapp.shareTitle", { title: parcel.title }), message, { copyTitle: false });
     if (outcome === "copied") toast(t("parcelWhatsapp.copied"));
     else if (outcome === "unavailable") toast(t("parcelWhatsapp.failed"), "error");
   };
@@ -706,7 +711,7 @@ function ParcelRow({ parcel, thumbnail, clients, phone, hasScan, reseller, share
           </motion.div>
         )}
       </AnimatePresence>
-      <ParcelEditSheet parcel={parcel} open={editing} onClose={() => setEditing(false)} clients={clients} />
+      <ParcelEditSheet parcel={parcel} open={editing} onClose={() => setEditing(false)} clients={clients} knownPhone={phone} />
     </article>
   );
 }

@@ -28,6 +28,7 @@ import {
   type LoanDirection,
   type LoanInterest,
   type ScheduleFrequency,
+  whatsappProblem,
 } from "@/lib/loans";
 import { parseNumber } from "@/lib/money";
 import { spring } from "@/lib/motion";
@@ -734,7 +735,22 @@ function LoanFields({
           )}
           <label className={styles.field}>
             <span>{t("loans.form.phone")}</span>
-            <input value={phone} onChange={(event) => setPhone(event.target.value)} inputMode="tel" type="tel" placeholder="034 12 345 67" maxLength={24} autoComplete="tel" />
+            <input
+              value={phone}
+              onChange={(event) => setPhone(event.target.value)}
+              inputMode="tel"
+              type="tel"
+              placeholder={t("whatsappPhone.placeholder")}
+              maxLength={24}
+              autoComplete="tel"
+              aria-invalid={whatsappProblem(phone)}
+              aria-describedby={whatsappProblem(phone) ? "loan-phone-problem" : undefined}
+            />
+            {whatsappProblem(phone) && (
+              <small id="loan-phone-problem" className={styles.phoneProblem} role="alert">
+                {t("whatsappPhone.invalid")}
+              </small>
+            )}
           </label>
           {pockets && <WalletChips label={t(`loans.form.wallet.${direction}`)} wallets={pockets.wallets} value={wallet} onChange={setWallet} />}
           {!loan && household && (
