@@ -44,14 +44,15 @@ type ParcelLike = { receivedAt?: number; updatedAt: number; info: { status: stri
  * The summary of the week that ends at `at` (the Sunday time): Monday 00:00 up to `at`.
  * `spending` is null without "Mes dépenses"; `reminders` are the times of the reminders set.
  */
-export function weekSummary({ at, spending, parcels, reminders }: { at: number; spending: Spending[] | null; parcels: ParcelLike[]; reminders: number[] }): WeekSummary {
+export function weekSummary({ at, spending, parcels, reminders, upcomingFrom = at }: { at: number; spending: Spending[] | null; parcels: ParcelLike[]; reminders: number[]; upcomingFrom?: number }): WeekSummary {
   const from = weekStart(at);
   const inWeek = (time: number) => time >= from && time <= at;
   return {
     spentMga: spending ? spending.filter((item) => !item.excluded && inWeek(item.at)).reduce((sum, item) => sum + item.amountMga, 0) : null,
     // Only what the person marked as received counts: the carrier's status and the last update say nothing of the pick-up.
     arrived: parcels.filter((parcel) => parcel.receivedAt !== undefined && inWeek(parcel.receivedAt)).length,
-    upcoming: reminders.filter((time) => time > at && time <= at + 7 * DAY).length,
+    // After `upcomingFrom` (the summary's time; the card's opening, so a reminder later today counts) and within 7 days of the end of the week.
+    upcoming: reminders.filter((time) => time > upcomingFrom && time <= at + 7 * DAY).length,
   };
 }
 

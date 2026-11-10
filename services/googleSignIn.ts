@@ -1,5 +1,6 @@
-import { APP_AUTH_CALLBACK, googleEnabled, safeReturnPath, WEB_AUTH_CALLBACK_PATH } from "@/lib/googleSignIn";
+import { APP_AUTH_CALLBACK, googleEnabled, safeReturnPath, usedCodes, WEB_AUTH_CALLBACK_PATH, withUsedCode, withoutUsedCode } from "@/lib/googleSignIn";
 import { accountsAvailable, supabase } from "@/lib/supabase";
+import { getSession } from "./account";
 import { isNative, openExternal } from "./device";
 
 // "Continuer avec Google" (Supabase OAuth, PKCE). Shown only when Google is
@@ -9,6 +10,7 @@ import { isNative, openExternal } from "./device";
 // (APP_AUTH_CALLBACK, handled in useNativeBootstrap), then the same page.
 
 const RETURN_KEY = "google-return.v1";
+const CODES_KEY = "google-codes.v1";
 
 let available: Promise<boolean> | null = null;
 
@@ -55,7 +57,7 @@ export async function startGoogleSignIn(returnTo: string) {
 }
 
 // A code is exchanged once, even if the page asks twice (React's development mode, a deep link and the page).
-const finishing = new Map<string, Promise<{ returnTo: string } | { error: true }>>();
+const finishing = new Map<string, Promise<Finished>>();
 
 /** Back from Google: the code becomes the session. The path to go back to, or the error. */
 export function finishGoogleSignIn(code: string) {
@@ -67,9 +69,44 @@ export function finishGoogleSignIn(code: string) {
   return running;
 }
 
-async function exchange(code: string): Promise<{ returnTo: string } | { error: true }> {
+/** Whether this code was already exchanged on this device (a launch link Android replays after killing the app). */
+export function googleCodeUsed(code: string) {
+  try {
+    return usedCodes(localStorage.getItem(CODES_KEY)).includes(code);
+  } catch {
+    return false;
+  }
+}
+
+function rememberCode(code: string) {
+  try {
+    localStorage.setItem(CODES_KEY, withUsedCode(localStorage.getItem(CODES_KEY), code));
+  } catch {
+    // Private mode: only the page's own once-only guard remains.
+  }
+}
+
+function forgetCode(code: string) {
+  try {
+    localStorage.setItem(CODES_KEY, withoutUsedCode(localStorage.getItem(CODES_KEY), code));
+  } catch {
+    // Nothing was kept.
+  }
+}
+
+type Finished = { returnTo: string; alreadySignedIn?: true } | { error: true };
+
+async function exchange(code: string): Promise<Finished> {
+  // A code is good once. Already used, or refused while the person is signed in anyway (a replayed link): no failure to show.
+  const signedIn = async () => Boolean(await getSession().catch(() => null));
+  if (googleCodeUsed(code)) return (await signedIn()) ? { returnTo: "/", alreadySignedIn: true } : { error: true };
+  rememberCode(code);
   const { error } = await supabase().auth.exchangeCodeForSession(code);
-  if (error) return { error: true };
+  if (error) {
+    // The network cut the exchange: the code was not spent, the link can be tried again.
+    if (error.name === "AuthRetryableFetchError") forgetCode(code);
+    return (await signedIn()) ? { returnTo: "/", alreadySignedIn: true } : { error: true };
+  }
   let returnTo = "/";
   try {
     returnTo = safeReturnPath(localStorage.getItem(RETURN_KEY));

@@ -28,7 +28,11 @@ export const haptics = {
 
 export type ShareOutcome = "shared" | "copied" | "cancelled" | "unavailable";
 
-export async function shareText(title: string, text: string): Promise<ShareOutcome> {
+/**
+ * The share sheet, else the clipboard. `copyTitle: false`: a message to paste
+ * as it is (to a client on WhatsApp) is copied without the title above it.
+ */
+export async function shareText(title: string, text: string, { copyTitle = true }: { copyTitle?: boolean } = {}): Promise<ShareOutcome> {
   try {
     const { value: canShare } = await Share.canShare();
     if (canShare) {
@@ -40,10 +44,8 @@ export async function shareText(title: string, text: string): Promise<ShareOutco
     if (/cancel|abort/i.test(message)) return "cancelled";
   }
 
-  if (typeof navigator !== "undefined" && navigator.clipboard) {
-    await navigator.clipboard.writeText(`${title}\n\n${text}`);
-    return "copied";
-  }
+  // copyText catches a refused clipboard (and falls back on older WebViews).
+  if (typeof document !== "undefined" && (await copyText(copyTitle ? `${title}\n\n${text}` : text))) return "copied";
   return "unavailable";
 }
 

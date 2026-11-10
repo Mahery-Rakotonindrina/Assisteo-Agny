@@ -203,8 +203,15 @@ function LotForm({ summary, parcels, onClose }: Omit<SheetProps, "open">) {
       name: name.trim().slice(0, 60),
       ...(mode && { mode }),
       ...(departedAt && { departedAt }),
+      // Stamped: the latest details win on every parcel, on every device (reconcileLots).
+      updatedAt: Date.now(),
     };
-    await parcelStore.setLot([...picked], next);
+    // An edited shipment: its new details on all its parcels known here, then the parcels added and taken out.
+    if (lot) await parcelStore.updateLot(next);
+    await parcelStore.setLot(
+      [...picked].filter((id) => !members.has(id) || !lot),
+      next,
+    );
     await parcelStore.setLot(
       [...members].filter((id) => !picked.has(id)),
       null,

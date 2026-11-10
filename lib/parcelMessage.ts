@@ -56,3 +56,16 @@ export function clientPhone(parcel: WithPhone, parcels: WithPhone[]) {
     ?.clientPhone?.trim();
 }
 
+
+/**
+ * What the edit sheet saves of the client's number. Typed by hand: it is this
+ * parcel's own, and, valid and for the same client, the client's on their
+ * other parcels too. Not touched: the parcel keeps its own number; a new
+ * client has none of their own (they take the client's, see clientPhone).
+ * `own`: undefined keeps the parcel's, "" removes it.
+ */
+export function phoneToSave({ touched, phone, client, originalClient, valid }: { touched: boolean; phone: string; client: string; originalClient: string; valid: boolean }) {
+  const sameClient = client.trim().toLocaleLowerCase() === originalClient.trim().toLocaleLowerCase();
+  if (!touched) return { own: sameClient ? undefined : "", propagate: false };
+  return { own: phone.trim(), propagate: sameClient && Boolean(client.trim()) && Boolean(phone.trim()) && valid };
+}

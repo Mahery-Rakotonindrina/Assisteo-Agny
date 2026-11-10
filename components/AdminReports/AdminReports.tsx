@@ -17,6 +17,7 @@ export function AdminReports({ token }: { token: string }) {
   const { t, locale } = useTranslation();
   const [reports, setReports] = useState<UserReport[] | null>(null);
   const [failed, setFailed] = useState(false);
+  const [hidden, setHidden] = useState(false);
   const [shown, setShown] = useState(PAGE);
   const [filter, setFilter] = useState<ReportStatus | "all">("all");
   const headers = { Authorization: `Bearer ${token}` };
@@ -26,7 +27,9 @@ export function AdminReports({ token }: { token: string }) {
     httpClient
       .get<AdminReportsResponse>("/api/admin/reports", { headers: { Authorization: `Bearer ${token}` } })
       .then((result) => {
-        if (!cancelled) setReports(result.reports);
+        if (cancelled) return;
+        setReports(result.reports);
+        setHidden(Boolean(result.contactsHidden));
       })
       .catch(() => {
         if (!cancelled) setFailed(true);
@@ -81,7 +84,7 @@ export function AdminReports({ token }: { token: string }) {
               <p className={styles.message}>{report.message}</p>
               <small className={styles.details}>
                 {[
-                  report.email ?? report.contact ?? t("userReport.admin.anonymous"),
+                  report.email ?? report.contact ?? t(hidden ? "userReport.admin.contactHidden" : "userReport.admin.anonymous"),
                   report.screen && t("userReport.admin.screen", { screen: report.screen }),
                   report.appVersion,
                   report.device,

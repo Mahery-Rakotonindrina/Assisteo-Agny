@@ -35,7 +35,8 @@ export type UserReport = {
   device: string | null;
 };
 
-export type AdminReportsResponse = { reports: UserReport[] };
+/** `contactsHidden`: the e-mails and contacts are the owner's alone; another admin gets the messages without them. */
+export type AdminReportsResponse = { reports: UserReport[]; contactsHidden?: boolean };
 export const ReportStatusSchema = z.object({ id: z.string().min(1).max(60), status: z.enum(reportStatuses) });
 
 /** A short, readable device label from a user agent: "Android 14 · Chrome". */
@@ -51,4 +52,9 @@ export function deviceLabel(userAgent: string, platform: string): string {
     [/Safari\//, "Safari"],
   ].find(([pattern]) => (pattern as RegExp).test(userAgent))?.[1] as string | undefined ?? "";
   return [platform, os, browser].filter(Boolean).join(" · ").slice(0, 120);
+}
+
+/** What an admin may read: the owner sees the e-mails and contacts, another admin the messages without them. */
+export function reportsForAdmin(reports: UserReport[], owner: boolean): AdminReportsResponse {
+  return owner ? { reports } : { reports: reports.map((report) => ({ ...report, email: null, contact: null })), contactsHidden: true };
 }

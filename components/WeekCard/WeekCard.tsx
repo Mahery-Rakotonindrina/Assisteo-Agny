@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { CalendarCheck, X } from "lucide-react";
 import { Button } from "@/components/Button";
 import { useDismissed } from "@/hooks/useDismissed";
@@ -19,15 +20,19 @@ export function WeekCard() {
   const { has } = usePlan();
   const now = useNow(60_000);
   if (!ready || !settings.weeklySummary || !has("reminders") || !isSummaryDay(now)) return null;
-  return <Card now={now} />;
+  return <Card />;
 }
 
-function Card({ now }: { now: number }) {
+function Card() {
   const { t } = useTranslation();
-  const summary = useWeekSummary(now);
+  // The end of today, fixed when the card appears: the summary is worked out once, then when the data change (not every minute).
+  const [opened] = useState(() => Date.now());
+  const at = new Date(new Date(opened).getFullYear(), new Date(opened).getMonth(), new Date(opened).getDate() + 1).getTime() - 1;
+  // The reminders from now on count as "to come", the ones later today too.
+  const summary = useWeekSummary(at, opened);
   const lines = useWeekLines(summary);
   // Closed for this week only.
-  const [closed, close] = useDismissed(`weekly.${weekStart(now)}`);
+  const [closed, close] = useDismissed(`weekly.${weekStart(at)}`);
   if (closed || summaryIsEmpty(summary)) return null;
 
   return (

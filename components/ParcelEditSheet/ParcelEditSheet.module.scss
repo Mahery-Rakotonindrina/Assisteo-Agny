@@ -108,6 +108,16 @@
   &:focus {
     border-color: var(--accent-mark);
   }
+
+  &[aria-invalid="true"] {
+    border-color: var(--danger);
+  }
+}
+
+// A WhatsApp number that can't be used as it is: how to write it.
+.field .problem {
+  color: var(--danger);
+  font-weight: 600;
 }
 
 .mono {

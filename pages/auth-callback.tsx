@@ -35,7 +35,8 @@ export default function AuthCallbackPage() {
         return;
       }
       haptics.success();
-      toast(t("googleSignIn.signedIn"));
+      // Already signed in (a replayed or refused link): said plainly, nothing silently dropped.
+      toast(t(result.alreadySignedIn ? "googleSignIn.alreadySignedIn" : "googleSignIn.signedIn"));
       // The code leaves the address and the history.
       void router.replace(result.returnTo);
     });

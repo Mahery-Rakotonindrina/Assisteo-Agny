@@ -8,6 +8,7 @@ import { useToast } from "@/components/Toast";
 import { formatDateTime } from "@/lib/format";
 import { parseAuthCallback, WEB_AUTH_CALLBACK_PATH } from "@/lib/googleSignIn";
 import { useSettings } from "@/lib/settings/SettingsProvider";
+import { googleCodeUsed } from "@/services/googleSignIn";
 import { handleNotificationTap } from "@/services/notificationTap";
 import { onNotificationTap } from "@/services/notifications";
 import { snoozeFromNotification } from "@/services/reminders";
@@ -44,16 +45,18 @@ export function useNativeBootstrap() {
         else routerRef.current.back();
       }).then((handle) => cleanups.push(() => void handle.remove()));
       // Back from Google's sign-in in the browser (APP_AUTH_CALLBACK): the page that finishes it.
-      const openCallback = (link: string | undefined) => {
+      const openCallback = (link: string | undefined, replayed = false) => {
         const callback = link ? parseAuthCallback(link) : null;
         if (!callback) return;
+        // The link Android keeps for the launch can be one already used (the app restarted): never replayed.
+        if (replayed && "code" in callback && googleCodeUsed(callback.code)) return;
         const query: Record<string, string> = "code" in callback ? { code: callback.code } : { error: callback.error };
         void routerRef.current.replace({ pathname: WEB_AUTH_CALLBACK_PATH, query });
       };
       void App.addListener("appUrlOpen", ({ url }) => openCallback(url)).then((handle) => cleanups.push(() => void handle.remove()));
       // Android had closed the app meanwhile: it starts on that link.
       void App.getLaunchUrl()
-        .then((launch) => openCallback(launch?.url))
+        .then((launch) => openCallback(launch?.url, true))
         .catch(() => undefined);
     } else {
       // Web fallback UI for Camera.takePhoto (in-page camera modal).
