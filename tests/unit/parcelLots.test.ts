@@ -164,6 +164,8 @@ describe("the parcel store", () => {
 
     // The parcel already received is left as it is.
     expect(await parcelStore.setLotStatus("l1", "pickup_ready", "Prêt à retirer")).toBe(2);
+    // Already at that status: none changed, none counted.
+    expect(await parcelStore.setLotStatus("l1", "pickup_ready", "Prêt à retirer")).toBe(0);
     const moved = (await parcelStore.rawGet(a.id))!;
     expect(moved.info).toMatchObject({ status: "pickup_ready", statusLabel: "Prêt à retirer" });
     expect(moved.timeline.at(-1)).toMatchObject({ status: "pickup_ready", scanId: "" });
@@ -175,5 +177,80 @@ describe("the parcel store", () => {
     await parcelStore.setLot([b.id], null);
     expect((await parcelStore.rawGet(b.id))!.lot).toBeUndefined();
     expect((await parcelStore.rawGet(b.id))!.shippingMode).toBe("sea");
+  });
+
+  it("keeps one name per shipment: a parcel back from another device with the old name takes the latest", async () => {
+    await parcelStore.wipe();
+    const a = await parcelStore.add(scan("s1", "A-1"));
+    const b = await parcelStore.add(scan("s2", "B-2"));
+    await parcelStore.setLot([a.id, b.id], { id: "l1", name: "Conteneur", updatedAt: 1 });
+    await parcelStore.updateLot({ id: "l1", name: "Conteneur de novembre", updatedAt: 5 });
+    // Parcel b changed on another device before it saw the rename: it comes back with the old name, and later.
+    await parcelStore.rawPut({ ...(await parcelStore.rawGet(b.id))!, lot: { id: "l1", name: "Conteneur", updatedAt: 1 }, updatedAt: Date.now() + 1000 });
+    expect(lotSummaries(await parcelStore.list())[0].lot.name).toBe("Conteneur de novembre");
+    await parcelStore.reconcileLots();
+    expect((await parcelStore.list()).map((item) => item.lot?.name)).toEqual(["Conteneur de novembre", "Conteneur de novembre"]);
+    // Settled: nothing more to write.
+    const before = (await parcelStore.rawGet(b.id))!.updatedAt;
+    await parcelStore.reconcileLots();
+    expect((await parcelStore.rawGet(b.id))!.updatedAt).toBe(before);
+  });
+
+  it("keeps an older app's rename (a lot without a date): it counts from its parcel's last change", async () => {
+    await parcelStore.wipe();
+    const a = await parcelStore.add(scan("s1", "A-1"));
+    const b = await parcelStore.add(scan("s2", "B-2"));
+    await parcelStore.setLot([a.id, b.id], { id: "l1", name: "Conteneur", updatedAt: 1000 });
+    // Renamed on an older app: no date on the lot, the parcel changed later.
+    await parcelStore.rawPut({ ...(await parcelStore.rawGet(b.id))!, lot: { id: "l1", name: "Conteneur renommé" }, updatedAt: Date.now() + 1000 });
+    await parcelStore.reconcileLots();
+    const lots = (await parcelStore.list()).map((item) => item.lot);
+    expect(lots.map((lot) => lot?.name)).toEqual(["Conteneur renommé", "Conteneur renommé"]);
+    // From then on it carries a date: the same choice everywhere.
+    expect(lots.every((lot) => typeof lot?.updatedAt === "number" && lot.updatedAt > 1000)).toBe(true);
+  });
+
+  it("gives a client's corrected number to their other parcels that had one", async () => {
+    await parcelStore.wipe();
+    const a = await parcelStore.add(scan("s1", "A-1"));
+    const b = await parcelStore.add(scan("s2", "B-2"));
+    const c = await parcelStore.add(scan("s3", "C-3"));
+    const d = await parcelStore.add(scan("s4", "D-4"));
+    const info = (await parcelStore.rawGet(a.id))!.info;
+    await parcelStore.edit(a.id, { title: "A", client: "Rado", clientPhone: "034 11 111 11", info });
+    await parcelStore.edit(b.id, { title: "B", client: "rado ", clientPhone: "034 11 111 11", info });
+    await parcelStore.edit(c.id, { title: "C", client: "Rado", info });
+    await parcelStore.edit(d.id, { title: "D", client: "Voahangy", clientPhone: "033 33 333 33", info });
+    await parcelStore.edit(a.id, { title: "A", client: "Rado", clientPhone: "034 22 222 22", info });
+    await parcelStore.setClientPhone("Rado", "034 22 222 22", a.id);
+    expect((await parcelStore.rawGet(b.id))!.clientPhone).toBe("034 22 222 22");
+    // Without a number of its own, it already takes the client's (clientPhone).
+    expect((await parcelStore.rawGet(c.id))!.clientPhone).toBeUndefined();
+    expect((await parcelStore.rawGet(d.id))!.clientPhone).toBe("033 33 333 33");
+  });
+});
+
+describe("the Excel export", () => {
+  it("writes the weight as a number in kilos, with a total rounded to the gram", async () => {
+    const { parcelsWorkbook, WEIGHT } = await import("@/lib/parcelExport");
+    const ExcelJS = (await import("exceljs")).default;
+    const t = (key: string) => key;
+    const bytes = await parcelsWorkbook(
+      [parcel("a", { freight: { weightKg: 0.1, rateMga: 10_000 } }), parcel("b", { freight: { weightKg: 0.2, rateMga: 10_000 } })],
+      t,
+      "fr",
+      { title: "Mes colis", subtitle: "" },
+    );
+    const book = new ExcelJS.Workbook();
+    await book.xlsx.load(bytes);
+    const sheet = book.worksheets[0];
+    const header = sheet.getRow(4).values as unknown[];
+    const column = header.indexOf("parcelLots.columns.weightKg");
+    expect(column).toBeGreaterThan(0);
+    expect(sheet.getCell(5, column).value).toBe(0.1);
+    expect(sheet.getCell(5, column).numFmt).toBe(WEIGHT);
+    const total = sheet.getCell(7, column).value as { result: number };
+    expect(total.result).toBe(0.3);
+    expect(sheet.getCell(7, column).numFmt).toBe(WEIGHT);
   });
 });

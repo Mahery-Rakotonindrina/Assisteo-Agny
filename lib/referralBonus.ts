@@ -32,6 +32,10 @@ export type ReferralSummary = {
   scansLeft: number;
   /** What each of the two wins, as set in Admin (0: the bonus is off). */
   scansEach: number;
+  /** Friends a referrer is rewarded for, per month (Admin). */
+  capPerMonth: number;
+  /** This month's cap is reached: friends still win, the referrer no more until next month. */
+  capReached: boolean;
 };
 
 /** Why a first scan did not give the bonus (for tests and the counters). */

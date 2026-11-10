@@ -21,6 +21,8 @@ export async function exportDocumentPdf(entry: HistoryEntry, t: Translate, local
   pdf.caption(t("pdf.scannedOn", { date: formatDateTime(entry.createdAt, locale) }));
   pdf.heading(t("result.summary"));
   pdf.paragraph(analysis.summary);
+  // A prescription or a medicine box never leaves without the medical warning.
+  if (analysis.medicine) pdf.paragraph(t("medicine.disclaimer"));
   const document = analysis.document;
   if (document?.keyPoints.length) {
     pdf.heading(t("pdf.keyPoints"));

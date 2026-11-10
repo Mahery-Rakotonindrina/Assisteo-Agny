@@ -1,7 +1,7 @@
 import { clear, createStore, del, get, set, values } from "idb-keyval";
 import type { ParcelStatus, ShippingMode } from "@/lib/ai/schema";
 import { encodeImage } from "@/lib/image";
-import { isFreightFee, type ParcelFreight, type ParcelLot } from "@/lib/parcelLots";
+import { isFreightFee, latestLots, type ParcelFreight, type ParcelLot } from "@/lib/parcelLots";
 import { parcelScanHasNews, parcelsFor, type ParcelInfo } from "@/lib/parcels";
 import type { HistoryEntry } from "@/types/history";
 import { createId } from "./historyStore";
@@ -262,13 +262,31 @@ export const parcelStore = {
     }
   },
 
-  /** Renames a shipment, or changes its mode or day, on every one of its parcels. */
+  /**
+   * Renames a shipment, or changes its mode or day, on every one of its
+   * parcels known here (stamped, see reconcileLots).
+   */
   async updateLot(lot: ParcelLot) {
     const members = (await values<Parcel>(db())).filter((parcel) => !parcel.deletedAt && parcel.lot?.id === lot.id);
     await parcelStore.setLot(
       members.map((parcel) => parcel.id),
-      lot,
+      { ...lot, updatedAt: lot.updatedAt ?? Date.now() },
     );
+  },
+
+  /**
+   * One name per shipment on every device: a parcel changed on another device
+   * after a rename here (or the other way round) may come back with the
+   * shipment's older details. They take the latest ones (latestLots). Writes
+   * only what differs, so it settles at once.
+   */
+  async reconcileLots() {
+    const live = (await values<Parcel>(db())).filter((parcel) => !parcel.deletedAt);
+    const latest = latestLots(live);
+    for (const parcel of live) {
+      const lot = parcel.lot && latest.get(parcel.lot.id);
+      if (lot && JSON.stringify(lot) !== JSON.stringify(parcel.lot)) await write({ ...parcel, lot });
+    }
   },
 
   /**
@@ -278,9 +296,12 @@ export const parcelStore = {
   async setLotStatus(lotId: string, status: ParcelStatus | "received", statusLabel: string) {
     const now = Date.now();
     const members = (await values<Parcel>(db())).filter((parcel) => !parcel.deletedAt && parcel.lot?.id === lotId && !parcel.receivedAt);
+    // How many really changed: those already at that status are left as they are.
+    let changed = 0;
     for (const parcel of members) {
       if (status === "received") {
         await write({ ...parcel, receivedAt: now });
+        changed += 1;
         continue;
       }
       if (parcel.info.status === status) continue;
@@ -289,8 +310,25 @@ export const parcelStore = {
         info: { ...parcel.info, status, statusLabel },
         timeline: [...parcel.timeline, { at: now, status, statusLabel, event: null, scanId: "" }],
       });
+      changed += 1;
     }
-    return members.length;
+    return changed;
+  },
+
+  /**
+   * The client's WhatsApp number, corrected on one parcel: every other parcel
+   * of that client that had a number takes the new one (the parcel's own
+   * number wins over the one guessed from the others, see clientPhone).
+   */
+  async setClientPhone(client: string, phone: string, exceptId: string) {
+    const name = client.trim().toLocaleLowerCase();
+    const number = phone.trim();
+    if (!name || !number) return;
+    for (const parcel of await values<Parcel>(db())) {
+      if (parcel.deletedAt || parcel.id === exceptId || !parcel.clientPhone || parcel.clientPhone.trim() === number) continue;
+      if ((parcel.client ?? "").trim().toLocaleLowerCase() !== name) continue;
+      await write({ ...parcel, clientPhone: number });
+    }
   },
 
   async remove(id: string) {

@@ -15,6 +15,7 @@ import {
 } from "@/lib/shop";
 import { createId } from "./historyStore";
 import { removeRecords } from "./storeRemoval";
+import { forgetSyncCursor } from "./syncCursor";
 
 // "Ma boutique": the products in stock, the sales and the customers' payments,
 // one record each. Local-first like the garage; synced with the account
@@ -179,6 +180,8 @@ export const shopStore = {
   /** Signing out or deleting the account. */
   async wipe() {
     await clear(db());
+    // The next sync reads everything again.
+    forgetSyncCursor("shop");
     notify();
   },
 };

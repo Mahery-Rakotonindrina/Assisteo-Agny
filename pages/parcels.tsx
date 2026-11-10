@@ -76,6 +76,10 @@ export default function ParcelsPage() {
   useEffect(() => {
     void keepParcelThumbnails().catch(() => undefined);
   }, []);
+  // One name per shipment on every device (a rename here, a parcel changed on another device).
+  useEffect(() => {
+    if (parcels.some((parcel) => parcel.lot)) void parcelStore.reconcileLots().catch(() => undefined);
+  }, [parcels]);
   // A scan deleted from the history can no longer be opened from its parcel.
   const scanIds = new Set(entries.map((entry) => entry.id));
   const hasScan = (id: string) => historyLoading || scanIds.has(id);
@@ -205,6 +209,7 @@ export default function ParcelsPage() {
       setExporting(false);
     }
   };
+  const phoneOf = (client: string) => clientPhone({ client, updatedAt: 0 }, parcels);
   const clients = [...new Set(parcels.map((parcel) => parcel.client?.trim()).filter((name): name is string => Boolean(name)))].sort((a, b) =>
     a.localeCompare(b, locale),
   );
@@ -387,6 +392,7 @@ export default function ParcelsPage() {
                     thumbnail={parcel.thumbnail ?? thumbnails.get(parcel.scanIds[0])}
                     clients={clients}
                     phone={clientPhone(parcel, parcels)}
+                    phoneOf={phoneOf}
                     hasScan={hasScan}
                     reseller={reseller}
                     share={shareFor(parcel)}
@@ -407,6 +413,7 @@ export default function ParcelsPage() {
                     thumbnail={parcel.thumbnail ?? thumbnails.get(parcel.scanIds[0])}
                     clients={clients}
                     phone={clientPhone(parcel, parcels)}
+                    phoneOf={phoneOf}
                     hasScan={hasScan}
                     reseller={reseller}
                     share={shareFor(parcel)}
@@ -439,6 +446,8 @@ type ParcelRowProps = {
   clients: string[];
   /** Pro: the client's phone number, its own or from another of their parcels. */
   phone?: string;
+  /** Any client's number known from their parcels (the edit sheet, when the client changes). */
+  phoneOf: (client: string) => string | undefined;
   /** Whether a scan still exists in the history (to open it). */
   hasScan: (id: string) => boolean;
   received?: boolean;
@@ -480,7 +489,7 @@ function SharedParcelCard({ share, by }: { share: SharedParcelRecord; by: string
   );
 }
 
-function ParcelRow({ parcel, thumbnail, clients, phone, hasScan, reseller, share, received = false, now, open, onToggle }: ParcelRowProps) {
+function ParcelRow({ parcel, thumbnail, clients, phone, phoneOf, hasScan, reseller, share, received = false, now, open, onToggle }: ParcelRowProps) {
   const { t, locale } = useTranslation();
   const toast = useToast();
   const card = useRef<HTMLElement>(null);
@@ -524,7 +533,8 @@ function ParcelRow({ parcel, thumbnail, clients, phone, hasScan, reseller, share
       openExternal(link);
       return;
     }
-    const outcome = await shareText(t("parcelWhatsapp.shareTitle", { title: parcel.title }), message);
+    // Pasted as it is in the client's chat: no title above « Bonjour… ».
+    const outcome = await shareText(t("parcelWhatsapp.shareTitle", { title: parcel.title }), message, { copyTitle: false });
     if (outcome === "copied") toast(t("parcelWhatsapp.copied"));
     else if (outcome === "unavailable") toast(t("parcelWhatsapp.failed"), "error");
   };
@@ -706,7 +716,7 @@ function ParcelRow({ parcel, thumbnail, clients, phone, hasScan, reseller, share
           </motion.div>
         )}
       </AnimatePresence>
-      <ParcelEditSheet parcel={parcel} open={editing} onClose={() => setEditing(false)} clients={clients} />
+      <ParcelEditSheet parcel={parcel} open={editing} onClose={() => setEditing(false)} clients={clients} phoneOf={phoneOf} />
     </article>
   );
 }
