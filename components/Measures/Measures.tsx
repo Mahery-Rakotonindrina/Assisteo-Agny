@@ -59,9 +59,11 @@ export function Measures({ profileId = ME }: { profileId?: string }) {
   const [sheet, setSheet] = useState<Sheet>(null);
   const [sharing, setSharing] = useState(false);
   const profiles = settings.healthProfiles;
-  const since = periodStart(period, now);
+  // The period ends with the latest measure if it is newer than the minute's clock: one just added shows at once.
+  const until = Math.max(now, ...measures.map((measure) => measure.at));
+  const since = periodStart(period, until);
   const number = (value: number, decimals: number) => formatMeasure(value, decimals, locale);
-  const all = measureKinds.map((kind) => ({ kind, every: measuresOf(measures, kind, profileId, profiles), series: measuresOf(measures, kind, profileId, profiles, since, now) }));
+  const all = measureKinds.map((kind) => ({ kind, every: measuresOf(measures, kind, profileId, profiles), series: measuresOf(measures, kind, profileId, profiles, since, until) }));
   const kept = all.filter(({ every }) => every.length > 0);
   const inPeriod = kept.some(({ series }) => series.length > 0);
 
@@ -71,7 +73,7 @@ export function Measures({ profileId = ME }: { profileId?: string }) {
     if (sharing) return;
     haptics.tap();
     setSharing(true);
-    const options = { person: profileId, profiles, since, until: now, name: ownerName(profileId, profiles) };
+    const options = { person: profileId, profiles, since, until, name: ownerName(profileId, profiles) };
     try {
       const outcome = as === "pdf" ? await exportMeasuresPdf(measures, options, t, locale) : await shareMeasures(measures, options, t, locale);
       if (outcome === "copied") toast(t("health.measures.share.copied"));
@@ -104,7 +106,7 @@ export function Measures({ profileId = ME }: { profileId?: string }) {
           </div>
           <ul className={styles.list}>
             {kept.map(({ kind, every, series }) => (
-              <KindCard key={kind} kind={kind} every={every} series={series} since={since} until={now} number={number} onAdd={() => open(kind)} onOpen={(measure) => open(kind, measure)} />
+              <KindCard key={kind} kind={kind} every={every} series={series} since={since} until={until} number={number} onAdd={() => open(kind)} onOpen={(measure) => open(kind, measure)} />
             ))}
           </ul>
           {inPeriod && (
@@ -198,6 +200,13 @@ function KindCard({
       )}
     </li>
   );
+}
+
+/** What the form says is wrong: the date, the values of the kind, the pulse on its own. */
+function errorKeys(wrong: string[], kind: MeasureKind) {
+  if (wrong.includes("at")) return ["health.measures.whenMissing"];
+  const values = wrong.filter((field) => field !== "pulse");
+  return [...(values.length > 0 ? [`health.measures.wrong.${kind}`] : []), ...(wrong.includes("pulse") ? ["health.measures.wrong.pulse"] : [])];
 }
 
 const hourOf = (at: number) => `${String(new Date(at).getHours()).padStart(2, "0")}:${String(new Date(at).getMinutes()).padStart(2, "0")}`;
@@ -316,9 +325,11 @@ function MeasureForm({ sheet, owner, onDone }: { sheet: NonNullable<Sheet>; owne
         </label>
       )}
       {wrong.length > 0 && (
-        <p className={styles.error} role="alert">
-          {t(wrong.includes("at") ? "health.measures.whenMissing" : `health.measures.wrong.${kind}`)}
-        </p>
+        <div className={styles.error} role="alert">
+          {errorKeys(wrong, kind).map((key) => (
+            <p key={key}>{t(key)}</p>
+          ))}
+        </div>
       )}
       <div className={styles.pair}>
         <label>

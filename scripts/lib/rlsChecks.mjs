@@ -299,6 +299,8 @@ export async function runRlsChecks(client) {
   await check("nobody changes someone else's health measure", async () => ((await user(ben, "update public.health_measures set data = '{}' where id = 'measure-1' returning id")).length ? "changed" : null));
   await check("nobody removes someone else's health measure", async () => ((await user(ben, "delete from public.health_measures where id = 'measure-1' returning id")).length ? "removed" : null));
   await refused("nobody writes a health measure in someone else's name", () => tryUser(ben, "insert into public.health_measures (user_id, id, data, updated_at) values ($1, 'measure-2', '{}', now())", [anna]), /row-level security/);
+  await refused("a health measure too big is refused", () => tryUser(anna, "insert into public.health_measures (id, data, updated_at) values ('measure-big', jsonb_build_object('note', repeat('x', 5000)), now())"), /health_measures_data_size/);
+  await refused("a health measure id too long is refused", () => tryUser(anna, "insert into public.health_measures (id, data, updated_at) values (repeat('m', 65), '{}', now())"), /health_measures_id_length/);
   await check("a visitor reads no health measures", async () => {
     try {
       return (await tryVisitor("select 1 from public.health_measures")).length ? "health measures visible" : null;

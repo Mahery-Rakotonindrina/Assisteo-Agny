@@ -4625,7 +4625,8 @@
       "wrong": {
         "pressure": "Écris les deux chiffres de la tension, le premier plus grand que le second (par exemple 128 et 82).",
         "glucose": "Écris la glycémie en g/L (par exemple 1,05).",
-        "weight": "Écris le poids en kg (par exemple 64,5)."
+        "weight": "Écris le poids en kg (par exemple 64,5).",
+        "pulse": "Le pouls se compte en battements par minute (par exemple 72), ou laisse-le vide."
       },
       "pressureValue": "{systolic}/{diastolic} mmHg",
       "pulseValue": "pouls {pulse}",

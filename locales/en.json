@@ -4625,7 +4625,8 @@
       "wrong": {
         "pressure": "Write both numbers of the blood pressure, the first bigger than the second (for example 128 and 82).",
         "glucose": "Write the blood sugar in g/L (for example 1.05).",
-        "weight": "Write the weight in kg (for example 64.5)."
+        "weight": "Write the weight in kg (for example 64.5).",
+        "pulse": "The pulse is in beats a minute (for example 72), or leave it empty."
       },
       "pressureValue": "{systolic}/{diastolic} mmHg",
       "pulseValue": "pulse {pulse}",

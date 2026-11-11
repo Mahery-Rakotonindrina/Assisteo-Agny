@@ -6,7 +6,8 @@ import styles from "./Measures.module.scss";
 
 const WIDTH = 300;
 const HEIGHT = 120;
-const PAD = { top: 10, right: 10, bottom: 8, left: 34 };
+// The values of the grid are HTML beside the chart (they follow the text size), not SVG text.
+const PAD = { top: 10, right: 10, bottom: 8, left: 6 };
 
 type Props = {
   series: Measure[];
@@ -47,6 +48,16 @@ export function MeasureChart({ series, since, until, labels, number, decimals }:
           <span>{t("health.measures.tapHint")}</span>
         )}
       </p>
+      <div className={styles.plot}>
+        <div className={styles.ticks} aria-hidden>
+          {/* The widest value, hidden, gives the column its width. */}
+          <span className={styles.sizer}>{grid.map((value) => number(value, decimals)).reduce((a, b) => (b.length > a.length ? b : a), "")}</span>
+          {grid.map((value, index) => (
+            <span key={index} style={{ top: `${(y(value) / HEIGHT) * 100}%` }}>
+              {number(value, decimals)}
+            </span>
+          ))}
+        </div>
       <svg
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
         role="img"
@@ -54,12 +65,7 @@ export function MeasureChart({ series, since, until, labels, number, decimals }:
         data-testid="measure-chart"
       >
         {grid.map((value, index) => (
-          <g key={index}>
-            <line x1={PAD.left} x2={WIDTH - PAD.right} y1={y(value)} y2={y(value)} className={styles.grid} />
-            <text x={PAD.left - 4} y={y(value)} className={styles.tick} textAnchor="end" dominantBaseline="middle">
-              {number(value, decimals)}
-            </text>
-          </g>
+          <line key={index} x1={PAD.left} x2={WIDTH - PAD.right} y1={y(value)} y2={y(value)} className={styles.grid} />
         ))}
         {Array.from({ length: lines }, (_, line) => (
           <polyline
@@ -88,9 +94,10 @@ export function MeasureChart({ series, since, until, labels, number, decimals }:
           />
         ))}
       </svg>
-      <div className={styles.axis} aria-hidden>
-        <span>{formatDate(since, locale)}</span>
-        <span>{formatDate(until, locale)}</span>
+        <div className={styles.axis} aria-hidden>
+          <span>{formatDate(since, locale)}</span>
+          <span>{formatDate(until, locale)}</span>
+        </div>
       </div>
       {labels.length > 1 && (
         <ul className={styles.legend}>

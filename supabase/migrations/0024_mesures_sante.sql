@@ -18,6 +18,13 @@ create table if not exists public.health_measures (
   primary key (user_id, id)
 );
 
+-- Bounds on what one row may hold: a measure is a few numbers and a short note.
+-- Dropped then added again, so the file can run twice.
+alter table public.health_measures drop constraint if exists health_measures_data_size;
+alter table public.health_measures add constraint health_measures_data_size check (octet_length(data::text) <= 4000);
+alter table public.health_measures drop constraint if exists health_measures_id_length;
+alter table public.health_measures add constraint health_measures_id_length check (char_length(id) <= 64);
+
 drop trigger if exists health_measures_touch on public.health_measures;
 create trigger health_measures_touch before insert or update on public.health_measures
   for each row execute function public.touch_server_updated_at();

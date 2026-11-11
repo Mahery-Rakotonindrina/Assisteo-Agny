@@ -60,6 +60,12 @@ test("measures of the three kinds: their curve, the period, shared for the docto
   await page.getByTestId("measure-diastolic").fill("120");
   await page.getByTestId("measure-save").click();
   await expect(page.getByTestId("measure-form").getByRole("alert")).toContainText("le premier plus grand que le second");
+  // A pulse written wrong has its own message.
+  await page.getByTestId("measure-systolic").fill("128");
+  await page.getByTestId("measure-diastolic").fill("82");
+  await page.getByTestId("measure-pulse").fill("7x");
+  await page.getByTestId("measure-save").click();
+  await expect(page.getByTestId("measure-form").getByRole("alert")).toHaveText("Le pouls se compte en battements par minute (par exemple 72), ou laisse-le vide.");
   await page.getByTestId("measure-form").getByRole("button", { name: "Annuler" }).click();
 
   await addMeasure(page, { kind: "pressure", on: day(-10), at: "08:00", systolic: "132", diastolic: "86" });
@@ -74,6 +80,7 @@ test("measures of the three kinds: their curve, the period, shared for the docto
     await expect(pressure.getByTestId("measure-change")).toContainText(/Systolique −4, diastolique −4 mmHg depuis le/);
     await expect(pressure.getByTestId("measure-chart")).toBeVisible();
     await expect(pressure.locator("circle")).toHaveCount(4);
+    for (const tick of await pressure.locator("[class*=ticks] span:not([class*=sizer])").all()) expect(parseFloat(await tick.evaluate((element) => getComputedStyle(element).fontSize))).toBeGreaterThanOrEqual(11);
     await expect(pressure.getByRole("listitem").filter({ hasText: "Systolique" })).toBeVisible();
     await expect(card(page, "glucose").getByTestId("measure-last")).toContainText("1,05 g/L · à jeun");
     // Weight: the one of 60 days ago is outside the 30 days.
@@ -128,6 +135,8 @@ test("measures follow the person picked: a relative's weight is not « Moi »'s"
   await prepare(page);
   await page.goto("/sante");
   await addMeasure(page, { kind: "weight", weight: "64,5" });
+  // Just added (the time of now): on the curve at once.
+  await expect(card(page, "weight").locator("circle")).toHaveCount(1);
   await page.getByTestId("health-profile-add").click();
   await page.getByTestId("health-profile-name").fill("Rado");
   await page.getByTestId("health-profile-save").click();
@@ -169,6 +178,8 @@ test("« Mes mesures » fits a 320 px phone in very large text", async ({ page }
   const section = page.getByTestId("measures");
   await expect(section.getByTestId("measure-chart")).toBeVisible();
   await expect.poll(overflow).toBeLessThanOrEqual(0);
+  // The values of the axis grow with the text (at least 11 px, ~14 px in very large).
+  for (const tick of await section.locator("[class*=ticks] span:not([class*=sizer])").all()) expect(parseFloat(await tick.evaluate((element) => getComputedStyle(element).fontSize))).toBeGreaterThanOrEqual(13);
   const chart = (await section.getByTestId("measure-chart").boundingBox())!;
   expect(chart.x + chart.width).toBeLessThanOrEqual(320);
   for (const button of await section.locator("button:visible").all()) {
