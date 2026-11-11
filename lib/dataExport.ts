@@ -8,7 +8,7 @@ import type { AccountExport } from "./accountExport";
 // stores that hold one are left out (EXPORT_DEVICE_SOURCES).
 
 /** The JSON files of the copy, one per screen (named in French, like LISEZ-MOI.txt). */
-export const copyFiles = ["historique", "en-attente", "depenses", "prets", "colis", "listes", "garage", "maison", "plantes", "boutique", "foyer", "reglages", "compte"] as const;
+export const copyFiles = ["historique", "en-attente", "depenses", "prets", "colis", "listes", "garage", "maison", "plantes", "boutique", "sante", "foyer", "reglages", "compte"] as const;
 export type CopyFile = (typeof copyFiles)[number];
 
 /**
@@ -33,6 +33,7 @@ export const EXPORT_DATABASES = {
   "assisteo-home": { store: "items", file: "maison" },
   "assisteo-plants": { store: "plants", file: "plantes" },
   "assisteo-shop": { store: "shop", file: "boutique" },
+  "assisteo-measures": { store: "measures", file: "sante" },
   "assisteo-household": { store: "state", file: "foyer" },
   "assisteo-household-expenses": { store: "expenses", file: "foyer" },
   "assisteo-household-loans": { store: "loans", file: "foyer" },
@@ -209,6 +210,7 @@ function contents({ databases, settings }: LocalData, account: AccountExport | n
     maison: some(read("assisteo-home")) ? { items: list(read("assisteo-home"), "maison") } : undefined,
     plantes: some(read("assisteo-plants")) ? { plants: list(read("assisteo-plants"), "plantes") } : undefined,
     boutique: some(read("assisteo-shop")) ? { records: list(read("assisteo-shop"), "boutique") } : undefined,
+    sante: some(read("assisteo-measures")) ? { measures: list(read("assisteo-measures"), "sante") } : undefined,
     foyer: household,
     reglages: readable(settings, "reglages", [], { list: null, taken: photos.taken }),
     compte: account ? readable(account, "compte", [], { list: null, taken: photos.taken }) : undefined,

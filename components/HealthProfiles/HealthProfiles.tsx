@@ -6,12 +6,14 @@ import sheetStyles from "@/components/Expenses/Expenses.module.scss";
 import formStyles from "@/components/EmergencyCard/EmergencyCard.module.scss";
 import { useToast } from "@/components/Toast";
 import { useNow } from "@/hooks/useNow";
+import { useMeasures } from "@/hooks/useMeasures";
 import { useTranslation } from "@/hooks/useTranslation";
 import { liveAppointments, reassignAppointments } from "@/lib/appointments";
 import { ageOf, liveProfiles, ME, PROFILE_NAME_MAX, relations, removeProfile, saveProfile, type HealthProfile, type Relation } from "@/lib/healthProfiles";
 import { useSettings } from "@/lib/settings/SettingsProvider";
 import { haptics } from "@/services/device";
 import { createId, historyStore } from "@/services/historyStore";
+import { measureStore } from "@/services/measureStore";
 import type { HistoryEntry } from "@/types/history";
 import styles from "./HealthProfiles.module.scss";
 
@@ -32,6 +34,7 @@ export function HealthProfiles({ selected, onSelect, entries }: { selected: stri
   const now = useNow(60_000);
   const { settings, ready, update } = useSettings();
   const [sheet, setSheet] = useState<Sheet>(null);
+  const { measures } = useMeasures();
   const profiles = liveProfiles(settings.healthProfiles);
   const current = profiles.find((profile) => profile.id === selected) ?? null;
 
@@ -52,6 +55,7 @@ export function HealthProfiles({ selected, onSelect, entries }: { selected: stri
     update({ healthProfiles: removeProfile(settings.healthProfiles, profile.id, at), appointments: reassignAppointments(settings.appointments, profile.id, at) });
     // Their prescriptions and treatments come back to "Moi" too (synced with the scans).
     for (const entry of entries.filter((item) => item.profileId === profile.id)) await historyStore.update(entry.id, { profileId: undefined }).catch(() => undefined);
+    await measureStore.reassign(profile.id).catch(() => undefined);
     setSheet(null);
     onSelect(ME);
     toast(t("health.profiles.removed", { name: profile.name }));
@@ -107,6 +111,7 @@ export function HealthProfiles({ selected, onSelect, entries }: { selected: stri
             profile={sheet.profile}
             appointments={liveAppointments(settings.appointments).filter((item) => item.profileId === sheet.profile.id).length}
             scans={entries.filter((item) => item.profileId === sheet.profile.id).length}
+            measures={measures.filter((item) => item.profileId === sheet.profile.id).length}
             onConfirm={() => void remove(sheet.profile)}
             onCancel={() => setSheet(null)}
           />
@@ -169,15 +174,30 @@ function ProfileForm({ profile, onSave, onCancel }: { profile: HealthProfile | n
   );
 }
 
-function RemoveProfile({ profile, appointments, scans, onConfirm, onCancel }: { profile: HealthProfile; appointments: number; scans: number; onConfirm: () => void; onCancel: () => void }) {
+function RemoveProfile({
+  profile,
+  appointments,
+  scans,
+  measures,
+  onConfirm,
+  onCancel,
+}: {
+  profile: HealthProfile;
+  appointments: number;
+  scans: number;
+  measures: number;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
   const { t } = useTranslation();
   return (
     <div className={styles.remove} data-testid="health-profile-remove-window">
       <ul>
         {appointments > 0 && <li>{t(appointments === 1 ? "health.profiles.backAppointmentsOne" : "health.profiles.backAppointments", { count: appointments })}</li>}
         {scans > 0 && <li>{t(scans === 1 ? "health.profiles.backScansOne" : "health.profiles.backScans", { count: scans })}</li>}
+        {measures > 0 && <li>{t(measures === 1 ? "health.profiles.backMeasuresOne" : "health.profiles.backMeasures", { count: measures })}</li>}
         {profile.card && <li>{t("health.profiles.cardGoes", { name: profile.name })}</li>}
-        {appointments === 0 && scans === 0 && !profile.card && <li>{t("health.profiles.nothingElse")}</li>}
+        {appointments === 0 && scans === 0 && measures === 0 && !profile.card && <li>{t("health.profiles.nothingElse")}</li>}
       </ul>
       <div className={styles.actions}>
         <Button variant="danger" icon={<Trash2 />} block onClick={onConfirm} data-testid="health-profile-remove-confirm">

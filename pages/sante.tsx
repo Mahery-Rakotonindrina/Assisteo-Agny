@@ -8,6 +8,7 @@ import { Button } from "@/components/Button";
 import { EmergencyCard } from "@/components/EmergencyCard";
 import { EmptyState } from "@/components/EmptyState";
 import { HealthProfiles } from "@/components/HealthProfiles";
+import { Measures } from "@/components/Measures";
 import { MedicineDisclaimer } from "@/components/Medicine";
 import { PlanBadge } from "@/components/PlanBadge";
 import { PlanLock } from "@/components/PlanLock";
@@ -116,6 +117,10 @@ export default function HealthPage() {
 
         <motion.div variants={rise}>
           <Appointments profileId={person} />
+        </motion.div>
+
+        <motion.div variants={rise}>
+          <Measures profileId={person} />
         </motion.div>
 
         {empty ? (

@@ -8,6 +8,7 @@ import { useExpenses } from "@/hooks/useExpenses";
 import { useExpenseSources } from "@/hooks/useExpenseSources";
 import { useHistory } from "@/hooks/useHistory";
 import { useLoans } from "@/hooks/useLoans";
+import { useMeasures } from "@/hooks/useMeasures";
 import { useParcels } from "@/hooks/useParcels";
 import { useShop } from "@/hooks/useShop";
 import { usePlan } from "@/hooks/usePlan";
@@ -55,7 +56,8 @@ export function ScreenReset() {
   const hasCard = !isCardEmpty(settings.emergencyCard);
   const appointmentCount = liveAppointments(settings.appointments).length;
   const profileCount = liveProfiles(settings.healthProfiles).length;
-  const hasHealth = hasCard || appointmentCount > 0 || profileCount > 0;
+  const { measures } = useMeasures();
+  const hasHealth = hasCard || appointmentCount > 0 || profileCount > 0 || measures.length > 0;
   const [open, setOpen] = useState<ResetScreen | null>(null);
   const [working, setWorking] = useState(false);
 
@@ -80,7 +82,7 @@ export function ScreenReset() {
     loans: [{ key: "loans", count: loanCounts.loans }, { key: "repayments", count: loanCounts.repayments }, { key: "proofs", count: loanCounts.proofs }, { key: "links" }],
     parcels: [{ key: "parcels", count: parcels.length }, { key: "parcelReminders" }],
     shop: [{ key: "shopSales", count: shopCounts.sales }, { key: "shopProducts", count: shopCounts.products }, { key: "shopPayments", count: shopCounts.payments }],
-    health: [...(hasCard ? [{ key: "emergencyCard" }] : []), { key: "appointments", count: appointmentCount }, { key: "healthProfiles", count: profileCount }],
+    health: [...(hasCard ? [{ key: "emergencyCard" }] : []), { key: "appointments", count: appointmentCount }, { key: "healthProfiles", count: profileCount }, { key: "measures", count: measures.length }],
   };
   const hasData: Record<ResetScreen, boolean> = {
     history: entries.length > 0,
@@ -120,8 +122,9 @@ export function ScreenReset() {
           // The relatives go with their cards; their scans come back to "Moi" by themselves (lib/healthProfiles.ts ownerOf).
           ...(settings.healthProfiles && { healthProfiles: removeAllProfiles(settings.healthProfiles, now) }),
         });
-      }
-      else await resetScreen(screen);
+        // The measures are records of their own (table health_measures).
+        await resetScreen(screen);
+      } else await resetScreen(screen);
       setOpen(null);
       toast(t(`settings.reset.done.${screen}`));
     } catch (error) {

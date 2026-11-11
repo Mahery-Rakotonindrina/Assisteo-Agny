@@ -1,0 +1,315 @@
+@use "../../styles/mixins" as *;
+
+// "Mes mesures" (Ma santé): the period, a card per kind with its last value,
+// its change and its curve, the values below, and the form.
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+
+  h2 {
+    @include eyebrow;
+  }
+
+  > button {
+    align-self: flex-start;
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.25;
+    padding-block: 0.4rem;
+  }
+}
+
+.empty,
+.none,
+.doctor {
+  color: var(--text-muted);
+  overflow-wrap: break-word;
+}
+
+.doctor {
+  font-size: 0.88rem;
+}
+
+// The period and the kind: segmented buttons, on one line, as wide as they can.
+.periods,
+.kinds {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 0.35rem;
+  padding: 0.25rem;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+
+  button {
+    min-width: 0;
+    min-height: 2.75rem;
+    padding: 0.3rem 0.4rem;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: none;
+    color: var(--text-muted);
+    font: inherit;
+    font-weight: 700;
+    line-height: 1.15;
+    overflow-wrap: break-word;
+    cursor: pointer;
+
+    &[aria-pressed="true"] {
+      background: var(--bg-elevated);
+      color: var(--text);
+      box-shadow: 0 0 0 1px var(--border);
+    }
+  }
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  @include card;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  min-width: 0;
+  padding: 0.95rem 1rem;
+  border-radius: var(--radius-md);
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+
+  h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-width: 0;
+    font-size: 1rem;
+    font-weight: 800;
+    overflow-wrap: break-word;
+
+    svg {
+      flex-shrink: 0;
+      color: var(--accent-text);
+    }
+  }
+}
+
+// The last value: the headline of the card.
+.last {
+  display: flex;
+  flex-direction: column;
+
+  strong {
+    font-size: 1.35rem;
+    font-weight: 800;
+    overflow-wrap: break-word;
+  }
+
+  span {
+    font-size: 0.84rem;
+    color: var(--text-muted);
+  }
+}
+
+.change {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  overflow-wrap: break-word;
+}
+
+.chart {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    touch-action: pan-y;
+  }
+}
+
+.readout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.5rem;
+  min-height: 1.5rem;
+  font-size: 0.88rem;
+
+  span {
+    color: var(--text-muted);
+  }
+}
+
+.grid {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.tick {
+  fill: var(--text-muted);
+  font-size: 9px;
+}
+
+.line {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.dot {
+  stroke: var(--bg-elevated);
+  stroke-width: 1.5;
+
+  &[data-picked] {
+    stroke-width: 2;
+  }
+}
+
+.line[data-line="1"] {
+  stroke: var(--viz-1);
+}
+
+.line[data-line="2"] {
+  stroke: var(--viz-2);
+}
+
+.dot[data-line="1"] {
+  fill: var(--viz-1);
+}
+
+.dot[data-line="2"] {
+  fill: var(--viz-2);
+}
+
+.hit {
+  fill: transparent;
+  cursor: pointer;
+}
+
+.axis {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.9rem;
+  padding: 0;
+  list-style: none;
+  font-size: 0.84rem;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+
+    &::before {
+      content: "";
+      width: 1rem;
+      height: 3px;
+      border-radius: 2px;
+      background: var(--viz-1);
+    }
+
+    &[data-line="2"]::before {
+      background: var(--viz-2);
+    }
+  }
+}
+
+.values {
+  summary {
+    display: flex;
+    align-items: center;
+    min-height: 2.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+
+  ul {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  button {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-height: 2.75rem;
+    padding: 0.45rem 0.6rem;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+
+    span,
+    small {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      overflow-wrap: break-word;
+    }
+
+    strong {
+      overflow-wrap: break-word;
+    }
+  }
+}
+
+.share {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  > button {
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.25;
+    padding-block: 0.4rem;
+  }
+}
+
+.pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  gap: 0.6rem;
+}
+
+.error {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--danger);
+  overflow-wrap: break-word;
+}
