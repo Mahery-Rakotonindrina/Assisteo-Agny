@@ -149,7 +149,7 @@ describe("Rendez-vous", () => {
   });
 
   it("opens « Ma santé » on its appointments when the notification is tapped", async () => {
-    expect(tapTarget("appt:abc")).toEqual({ pathname: "/sante", query: { show: "appointments" } });
+    expect(tapTarget("appt:abc")).toEqual({ pathname: "/sante", query: { show: "appointments", appt: "abc" } });
     const opened: unknown[] = [];
     let snoozed = false;
     await handleNotificationTap("appt:abc", "later-1h", 3, {
@@ -160,7 +160,7 @@ describe("Rendez-vous", () => {
       open: (target) => opened.push(target),
     });
     expect(snoozed).toBe(false);
-    expect(opened).toEqual([{ pathname: "/sante", query: { show: "appointments" } }]);
+    expect(opened).toEqual([{ pathname: "/sante", query: { show: "appointments", appt: "abc" } }]);
   });
 it("says only what will really ring", () => {
     const now = at(10, 12);

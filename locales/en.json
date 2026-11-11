@@ -329,7 +329,7 @@
         "loans": "All your loans, repayments and proofs.",
         "parcels": "Every parcel you follow, and their reminders.",
         "shop": "Your sales, your stock and your customers’ credit.",
-        "health": "Your emergency card and your appointments."
+        "health": "Your emergency card, your appointments and your relatives."
       },
       "empty": "Nothing to erase",
       "title": "{name}: erase everything?",
@@ -373,7 +373,9 @@
         "shopPaymentsOne": "1 customer payment",
         "emergencyCard": "Your emergency card",
         "appointments": "{count} appointments",
-        "appointmentsOne": "1 appointment"
+        "appointmentsOne": "1 appointment",
+        "healthProfiles": "{count} relatives (with their emergency card)",
+        "healthProfilesOne": "1 relative (with their emergency card)"
       },
       "stays": {
         "history": "Your parcels (with their photo), your expenses, your loans and your lists.",
@@ -4103,6 +4105,10 @@
           "appointments": {
             "q": "How do I not forget a doctor's appointment?",
             "a": "In “My health”, tap “Add an appointment”: the day, the time, the doctor and the place. From Lite, you get a reminder the day before at 6 pm and another one 2 h before. Past appointments stay folded at the bottom of the list."
+          },
+          "family": {
+            "q": "How do I follow my children's or my parents' health?",
+            "a": "At the top of “My health”, tap “Add a relative”: their first name, the relation, their year of birth if you like. Tap their name to see their treatments, prescriptions, appointments and emergency card. When you create dose reminders or an appointment, pick “For whom?”: the notification starts with their first name."
           }
         }
       }
@@ -4481,8 +4487,11 @@
         "line": "{label}: {value}",
         "updated": "Updated on {date}",
         "copied": "Card copied: paste it in a message",
-        "failed": "Couldn't share the card"
-      }
+        "failed": "Couldn't share the card",
+        "headingOf": "{name}’s emergency card"
+      },
+      "titleOf": "{name}’s emergency card",
+      "emptyOf": "Fill in {name}’s: their blood group, their allergies, who to call."
     },
     "appointments": {
       "title": "Appointments",
@@ -4518,6 +4527,41 @@
         "soon": "Appointment at {time}",
         "where": ", {place}"
       }
+    },
+    "profiles": {
+      "forWho": "For whom?",
+      "me": "Me",
+      "add": "Add a relative",
+      "edit": "Edit",
+      "editTitle": "Edit {name}",
+      "remove": "Delete",
+      "removeTitle": "Delete {name}?",
+      "removeConfirm": "Yes, delete",
+      "name": "First name",
+      "nameMissing": "Write their first name.",
+      "relation": "Relation",
+      "relations": {
+        "child": "Child",
+        "parent": "Parent",
+        "partner": "Partner",
+        "other": "Other"
+      },
+      "birthYear": "Year of birth (optional)",
+      "birthYearHint": "2019",
+      "age": "{count} years old",
+      "ageOne": "1 year old",
+      "save": "Save",
+      "cancel": "Cancel",
+      "added": "{name} added",
+      "updated": "{name} changed",
+      "removed": "{name} deleted",
+      "backAppointments": "Their {count} appointments come back to “Me”",
+      "backAppointmentsOne": "Their appointment comes back to “Me”",
+      "backScans": "Their {count} prescriptions and treatments come back to “Me”",
+      "backScansOne": "Their prescription and treatments come back to “Me”",
+      "cardGoes": "{name}’s emergency card is erased",
+      "nothingElse": "Nothing else changes.",
+      "named": "{name}: {text}"
     }
   }
 }

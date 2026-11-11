@@ -14,6 +14,7 @@ import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAccount } from "@/lib/account/AccountProvider";
 import { liveAppointments, removeAllAppointments } from "@/lib/appointments";
+import { liveProfiles, removeAllProfiles } from "@/lib/healthProfiles";
 import { blankCard, isCardEmpty } from "@/lib/emergencyCard";
 import { useSettings } from "@/lib/settings/SettingsProvider";
 import { computedLineCount, expenseResetCounts, loanResetCounts, pocketResetCounts, shopResetCounts, type ResetScreen } from "@/lib/screenReset";
@@ -53,7 +54,8 @@ export function ScreenReset() {
   const { settings, update } = useSettings();
   const hasCard = !isCardEmpty(settings.emergencyCard);
   const appointmentCount = liveAppointments(settings.appointments).length;
-  const hasHealth = hasCard || appointmentCount > 0;
+  const profileCount = liveProfiles(settings.healthProfiles).length;
+  const hasHealth = hasCard || appointmentCount > 0 || profileCount > 0;
   const [open, setOpen] = useState<ResetScreen | null>(null);
   const [working, setWorking] = useState(false);
 
@@ -78,7 +80,7 @@ export function ScreenReset() {
     loans: [{ key: "loans", count: loanCounts.loans }, { key: "repayments", count: loanCounts.repayments }, { key: "proofs", count: loanCounts.proofs }, { key: "links" }],
     parcels: [{ key: "parcels", count: parcels.length }, { key: "parcelReminders" }],
     shop: [{ key: "shopSales", count: shopCounts.sales }, { key: "shopProducts", count: shopCounts.products }, { key: "shopPayments", count: shopCounts.payments }],
-    health: [...(hasCard ? [{ key: "emergencyCard" }] : []), { key: "appointments", count: appointmentCount }],
+    health: [...(hasCard ? [{ key: "emergencyCard" }] : []), { key: "appointments", count: appointmentCount }, { key: "healthProfiles", count: profileCount }],
   };
   const hasData: Record<ResetScreen, boolean> = {
     history: entries.length > 0,
@@ -112,7 +114,12 @@ export function ScreenReset() {
       // The emergency card and the appointments are settings: emptied here, dated so the other devices follow.
       if (screen === "health") {
         const now = Date.now();
-        update({ ...(settings.emergencyCard && { emergencyCard: blankCard(now) }), ...(settings.appointments && { appointments: removeAllAppointments(settings.appointments, now) }) });
+        update({
+          ...(settings.emergencyCard && { emergencyCard: blankCard(now) }),
+          ...(settings.appointments && { appointments: removeAllAppointments(settings.appointments, now) }),
+          // The relatives go with their cards; their scans come back to "Moi" by themselves (lib/healthProfiles.ts ownerOf).
+          ...(settings.healthProfiles && { healthProfiles: removeAllProfiles(settings.healthProfiles, now) }),
+        });
       }
       else await resetScreen(screen);
       setOpen(null);

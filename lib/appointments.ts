@@ -29,12 +29,14 @@ export type Appointment = {
   place: string;
   /** Reason or note. */
   note: string;
+  /** "Pour qui ?": a relative's profile (lib/healthProfiles.ts); none for "Moi". */
+  profileId?: string;
   createdAt: number;
   updatedAt: number;
   deletedAt?: number;
 };
 
-export type AppointmentDraft = Pick<Appointment, "at" | "who" | "place" | "note">;
+export type AppointmentDraft = Pick<Appointment, "at" | "who" | "place" | "note" | "profileId">;
 
 const text = (value: unknown) => (typeof value === "string" ? value.trim().slice(0, APPOINTMENT_TEXT_MAX) : "");
 const time = (value: unknown) => (typeof value === "number" && Number.isFinite(value) && value > 0 ? value : 0);
@@ -53,6 +55,7 @@ export function normalizeAppointment(value: unknown): Appointment | null {
     who: text(raw.who),
     place: text(raw.place),
     note: text(raw.note),
+    ...(typeof raw.profileId === "string" && raw.profileId && raw.profileId !== "me" && { profileId: raw.profileId.slice(0, 64) }),
     createdAt: time(raw.createdAt),
     updatedAt: time(raw.updatedAt),
     ...(deletedAt && { deletedAt }),
@@ -96,8 +99,10 @@ export function mergeAppointments(local: unknown, remote: unknown, now: number):
 export function saveAppointment(list: Appointment[] | null, id: string | null, draft: AppointmentDraft, now: number, newId: () => string): Appointment[] {
   const current = list ?? [];
   const existing = id ? current.find((item) => item.id === id && !item.deletedAt) : undefined;
-  const fields = { at: draft.at, who: text(draft.who), place: text(draft.place), note: text(draft.note) };
-  const next: Appointment = existing ? { ...existing, ...fields, updatedAt: now } : { id: newId(), ...fields, createdAt: now, updatedAt: now };
+  const fields = { at: draft.at, who: text(draft.who), place: text(draft.place), note: text(draft.note), ...(draft.profileId && draft.profileId !== "me" && { profileId: draft.profileId }) };
+  // Who it is for is set again each time ("Moi" has none).
+  const base = existing ? (({ profileId: _owner, ...rest }) => rest)(existing) : null;
+  const next: Appointment = base ? { ...base, ...fields, updatedAt: now } : { id: newId(), ...fields, createdAt: now, updatedAt: now };
   return prune([...current.filter((item) => item.id !== next.id), next], now);
 }
 
@@ -113,6 +118,19 @@ export function removeAppointment(list: Appointment[] | null, id: string, now: n
 export function removeAllAppointments(list: Appointment[] | null, now: number): Appointment[] {
   return prune(
     (list ?? []).map((item) => (item.deletedAt ? item : { ...item, deletedAt: now, updatedAt: now })),
+    now,
+  );
+}
+
+/** A relative removed: their appointments come back to "Moi" (dated, so the other devices follow). */
+export function reassignAppointments(list: Appointment[] | null, profileId: string, now: number): Appointment[] | null {
+  if (!list) return list;
+  return prune(
+    list.map((item) => {
+      if (item.profileId !== profileId) return item;
+      const { profileId: _gone, ...rest } = item;
+      return { ...rest, updatedAt: now };
+    }),
     now,
   );
 }

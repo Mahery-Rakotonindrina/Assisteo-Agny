@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BellOff, BellRing, Check, ChevronRight, Clock, FileDown, FileText, Pill, ScanLine, Share2 } from "lucide-react";
 import { Appointments } from "@/components/Appointments";
 import { Button } from "@/components/Button";
 import { EmergencyCard } from "@/components/EmergencyCard";
 import { EmptyState } from "@/components/EmptyState";
+import { HealthProfiles } from "@/components/HealthProfiles";
 import { MedicineDisclaimer } from "@/components/Medicine";
 import { PlanBadge } from "@/components/PlanBadge";
 import { PlanLock } from "@/components/PlanLock";
@@ -18,6 +19,8 @@ import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDate, formatDateTime, formatTime } from "@/lib/format";
 import { healthOverview, type Treatment } from "@/lib/health";
+import { ownerOf, personFromLink } from "@/lib/healthProfiles";
+import { useSettings } from "@/lib/settings/SettingsProvider";
 import { todayDoses, weekAdherence } from "@/lib/medication";
 import { rise, stagger } from "@/lib/motion";
 import { haptics } from "@/services/device";
@@ -45,10 +48,28 @@ export default function HealthPage() {
   const now = useNow(60_000);
   const { plan, has, planFor, name: planName } = usePlan();
   const reminders = has("reminders");
-  const { treatments, scans } = healthOverview(entries, now);
+  const { settings, ready, update } = useSettings();
+  // "Pour qui ?": the screen shows one person at a time ("Moi" has all that has no profile).
+  // The person last picked is kept on this device; removed since, "Moi".
+  const person = ownerOf(settings.healthPerson, settings.healthProfiles);
+  const pick = (profileId: string) => update({ healthPerson: profileId });
+  const theirs = entries.filter((entry) => ownerOf(entry.profileId, settings.healthProfiles) === person);
+  const { treatments, scans } = healthOverview(theirs, now);
   const empty = !isLoading && scans.length === 0;
   const router = useRouter();
   const show = router.query.show;
+
+  // A link or a notification ("?pour=", "?appt=", "?scan="): the screen opens on
+  // that person, once the settings and the scans are read; unknown, ignored.
+  const linked = useRef<string | null>(null);
+  useEffect(() => {
+    if (!router.isReady || !ready || isLoading) return;
+    const key = JSON.stringify([router.query.pour, router.query.appt, router.query.scan]);
+    if (linked.current === key) return;
+    linked.current = key;
+    const target = personFromLink(router.query, { profiles: settings.healthProfiles, appointments: settings.appointments, entries });
+    if (target !== null && target !== settings.healthPerson) update({ healthPerson: target });
+  }, [router.isReady, router.query, ready, isLoading, settings.healthProfiles, settings.appointments, settings.healthPerson, entries, update]);
 
   // An appointment's notification: its section in sight.
   useEffect(() => {
@@ -82,15 +103,19 @@ export default function HealthPage() {
         </motion.header>
 
         <motion.div variants={rise}>
+          <HealthProfiles selected={person} onSelect={pick} entries={entries} />
+        </motion.div>
+
+        <motion.div variants={rise}>
           <MedicineDisclaimer />
         </motion.div>
 
         <motion.div variants={rise}>
-          <EmergencyCard />
+          <EmergencyCard key={person} profileId={person} />
         </motion.div>
 
         <motion.div variants={rise}>
-          <Appointments />
+          <Appointments profileId={person} />
         </motion.div>
 
         {empty ? (

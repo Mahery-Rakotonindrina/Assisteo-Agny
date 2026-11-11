@@ -124,8 +124,8 @@ describe("dose reminders", () => {
   });
 
   it("opens « Ma santé » when a dose notification is tapped, and reads the dose's moment in its link", () => {
-    expect(tapTarget("med:abc")).toEqual({ pathname: "/sante" });
-    expect(tapTarget("med:abc@1762236000000")).toEqual({ pathname: "/sante" });
+    expect(tapTarget("med:abc")).toEqual({ pathname: "/sante", query: { scan: "abc" } });
+    expect(tapTarget("med:abc@1762236000000")).toEqual({ pathname: "/sante", query: { scan: "abc" } });
     expect(medicationLink("med:abc@1762236000000")).toEqual({ scanId: "abc", at: 1762236000000 });
     expect(medicationLink("med:abc")).toEqual({ scanId: "abc", at: null });
     expect(medicationLink("plant:x")).toBeNull();

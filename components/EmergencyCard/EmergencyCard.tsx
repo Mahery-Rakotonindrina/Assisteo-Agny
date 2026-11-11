@@ -7,6 +7,7 @@ import { useToast } from "@/components/Toast";
 import { useTranslation } from "@/hooks/useTranslation";
 import { allergyTags, bloodGroups, bloodLabel, blankCard, CARD_TEXT_MAX, isCardEmpty, normalizeCard, telHref, type BloodGroup, type EmergencyCard as Card } from "@/lib/emergencyCard";
 import { formatDate } from "@/lib/format";
+import { liveProfiles, ME, saveProfileCard } from "@/lib/healthProfiles";
 import { useSettings } from "@/lib/settings/SettingsProvider";
 import { haptics } from "@/services/device";
 import { shareEmergencyCard, whatsappEmergencyCard } from "@/services/healthShare";
@@ -15,27 +16,31 @@ import styles from "./EmergencyCard.module.scss";
 /**
  * "Fiche d'urgence", at the top of Ma santé: blood group, allergies,
  * long-term illnesses, who to call, a note. For everyone, read from the
- * settings (on the device, so offline too), written in a bottom sheet.
+ * settings (on the device, so offline too), written in a bottom sheet. One
+ * per person ("Pour qui ?"): "Moi"'s in the settings, a relative's in their
+ * profile.
  */
-export function EmergencyCard() {
+export function EmergencyCard({ profileId = ME }: { profileId?: string }) {
   const { t, locale } = useTranslation();
   const toast = useToast();
   const { settings, ready, update } = useSettings();
   const [editing, setEditing] = useState(false);
   const [sharing, setSharing] = useState(false);
-  const card = settings.emergencyCard;
+  const relative = profileId === ME ? null : (liveProfiles(settings.healthProfiles).find((item) => item.id === profileId) ?? null);
+  const name = relative?.name ?? null;
+  const card = relative ? (relative.card ?? null) : settings.emergencyCard;
   const empty = isCardEmpty(card);
 
   const share = async (via: "share" | "whatsapp") => {
     if (!card || sharing) return;
     haptics.tap();
     if (via === "whatsapp") {
-      whatsappEmergencyCard(card, t, locale);
+      whatsappEmergencyCard(card, t, locale, name);
       return;
     }
     setSharing(true);
     try {
-      const outcome = await shareEmergencyCard(card, t, locale);
+      const outcome = await shareEmergencyCard(card, t, locale, name);
       if (outcome === "copied") toast(t("health.emergency.share.copied"));
       else if (outcome === "unavailable") toast(t("health.emergency.share.failed"), "error");
     } catch {
@@ -47,7 +52,8 @@ export function EmergencyCard() {
 
   const save = (next: Card) => {
     haptics.success();
-    update({ emergencyCard: next });
+    if (relative) update({ healthProfiles: saveProfileCard(settings.healthProfiles, relative.id, next, next.updatedAt) });
+    else update({ emergencyCard: next });
     setEditing(false);
     toast(t("health.emergency.saved"));
   };
@@ -64,14 +70,14 @@ export function EmergencyCard() {
           <HeartPulse size={20} />
         </span>
         <div className={styles.titles}>
-          <h2 id="emergency-title">{t("health.emergency.title")}</h2>
+          <h2 id="emergency-title">{name ? t("health.emergency.titleOf", { name }) : t("health.emergency.title")}</h2>
           <p>{t("health.emergency.lead")}</p>
         </div>
       </div>
 
       {empty || !card ? (
         <>
-          <p className={styles.empty}>{t("health.emergency.empty")}</p>
+          <p className={styles.empty}>{name ? t("health.emergency.emptyOf", { name }) : t("health.emergency.empty")}</p>
           <div className={styles.actions}>
             <Button icon={<Pencil />} onClick={() => setEditing(true)} data-testid="emergency-fill">
               {t("health.emergency.fill")}
@@ -150,8 +156,8 @@ export function EmergencyCard() {
       )}
       <p className={styles.small}>{t("health.emergency.privacy")}</p>
 
-      <ExpenseSheet open={editing} title={t("health.emergency.title")} onClose={() => setEditing(false)}>
-        {editing && <CardForm card={card} onSave={save} onCancel={() => setEditing(false)} />}
+      <ExpenseSheet open={editing} title={name ? t("health.emergency.titleOf", { name }) : t("health.emergency.title")} onClose={() => setEditing(false)}>
+        {editing && <CardForm key={profileId} card={card} onSave={save} onCancel={() => setEditing(false)} />}
       </ExpenseSheet>
     </section>
   );
