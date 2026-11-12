@@ -329,7 +329,7 @@
         "loans": "All your loans, repayments and proofs.",
         "parcels": "Every parcel you follow, and their reminders.",
         "shop": "Your sales, your stock and your customers’ credit.",
-        "health": "Your emergency card, your appointments and your relatives."
+        "health": "Your emergency card, your appointments, your measures and your relatives."
       },
       "empty": "Nothing to erase",
       "title": "{name}: erase everything?",
@@ -375,7 +375,9 @@
         "appointments": "{count} appointments",
         "appointmentsOne": "1 appointment",
         "healthProfiles": "{count} relatives (with their emergency card)",
-        "healthProfilesOne": "1 relative (with their emergency card)"
+        "healthProfilesOne": "1 relative (with their emergency card)",
+        "measures": "{count} measures (blood pressure, blood sugar, weight)",
+        "measuresOne": "1 measure"
       },
       "stays": {
         "history": "Your parcels (with their photo), your expenses, your loans and your lists.",
@@ -449,7 +451,8 @@
           "foyer": "your household: its name, your role, and only the lines you wrote",
           "reglages": "your settings and your emergency card",
           "compte": "your account: your e-mail, your plan, your subscriptions, the codes used, the family seats, the share links and the devices that get reminders",
-          "boutique": "your shop: the products in stock, the sales and the customers’ payments"
+          "boutique": "your shop: the products in stock, the sales and the customers’ payments",
+          "sante": "your health measures (blood pressure, blood sugar, weight), and your relatives’"
         },
         "photosIn": "the photos, by screen; the JSON files give the path of each",
         "photosOut": "no photos in this copy (“With the photos” unticked)",
@@ -4109,6 +4112,10 @@
           "family": {
             "q": "How do I follow my children's or my parents' health?",
             "a": "At the top of “My health”, tap “Add a relative”: their first name, the relation, their year of birth if you like. Tap their name to see their treatments, prescriptions, appointments and emergency card. When you create dose reminders or an appointment, pick “For whom?”: the notification starts with their first name."
+          },
+          "measures": {
+            "q": "How do I follow my blood pressure, blood sugar or weight?",
+            "a": "In “My health”, tap “Add a measure”: the date and time are already filled in. You see the last value and the curve over 30 days, 3 months or 1 year, for you or a relative. “Share” or “PDF” sends them to your doctor. The app never says whether a value is good or bad: that's for your doctor to talk about."
           }
         }
       }
@@ -4561,7 +4568,87 @@
       "backScansOne": "Their prescription and treatments come back to “Me”",
       "cardGoes": "{name}’s emergency card is erased",
       "nothingElse": "Nothing else changes.",
-      "named": "{name}: {text}"
+      "named": "{name}: {text}",
+      "backMeasures": "Their {count} measures come back to “Me”",
+      "backMeasuresOne": "Their measure comes back to “Me”"
+    },
+    "measures": {
+      "title": "My measures",
+      "add": "Add a measure",
+      "addShort": "Add",
+      "addKind": "Add: {kind}",
+      "edit": "Edit the measure",
+      "empty": "Write down your blood pressure, blood sugar or weight: you'll see their curve, to show your doctor.",
+      "doctor": "Show these values to your doctor.",
+      "period": "Period",
+      "periods": {
+        "30d": "30 days",
+        "3m": "3 months",
+        "1y": "1 year"
+      },
+      "kind": "Kind of measure",
+      "kinds": {
+        "pressure": "Blood pressure",
+        "glucose": "Blood sugar",
+        "weight": "Weight"
+      },
+      "units": {
+        "pressure": "mmHg",
+        "glucose": "g/L",
+        "weight": "kg"
+      },
+      "systolic": "Systolic",
+      "diastolic": "Diastolic",
+      "systolicField": "Systolic (mmHg)",
+      "diastolicField": "Diastolic (mmHg)",
+      "pulseField": "Pulse (optional)",
+      "glucoseField": "Blood sugar (g/L)",
+      "moment": "When",
+      "moments": {
+        "fasting": "fasting",
+        "afterMeal": "after a meal",
+        "other": "other time"
+      },
+      "weightField": "Weight (kg)",
+      "day": "Day",
+      "hour": "Time",
+      "note": "Note (optional)",
+      "noteHint": "Left arm, after sport…",
+      "save": "Save",
+      "cancel": "Cancel",
+      "remove": "Delete the measure",
+      "removeConfirm": "Yes, delete",
+      "added": "Measure added",
+      "updated": "Measure changed",
+      "removed": "Measure deleted",
+      "whenMissing": "Pick the day and time of the measure.",
+      "wrong": {
+        "pressure": "Write both numbers of the blood pressure, the first bigger than the second (for example 128 and 82).",
+        "glucose": "Write the blood sugar in g/L (for example 1.05).",
+        "weight": "Write the weight in kg (for example 64.5).",
+        "pulse": "The pulse is in beats a minute (for example 72), or leave it empty."
+      },
+      "pressureValue": "{systolic}/{diastolic} mmHg",
+      "pulseValue": "pulse {pulse}",
+      "glucoseValue": "{value} g/L",
+      "weightValue": "{value} kg",
+      "lastOn": "Last measure: {when}",
+      "change": "{value} {unit} since {date}",
+      "changePressure": "Systolic {systolic}, diastolic {diastolic} {unit} since {date}",
+      "noneInPeriod": "No measure in this period.",
+      "values": "See the values ({count})",
+      "chartLabel": "Curve of {count} measure(s) from {from} to {to}",
+      "share": {
+        "button": "Share",
+        "pdf": "PDF",
+        "heading": "My measures",
+        "headingOf": "{name}’s measures",
+        "period": "From {from} to {to}",
+        "line": "- {when}: {value}",
+        "copied": "Measures copied: paste them in a message",
+        "failed": "Couldn't share the measures"
+      },
+      "tapHint": "Touch a dot to see its value."
     }
   }
 }

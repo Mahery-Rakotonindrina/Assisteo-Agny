@@ -129,6 +129,11 @@ function sampleBackup() {
         { user_id: anna, id: "sale-1", data: { kind: "sale", at: 1759900000000, productId: "product-1", name: "Riz 5 kg", qty: 2, unitPriceMga: 18000, paidMga: 20000, customer: "Rado", phone: "034 00 000 00", createdAt: 1759900000000 }, updated_at: at(6), deleted_at: null },
         { user_id: ben, id: "payment-1", data: { kind: "payment", at: 1759900000000, customer: "Soa", amountMga: 5000, createdAt: 1759900000000 }, updated_at: at(6), deleted_at: at(7) },
       ],
+      health_measures: [
+        { user_id: anna, id: "measure-1", data: { kind: "pressure", at: 1759900000000, systolic: 128, diastolic: 82, pulse: 70, createdAt: 1759900000000 }, updated_at: at(6), deleted_at: null },
+        { user_id: anna, id: "measure-2", data: { kind: "weight", at: 1759900000000, weight: 64.5, profileId: "child-1", createdAt: 1759900000000 }, updated_at: at(6), deleted_at: null },
+        { user_id: ben, id: "measure-3", data: { kind: "glucose", at: 1759900000000, glucose: 1.05, moment: "fasting", createdAt: 1759900000000 }, updated_at: at(6), deleted_at: at(7) },
+      ],
       loan_shares: [
         {
           token_hash: "a".repeat(64),

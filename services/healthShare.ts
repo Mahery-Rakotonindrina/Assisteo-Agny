@@ -1,6 +1,7 @@
 import type { Locale } from "@/i18n.config";
 import { cardText, type EmergencyCard } from "@/lib/emergencyCard";
-import { formatDate } from "@/lib/format";
+import { formatDate, formatDateTime, formatMeasure } from "@/lib/format";
+import { measureReport, measuresText, type Measure, type ShareOptions } from "@/lib/measures";
 import { treatmentLines, treatmentsText, type Treatment } from "@/lib/health";
 import { pdfFileName, PdfWriter } from "@/lib/pdf";
 import type { HistoryEntry } from "@/types/history";
@@ -42,4 +43,34 @@ export function shareEmergencyCard(card: EmergencyCard, t: Translate, locale: Lo
 /** The card in WhatsApp: the person picks whom to send it to. */
 export function whatsappEmergencyCard(card: EmergencyCard, t: Translate, locale: Locale, name: string | null = null) {
   openExternal(`https://wa.me/?text=${encodeURIComponent(cardText(card, t, (at) => formatDate(at, locale), name))}`);
+}
+
+// "Partager mes mesures": a period's measures for the doctor, as a message or
+// a PDF, always with the neutral line ("Montre ces valeurs à ton médecin").
+
+const measureFormat = (locale: Locale) => ({
+  date: (at: number) => formatDate(at, locale),
+  dateTime: (at: number) => formatDateTime(at, locale),
+  number: (value: number, decimals: number) => formatMeasure(value, decimals, locale),
+});
+
+export function shareMeasures(measures: Measure[], options: ShareOptions, t: Translate, locale: Locale) {
+  const report = measureReport(measures, options, t, measureFormat(locale));
+  return shareText(report.title, measuresText(measures, options, t, measureFormat(locale)), { copyTitle: false });
+}
+
+export async function exportMeasuresPdf(measures: Measure[], options: ShareOptions, t: Translate, locale: Locale) {
+  const report = measureReport(measures, options, t, measureFormat(locale));
+  const pdf = await PdfWriter.create();
+  pdf.title(report.title);
+  pdf.caption(report.period);
+  for (const section of report.sections) {
+    pdf.rule();
+    pdf.subtitle(section.title);
+    pdf.bullets(section.lines);
+  }
+  pdf.rule();
+  pdf.paragraph(report.doctor);
+  const bytes = pdf.finish(t("pdf.footer"));
+  return shareFile(pdfFileName(report.title), bytes, "application/pdf", report.title);
 }
