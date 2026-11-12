@@ -27,6 +27,7 @@ export const RESTORE_KEYS = {
   plants: ["user_id", "id"],
   shop: ["user_id", "id"],
   health_measures: ["user_id", "id"],
+  health_spending: ["user_id", "id"],
   loan_shares: ["token_hash"],
   // A household before what refers to it.
   households: ["id"],

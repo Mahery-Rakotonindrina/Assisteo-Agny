@@ -377,7 +377,9 @@
         "healthProfiles": "{count} proches (avec leur fiche d’urgence)",
         "healthProfilesOne": "1 proche (avec sa fiche d’urgence)",
         "measures": "{count} mesures (tension, glycémie, poids)",
-        "measuresOne": "1 mesure"
+        "measuresOne": "1 mesure",
+        "healthSpending": "{count} dépenses de santé (celles de « Mes dépenses » restent)",
+        "healthSpendingOne": "1 dépense de santé (celles de « Mes dépenses » restent)"
       },
       "stays": {
         "history": "Tes colis (avec leur photo), tes dépenses, tes prêts et tes listes.",
@@ -4116,6 +4118,10 @@
           "measures": {
             "q": "Comment suivre ma tension, ma glycémie ou mon poids ?",
             "a": "Dans « Ma santé », touche « Ajouter une mesure » : la date et l’heure sont déjà remplies. Tu vois la dernière valeur et la courbe sur 30 jours, 3 mois ou 1 an, pour toi ou un proche. « Partager » ou « PDF » les envoie à ton médecin. L’app ne dit jamais si une valeur est bonne ou mauvaise : c’est à ton médecin d’en parler."
+          },
+          "spending": {
+            "q": "Comment suivre ce que je dépense pour la santé ?",
+            "a": "Dans « Ma santé », touche « Ajouter une dépense de santé » : le montant, le type (pharmacie, consultation, analyses, hôpital, autre), le jour, et pour qui. Tu vois le total du mois et celui du mois dernier, pour toi ou un proche. Avec « Mes dépenses », la dépense va dans ta catégorie Santé, et tes reçus de pharmacie scannés y comptent tout seuls. Sans, scanne un reçu de pharmacie puis touche « Ajouter aux dépenses de santé »."
           }
         }
       }
@@ -4649,6 +4655,54 @@
         "failed": "Impossible de partager les mesures"
       },
       "tapHint": "Touche un point pour voir sa valeur."
+    },
+    "spending": {
+      "title": "Dépenses de santé",
+      "month": "Total de {month}",
+      "before": "Le mois dernier : {amount}",
+      "byKind": "Par type",
+      "list": "Les dépenses du mois",
+      "add": "Ajouter une dépense de santé",
+      "edit": "Modifier la dépense",
+      "empty": "Note ce que tu paies à la pharmacie, chez le médecin, pour les analyses ou à l’hôpital : tu verras le total du mois.",
+      "linked": "Elles comptent aussi dans « Mes dépenses », catégorie Santé.",
+      "unlinked": "Avec « Mes dépenses », elles comptent aussi dans ton budget.",
+      "inExpenses": "Dans Mes dépenses",
+      "family": "Toute la famille ce mois-ci",
+      "kind": "Type de dépense",
+      "kinds": {
+        "pharmacy": "Pharmacie",
+        "consultation": "Consultation",
+        "tests": "Analyses",
+        "hospital": "Hôpital",
+        "other": "Autre"
+      },
+      "amount": "Montant (Ar)",
+      "day": "Jour",
+      "note": "Note (facultatif)",
+      "noteHint": "Pharmacie du marché, Dr Rabe…",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "remove": "Supprimer la dépense",
+      "removeConfirm": "Oui, supprimer",
+      "added": "Dépense de santé ajoutée",
+      "addedExpenses": "Dépense ajoutée à « Mes dépenses », catégorie Santé",
+      "updated": "Dépense modifiée",
+      "removed": "Dépense supprimée",
+      "wrongAmount": "Écris le montant en ariary (par exemple 12 500).",
+      "wrongDay": "Choisis le jour de la dépense.",
+      "receipt": "Ce reçu de santé fait {amount}.",
+      "receiptAdd": "Ajouter aux dépenses de santé",
+      "receiptAdded": "Ajouté · Voir dans Ma santé",
+      "previousMonth": "Mois précédent",
+      "nextMonth": "Mois suivant",
+      "moveText": "{count} dépenses de santé ne sont que dans Ma santé : elles ne comptent pas dans ton budget.",
+      "moveTextOne": "1 dépense de santé n’est que dans Ma santé : elle ne compte pas dans ton budget.",
+      "move": "Les compter dans Mes dépenses",
+      "moveConfirm": "Oui, les mettre dans Mes dépenses",
+      "moved": "{count} dépenses mises dans « Mes dépenses », catégorie Santé",
+      "movedOne": "1 dépense mise dans « Mes dépenses », catégorie Santé",
+      "moveFailed": "Ça n’a pas marché. Réessaie."
     }
   }
 }

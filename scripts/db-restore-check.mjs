@@ -134,6 +134,11 @@ function sampleBackup() {
         { user_id: anna, id: "measure-2", data: { kind: "weight", at: 1759900000000, weight: 64.5, profileId: "child-1", createdAt: 1759900000000 }, updated_at: at(6), deleted_at: null },
         { user_id: ben, id: "measure-3", data: { kind: "glucose", at: 1759900000000, glucose: 1.05, moment: "fasting", createdAt: 1759900000000 }, updated_at: at(6), deleted_at: at(7) },
       ],
+      health_spending: [
+        { user_id: anna, id: "spend-1", data: { at: 1759900000000, amountMga: 12500, kind: "pharmacy", note: "Paracétamol", createdAt: 1759900000000 }, updated_at: at(6), deleted_at: null },
+        { user_id: anna, id: "spend-2", data: { at: 1759900000000, amountMga: 30000, kind: "consultation", profileId: "child-1", createdAt: 1759900000000 }, updated_at: at(6), deleted_at: null },
+        { user_id: ben, id: "spend-3", data: { at: 1759900000000, amountMga: 8000, kind: "tests", createdAt: 1759900000000 }, updated_at: at(6), deleted_at: at(7) },
+      ],
       loan_shares: [
         {
           token_hash: "a".repeat(64),

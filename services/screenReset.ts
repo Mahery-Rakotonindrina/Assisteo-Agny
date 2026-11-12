@@ -3,6 +3,7 @@ import { expenseStore } from "./expenseStore";
 import { historyStore } from "./historyStore";
 import { loanSharing } from "./loanSharing";
 import { loanStore } from "./loanStore";
+import { healthSpendStore } from "./healthSpendStore";
 import { measureStore } from "./measureStore";
 import { keepParcelThumbnails } from "./parcelLinking";
 import { parcelStore } from "./parcelStore";
@@ -52,6 +53,8 @@ export async function resetScreen(screen: ResetScreen) {
     case "health":
       // The emergency card, the appointments and the relatives are settings: ScreenReset empties them (useSettings), dated so the emptying syncs.
       await measureStore.removeAll();
+      // Ma santé's own expenses; those of "Mes dépenses" stay there (its own reset).
+      await healthSpendStore.removeAll();
       return;
   }
 }

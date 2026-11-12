@@ -23,6 +23,7 @@ import {
   type WalletPick,
   walletPickId,
 } from "@/lib/expenses";
+import { HEALTH_CATEGORY, isMovedExpenseId } from "@/lib/healthSpending";
 import { createId } from "./historyStore";
 import { removeRecords } from "./storeRemoval";
 
@@ -95,6 +96,9 @@ export const expenseStore = {
   async saveExpense(draft: Draft<ManualExpense>) {
     const amountMga = cleanAmount(draft.amountMga);
     if (amountMga === undefined) return null;
+    // Ma santé's kind and person: given, or kept from before while the expense stays a health one.
+    const before = draft.id && !("health" in draft) ? await current<ManualExpense>(draft.id) : undefined;
+    const health = "health" in draft ? draft.health : before?.health;
     return save<ManualExpense>("expense", draft.id, {
       at: draft.at,
       amountMga,
@@ -106,6 +110,7 @@ export const expenseStore = {
       scanId: draft.scanId || undefined,
       wallet: draft.wallet || undefined,
       statement: cleanTag(draft.statement),
+      ...(health && (draft.category || "other") === HEALTH_CATEGORY && { health }),
       ...cleanConverted(draft),
     });
   },
@@ -291,7 +296,8 @@ export const expenseStore = {
   async remove(id: string) {
     const record = await get<ExpenseRecord>(id, db());
     if (!record) return;
-    if (keepTombstones) await write({ ...record, deletedAt: Date.now() });
+    // A health expense moved from Ma santé: its removal is always kept (healthSpendStore.moveToExpenses reads it).
+    if (keepTombstones || isMovedExpenseId(id)) await write({ ...record, deletedAt: Date.now() });
     else {
       await del(id, db());
       notify();
@@ -323,7 +329,14 @@ export const expenseStore = {
     await set(record.id, record, db());
   },
   async rawDelete(id: string) {
-    await del(id, db());
+    // A health expense moved from Ma santé: removed, but remembered (it must not be moved again).
+    const record = isMovedExpenseId(id) ? await get<ExpenseRecord>(id, db()) : undefined;
+    if (record) await set(id, { ...record, deletedAt: record.deletedAt ?? Date.now(), dirty: false }, db());
+    else await del(id, db());
+  },
+  /** Removed elsewhere, never seen here: remembered for a health expense moved from Ma santé. */
+  async noteRemoved(id: string, at: number) {
+    if (isMovedExpenseId(id) && !(await get<ExpenseRecord>(id, db()))) await set(id, { id, kind: "expense", at, amountMga: 0, category: HEALTH_CATEGORY, createdAt: at, updatedAt: at, deletedAt: at }, db());
   },
   notify,
   /** Signing out or deleting the account. */
