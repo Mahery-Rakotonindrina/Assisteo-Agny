@@ -1,5 +1,5 @@
 import { clear, createStore, del, get, set, values } from "idb-keyval";
-import { movedExpense, readHealthSpend, type HealthSpend, type HealthSpendFields } from "@/lib/healthSpending";
+import { movedExpense, movedExpenseId, readHealthSpend, type HealthSpend, type HealthSpendFields } from "@/lib/healthSpending";
 import { expenseStore } from "./expenseStore";
 import { createId } from "./historyStore";
 import { removeRecords } from "./storeRemoval";
@@ -49,9 +49,11 @@ export const healthSpendStore = {
       .sort((a, b) => a.at - b.at);
   },
 
-  async add(fields: HealthSpendFields) {
+  /** Added; with an id of its own (a scanned receipt: receiptSpendId), the line already there is rewritten instead. */
+  async add(fields: HealthSpendFields, id?: string) {
     const now = Date.now();
-    const spend: HealthSpend = { ...fields, id: createId(), createdAt: now, updatedAt: now };
+    const existing = id ? await get<HealthSpend>(id, db()) : undefined;
+    const spend: HealthSpend = { ...fields, id: id ?? createId(), createdAt: existing && !existing.deletedAt ? existing.createdAt : now, updatedAt: now };
     await write(spend);
     return spend;
   },
@@ -99,8 +101,13 @@ export const healthSpendStore = {
     moving ??= (async () => {
       try {
         const spends = await healthSpendStore.list();
+        const records = await expenseStore.list();
         for (const spend of spends) {
-          await expenseStore.saveExpense(movedExpense(spend));
+          const id = movedExpenseId(spend.id);
+          // Not again: moved then removed in "Mes dépenses" (its removal is kept), or the receipt already typed in there.
+          const removed = (await expenseStore.rawGet(id))?.deletedAt;
+          const typed = spend.scanId && records.some((record) => record.kind === "expense" && record.id !== id && record.scanId === spend.scanId);
+          if (!removed && !typed) await expenseStore.saveExpense(movedExpense(spend));
           await healthSpendStore.remove(spend.id);
         }
         return spends.length;

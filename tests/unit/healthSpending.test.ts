@@ -12,6 +12,7 @@ import {
   movedExpense,
   movedExpenseId,
   previousTotal,
+  receiptSpendId,
   readAmount,
   readHealthSpend,
   receiptSpend,
@@ -130,6 +131,11 @@ describe("moved to Mes dépenses", () => {
     expect(movedExpense(spend({ id: "s9" })).id).toBe(moved.id);
   });
 
+  it("counts a receipt kept twice in the own list once", () => {
+    const own = [spendLine(spend({ id: "a", scanId: "scan-1" })), spendLine(spend({ id: "b", scanId: "scan-1" })), spendLine(spend({ id: "c" }))];
+    expect(healthMonth(mergeLines(own, []), "2026-11", "me", []).total).toBe(20000);
+  });
+
   it("is counted once while the removal of the own one is not synced yet", () => {
     const own = [spendLine(spend({ id: "s9" }))];
     const expense = { key: "expense:x", from: "expense" as const, id: movedExpenseId("s9"), at: day(2026, 11, 3), amountMga: 10000, kind: "pharmacy" as const };
@@ -174,6 +180,36 @@ describe("health spending stores", () => {
     await healthSpendStore.rawPut({ id: moved[0].id.slice("health:".length), at: day(2026, 11, 3), amountMga: 3000, kind: "pharmacy", createdAt: 1, updatedAt: 1 });
     await healthSpendStore.moveToExpenses();
     expect((await expenseStore.list()).length - before).toBe(2);
+  });
+
+  it("adds a scanned receipt once, even twice at the same time", async () => {
+    await healthSpendStore.removeAll();
+    const fields = { at: day(2026, 11, 3), amountMga: 15500, kind: "pharmacy" as const, scanId: "scan-7" };
+    await Promise.all([healthSpendStore.add(fields, receiptSpendId("scan-7")), healthSpendStore.add(fields, receiptSpendId("scan-7"))]);
+    await healthSpendStore.add(fields, receiptSpendId("scan-7"));
+    expect(await healthSpendStore.list()).toHaveLength(1);
+    await healthSpendStore.removeAll();
+  });
+
+  it("does not move again an expense removed in Mes dépenses, nor a receipt typed in there", async () => {
+    await healthSpendStore.removeAll();
+    // Moved, then removed in "Mes dépenses" (here, or elsewhere and only heard of by the sync).
+    const one = await healthSpendStore.add({ at: day(2026, 11, 3), amountMga: 1000, kind: "other" });
+    await healthSpendStore.moveToExpenses();
+    await expenseStore.remove(movedExpenseId(one.id));
+    await expenseStore.rawDelete(movedExpenseId(one.id));
+    await expenseStore.noteRemoved(movedExpenseId("elsewhere"), day(2026, 11, 4));
+    // A device not synced yet still has them in its own list.
+    await healthSpendStore.rawPut({ ...one, dirty: false });
+    await healthSpendStore.rawPut({ id: "elsewhere", at: day(2026, 11, 3), amountMga: 2000, kind: "other", createdAt: 1, updatedAt: 1 });
+    // And a receipt already typed in "Mes dépenses".
+    await expenseStore.saveExpense({ at: day(2026, 11, 3), amountMga: 15500, category: "health", scanId: "scan-8" });
+    await healthSpendStore.add({ at: day(2026, 11, 3), amountMga: 15500, kind: "pharmacy", scanId: "scan-8" }, receiptSpendId("scan-8"));
+    const before = (await expenseStore.list()).length;
+    expect(await healthSpendStore.moveToExpenses()).toBe(3);
+    expect((await expenseStore.list()).length).toBe(before);
+    expect(await healthSpendStore.list()).toEqual([]);
+    expect((await expenseStore.rawGet(movedExpenseId(one.id)))?.deletedAt).toBeTruthy();
   });
 
   it("adds, edits, gives back to Moi and removes Ma santé's own expenses", async () => {

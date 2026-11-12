@@ -162,10 +162,23 @@ export function expenseLines(items: MonthItem[], scanOwner: (scanId: string) => 
 export function mergeLines(own: HealthLine[], expenses: HealthLine[]): HealthLine[] {
   // Moved to "Mes dépenses" already, its removal not synced yet (another device): the expense counts.
   const moved = new Set(expenses.map((line) => line.id).filter(Boolean));
-  const kept = own.filter((line) => !(line.id && moved.has(movedExpenseId(line.id))));
-  const scans = new Set(kept.map((line) => line.scanId).filter(Boolean));
+  // One receipt, one line: the same scan kept twice in the own list (an older version) counts once.
+  const scans = new Set<string>();
+  const kept = own.filter((line) => {
+    if (line.id && moved.has(movedExpenseId(line.id))) return false;
+    if (!line.scanId) return true;
+    if (scans.has(line.scanId)) return false;
+    scans.add(line.scanId);
+    return true;
+  });
   return [...kept, ...expenses.filter((line) => !(line.scanId && scans.has(line.scanId)))];
 }
+
+/**
+ * The id of the own expense a scanned receipt makes: always the same, so
+ * adding it twice (two taps, two devices before the sync) rewrites one line.
+ */
+export const receiptSpendId = (scanId: string) => `receipt:${scanId}`;
 
 // ---- Moved to "Mes dépenses" (the plan has it now) ------------------------------
 
@@ -175,6 +188,9 @@ export function mergeLines(own: HealthLine[], expenses: HealthLine[]): HealthLin
  * rewrites that expense instead of adding one.
  */
 export const movedExpenseId = (spendId: string) => `health:${spendId}`;
+
+/** An expense made by moving one of Ma santé's own: its removal is remembered, so it never comes back. */
+export const isMovedExpenseId = (id: string) => id.startsWith("health:");
 
 /** What "Mes dépenses" saves for one of Ma santé's own expenses (expenseStore.saveExpense). */
 export function movedExpense(spend: HealthSpend) {

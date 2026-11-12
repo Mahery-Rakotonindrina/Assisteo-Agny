@@ -212,7 +212,8 @@ test("a pharmacy receipt scanned, without « Mes dépenses »: added to the heal
   await page.goto("/result?id=pharma");
   const controls = page.getByTestId("health-spending-receipt");
   await expect(controls).toContainText(/Ce reçu de santé fait 15\s500 Ar\./);
-  await controls.getByTestId("health-spending-receipt-add").click();
+  // Two quick taps: one line.
+  await controls.getByTestId("health-spending-receipt-add").dblclick();
   await expect(controls.getByRole("link", { name: "Ajouté · Voir dans Ma santé" })).toBeVisible();
   await expect(controls.getByTestId("health-spending-receipt-add")).toHaveCount(0);
 

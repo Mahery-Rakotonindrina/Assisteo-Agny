@@ -1,10 +1,11 @@
+import { useRef, useState } from "react";
 import { Check, Plus } from "lucide-react";
 import { Button } from "@/components/Button";
 import { useToast } from "@/components/Toast";
 import { useHealthSpending } from "@/hooks/useHealthSpending";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatAriary } from "@/lib/format";
-import { receiptSpend } from "@/lib/healthSpending";
+import { receiptSpend, receiptSpendId } from "@/lib/healthSpending";
 import { haptics } from "@/services/device";
 import { healthSpendStore } from "@/services/healthSpendStore";
 import type { HistoryEntry } from "@/types/history";
@@ -19,14 +20,25 @@ export function ReceiptHealthControls({ entry }: { entry: HistoryEntry }) {
   const { t, locale } = useTranslation();
   const toast = useToast();
   const { spends, isLoading } = useHealthSpending();
+  const [working, setWorking] = useState(false);
+  const busy = useRef(false);
   const spend = receiptSpend(entry);
   if (!spend || isLoading) return null;
   const added = spends.some((item) => item.scanId === entry.id);
 
+  // Once: the button waits for the write, and the line's id comes from the scan (added again, it is rewritten).
   const add = async () => {
+    if (busy.current) return;
+    busy.current = true;
+    setWorking(true);
     haptics.success();
-    await healthSpendStore.add(spend);
-    toast(t("health.spending.added"));
+    try {
+      await healthSpendStore.add(spend, receiptSpendId(entry.id));
+      toast(t("health.spending.added"));
+    } finally {
+      busy.current = false;
+      setWorking(false);
+    }
   };
 
   return (
@@ -37,7 +49,7 @@ export function ReceiptHealthControls({ entry }: { entry: HistoryEntry }) {
           {t("health.spending.receiptAdded")}
         </Button>
       ) : (
-        <Button variant="secondary" size="md" icon={<Plus />} onClick={() => void add()} data-testid="health-spending-receipt-add">
+        <Button variant="secondary" size="md" icon={<Plus />} onClick={() => void add()} disabled={working} data-testid="health-spending-receipt-add">
           {t("health.spending.receiptAdd")}
         </Button>
       )}

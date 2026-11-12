@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { useMemo, useState, type FormEvent } from "react";
+import { useMemo, useRef, useState, type FormEvent } from "react";
 import { ArrowRightLeft, ChevronLeft, ChevronRight, FlaskConical, Hospital, Pill, Plus, Stethoscope, Trash2, Wallet } from "lucide-react";
 import { Button } from "@/components/Button";
 import { ExpenseSheet } from "@/components/Expenses/ExpenseSheet";
@@ -264,27 +264,38 @@ function SpendForm({ sheet, owner, linked, onDone }: { sheet: NonNullable<Sheet>
   const [note, setNote] = useState(spend?.note ?? "");
   const [wrong, setWrong] = useState<string[]>([]);
   const [confirm, setConfirm] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const busy = useRef(false);
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
+    // Two taps on "Enregistrer": one expense.
+    if (busy.current) return;
     const result = cleanHealthSpend({ at: parseDay(day) ?? Number.NaN, amount, kind, profileId: forWho, note, scanId: spend?.scanId });
     if (!result.fields) {
       setWrong(result.wrong);
       return;
     }
+    busy.current = true;
+    setSaving(true);
     haptics.success();
     const { fields } = result;
-    if (spend) await healthSpendStore.edit(spend.id, fields);
-    // With "Mes dépenses": a real expense of its category "health", counted in the budget.
-    else if (linked)
-      await expenseStore.saveExpense({
-        at: fields.at,
-        amountMga: fields.amountMga,
-        category: HEALTH_CATEGORY,
-        note: fields.note,
-        health: { kind: fields.kind, ...(fields.profileId && { profileId: fields.profileId }) },
-      });
-    else await healthSpendStore.add(fields);
+    try {
+      if (spend) await healthSpendStore.edit(spend.id, fields);
+      // With "Mes dépenses": a real expense of its category "health", counted in the budget.
+      else if (linked)
+        await expenseStore.saveExpense({
+          at: fields.at,
+          amountMga: fields.amountMga,
+          category: HEALTH_CATEGORY,
+          note: fields.note,
+          health: { kind: fields.kind, ...(fields.profileId && { profileId: fields.profileId }) },
+        });
+      else await healthSpendStore.add(fields);
+    } finally {
+      busy.current = false;
+      setSaving(false);
+    }
     toast(t(spend ? "health.spending.updated" : linked ? "health.spending.addedExpenses" : "health.spending.added"));
     onDone();
   };
@@ -337,7 +348,7 @@ function SpendForm({ sheet, owner, linked, onDone }: { sheet: NonNullable<Sheet>
         </Button>
       )}
       <div className={sheetStyles.row}>
-        <Button type="submit" data-testid="health-spending-save">
+        <Button type="submit" disabled={saving} data-testid="health-spending-save">
           {t("health.spending.save")}
         </Button>
         <Button variant="secondary" onClick={onDone}>
