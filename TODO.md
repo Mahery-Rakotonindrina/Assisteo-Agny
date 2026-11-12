@@ -314,3 +314,14 @@ Par ordre d’intérêt. Effort : petit, moyen, important.
 - [x] « Ma boutique » pour les petits commerçants : ventes du jour, stock, crédit des clients (qui doit combien) — important — fait : ventes, stock, crédit des clients, totaux (Pro, #135)
 - [x] Aide intégrée : questions fréquentes et courtes vidéos « Comment ça marche », pour les gens peu habitués aux applis — petit — fait : page /aide, guides et 21 questions (#129) ; pas de vidéos
 - [ ] Sans code, à décider par le propriétaire : ouvrir « Mes dépenses » et « Prêts » à des offres payantes (cases à cocher dans Admin → Offres), déjà aux § 16 et § 17
+
+## 21. Ma santé (2026-11-10 au 2026-11-12)
+
+- [x] Écran « Ma santé » (/sante) : avertissement médical toujours visible, traitements en cours (prochaine prise, jusqu’au…, « Arrêter les rappels »), toutes les ordonnances scannées (#145)
+- [x] « J’ai pris » depuis l’écran et la notification, suivi de la semaine ; une prise cochée ne sonne plus ; « Dernier jour demain » et « pense à racheter » ; partage des traitements par WhatsApp ou en PDF (#145, à partir de Lite pour les rappels)
+- [x] Fiche d’urgence : groupe sanguin, allergies, maladies chroniques, contact à prévenir avec « Appeler », lisible hors ligne, pour tous (#146)
+- [x] Rendez-vous médicaux, rappel la veille à 18 h et 2 h avant (à partir de Lite) ; jamais perdus entre deux appareils (#147)
+- [x] « Pour qui ? » : un profil par proche, tout l’écran filtré par personne, une fiche d’urgence chacun, notifications au prénom (#148)
+- [x] Mes mesures : tension, glycémie (g/L), poids, avec une courbe sur 30 jours, 3 mois ou 1 an, sans aucune interprétation ; partage pour le médecin (#149, migration 0024)
+- [x] Dépenses de santé du mois, par type et par personne, mois précédents ; reliées à « Mes dépenses » quand l’offre l’a, sans double (#150, migration 0025)
+- [ ] Migrations 0024 et 0025 à appliquer en production avant la mise en ligne (sinon mesures et dépenses de santé restent sur l’appareil)
