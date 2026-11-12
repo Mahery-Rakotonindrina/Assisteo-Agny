@@ -13,6 +13,7 @@ import { ageOf, liveProfiles, ME, PROFILE_NAME_MAX, relations, removeProfile, sa
 import { useSettings } from "@/lib/settings/SettingsProvider";
 import { haptics } from "@/services/device";
 import { createId, historyStore } from "@/services/historyStore";
+import { healthSpendStore } from "@/services/healthSpendStore";
 import { measureStore } from "@/services/measureStore";
 import type { HistoryEntry } from "@/types/history";
 import styles from "./HealthProfiles.module.scss";
@@ -56,6 +57,7 @@ export function HealthProfiles({ selected, onSelect, entries }: { selected: stri
     // Their prescriptions and treatments come back to "Moi" too (synced with the scans).
     for (const entry of entries.filter((item) => item.profileId === profile.id)) await historyStore.update(entry.id, { profileId: undefined }).catch(() => undefined);
     await measureStore.reassign(profile.id).catch(() => undefined);
+    await healthSpendStore.reassign(profile.id).catch(() => undefined);
     setSheet(null);
     onSelect(ME);
     toast(t("health.profiles.removed", { name: profile.name }));

@@ -21,6 +21,8 @@ import { plantStore } from "@/services/plantStore";
 import { startPlantSync, syncPlants } from "@/services/plantSync";
 import { shopStore } from "@/services/shopStore";
 import { startShopSync, syncShop } from "@/services/shopSync";
+import { healthSpendStore } from "@/services/healthSpendStore";
+import { startHealthSpendSync, syncHealthSpending } from "@/services/healthSpendSync";
 import { measureStore } from "@/services/measureStore";
 import { startMeasureSync, syncMeasures } from "@/services/measureSync";
 import { startVehicleSync, syncVehicles } from "@/services/vehicleSync";
@@ -139,6 +141,12 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!userId) return;
     return startMeasureSync(userId);
+  }, [userId]);
+
+  // Ma santé's own health expenses (fails quietly before migration 0025).
+  useEffect(() => {
+    if (!userId) return;
+    return startHealthSpendSync(userId);
   }, [userId]);
 
   // "Prêts".
@@ -283,6 +291,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         syncPlants(userId).catch(() => undefined),
         syncShop(userId).catch(() => undefined),
         syncMeasures(userId).catch(() => undefined),
+        syncHealthSpending(userId).catch(() => undefined),
         syncLoans(userId).catch(() => undefined),
         syncExpenses(userId).catch(() => undefined),
         householdId ? syncHouseholdExpenses(userId, householdId).catch(() => undefined) : undefined,
@@ -310,6 +319,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await plantStore.wipe();
     await shopStore.wipe();
     await measureStore.wipe();
+    await healthSpendStore.wipe();
     await loanStore.wipe();
     await expenseStore.wipe();
     await householdExpenseStore.wipe();
@@ -345,6 +355,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await plantStore.wipe();
     await shopStore.wipe();
     await measureStore.wipe();
+    await healthSpendStore.wipe();
     await loanStore.wipe();
     await expenseStore.wipe();
     await householdExpenseStore.wipe();

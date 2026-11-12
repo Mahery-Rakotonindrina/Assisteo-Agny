@@ -23,6 +23,7 @@ import {
   type WalletPick,
   walletPickId,
 } from "@/lib/expenses";
+import { HEALTH_CATEGORY } from "@/lib/healthSpending";
 import { createId } from "./historyStore";
 import { removeRecords } from "./storeRemoval";
 
@@ -95,6 +96,9 @@ export const expenseStore = {
   async saveExpense(draft: Draft<ManualExpense>) {
     const amountMga = cleanAmount(draft.amountMga);
     if (amountMga === undefined) return null;
+    // Ma santé's kind and person: given, or kept from before while the expense stays a health one.
+    const before = draft.id && !("health" in draft) ? await current<ManualExpense>(draft.id) : undefined;
+    const health = "health" in draft ? draft.health : before?.health;
     return save<ManualExpense>("expense", draft.id, {
       at: draft.at,
       amountMga,
@@ -106,6 +110,7 @@ export const expenseStore = {
       scanId: draft.scanId || undefined,
       wallet: draft.wallet || undefined,
       statement: cleanTag(draft.statement),
+      ...(health && (draft.category || "other") === HEALTH_CATEGORY && { health }),
       ...cleanConverted(draft),
     });
   },

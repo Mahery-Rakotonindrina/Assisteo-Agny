@@ -34,6 +34,7 @@ export const EXPORT_DATABASES = {
   "assisteo-plants": { store: "plants", file: "plantes" },
   "assisteo-shop": { store: "shop", file: "boutique" },
   "assisteo-measures": { store: "measures", file: "sante" },
+  "assisteo-health-spending": { store: "spending", file: "sante" },
   "assisteo-household": { store: "state", file: "foyer" },
   "assisteo-household-expenses": { store: "expenses", file: "foyer" },
   "assisteo-household-loans": { store: "loans", file: "foyer" },
@@ -210,7 +211,9 @@ function contents({ databases, settings }: LocalData, account: AccountExport | n
     maison: some(read("assisteo-home")) ? { items: list(read("assisteo-home"), "maison") } : undefined,
     plantes: some(read("assisteo-plants")) ? { plants: list(read("assisteo-plants"), "plantes") } : undefined,
     boutique: some(read("assisteo-shop")) ? { records: list(read("assisteo-shop"), "boutique") } : undefined,
-    sante: some(read("assisteo-measures")) ? { measures: list(read("assisteo-measures"), "sante") } : undefined,
+    sante: some(read("assisteo-measures"), read("assisteo-health-spending"))
+      ? { measures: list(read("assisteo-measures"), "sante"), spending: list(read("assisteo-health-spending"), "sante") }
+      : undefined,
     foyer: household,
     reglages: readable(settings, "reglages", [], { list: null, taken: photos.taken }),
     compte: account ? readable(account, "compte", [], { list: null, taken: photos.taken }) : undefined,

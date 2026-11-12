@@ -8,6 +8,7 @@ import { Button } from "@/components/Button";
 import { EmergencyCard } from "@/components/EmergencyCard";
 import { EmptyState } from "@/components/EmptyState";
 import { HealthProfiles } from "@/components/HealthProfiles";
+import { HealthSpending } from "@/components/HealthSpending";
 import { Measures } from "@/components/Measures";
 import { MedicineDisclaimer } from "@/components/Medicine";
 import { PlanBadge } from "@/components/PlanBadge";
@@ -38,7 +39,7 @@ const SCAN_HREF = "/?mode=document";
  * "Ma santé": the treatments in progress with their next dose, and the
  * prescriptions and medicine boxes scanned. Everything comes from the
  * history (the scans and their dose plans), but the emergency card and the
- * appointments, kept in the settings. The lists and the card are for
+ * appointments, kept in the settings, the measures and the health expenses. The lists and the card are for
  * everyone; reminders (doses, appointments) from Lite, like on a scan.
  */
 export default function HealthPage() {
@@ -121,6 +122,10 @@ export default function HealthPage() {
 
         <motion.div variants={rise}>
           <Measures profileId={person} />
+        </motion.div>
+
+        <motion.div variants={rise}>
+          <HealthSpending profileId={person} />
         </motion.div>
 
         {empty ? (

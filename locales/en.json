@@ -377,7 +377,9 @@
         "healthProfiles": "{count} relatives (with their emergency card)",
         "healthProfilesOne": "1 relative (with their emergency card)",
         "measures": "{count} measures (blood pressure, blood sugar, weight)",
-        "measuresOne": "1 measure"
+        "measuresOne": "1 measure",
+        "healthSpending": "{count} health expenses (those in “My expenses” stay)",
+        "healthSpendingOne": "1 health expense (those in “My expenses” stay)"
       },
       "stays": {
         "history": "Your parcels (with their photo), your expenses, your loans and your lists.",
@@ -4116,6 +4118,10 @@
           "measures": {
             "q": "How do I follow my blood pressure, blood sugar or weight?",
             "a": "In “My health”, tap “Add a measure”: the date and time are already filled in. You see the last value and the curve over 30 days, 3 months or 1 year, for you or a relative. “Share” or “PDF” sends them to your doctor. The app never says whether a value is good or bad: that's for your doctor to talk about."
+          },
+          "spending": {
+            "q": "How do I keep track of what I spend on health?",
+            "a": "In “My health”, tap “Add a health expense”: the amount, the kind (pharmacy, consultation, tests, hospital, other), the day, and who it's for. You see this month's total and last month's, for you or a relative. With “My expenses”, the expense goes into your Health category, and the pharmacy receipts you scan count there on their own. Without it, scan a pharmacy receipt then tap “Add to health spending”."
           }
         }
       }
@@ -4649,6 +4655,54 @@
         "failed": "Couldn't share the measures"
       },
       "tapHint": "Touch a dot to see its value."
+    },
+    "spending": {
+      "title": "Health spending",
+      "month": "Total for {month}",
+      "before": "Last month: {amount}",
+      "byKind": "By kind",
+      "list": "This month's spending",
+      "add": "Add a health expense",
+      "edit": "Edit the expense",
+      "empty": "Write down what you pay at the pharmacy, the doctor's, for tests or at the hospital: you'll see the month's total.",
+      "linked": "They also count in “My expenses”, category Health.",
+      "unlinked": "With “My expenses”, they also count in your budget.",
+      "inExpenses": "In My expenses",
+      "family": "The whole family this month",
+      "kind": "Kind of expense",
+      "kinds": {
+        "pharmacy": "Pharmacy",
+        "consultation": "Consultation",
+        "tests": "Tests",
+        "hospital": "Hospital",
+        "other": "Other"
+      },
+      "amount": "Amount (Ar)",
+      "day": "Day",
+      "note": "Note (optional)",
+      "noteHint": "Market pharmacy, Dr Rabe…",
+      "save": "Save",
+      "cancel": "Cancel",
+      "remove": "Delete the expense",
+      "removeConfirm": "Yes, delete",
+      "added": "Health expense added",
+      "addedExpenses": "Expense added to “My expenses”, category Health",
+      "updated": "Expense updated",
+      "removed": "Expense deleted",
+      "wrongAmount": "Write the amount in ariary (for example 12 500).",
+      "wrongDay": "Pick the day of the expense.",
+      "receipt": "This health receipt comes to {amount}.",
+      "receiptAdd": "Add to health spending",
+      "receiptAdded": "Added · See in My health",
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month",
+      "moveText": "{count} health expenses are only in My health: they don't count in your budget.",
+      "moveTextOne": "1 health expense is only in My health: it doesn't count in your budget.",
+      "move": "Count them in My expenses",
+      "moveConfirm": "Yes, put them in My expenses",
+      "moved": "{count} expenses put in “My expenses”, category Health",
+      "movedOne": "1 expense put in “My expenses”, category Health",
+      "moveFailed": "That didn't work. Try again."
     }
   }
 }

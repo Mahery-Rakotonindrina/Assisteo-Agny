@@ -1,0 +1,341 @@
+@use "../../styles/mixins" as *;
+
+// "Dépenses de santé" (Ma santé): the month's total with the month before and
+// the kinds, the lines, the total per person, and the form.
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+
+  h2 {
+    @include eyebrow;
+  }
+
+  > button {
+    align-self: flex-start;
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.25;
+    padding-block: 0.4rem;
+  }
+}
+
+.summary {
+  @include card;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+  padding: 0.95rem 1rem;
+  border-radius: var(--radius-md);
+
+  > span,
+  > small {
+    font-size: 0.86rem;
+    color: var(--text-muted);
+    overflow-wrap: break-word;
+  }
+
+  > strong {
+    font-size: 1.5rem;
+    font-weight: 800;
+    overflow-wrap: break-word;
+  }
+}
+
+.kindsTotal {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-top: 0.45rem;
+  padding: 0.5rem 0 0;
+  border-top: 1px solid var(--border);
+  list-style: none;
+
+  li {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0 0.6rem;
+    font-size: 0.9rem;
+
+    span {
+      min-width: 0;
+      color: var(--text-muted);
+      overflow-wrap: break-word;
+    }
+
+    strong {
+      white-space: nowrap;
+    }
+  }
+}
+
+.hint,
+.empty {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  overflow-wrap: break-word;
+}
+
+.hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  @include card;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  min-width: 0;
+  min-height: 2.75rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  background: var(--surface-strong);
+  color: var(--accent-text);
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+
+  small {
+    font-size: 0.84rem;
+    color: var(--text-muted);
+    overflow-wrap: break-word;
+  }
+
+  em {
+    font-style: normal;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--accent-text);
+  }
+}
+
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0 0.6rem;
+
+  strong {
+    min-width: 0;
+    overflow-wrap: break-word;
+  }
+}
+
+.amount {
+  white-space: nowrap;
+}
+
+.chevron {
+  flex-shrink: 0;
+  color: var(--text-subtle);
+}
+
+.people {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+
+  h3 {
+    font-size: 0.95rem;
+    font-weight: 800;
+  }
+
+  ul {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  button {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0 0.6rem;
+    width: 100%;
+    min-height: 2.75rem;
+    padding: 0.45rem 0.75rem;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+
+    span {
+      min-width: 0;
+      overflow-wrap: break-word;
+    }
+
+    strong {
+      white-space: nowrap;
+    }
+
+    &[aria-pressed="true"] {
+      box-shadow: inset 0 0 0 2px var(--accent-text);
+    }
+  }
+}
+
+// The kind: segmented buttons; on a narrow screen in very large text they wrap.
+.kinds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.25rem;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+
+  button {
+    flex: 1 1 auto;
+    min-height: 2.75rem;
+    padding: 0.3rem 0.6rem;
+    white-space: nowrap;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: none;
+    color: var(--text-muted);
+    font: inherit;
+    font-weight: 700;
+    line-height: 1.15;
+    cursor: pointer;
+
+    &[aria-pressed="true"] {
+      background: var(--bg-elevated);
+      color: var(--text);
+      box-shadow: 0 0 0 1px var(--border);
+    }
+  }
+}
+
+.error {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--danger);
+  overflow-wrap: break-word;
+}
+
+// Under a pharmacy receipt scanned: what it would add, and the button.
+.receipt {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  p {
+    color: var(--text-muted);
+    overflow-wrap: break-word;
+  }
+
+  > a,
+  > button {
+    align-self: flex-start;
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.25;
+    padding-block: 0.4rem;
+  }
+}
+
+// ‹ month › like "Mes dépenses"; never past the current month (› disabled).
+.monthPicker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+
+  strong {
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+    font-size: 1.05rem;
+    text-transform: capitalize;
+    overflow-wrap: break-word;
+  }
+
+  button {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 0;
+    border-radius: 50%;
+    background: var(--surface);
+    color: var(--text-muted);
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      background: var(--surface-strong);
+      color: var(--text);
+    }
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+  }
+}
+
+// The plan has "Mes dépenses" now: Ma santé's own expenses, to count there.
+.move {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+
+  p {
+    font-size: 0.9rem;
+    overflow-wrap: break-word;
+  }
+
+  > button {
+    align-self: flex-start;
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.25;
+    padding-block: 0.4rem;
+  }
+}

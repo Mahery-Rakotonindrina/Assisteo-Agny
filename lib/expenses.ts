@@ -1,6 +1,7 @@
 import type { Bill } from "@/lib/bills";
 import type { Analysis, BillKind, MobileMoneyOperator, OwnKind, ReceiptPayment } from "@/lib/ai/schema";
 import type { Vehicle } from "@/lib/garage";
+import type { HealthTag } from "@/lib/healthSpending";
 import type { ForeignCurrency } from "@/lib/money";
 import { parseDay } from "@/lib/papers";
 import { makeRepeat, occurrence } from "@/lib/reminderRepeat";
@@ -111,6 +112,8 @@ export type ManualExpense = Base &
     wallet?: string;
     /** Imported from a statement (its sourceKey is then "statement:…"). */
     statement?: StatementTag;
+    /** Added from "Ma santé" (category "health"): its kind and its person (lib/healthSpending.ts). Older apps ignore it. */
+    health?: HealthTag;
   };
 
 export type Income = Base & {
