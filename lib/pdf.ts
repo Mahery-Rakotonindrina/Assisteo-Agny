@@ -169,6 +169,13 @@ export class PdfWriter {
     this.doc.addImage(dataUrl, "JPEG", x, this.y, width, height, undefined, "FAST");
   }
 
+  /** A drawing of its own (the wallet card): `height` mm kept in the flow, drawn from the left margin. */
+  block(height: number, draw: (doc: jsPDF, x: number, y: number, width: number) => void) {
+    this.ensure(height);
+    draw(this.doc, MARGIN, this.y, WIDTH);
+    this.y += height;
+  }
+
   /** Empty room, in mm. */
   space(height: number) {
     this.ensure(height);

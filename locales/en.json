@@ -4522,7 +4522,21 @@
         "headingOf": "{name}’s emergency card"
       },
       "titleOf": "{name}’s emergency card",
-      "emptyOf": "Fill in {name}’s: their blood group, their allergies, who to call."
+      "emptyOf": "Fill in {name}’s: their blood group, their allergies, who to call.",
+      "print": {
+        "button": "Print the card",
+        "wallpaper": "Wallpaper",
+        "making": "Preparing…",
+        "howTo": "Print this page, cut the card out along the marks, fold it in the middle and glue both sides together. It fits in a wallet.",
+        "fold": "Fold here",
+        "seeBack": "Person to call on the back.",
+        "keep": "Keep the card with your papers. Print it again when your card changes.",
+        "keepOf": "Give the card to {name} to keep with their papers. Print it again when their card changes.",
+        "pictureSaved": "Picture downloaded",
+        "failed": "The file couldn't be made. Try again.",
+        "help": "To put it on your lock screen: open the picture in your gallery, tap ⋮ then “Set as wallpaper” and choose “Lock screen”. On iPhone: Share, then “Use as Wallpaper”.",
+        "emptyHint": "Once filled in, you can print it as a wallet card or set it as your wallpaper."
+      }
     },
     "appointments": {
       "title": "Appointments",
