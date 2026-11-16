@@ -14,6 +14,8 @@ export type SyncedStore<T extends SyncedRecord> = {
   rawGet(id: string): Promise<T | undefined>;
   rawPut(record: T): Promise<void>;
   rawDelete(id: string): Promise<void>;
+  /** A row removed elsewhere that this device never had (optional: a store that must remember some). */
+  noteRemoved?(id: string, at: number): Promise<void>;
   notify(): void;
   subscribe(listener: () => void): () => void;
   setKeepTombstones(value: boolean): void;
@@ -128,10 +130,11 @@ export function createRowSync<T extends SyncedRecord>(table: string, store: Sync
         const remoteAt = time(row.updated_at);
         if (local?.dirty && local.updatedAt >= remoteAt) continue;
         if (row.deleted_at) {
-          if (local) {
+          // A removal already remembered here (not to send): nothing to do.
+          if (local && !(local.deletedAt && !local.dirty)) {
             await store.rawDelete(row.id);
             changed = true;
-          }
+          } else if (!local) await store.noteRemoved?.(row.id, remoteAt);
         } else if (!local || local.updatedAt !== remoteAt) {
           const pulled = { ...row.data, id: row.id, updatedAt: remoteAt, dirty: false };
           const record = withAuthor ? withAuthor(pulled, row.user_id ?? null) : pulled;

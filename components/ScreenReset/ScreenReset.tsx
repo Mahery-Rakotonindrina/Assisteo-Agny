@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { useCallback, useState, type ReactNode } from "react";
-import { ChevronRight, Download, HandCoins, History, Package, Receipt, Store, Trash2, Wallet } from "lucide-react";
+import { ChevronRight, Download, HandCoins, HeartPulse, History, Package, Receipt, Store, Trash2, Wallet } from "lucide-react";
 import { Button } from "@/components/Button";
 import { ExpenseSheet } from "@/components/Expenses/ExpenseSheet";
 import { useToast } from "@/components/Toast";
@@ -8,11 +8,17 @@ import { useExpenses } from "@/hooks/useExpenses";
 import { useExpenseSources } from "@/hooks/useExpenseSources";
 import { useHistory } from "@/hooks/useHistory";
 import { useLoans } from "@/hooks/useLoans";
+import { useHealthSpending } from "@/hooks/useHealthSpending";
+import { useMeasures } from "@/hooks/useMeasures";
 import { useParcels } from "@/hooks/useParcels";
 import { useShop } from "@/hooks/useShop";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAccount } from "@/lib/account/AccountProvider";
+import { liveAppointments, removeAllAppointments } from "@/lib/appointments";
+import { liveProfiles, removeAllProfiles } from "@/lib/healthProfiles";
+import { blankCard, isCardEmpty } from "@/lib/emergencyCard";
+import { useSettings } from "@/lib/settings/SettingsProvider";
 import { computedLineCount, expenseResetCounts, loanResetCounts, pocketResetCounts, shopResetCounts, type ResetScreen } from "@/lib/screenReset";
 import { ResetOfflineError, resetScreen } from "@/services/screenReset";
 import styles from "./ScreenReset.module.scss";
@@ -24,6 +30,7 @@ const icons: Record<ResetScreen, ReactNode> = {
   loans: <HandCoins />,
   parcels: <Package />,
   shop: <Store />,
+  health: <HeartPulse />,
 };
 
 /** One line of "what goes": its key, with the "…One" form for a single one. */
@@ -46,6 +53,13 @@ export function ScreenReset() {
   const { parcels } = useParcels();
   const { records: shopRecords } = useShop();
   const sources = useExpenseSources();
+  const { settings, update } = useSettings();
+  const hasCard = !isCardEmpty(settings.emergencyCard);
+  const appointmentCount = liveAppointments(settings.appointments).length;
+  const profileCount = liveProfiles(settings.healthProfiles).length;
+  const { measures } = useMeasures();
+  const { spends } = useHealthSpending();
+  const hasHealth = hasCard || appointmentCount > 0 || profileCount > 0 || measures.length > 0 || spends.length > 0;
   const [open, setOpen] = useState<ResetScreen | null>(null);
   const [working, setWorking] = useState(false);
 
@@ -70,6 +84,7 @@ export function ScreenReset() {
     loans: [{ key: "loans", count: loanCounts.loans }, { key: "repayments", count: loanCounts.repayments }, { key: "proofs", count: loanCounts.proofs }, { key: "links" }],
     parcels: [{ key: "parcels", count: parcels.length }, { key: "parcelReminders" }],
     shop: [{ key: "shopSales", count: shopCounts.sales }, { key: "shopProducts", count: shopCounts.products }, { key: "shopPayments", count: shopCounts.payments }],
+    health: [...(hasCard ? [{ key: "emergencyCard" }] : []), { key: "appointments", count: appointmentCount }, { key: "healthProfiles", count: profileCount }, { key: "measures", count: measures.length }, { key: "healthSpending", count: spends.length }],
   };
   const hasData: Record<ResetScreen, boolean> = {
     history: entries.length > 0,
@@ -78,6 +93,7 @@ export function ScreenReset() {
     loans: loanCounts.loans > 0,
     parcels: parcels.length > 0,
     shop: shopCounts.sales + shopCounts.products + shopCounts.payments > 0,
+    health: hasHealth,
   };
   // A screen of a feature the plan doesn't have shows only when something is kept from it.
   const shown: Record<ResetScreen, boolean> = {
@@ -87,8 +103,10 @@ export function ScreenReset() {
     loans: has("loans") || hasData.loans,
     parcels: true,
     shop: has("shop") || hasData.shop,
+    // Ma santé's emergency card and appointments: only once written.
+    health: hasHealth,
   };
-  const screens = (["history", "expenses", "pockets", "loans", "parcels", "shop"] as const).filter((screen) => shown[screen]);
+  const screens = (["history", "expenses", "pockets", "loans", "parcels", "shop", "health"] as const).filter((screen) => shown[screen]);
 
   const close = useCallback(() => {
     if (!working) setOpen(null);
@@ -97,7 +115,18 @@ export function ScreenReset() {
   const confirm = async (screen: ResetScreen) => {
     setWorking(true);
     try {
-      await resetScreen(screen);
+      // The emergency card and the appointments are settings: emptied here, dated so the other devices follow.
+      if (screen === "health") {
+        const now = Date.now();
+        update({
+          ...(settings.emergencyCard && { emergencyCard: blankCard(now) }),
+          ...(settings.appointments && { appointments: removeAllAppointments(settings.appointments, now) }),
+          // The relatives go with their cards; their scans come back to "Moi" by themselves (lib/healthProfiles.ts ownerOf).
+          ...(settings.healthProfiles && { healthProfiles: removeAllProfiles(settings.healthProfiles, now) }),
+        });
+        // The measures and the health expenses are records of their own (tables health_measures, health_spending).
+        await resetScreen(screen);
+      } else await resetScreen(screen);
       setOpen(null);
       toast(t(`settings.reset.done.${screen}`));
     } catch (error) {

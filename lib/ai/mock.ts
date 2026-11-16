@@ -1016,6 +1016,7 @@ const prescriptionScan: Record<Locale, Analysis> = {
     medicine: {
       kind: "prescription",
       unreadable: "Le nom du médecin n'est pas lisible.",
+      renewal: false,
       items: [
         {
           name: "Amoxicilline",
@@ -1067,6 +1068,7 @@ const prescriptionScan: Record<Locale, Analysis> = {
     medicine: {
       kind: "prescription",
       unreadable: "The doctor's name can't be read.",
+      renewal: false,
       items: [
         {
           name: "Amoxicillin",

@@ -46,6 +46,7 @@ import { CodeList } from "@/components/CodeList";
 import { DocumentText } from "@/components/DocumentText";
 import { FolderPicker } from "@/components/FolderPicker";
 import { ReceiptControls } from "@/components/Expenses";
+import { ReceiptHealthControls } from "@/components/HealthSpending";
 import { GarageControls } from "@/components/Garage";
 import { hasInventoryControls, InventoryControls, InventoryIcon } from "@/components/Inventory";
 import { MedicationPlanner, MedicineCard, MedicineDisclaimer } from "@/components/Medicine";
@@ -88,6 +89,7 @@ import { useReminderTexts } from "@/hooks/useReminderTexts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { exampleEntry, isExampleId } from "@/lib/examples";
 import { dietAlerts, hasDietAlert } from "@/lib/food";
+import { receiptSpend } from "@/lib/healthSpending";
 import { parcelsFor, sameParcel } from "@/lib/parcels";
 import { formatDateTime, formatDay } from "@/lib/format";
 import { easeOut, pop, rise, spring, stagger } from "@/lib/motion";
@@ -759,6 +761,13 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
             {!example && canAddExpense && analysis.document?.receipt && (
               <Section title={t("expenses.receipt.title")} icon={<Receipt />}>
                 <ReceiptControls entry={entry} />
+              </Section>
+            )}
+
+            {/* A pharmacy or doctor's receipt, without "Mes dépenses": add it to Ma santé's health expenses. */}
+            {!example && !canAddExpense && receiptSpend(entry) && (
+              <Section title={t("health.spending.title")} icon={<HeartPulse />}>
+                <ReceiptHealthControls entry={entry} />
               </Section>
             )}
 

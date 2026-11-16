@@ -6,7 +6,7 @@ import { prepare } from "./helpers";
 
 test.describe.configure({ timeout: 120_000 });
 
-const pages = ["/", "/history", "/parcels", "/lists", "/expenses", "/pockets", "/loans", "/plans", "/settings", "/decouvrir", "/aide", "/pret", "/privacy", "/auth-callback", "/offline.html"];
+const pages = ["/", "/history", "/parcels", "/lists", "/expenses", "/pockets", "/loans", "/plans", "/sante", "/settings", "/decouvrir", "/aide", "/pret", "/privacy", "/auth-callback", "/offline.html"];
 
 /** Every CSP violation of the page: the browser's event, and its console message. */
 async function watchViolations(page: Page) {

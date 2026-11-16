@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { motion } from "motion/react";
-import { BookOpen, Car, Download, Sprout, FolderLock, HandCoins, History, House, ListChecks, Package, ScanLine, Settings2, ShieldCheck, Smartphone, Store, UserRound, Wallet, WalletCards } from "lucide-react";
+import { BookOpen, Car, Download, HeartPulse, Sprout, FolderLock, HandCoins, History, House, ListChecks, Package, ScanLine, Settings2, ShieldCheck, Smartphone, Store, UserRound, Wallet, WalletCards } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { useAiStatus } from "@/hooks/useAiStatus";
 import { useAndroidDownload } from "@/hooks/useAndroidDownload";
@@ -28,6 +28,9 @@ const links = [
   { href: "/settings", key: "settings", Icon: Settings2 },
 ] as const;
 
+/** "Ma santé", for everyone: the emergency card is there. */
+const healthLink = { href: "/sante", key: "health", Icon: HeartPulse } as const;
+
 /** "Mes dépenses", shown only with a plan that includes it (Admin while tested). */
 const expensesLink = { href: "/expenses", key: "expenses", Icon: Wallet } as const;
 
@@ -52,7 +55,7 @@ export function Sidebar() {
   const keptExpenses = useKeptExpenses(!has("expenses"));
   const keptLoans = useKeptLoans(!has("loans"));
   // The plan is null on the server and at hydration: the extra links only appear once it is read.
-  const shown = [...links.slice(0, 8), ...(has("expenses") || inHousehold || keptExpenses ? [expensesLink] : []), ...(has("expenses") ? [pocketsLink] : []), ...(has("loans") || keptLoans ? [loansLink] : []), ...(has("shop") ? [shopLink] : []), ...links.slice(8), ...(isAdmin ? [adminLink] : [])];
+  const shown = [...links.slice(0, 8), healthLink, ...(has("expenses") || inHousehold || keptExpenses ? [expensesLink] : []), ...(has("expenses") ? [pocketsLink] : []), ...(has("loans") || keptLoans ? [loansLink] : []), ...(has("shop") ? [shopLink] : []), ...links.slice(8), ...(isAdmin ? [adminLink] : [])];
   const android = useAndroidDownload();
   const { t } = useTranslation();
   const aiStatus = useAiStatus();

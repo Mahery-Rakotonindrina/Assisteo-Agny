@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import { useState } from "react";
-import { Apple, BellRing, Camera, ChevronDown, FileText, HandCoins, LifeBuoy, ListChecks, Mail, MessageCircle, Package, ScanSearch, Search, Sparkles, UserRound, Wallet, WifiOff, type LucideIcon } from "lucide-react";
+import { Apple, BellRing, Camera, ChevronDown, FileText, HandCoins, HeartPulse, LifeBuoy, ListChecks, Mail, MessageCircle, Package, ScanSearch, Search, Sparkles, UserRound, Wallet, WifiOff, type LucideIcon } from "lucide-react";
 import { Seo } from "@/components/Seo";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -14,6 +14,7 @@ const topicIcons: Record<HelpTopicId, LucideIcon> = {
   scan: ScanSearch,
   plans: Sparkles,
   parcels: Package,
+  health: HeartPulse,
   expenses: Wallet,
   loans: HandCoins,
   account: UserRound,

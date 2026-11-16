@@ -38,6 +38,10 @@
   --cat-other: #94a3b8;
   --cat-parcel: #2dd4bf;
   --cat-list: #fda4af;
+  // Two lines on one chart (the blood pressure): a blue and an orange checked
+  // for colour blindness against this theme's surface.
+  --viz-1: #3987e5;
+  --viz-2: #d95926;
 
   // Plans (lib/plans.ts): one colour each, used through [data-plan] below.
   --plan-free: #94a3b8;
@@ -108,6 +112,8 @@
   --cat-other: #576475;
   --cat-parcel: #0f766e;
   --cat-list: #be123c;
+  --viz-1: #2a78d6;
+  --viz-2: #eb6834;
 
   --plan-free: #576475;
   --plan-lite: #0369a1;

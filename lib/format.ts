@@ -82,6 +82,11 @@ export function formatMonthYear(timestamp: number, locale: Locale) {
   return new Intl.DateTimeFormat(localeTags[locale], { month: "long", year: "numeric" }).format(timestamp);
 }
 
+/** A measure: at most so many decimals ("64,5", "1,05", "128"). */
+export function formatMeasure(value: number, decimals: number, locale: Locale) {
+  return new Intl.NumberFormat(localeTags[locale], { maximumFractionDigits: decimals }).format(value);
+}
+
 /** A number with up to two decimals: "221,45" / "221.45". */
 export function formatDecimal(value: number, locale: Locale) {
   return new Intl.NumberFormat(localeTags[locale], { maximumFractionDigits: 2 }).format(value);

@@ -33,7 +33,8 @@
       "settings": "Set|tings",
       "admin": "Admin"
     },
-    "shop": "My shop"
+    "shop": "My shop",
+    "health": "My health"
   },
   "scan": {
     "greeting": {
@@ -318,7 +319,8 @@
         "pockets": "Pockets",
         "loans": "Loans",
         "parcels": "Parcels",
-        "shop": "My shop"
+        "shop": "My shop",
+        "health": "My health"
       },
       "hints": {
         "history": "All your analyses. Your parcels keep their photo.",
@@ -326,7 +328,8 @@
         "pockets": "Your pockets and the transfers between them. Your expenses stay.",
         "loans": "All your loans, repayments and proofs.",
         "parcels": "Every parcel you follow, and their reminders.",
-        "shop": "Your sales, your stock and your customers’ credit."
+        "shop": "Your sales, your stock and your customers’ credit.",
+        "health": "Your emergency card, your appointments, your measures and your relatives."
       },
       "empty": "Nothing to erase",
       "title": "{name}: erase everything?",
@@ -367,7 +370,16 @@
         "shopProducts": "{count} products in stock",
         "shopProductsOne": "1 product in stock",
         "shopPayments": "{count} customer payments",
-        "shopPaymentsOne": "1 customer payment"
+        "shopPaymentsOne": "1 customer payment",
+        "emergencyCard": "Your emergency card",
+        "appointments": "{count} appointments",
+        "appointmentsOne": "1 appointment",
+        "healthProfiles": "{count} relatives (with their emergency card)",
+        "healthProfilesOne": "1 relative (with their emergency card)",
+        "measures": "{count} measures (blood pressure, blood sugar, weight)",
+        "measuresOne": "1 measure",
+        "healthSpending": "{count} health expenses (those in “My expenses” stay)",
+        "healthSpendingOne": "1 health expense (those in “My expenses” stay)"
       },
       "stays": {
         "history": "Your parcels (with their photo), your expenses, your loans and your lists.",
@@ -375,7 +387,8 @@
         "pockets": "Your expenses, income, savings and loans: they stay, without a pocket. You can add new pockets.",
         "loans": "The household's loans. Your pockets: the loans' moves leave them.",
         "parcels": "Their scans stay in the history. Their prices and sales leave Expenses.",
-        "shop": "Your other screens don’t change."
+        "shop": "Your other screens don’t change.",
+        "health": "Your prescriptions stay in the history, your treatments in “My health”."
       },
       "everywhere": "With your account, it's erased on your other devices too. You can't undo it.",
       "final": "You can't undo it.",
@@ -388,7 +401,8 @@
         "pockets": "Pockets erased",
         "loans": "Loans erased",
         "parcels": "Parcels erased",
-        "shop": "My shop erased"
+        "shop": "My shop erased",
+        "health": "Emergency card and appointments erased"
       },
       "offline": "No connection: the share links couldn't be stopped. Nothing is erased, try again online.",
       "failed": "Erasing didn't work. Try again."
@@ -437,9 +451,10 @@
           "maison": "your home inventory",
           "plantes": "your plants and their check-ups",
           "foyer": "your household: its name, your role, and only the lines you wrote",
-          "reglages": "your settings",
+          "reglages": "your settings and your emergency card",
           "compte": "your account: your e-mail, your plan, your subscriptions, the codes used, the family seats, the share links and the devices that get reminders",
-          "boutique": "your shop: the products in stock, the sales and the customers’ payments"
+          "boutique": "your shop: the products in stock, the sales and the customers’ payments",
+          "sante": "your health measures (blood pressure, blood sugar, weight), and your relatives’"
         },
         "photosIn": "the photos, by screen; the JSON files give the path of each",
         "photosOut": "no photos in this copy (“With the photos” unticked)",
@@ -2136,6 +2151,10 @@
       "list": {
         "title": "Lists and papers",
         "body": "A photo of a shopping list becomes a checklist, with prices in ariary. ID cards, insurance and warranties are filed, with an alert before they expire."
+      },
+      "health": {
+        "title": "My health",
+        "body": "Scan a prescription: what it says, dose reminders, and your treatments in one place. It doesn't replace a doctor's advice."
       }
     },
     "examplesTitle": "See what the AI answers",
@@ -4080,6 +4099,31 @@
             "a": "In Settings, choose “Always” for the data saver (“Auto” is the default mode): photos are lighter and leave faster, even on 3G."
           }
         }
+      },
+      "health": {
+        "title": "Health",
+        "questions": {
+          "where": {
+            "q": "Where do I find my treatments?",
+            "a": "In “My health” (menu, or the home shortcut): your emergency card, your current treatments, the next dose, and all your prescriptions."
+          },
+          "appointments": {
+            "q": "How do I not forget a doctor's appointment?",
+            "a": "In “My health”, tap “Add an appointment”: the day, the time, the doctor and the place. From Lite, you get a reminder the day before at 6 pm and another one 2 h before. Past appointments stay folded at the bottom of the list."
+          },
+          "family": {
+            "q": "How do I follow my children's or my parents' health?",
+            "a": "At the top of “My health”, tap “Add a relative”: their first name, the relation, their year of birth if you like. Tap their name to see their treatments, prescriptions, appointments and emergency card. When you create dose reminders or an appointment, pick “For whom?”: the notification starts with their first name."
+          },
+          "measures": {
+            "q": "How do I follow my blood pressure, blood sugar or weight?",
+            "a": "In “My health”, tap “Add a measure”: the date and time are already filled in. You see the last value and the curve over 30 days, 3 months or 1 year, for you or a relative. “Share” or “PDF” sends them to your doctor. The app never says whether a value is good or bad: that's for your doctor to talk about."
+          },
+          "spending": {
+            "q": "How do I keep track of what I spend on health?",
+            "a": "In “My health”, tap “Add a health expense”: the amount, the kind (pharmacy, consultation, tests, hospital, other), the day, and who it's for. You see this month's total and last month's, for you or a relative. With “My expenses”, the expense goes into your Health category, and the pharmacy receipts you scan count there on their own. Without it, scan a pharmacy receipt then tap “Add to health spending”."
+          }
+        }
       }
     },
     "guides": {
@@ -4385,5 +4429,280 @@
   "whatsappPhone": {
     "placeholder": "034 12 345 67",
     "invalid": "WhatsApp won't find this number. For abroad, add the country code: +33 6…"
+  },
+  "health": {
+    "title": "My health",
+    "lead": "Your current treatments and the prescriptions you scanned.",
+    "scan": "Scan a prescription",
+    "emptyTitle": "Nothing yet",
+    "emptyBody": "Scan a prescription or a medicine box: you'll find here what it says, and your dose reminders.",
+    "ongoing": "In progress",
+    "prescriptions": "My prescriptions",
+    "until": "Until {date} · {count} day(s) left",
+    "next": "Next dose: {when}",
+    "open": "See the prescription",
+    "remindersOn": "Dose reminders on",
+    "createReminders": "Create dose reminders",
+    "shortcutOngoing": "{count} treatment(s) in progress",
+    "shortcutHint": "Your emergency card and treatments",
+    "taken": "I took it",
+    "takenDone": "Dose ticked",
+    "today": "Today's doses",
+    "doseTaken": "Taken ✓",
+    "doseMissed": "Not ticked yet: if you took it, tick it",
+    "week": "{taken} of {due} dose(s) ticked this week",
+    "lastDay": {
+      "title": "Last day tomorrow: {names}",
+      "body": "Your treatment ends tomorrow.",
+      "renew": "Your treatment ends tomorrow: the prescription can be renewed, remember to buy more."
+    },
+    "share": {
+      "button": "Share",
+      "pdf": "PDF",
+      "heading": "My current treatments",
+      "caption": "As of {date}",
+      "line": "{name}: {dose}, at {times}, until {date}",
+      "copied": "List copied: paste it in a message",
+      "failed": "Couldn't share the list"
+    },
+    "emergency": {
+      "title": "Emergency card",
+      "lead": "What anyone helping you needs to know: readable even offline.",
+      "empty": "Fill it in a minute: your blood group, your allergies, who to call.",
+      "fill": "Fill in my card",
+      "edit": "Edit",
+      "blood": "Blood group",
+      "bloodUnknown": "I don't know",
+      "bloodPick": "Pick…",
+      "allergies": "Allergies",
+      "allergiesHint": "Separate them with commas: penicillin, peanuts…",
+      "conditions": "Long-term illnesses or treatments",
+      "conditionsHint": "Diabetes, asthma, blood pressure…",
+      "contact": "Person to call",
+      "contactName": "Their name",
+      "contactRelation": "Who they are to you",
+      "contactRelationHint": "My sister, my husband…",
+      "contactPhone": "Their phone",
+      "note": "Note",
+      "noteHint": "Anything else first responders should know",
+      "notFilled": "Not filled in",
+      "call": "Call {name}",
+      "callPlain": "Call",
+      "save": "Save",
+      "cancel": "Cancel",
+      "saved": "Card saved",
+      "privacy": "Your card stays on your phone. With an account, it follows your devices. It only goes elsewhere if you share it.",
+      "updated": "Updated on {date}",
+      "share": {
+        "button": "Share my card",
+        "whatsapp": "WhatsApp",
+        "heading": "My emergency card",
+        "line": "{label}: {value}",
+        "updated": "Updated on {date}",
+        "copied": "Card copied: paste it in a message",
+        "failed": "Couldn't share the card",
+        "headingOf": "{name}’s emergency card"
+      },
+      "titleOf": "{name}’s emergency card",
+      "emptyOf": "Fill in {name}’s: their blood group, their allergies, who to call."
+    },
+    "appointments": {
+      "title": "Appointments",
+      "add": "Add an appointment",
+      "edit": "Edit the appointment",
+      "editShort": "Edit",
+      "remove": "Delete",
+      "removeConfirm": "Yes, delete",
+      "empty": "No upcoming appointment. Add the next one: you'll get a reminder the day before and 2 h before.",
+      "past": "Past ({count})",
+      "day": "Day",
+      "hour": "Time",
+      "whenMissing": "Pick the day and time of the appointment.",
+      "who": "Doctor or department",
+      "whoHint": "Dr Rabe, dentist, maternity…",
+      "place": "Place",
+      "placeHint": "Practice, hospital, area…",
+      "note": "Reason or note",
+      "noteHint": "Bring the health booklet, fasting…",
+      "save": "Save",
+      "cancel": "Cancel",
+      "added": "Appointment added",
+      "updated": "Appointment changed",
+      "removed": "Appointment deleted",
+      "reminded": "Reminder the day before at 6 pm and 2 h before",
+      "remindedSoon": "Reminder 2 h before",
+      "locked": "Appointment reminders are included from {plan}.",
+      "reminders": {
+        "someone": "your appointment",
+        "titleEve": "Tomorrow: {who}",
+        "eve": "Appointment {when}",
+        "titleSoon": "In 2 h: {who}",
+        "soon": "Appointment at {time}",
+        "where": ", {place}"
+      }
+    },
+    "profiles": {
+      "forWho": "For whom?",
+      "me": "Me",
+      "add": "Add a relative",
+      "edit": "Edit",
+      "editTitle": "Edit {name}",
+      "remove": "Delete",
+      "removeTitle": "Delete {name}?",
+      "removeConfirm": "Yes, delete",
+      "name": "First name",
+      "nameMissing": "Write their first name.",
+      "relation": "Relation",
+      "relations": {
+        "child": "Child",
+        "parent": "Parent",
+        "partner": "Partner",
+        "other": "Other"
+      },
+      "birthYear": "Year of birth (optional)",
+      "birthYearHint": "2019",
+      "age": "{count} years old",
+      "ageOne": "1 year old",
+      "save": "Save",
+      "cancel": "Cancel",
+      "added": "{name} added",
+      "updated": "{name} changed",
+      "removed": "{name} deleted",
+      "backAppointments": "Their {count} appointments come back to “Me”",
+      "backAppointmentsOne": "Their appointment comes back to “Me”",
+      "backScans": "Their {count} prescriptions and treatments come back to “Me”",
+      "backScansOne": "Their prescription and treatments come back to “Me”",
+      "cardGoes": "{name}’s emergency card is erased",
+      "nothingElse": "Nothing else changes.",
+      "named": "{name}: {text}",
+      "backMeasures": "Their {count} measures come back to “Me”",
+      "backMeasuresOne": "Their measure comes back to “Me”"
+    },
+    "measures": {
+      "title": "My measures",
+      "add": "Add a measure",
+      "addShort": "Add",
+      "addKind": "Add: {kind}",
+      "edit": "Edit the measure",
+      "empty": "Write down your blood pressure, blood sugar or weight: you'll see their curve, to show your doctor.",
+      "doctor": "Show these values to your doctor.",
+      "period": "Period",
+      "periods": {
+        "30d": "30 days",
+        "3m": "3 months",
+        "1y": "1 year"
+      },
+      "kind": "Kind of measure",
+      "kinds": {
+        "pressure": "Blood pressure",
+        "glucose": "Blood sugar",
+        "weight": "Weight"
+      },
+      "units": {
+        "pressure": "mmHg",
+        "glucose": "g/L",
+        "weight": "kg"
+      },
+      "systolic": "Systolic",
+      "diastolic": "Diastolic",
+      "systolicField": "Systolic (mmHg)",
+      "diastolicField": "Diastolic (mmHg)",
+      "pulseField": "Pulse (optional)",
+      "glucoseField": "Blood sugar (g/L)",
+      "moment": "When",
+      "moments": {
+        "fasting": "fasting",
+        "afterMeal": "after a meal",
+        "other": "other time"
+      },
+      "weightField": "Weight (kg)",
+      "day": "Day",
+      "hour": "Time",
+      "note": "Note (optional)",
+      "noteHint": "Left arm, after sport…",
+      "save": "Save",
+      "cancel": "Cancel",
+      "remove": "Delete the measure",
+      "removeConfirm": "Yes, delete",
+      "added": "Measure added",
+      "updated": "Measure changed",
+      "removed": "Measure deleted",
+      "whenMissing": "Pick the day and time of the measure.",
+      "wrong": {
+        "pressure": "Write both numbers of the blood pressure, the first bigger than the second (for example 128 and 82).",
+        "glucose": "Write the blood sugar in g/L (for example 1.05).",
+        "weight": "Write the weight in kg (for example 64.5).",
+        "pulse": "The pulse is in beats a minute (for example 72), or leave it empty."
+      },
+      "pressureValue": "{systolic}/{diastolic} mmHg",
+      "pulseValue": "pulse {pulse}",
+      "glucoseValue": "{value} g/L",
+      "weightValue": "{value} kg",
+      "lastOn": "Last measure: {when}",
+      "change": "{value} {unit} since {date}",
+      "changePressure": "Systolic {systolic}, diastolic {diastolic} {unit} since {date}",
+      "noneInPeriod": "No measure in this period.",
+      "values": "See the values ({count})",
+      "chartLabel": "Curve of {count} measure(s) from {from} to {to}",
+      "share": {
+        "button": "Share",
+        "pdf": "PDF",
+        "heading": "My measures",
+        "headingOf": "{name}’s measures",
+        "period": "From {from} to {to}",
+        "line": "- {when}: {value}",
+        "copied": "Measures copied: paste them in a message",
+        "failed": "Couldn't share the measures"
+      },
+      "tapHint": "Touch a dot to see its value."
+    },
+    "spending": {
+      "title": "Health spending",
+      "month": "Total for {month}",
+      "before": "Last month: {amount}",
+      "byKind": "By kind",
+      "list": "This month's spending",
+      "add": "Add a health expense",
+      "edit": "Edit the expense",
+      "empty": "Write down what you pay at the pharmacy, the doctor's, for tests or at the hospital: you'll see the month's total.",
+      "linked": "They also count in “My expenses”, category Health.",
+      "unlinked": "With “My expenses”, they also count in your budget.",
+      "inExpenses": "In My expenses",
+      "family": "The whole family this month",
+      "kind": "Kind of expense",
+      "kinds": {
+        "pharmacy": "Pharmacy",
+        "consultation": "Consultation",
+        "tests": "Tests",
+        "hospital": "Hospital",
+        "other": "Other"
+      },
+      "amount": "Amount (Ar)",
+      "day": "Day",
+      "note": "Note (optional)",
+      "noteHint": "Market pharmacy, Dr Rabe…",
+      "save": "Save",
+      "cancel": "Cancel",
+      "remove": "Delete the expense",
+      "removeConfirm": "Yes, delete",
+      "added": "Health expense added",
+      "addedExpenses": "Expense added to “My expenses”, category Health",
+      "updated": "Expense updated",
+      "removed": "Expense deleted",
+      "wrongAmount": "Write the amount in ariary (for example 12 500).",
+      "wrongDay": "Pick the day of the expense.",
+      "receipt": "This health receipt comes to {amount}.",
+      "receiptAdd": "Add to health spending",
+      "receiptAdded": "Added · See in My health",
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month",
+      "moveText": "{count} health expenses are only in My health: they don't count in your budget.",
+      "moveTextOne": "1 health expense is only in My health: it doesn't count in your budget.",
+      "move": "Count them in My expenses",
+      "moveConfirm": "Yes, put them in My expenses",
+      "moved": "{count} expenses put in “My expenses”, category Health",
+      "movedOne": "1 expense put in “My expenses”, category Health",
+      "moveFailed": "That didn't work. Try again."
+    }
   }
 }

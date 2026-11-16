@@ -75,6 +75,10 @@ export function useNativeBootstrap() {
           const { t, locale, toast } = tapRef.current;
           toast(t("result.reminderSet", { date: formatDateTime(at, locale) }));
         },
+        taken: () => {
+          const { t, toast } = tapRef.current;
+          toast(t("health.takenDone"));
+        },
       });
     }).then((cleanup) => cleanups.push(cleanup));
 

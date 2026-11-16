@@ -1,0 +1,272 @@
+@use "mixins" as *;
+
+// "Ma santé": the treatments in progress and the prescriptions scanned.
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  max-width: 720px;
+}
+
+.header {
+  padding-top: 1.25rem;
+
+  @include desktop {
+    padding-top: 0;
+  }
+
+  h1 {
+    @include display(2.6rem);
+    overflow-wrap: break-word;
+  }
+
+  p {
+    margin-top: 0.3rem;
+    color: var(--text-muted);
+  }
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  h2 {
+    @include eyebrow;
+  }
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  @include card;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.95rem 1rem;
+  border-radius: var(--radius-md);
+
+  h3 {
+    font-size: 1rem;
+    font-weight: 800;
+    overflow-wrap: break-word;
+  }
+}
+
+.courses {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+
+    svg {
+      flex-shrink: 0;
+      margin-top: 0.15rem;
+      color: var(--accent-text);
+    }
+  }
+
+  span {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  strong {
+    overflow-wrap: break-word;
+  }
+
+  small {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    overflow-wrap: break-word;
+  }
+}
+
+.until,
+.next {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+
+  svg {
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+  }
+}
+
+.until {
+  color: var(--text-muted);
+}
+
+.next {
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+
+  span {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  small {
+    font-weight: 600;
+    overflow-wrap: break-word;
+  }
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  > a,
+  > button {
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.25;
+    padding-block: 0.4rem;
+  }
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+
+  > a:last-child,
+  > button:last-child {
+    align-self: flex-start;
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.25;
+    padding-block: 0.4rem;
+  }
+}
+
+.open {
+  @include card;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 2.75rem;
+  padding: 0.8rem 0.9rem;
+  border-radius: var(--radius-md);
+  color: var(--text);
+}
+
+.icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: var(--surface-strong);
+  color: var(--cat-document);
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+
+  strong {
+    overflow-wrap: break-word;
+  }
+
+  small {
+    font-size: 0.84rem;
+    color: var(--text-muted);
+    overflow-wrap: break-word;
+  }
+
+  em {
+    font-style: normal;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--accent-text);
+  }
+}
+
+.chevron {
+  flex-shrink: 0;
+  color: var(--text-subtle);
+}
+
+.shareRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  > button {
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.25;
+    padding-block: 0.4rem;
+  }
+}
+
+// Today's doses: ticked, gone by without a tick (said gently), or to come.
+.today {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.5rem 0.7rem;
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+
+    &[data-state="taken"] small {
+      color: var(--accent-text);
+      font-weight: 700;
+    }
+  }
+
+  span {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  small {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    overflow-wrap: break-word;
+  }
+
+  li > button {
+    max-width: 100%;
+    white-space: normal;
+  }
+}

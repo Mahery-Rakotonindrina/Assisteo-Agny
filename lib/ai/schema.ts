@@ -325,6 +325,10 @@ export const AnalysisSchema = z.object({
           }),
         )
         .describe("Every medicine shown, in the order written."),
+      renewal: z
+        .boolean()
+        .nullable()
+        .describe("True only when the prescription says it may be renewed (« à renouveler », « renouvelable 2 fois »); « QSP 3 mois » (enough for 3 months) is a quantity, not a renewal; false when it is written that it is not; null when nothing is written."),
     })
     .nullable()
     .describe("Only for a medical prescription (ordonnance) or a medicine box, blister or leaflet; null otherwise."),
@@ -355,7 +359,6 @@ export function normalizeStoredAnalysis(raw: unknown): unknown {
     vehicle: null,
     list: null,
     plant: null,
-    medicine: null,
     ...analysis,
     document: document
       ? {
@@ -371,6 +374,8 @@ export function normalizeStoredAnalysis(raw: unknown): unknown {
         }
       : null,
     parcel: analysis.parcel ? { shippingMode: null, ...(analysis.parcel as Record<string, unknown>) } : null,
+    // Read before the renewal was asked for: nothing said.
+    medicine: analysis.medicine ? { renewal: null, ...(analysis.medicine as Record<string, unknown>) } : null,
   };
 }
 

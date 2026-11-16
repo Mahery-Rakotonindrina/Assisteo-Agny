@@ -5,6 +5,7 @@ import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import { MotionConfig } from "motion/react";
 import { AppShell } from "@/components/AppShell";
 import { Onboarding } from "@/components/Onboarding";
+import { AppointmentReminderKeeper } from "@/components/AppointmentReminderKeeper";
 import { ExpenseReminderKeeper } from "@/components/ExpenseReminderKeeper";
 import { LoanReminderKeeper } from "@/components/LoanReminderKeeper";
 import { LoanSharingKeeper } from "@/components/LoanSharingKeeper";
@@ -89,6 +90,7 @@ export default function App({ Component, pageProps }: AppProps) {
               <LoanReminderKeeper />
               <PlantReminderKeeper />
               <MedicationReminderKeeper />
+              <AppointmentReminderKeeper />
               <LoanSharingKeeper />
               <ScanQueueRunner />
               <ShareReceiver />

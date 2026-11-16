@@ -126,14 +126,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const userIds = [...new Set(due.map((row) => row.user_id))];
   const [devices, settings] = await Promise.all([
     db.from("push_devices").select("user_id, device_id, token, scheduled, platform").in("user_id", userIds),
-    db.from("user_settings").select("user_id, data").in("user_id", userIds),
+    // Only the language: the rest of the settings (the emergency card) is never read here.
+    db.from("user_settings").select("user_id, locale:data->>locale").in("user_id", userIds),
   ]);
   if (devices.error) {
     await reportError(devices.error, { route: "cron-reminders", step: "devices" });
     return sendError(res, 502, "upstream_error", "Couldn't read devices.");
   }
   const locales = new Map<string, PushLocale>(
-    (settings.data ?? []).map((row) => [row.user_id as string, (row.data as { locale?: string } | null)?.locale === "en" ? "en" : "fr"]),
+    (settings.data ?? []).map((row) => [row.user_id as string, (row as { locale?: string | null }).locale === "en" ? "en" : "fr"]),
   );
 
   let sent = 0;
