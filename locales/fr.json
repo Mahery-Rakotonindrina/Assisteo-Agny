@@ -3610,6 +3610,24 @@
         "amountMga": "Montant",
         "parcels": "Colis"
       }
+    },
+    "voice": {
+      "button": "Dire ou écrire",
+      "title": "Dis ta dépense",
+      "hint": "Dis ou écris une phrase : le montant, ce que c’est, le jour et comment tu as payé. Je remplis la dépense, et tu vérifies avant d’enregistrer.",
+      "placeholder": "ex. 5 000 Ar de taxi-be ce matin",
+      "listening": "Je t’écoute…",
+      "prompt": "Dis ta dépense",
+      "mic": "Dire la dépense à voix haute",
+      "stop": "Arrêter l’écoute",
+      "denied": "Autorise le micro dans les réglages du téléphone pour parler à l’app.",
+      "unavailable": "La voix n’est pas disponible sur cet appareil : écris ta phrase.",
+      "fill": "Remplir la dépense",
+      "check": "C’est rempli : vérifie, puis enregistre.",
+      "noAmount": "Je n’ai pas trouvé de montant : ajoute-le avant d’enregistrer.",
+      "example1": "5 000 Ar de taxi-be ce matin",
+      "example2": "hier 12000 ariary au marché en MVola",
+      "example3": "JIRAMA 45.000 payé par Orange Money avant-hier"
     }
   },
   "objectAd": {

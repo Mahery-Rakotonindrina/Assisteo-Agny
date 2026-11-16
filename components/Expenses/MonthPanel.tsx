@@ -32,6 +32,7 @@ import { ExpenseForm, type LinkChoice, type ShareChoice } from "./ExpenseForm";
 import { ExpenseSheet } from "./ExpenseSheet";
 import styles from "./Expenses.module.scss";
 import { ImportedBadge, StatementImport } from "./StatementImport";
+import { VoiceExpense } from "./VoiceExpense";
 import { WalletChips, type PocketChoice } from "./WalletChips";
 import type { ActivityMonth } from "@/lib/resale";
 
@@ -131,6 +132,7 @@ export function MonthPanel({ month, records, items, incomes, budget, budgetLines
         <Button size="lg" icon={<Plus />} onClick={() => setEditing({ at: defaultDay(month) })}>
           {t("expenses.add")}
         </Button>
+        <VoiceExpense pockets={pockets} onFill={(values) => setEditing({ at: defaultDay(month), ...values })} />
         <Button size="lg" variant="secondary" icon={<Camera />} href="/?mode=document">
           {t("expenses.receiptPhoto")}
         </Button>
