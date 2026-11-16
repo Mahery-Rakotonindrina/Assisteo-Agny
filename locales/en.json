@@ -3610,6 +3610,24 @@
         "amountMga": "Amount",
         "parcels": "Parcels"
       }
+    },
+    "voice": {
+      "button": "Say or type",
+      "title": "Say your expense",
+      "hint": "Say or type one sentence: the amount, what it was, the day and how you paid. I fill in the expense, and you check it before saving.",
+      "placeholder": "e.g. 5,000 Ar for the taxi-be this morning",
+      "listening": "I’m listening…",
+      "prompt": "Say your expense",
+      "mic": "Say the expense aloud",
+      "stop": "Stop listening",
+      "denied": "Allow the microphone in your phone’s settings to talk to the app.",
+      "unavailable": "Voice isn’t available on this device: type your sentence.",
+      "fill": "Fill in the expense",
+      "check": "It’s filled in: check it, then save.",
+      "noAmount": "I couldn’t find an amount: add it before saving.",
+      "example1": "5,000 Ar for the taxi-be this morning",
+      "example2": "yesterday 12000 ariary at the market with MVola",
+      "example3": "JIRAMA 45,000 paid by Orange Money the day before yesterday"
     }
   },
   "objectAd": {
