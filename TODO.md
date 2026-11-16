@@ -324,4 +324,4 @@ Par ordre d’intérêt. Effort : petit, moyen, important.
 - [x] « Pour qui ? » : un profil par proche, tout l’écran filtré par personne, une fiche d’urgence chacun, notifications au prénom (#148)
 - [x] Mes mesures : tension, glycémie (g/L), poids, avec une courbe sur 30 jours, 3 mois ou 1 an, sans aucune interprétation ; partage pour le médecin (#149, migration 0024)
 - [x] Dépenses de santé du mois, par type et par personne, mois précédents ; reliées à « Mes dépenses » quand l’offre l’a, sans double (#150, migration 0025)
-- [ ] Migrations 0024 et 0025 à appliquer en production avant la mise en ligne (sinon mesures et dépenses de santé restent sur l’appareil)
+- [x] Migrations 0024 et 0025 appliquées en production (2026-11-13), tables vérifiées
