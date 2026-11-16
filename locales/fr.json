@@ -4504,7 +4504,21 @@
         "headingOf": "Fiche d’urgence de {name}"
       },
       "titleOf": "Fiche d’urgence de {name}",
-      "emptyOf": "Remplis celle de {name} : son groupe sanguin, ses allergies, qui prévenir."
+      "emptyOf": "Remplis celle de {name} : son groupe sanguin, ses allergies, qui prévenir.",
+      "print": {
+        "button": "Imprimer la carte",
+        "wallpaper": "Fond d’écran",
+        "making": "Préparation…",
+        "howTo": "Imprime cette page, découpe la carte le long des traits, plie-la au milieu et colle les deux faces. Elle tient dans un portefeuille.",
+        "fold": "Plier ici",
+        "seeBack": "Personne à prévenir au dos.",
+        "keep": "Garde la carte avec tes papiers. Imprime-la de nouveau quand ta fiche change.",
+        "keepOf": "Donne la carte à {name}, à garder avec ses papiers. Imprime-la de nouveau quand sa fiche change.",
+        "pictureSaved": "Image téléchargée",
+        "failed": "Le fichier n’a pas pu être créé. Réessaie.",
+        "help": "Pour la mettre sur ton écran verrouillé : ouvre l’image dans ta galerie, touche ⋮ puis « Définir comme fond d’écran » et choisis « Écran de verrouillage ». Sur iPhone : Partager, puis « Utiliser comme fond d’écran ».",
+        "emptyHint": "Une fois remplie, tu pourras l’imprimer en carte de portefeuille ou la mettre en fond d’écran."
+      }
     },
     "appointments": {
       "title": "Rendez-vous",

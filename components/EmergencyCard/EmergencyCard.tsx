@@ -1,15 +1,17 @@
 import { useState, type FormEvent } from "react";
-import { HeartPulse, MessageCircle, Pencil, Phone, Share2 } from "lucide-react";
+import { HeartPulse, MessageCircle, Pencil, Phone, Printer, Share2, Smartphone } from "lucide-react";
 import { Button } from "@/components/Button";
 import { ExpenseSheet } from "@/components/Expenses/ExpenseSheet";
 import sheetStyles from "@/components/Expenses/Expenses.module.scss";
 import { useToast } from "@/components/Toast";
 import { useTranslation } from "@/hooks/useTranslation";
 import { allergyTags, bloodGroups, bloodLabel, blankCard, CARD_TEXT_MAX, isCardEmpty, normalizeCard, telHref, type BloodGroup, type EmergencyCard as Card } from "@/lib/emergencyCard";
+import { printableCard } from "@/lib/emergencyPrint";
 import { formatDate } from "@/lib/format";
 import { liveProfiles, ME, saveProfileCard } from "@/lib/healthProfiles";
 import { useSettings } from "@/lib/settings/SettingsProvider";
 import { haptics } from "@/services/device";
+import { exportEmergencyCardPdf, exportEmergencyPicture } from "@/services/emergencyPrint";
 import { shareEmergencyCard, whatsappEmergencyCard } from "@/services/healthShare";
 import styles from "./EmergencyCard.module.scss";
 
@@ -26,6 +28,7 @@ export function EmergencyCard({ profileId = ME }: { profileId?: string }) {
   const { settings, ready, update } = useSettings();
   const [editing, setEditing] = useState(false);
   const [sharing, setSharing] = useState(false);
+  const [making, setMaking] = useState<"pdf" | "picture" | null>(null);
   const relative = profileId === ME ? null : (liveProfiles(settings.healthProfiles).find((item) => item.id === profileId) ?? null);
   const name = relative?.name ?? null;
   const card = relative ? (relative.card ?? null) : settings.emergencyCard;
@@ -47,6 +50,22 @@ export function EmergencyCard({ profileId = ME }: { profileId?: string }) {
       toast(t("health.emergency.share.failed"), "error");
     } finally {
       setSharing(false);
+    }
+  };
+
+  // The wallet card (PDF) or the lock-screen picture (PNG), made on the device: offline too.
+  const print = async (as: "pdf" | "picture") => {
+    const printable = printableCard(card, t, (at) => formatDate(at, locale), name);
+    if (!printable || making) return;
+    haptics.tap();
+    setMaking(as);
+    try {
+      const outcome = as === "pdf" ? await exportEmergencyCardPdf(printable, t) : await exportEmergencyPicture(printable);
+      if (outcome === "downloaded") toast(as === "pdf" ? t("pdf.downloaded") : t("health.emergency.print.pictureSaved"));
+    } catch {
+      toast(t("health.emergency.print.failed"), "error");
+    } finally {
+      setMaking(null);
     }
   };
 
@@ -83,6 +102,9 @@ export function EmergencyCard({ profileId = ME }: { profileId?: string }) {
               {t("health.emergency.fill")}
             </Button>
           </div>
+          <p className={styles.small} data-testid="emergency-print-empty">
+            {t("health.emergency.print.emptyHint")}
+          </p>
         </>
       ) : (
         <>
@@ -150,6 +172,17 @@ export function EmergencyCard({ profileId = ME }: { profileId?: string }) {
             <Button variant="ghost" icon={<Pencil />} onClick={() => setEditing(true)} data-testid="emergency-edit">
               {t("health.emergency.edit")}
             </Button>
+          </div>
+          <div className={styles.print}>
+            <div className={styles.actions}>
+              <Button variant="secondary" icon={<Printer />} onClick={() => void print("pdf")} disabled={making !== null} data-testid="emergency-print">
+                {making === "pdf" ? t("health.emergency.print.making") : t("health.emergency.print.button")}
+              </Button>
+              <Button variant="secondary" icon={<Smartphone />} onClick={() => void print("picture")} disabled={making !== null} data-testid="emergency-wallpaper">
+                {making === "picture" ? t("health.emergency.print.making") : t("health.emergency.print.wallpaper")}
+              </Button>
+            </div>
+            <p className={styles.small}>{t("health.emergency.print.help")}</p>
           </div>
           {card.updatedAt > 0 && <p className={styles.small}>{t("health.emergency.updated", { date: formatDate(card.updatedAt, locale) })}</p>}
         </>
