@@ -550,7 +550,9 @@
     "parcelNotifyHint": "A notification on the day a parcel should arrive.",
     "parcelNotifyHour": "Notification time",
     "parcelNotifyHourHint": "Madagascar time",
-    "myData": "My data"
+    "myData": "My data",
+    "shortcuts": "Home shortcuts",
+    "shortcutsHint": "Pick which ones show, and their order."
   },
   "notifications": {
     "readyTitle": "Analysis ready ✨",
@@ -1927,7 +1929,19 @@
     "inventoryHint": "Items, warranties, invoices",
     "plantsHint": "Watering and reminders",
     "pocketsHint": "Cash, mobile money, bank…",
-    "shopHint": "Sales, stock and credit"
+    "shopHint": "Sales, stock and credit",
+    "edit": "Edit",
+    "editTitle": "Home shortcuts",
+    "editHint": "Pick the ones you want on the home screen, and their order. A hidden shortcut isn’t deleted: you can bring it back any time.",
+    "up": "Move {name} up",
+    "down": "Move {name} down",
+    "show": "Show {name} on the home screen",
+    "moved": "{name}: place {position} of {total}",
+    "reset": "Reset to default",
+    "done": "Done",
+    "close": "Close",
+    "allHidden": "All your shortcuts are hidden. Tap “Edit” to bring them back.",
+    "editAria": "Edit the shortcuts"
   },
   "food": {
     "title": "Food journal",

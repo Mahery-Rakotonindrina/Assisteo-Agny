@@ -550,7 +550,9 @@
     "parcelNotifyHint": "Une notification le jour où un colis doit arriver.",
     "parcelNotifyHour": "Heure de la notification",
     "parcelNotifyHourHint": "Heure de Madagascar",
-    "myData": "Mes données"
+    "myData": "Mes données",
+    "shortcuts": "Raccourcis de l’accueil",
+    "shortcutsHint": "Choisis ceux qui s’affichent, et leur ordre."
   },
   "notifications": {
     "readyTitle": "Analyse prête ✨",
@@ -1927,7 +1929,19 @@
     "inventoryHint": "Objets, garanties, factures",
     "plantsHint": "Arrosage et rappels",
     "pocketsHint": "Espèces, MVola, banque…",
-    "shopHint": "Ventes, stock et crédit"
+    "shopHint": "Ventes, stock et crédit",
+    "edit": "Modifier",
+    "editTitle": "Raccourcis de l’accueil",
+    "editHint": "Choisis ceux que tu veux voir sur l’accueil, et leur ordre. Un raccourci caché n’est pas supprimé : tu peux le remettre quand tu veux.",
+    "up": "Monter {name}",
+    "down": "Descendre {name}",
+    "show": "Afficher {name} sur l’accueil",
+    "moved": "{name} : place {position} sur {total}",
+    "reset": "Remettre par défaut",
+    "done": "Terminer",
+    "close": "Fermer",
+    "allHidden": "Tous tes raccourcis sont cachés. Appuie sur « Modifier » pour les remettre.",
+    "editAria": "Modifier les raccourcis"
   },
   "food": {
     "title": "Journal alimentaire",

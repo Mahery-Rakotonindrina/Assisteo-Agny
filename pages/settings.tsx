@@ -18,6 +18,7 @@ import {
   HeartPulse,
   ImageDown,
   Info,
+  LayoutGrid,
   LifeBuoy,
   Monitor,
   Moon,
@@ -44,6 +45,7 @@ import { Logo } from "@/components/Logo";
 import { SegmentedControl } from "@/components/SegmentedControl";
 import { Seo } from "@/components/Seo";
 import { PlanBadge } from "@/components/PlanBadge";
+import { ShortcutsSettings } from "@/components/Shortcuts/ShortcutsEditor";
 import { DataCopy } from "@/components/DataCopy";
 import { UserReportForm } from "@/components/UserReportForm";
 import { ScreenReset } from "@/components/ScreenReset";
@@ -203,6 +205,9 @@ export default function SettingsPage() {
                 onChange={(textSize: TextSize) => update({ textSize })}
                 options={textSizes.map((value) => ({ value, label: t(`settings.textSizes.${value}`) }))}
               />
+            </Row>
+            <Row icon={<LayoutGrid />} label={t("settings.shortcuts")} hint={t("settings.shortcutsHint")}>
+              <ShortcutsSettings entries={entries} />
             </Row>
           </Group>
 
