@@ -324,4 +324,15 @@ Par ordre d’intérêt. Effort : petit, moyen, important.
 - [x] « Pour qui ? » : un profil par proche, tout l’écran filtré par personne, une fiche d’urgence chacun, notifications au prénom (#148)
 - [x] Mes mesures : tension, glycémie (g/L), poids, avec une courbe sur 30 jours, 3 mois ou 1 an, sans aucune interprétation ; partage pour le médecin (#149, migration 0024)
 - [x] Dépenses de santé du mois, par type et par personne, mois précédents ; reliées à « Mes dépenses » quand l’offre l’a, sans double (#150, migration 0025)
-- [ ] Migrations 0024 et 0025 à appliquer en production avant la mise en ligne (sinon mesures et dépenses de santé restent sur l’appareil)
+- [x] Migrations 0024 et 0025 appliquées en production (2026-11-13), tables vérifiées
+
+## 22. Propositions pour la suite (2026-11-16), à discuter
+
+- [ ] Agenda « À venir » : un seul écran avec tout ce qui arrive, jour par jour (rappels des scans, rendez-vous médicaux, prises, échéances de prêts et de loyer, colis attendus, vidange, fin de garantie) — moyen
+- [ ] Recherche dans toute l’app : une seule barre qui cherche dans les scans, papiers, colis, dépenses, prêts et santé — moyen
+- [ ] Dépense dite à la voix : « 5 000 Ar de taxi-be ce matin », et la dépense se remplit (montant, catégorie, poche, date) — moyen
+- [ ] L’app en malgache : tous les textes traduits, relus par une personne de langue maternelle avant la mise en ligne ; l’IA répond en malgache — gros
+- [ ] Carnet de vaccination de chaque proche (« Pour qui ? ») : vaccins faits, prochain rappel noté à la main, notification la veille — moyen
+- [ ] Pharmacie de la maison : les médicaments gardés à la maison avec leur date de péremption (scan de la boîte), alerte un mois avant — petit
+- [ ] Fiche d’urgence à imprimer au format carte de portefeuille, ou en fond d’écran du téléphone verrouillé — petit
+- [ ] Accueil à son goût : choisir et ranger ses raccourcis (santé, colis, dépenses…) — petit
