@@ -46,10 +46,17 @@
 }
 
 .greetingRow {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 0.75rem;
   margin-bottom: 0.5rem;
+  // Room for the magnifier, which floats on the right.
+  padding-right: 3rem;
+
+  @include desktop {
+    padding-right: 0;
+  }
 }
 
 .greeting {
@@ -78,6 +85,32 @@
     content: "";
     position: absolute;
     inset: -6px 0;
+  }
+
+  @include desktop {
+    display: none;
+  }
+}
+
+// The magnifier of the home (a phone: the sidebar has an entry on a computer). Out of the flow, in the
+// greeting row's right-hand room, so it never makes the header taller; the touch area is 44 px.
+.searchLink {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  color: var(--text);
+
+  svg {
+    box-sizing: content-box;
+    padding: 0.4rem;
+    border-radius: 50%;
+    background: var(--surface-strong);
   }
 
   @include desktop {

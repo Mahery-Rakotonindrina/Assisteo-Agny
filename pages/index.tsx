@@ -2,7 +2,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { Apple, ArrowRight, Box, Car, Check, CloudOff, FileText, Files, FlaskConical, ImageUp, Lightbulb, LogIn, Package, QrCode, RotateCcw, Sparkles, X } from "lucide-react";
+import { Apple, ArrowRight, Box, Car, Check, CloudOff, FileText, Files, FlaskConical, ImageUp, Lightbulb, LogIn, Package, QrCode, RotateCcw, Search, Sparkles, X } from "lucide-react";
 import { AccountSheet } from "@/components/AccountSheet";
 import { Button } from "@/components/Button";
 import { CaptureOrb } from "@/components/CaptureOrb";
@@ -163,6 +163,10 @@ export default function ScanPage() {
                       <LogIn size={15} aria-hidden /> {t("account.signIn")}
                     </button>
                   )}
+                  {/* The sidebar has its own entry on a computer. */}
+                  <Link href="/recherche" className={styles.searchLink} aria-label={t("search.open")}>
+                    <Search size={18} aria-hidden />
+                  </Link>
                 </div>
                 <h1 className={styles.headline}>
                   {t("scan.headline")} <em>{t("scan.headlineAccent")}</em>

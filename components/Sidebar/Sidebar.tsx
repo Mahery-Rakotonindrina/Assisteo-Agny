@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { motion } from "motion/react";
-import { BookOpen, Car, Download, HeartPulse, Sprout, FolderLock, HandCoins, History, House, ListChecks, Package, ScanLine, Settings2, ShieldCheck, Smartphone, Store, UserRound, Wallet, WalletCards } from "lucide-react";
+import { BookOpen, Car, Download, HeartPulse, Sprout, FolderLock, HandCoins, History, House, Search, ListChecks, Package, ScanLine, Settings2, ShieldCheck, Smartphone, Store, UserRound, Wallet, WalletCards } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { useAiStatus } from "@/hooks/useAiStatus";
 import { useAndroidDownload } from "@/hooks/useAndroidDownload";
@@ -18,6 +18,7 @@ import styles from "./Sidebar.module.scss";
 const links = [
   { href: "/", key: "scan", Icon: ScanLine },
   { href: "/history", key: "history", Icon: History },
+  { href: "/recherche", key: "search", Icon: Search },
   { href: "/parcels", key: "parcels", Icon: Package },
   { href: "/lists", key: "lists", Icon: ListChecks },
   { href: "/papers", key: "papers", Icon: FolderLock },
@@ -55,7 +56,7 @@ export function Sidebar() {
   const keptExpenses = useKeptExpenses(!has("expenses"));
   const keptLoans = useKeptLoans(!has("loans"));
   // The plan is null on the server and at hydration: the extra links only appear once it is read.
-  const shown = [...links.slice(0, 8), healthLink, ...(has("expenses") || inHousehold || keptExpenses ? [expensesLink] : []), ...(has("expenses") ? [pocketsLink] : []), ...(has("loans") || keptLoans ? [loansLink] : []), ...(has("shop") ? [shopLink] : []), ...links.slice(8), ...(isAdmin ? [adminLink] : [])];
+  const shown = [...links.slice(0, 9), healthLink, ...(has("expenses") || inHousehold || keptExpenses ? [expensesLink] : []), ...(has("expenses") ? [pocketsLink] : []), ...(has("loans") || keptLoans ? [loansLink] : []), ...(has("shop") ? [shopLink] : []), ...links.slice(9), ...(isAdmin ? [adminLink] : [])];
   const android = useAndroidDownload();
   const { t } = useTranslation();
   const aiStatus = useAiStatus();
