@@ -35,6 +35,7 @@
     },
     "shop": "Ma boutique",
     "health": "Ma santé",
+    "agenda": "À venir",
     "search": "Rechercher"
   },
   "scan": {
@@ -1942,7 +1943,8 @@
     "done": "Terminer",
     "close": "Fermer",
     "allHidden": "Tous tes raccourcis sont cachés. Appuie sur « Modifier » pour les remettre.",
-    "editAria": "Modifier les raccourcis"
+    "editAria": "Modifier les raccourcis",
+    "agendaHint": "Rappels, rendez-vous, échéances"
   },
   "food": {
     "title": "Journal alimentaire",
@@ -4750,6 +4752,49 @@
       "moved": "{count} dépenses mises dans « Mes dépenses », catégorie Santé",
       "movedOne": "1 dépense mise dans « Mes dépenses », catégorie Santé",
       "moveFailed": "Ça n’a pas marché. Réessaie."
+    }
+  },
+  "agenda": {
+    "title": "À venir",
+    "lead": "Tes rappels, rendez-vous, échéances et arrosages, jour par jour.",
+    "filter": "Filtrer par sujet",
+    "all": "Tout",
+    "late": "En retard",
+    "today": "Aujourd’hui",
+    "tomorrow": "Demain",
+    "empty": "Rien de prévu dans les {days} prochains jours.",
+    "until": "Jusqu’au {date}",
+    "more": "Voir {days} jours de plus",
+    "seeAll": "Tout voir",
+    "plain": "{text}",
+    "domains": {
+      "reminders": "Rappels",
+      "health": "Santé",
+      "loans": "Prêts",
+      "expenses": "Dépenses fixes",
+      "parcels": "Colis",
+      "garage": "Garage",
+      "home": "Maison",
+      "papers": "Papiers",
+      "plants": "Plantes"
+    },
+    "items": {
+      "forPerson": "Pour {name}",
+      "doses": "{count} prise(s) : {names}",
+      "lastDay": "Dernier jour",
+      "loanLent": "{person} doit te rembourser",
+      "loanBorrowed": "Tu rembourses {person}",
+      "late": "En retard",
+      "expenseDue": "À payer",
+      "incomeDue": "À recevoir",
+      "parcel": "Colis attendu : {title}",
+      "insurance": "Assurance de {name}",
+      "inspection": "Visite technique de {name}",
+      "oilChange": "Vidange de {name} (estimée)",
+      "warranty": "Fin de garantie : {name}",
+      "paper": "{title} expire",
+      "expired": "Expiré",
+      "watering": "Arrosage : {count} plante(s)"
     }
   },
   "search": {

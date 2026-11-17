@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Fragment, useRef, useState, type ReactNode } from "react";
-import { Pencil, BookOpen, Car, FolderLock, Store, HandCoins, HeartPulse, House, Receipt, Sprout, Wallet, WalletCards } from "lucide-react";
+import { Pencil, BookOpen, CalendarDays, Car, FolderLock, Store, HandCoins, HeartPulse, House, Receipt, Sprout, Wallet, WalletCards } from "lucide-react";
 import { PlanBadge } from "@/components/PlanBadge";
 import { useHomeItems } from "@/hooks/useHomeItems";
 import { useLoans } from "@/hooks/useLoans";
@@ -51,6 +51,15 @@ export function Shortcuts({ entries }: { entries: HistoryEntry[] }) {
 
   // What each shortcut shows; which ones appear, and in what order, comes from lib/homeShortcuts.ts.
   const items: Partial<Record<HomeShortcutKey, ReactNode>> = {
+    agenda: (
+      <Link href="/agenda" className={styles.shortcut} style={{ "--tone": "var(--accent-text)" } as React.CSSProperties}>
+        <CalendarDays size={18} />
+        <span>
+          <strong>{t("agenda.title")}</strong>
+          <small>{t("shortcuts.agendaHint")}</small>
+        </span>
+      </Link>
+    ),
     food: (
       <Link href="/food" className={styles.shortcut} style={{ "--tone": "var(--cat-food)" } as React.CSSProperties}>
         <BookOpen size={18} />

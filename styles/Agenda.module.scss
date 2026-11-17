@@ -1,0 +1,173 @@
+@use "mixins" as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  max-width: 720px;
+}
+
+.header {
+  padding-top: 1.25rem;
+
+  @include desktop {
+    padding-top: 0;
+  }
+
+  h1 {
+    @include display(2.6rem);
+  }
+
+  p {
+    margin-top: 0.3rem;
+    color: var(--text-muted);
+  }
+}
+
+// One chip a domain: they wrap rather than hide off-screen.
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 2.4rem;
+    padding: 0 0.85rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+
+    svg {
+      color: var(--tone, currentColor);
+    }
+
+    &[aria-pressed="true"] {
+      background: var(--surface-strong);
+      border-color: var(--border-strong);
+      color: var(--text);
+    }
+  }
+}
+
+.late,
+.day {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+
+  h2 {
+    @include eyebrow;
+  }
+}
+
+.late h2 {
+  color: var(--danger);
+}
+
+.day h2[data-today] {
+  color: var(--accent-text);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.row {
+  @include card;
+  @include pressable;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3.4rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radius-md);
+
+  &[data-late] {
+    border-color: color-mix(in srgb, var(--danger) 45%, var(--border));
+  }
+}
+
+.icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--tone) 16%, transparent);
+  color: var(--tone);
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-wrap: anywhere;
+
+  strong {
+    font-size: 0.92rem;
+    line-height: 1.25;
+  }
+
+  small {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+}
+
+.row[data-late] small {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.time {
+  flex: none;
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+.empty {
+  @include card;
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.more {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+
+  small {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 2.75rem;
+    padding: 0 1rem;
+    border-radius: 999px;
+    background: var(--surface-strong);
+    color: var(--text);
+    font-weight: 600;
+  }
+}

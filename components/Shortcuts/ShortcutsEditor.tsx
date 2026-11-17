@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useId, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
-import { ArrowDown, ArrowUp, BookOpen, Car, FolderLock, HandCoins, HeartPulse, House, Receipt, RotateCcw, Sprout, Store, Wallet, WalletCards, X } from "lucide-react";
+import { ArrowDown, ArrowUp, BookOpen, CalendarDays, Car, FolderLock, HandCoins, HeartPulse, House, Receipt, RotateCcw, Sprout, Store, Wallet, WalletCards, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/Button";
 import { Toggle } from "@/components/Toggle";
@@ -18,6 +18,7 @@ const noSubscribe = () => () => {};
 
 /** What each shortcut is called in the list, and its icon. */
 const meta: Record<HomeShortcutKey, { title: string; Icon: LucideIcon }> = {
+  agenda: { title: "agenda.title", Icon: CalendarDays },
   food: { title: "food.title", Icon: BookOpen },
   papers: { title: "papers.title", Icon: FolderLock },
   bills: { title: "bills.title", Icon: Receipt },

@@ -49,11 +49,17 @@ export function NextReminder({ entries }: { entries: HistoryEntry[] }) {
       <ChevronRight size={18} className={styles.chevron} />
     </Link>
   );
-  if (!arrived) return card;
+  // "Tout voir" sits beside the card (a link inside a link isn't allowed): the whole agenda.
+  const all = (
+    <Link href="/agenda" className={styles.all}>
+      {t("agenda.seeAll")} <ChevronRight size={14} aria-hidden />
+    </Link>
+  );
   return (
     <div className={styles.stack}>
-      <ReminderSnooze entry={arrived} linked />
+      {arrived && <ReminderSnooze entry={arrived} linked />}
       {card}
+      {all}
     </div>
   );
 }

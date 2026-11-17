@@ -35,6 +35,7 @@
     },
     "shop": "My shop",
     "health": "My health",
+    "agenda": "Coming up",
     "search": "Search"
   },
   "scan": {
@@ -1942,7 +1943,8 @@
     "done": "Done",
     "close": "Close",
     "allHidden": "All your shortcuts are hidden. Tap “Edit” to bring them back.",
-    "editAria": "Edit the shortcuts"
+    "editAria": "Edit the shortcuts",
+    "agendaHint": "Reminders, appointments, due dates"
   },
   "food": {
     "title": "Food journal",
@@ -4750,6 +4752,49 @@
       "moved": "{count} expenses put in “My expenses”, category Health",
       "movedOne": "1 expense put in “My expenses”, category Health",
       "moveFailed": "That didn't work. Try again."
+    }
+  },
+  "agenda": {
+    "title": "Coming up",
+    "lead": "Your reminders, appointments, due dates and watering, day by day.",
+    "filter": "Filter by topic",
+    "all": "All",
+    "late": "Late",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "empty": "Nothing planned in the next {days} days.",
+    "until": "Until {date}",
+    "more": "Show {days} more days",
+    "seeAll": "See all",
+    "plain": "{text}",
+    "domains": {
+      "reminders": "Reminders",
+      "health": "Health",
+      "loans": "Loans",
+      "expenses": "Fixed expenses",
+      "parcels": "Parcels",
+      "garage": "Garage",
+      "home": "Home",
+      "papers": "Papers",
+      "plants": "Plants"
+    },
+    "items": {
+      "forPerson": "For {name}",
+      "doses": "{count} dose(s): {names}",
+      "lastDay": "Last day",
+      "loanLent": "{person} owes you",
+      "loanBorrowed": "You pay back {person}",
+      "late": "Late",
+      "expenseDue": "To pay",
+      "incomeDue": "To receive",
+      "parcel": "Parcel expected: {title}",
+      "insurance": "Insurance of {name}",
+      "inspection": "Technical inspection of {name}",
+      "oilChange": "Oil change of {name} (estimated)",
+      "warranty": "Warranty ends: {name}",
+      "paper": "{title} expires",
+      "expired": "Expired",
+      "watering": "Watering: {count} plant(s)"
     }
   },
   "search": {
