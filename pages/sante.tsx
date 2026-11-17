@@ -75,6 +75,32 @@ export default function HealthPage() {
     if (target !== null && target !== settings.healthPerson) update({ healthPerson: target });
   }, [router.isReady, router.query, ready, isLoading, settings.healthProfiles, settings.appointments, settings.vaccines, settings.healthPerson, entries, update]);
 
+  // An appointment, a vaccine or a home medicine opened from the agenda or the
+  // search ("?appt=", "?vax=", "?med="): once on the right person, the item in
+  // sight (a past appointment unfolded) and lit up a moment.
+  const flashId = typeof router.query.appt === "string" ? `appt-${router.query.appt}` : typeof router.query.vax === "string" ? `vax-${router.query.vax}` : typeof router.query.med === "string" ? `med-${router.query.med}` : null;
+  useEffect(() => {
+    if (!flashId || !ready) return;
+    let tries = 0;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    // The person changes first: the item shows a render later.
+    const look = () => {
+      const element = document.getElementById(flashId);
+      if (!element) {
+        tries += 1;
+        if (tries < 30) timer = setTimeout(look, 100);
+        return;
+      }
+      const folded = element.closest("details");
+      if (folded && !folded.open) folded.open = true;
+      element.scrollIntoView({ block: "center", behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+      element.setAttribute("data-flash", "");
+      timer = setTimeout(() => element.removeAttribute("data-flash"), 2400);
+    };
+    look();
+    return () => clearTimeout(timer);
+  }, [flashId, ready]);
+
   // An appointment's, a vaccine's or a home medicine's notification: its section in sight.
   useEffect(() => {
     if (show === "appointments" || show === "vaccines" || show === "pharmacy") document.getElementById(show)?.scrollIntoView({ block: "start" });

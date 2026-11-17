@@ -1,6 +1,8 @@
 import type { Appointment } from "@/lib/appointments";
 import type { Vehicle } from "@/lib/garage";
 import type { HealthProfile } from "@/lib/healthProfiles";
+import type { HomeMedicine } from "@/lib/pharmacy";
+import type { Vaccine } from "@/lib/vaccines";
 import type { HomeItem } from "@/lib/inventory";
 import type { Loan } from "@/lib/loans";
 import type { ExpenseRecord } from "@/lib/expenses";
@@ -53,6 +55,10 @@ export type AgendaData = {
   vehicles: Vehicle[];
   homeItems: HomeItem[];
   plants: Plant[];
+  /** "Vaccins" (Ma santé): the next doses written by hand. */
+  vaccines?: Vaccine[] | null;
+  /** "Pharmacie de la maison" (Ma santé): the expiry dates. */
+  pharmacy?: HomeMedicine[] | null;
 };
 
 export type AgendaContext = {

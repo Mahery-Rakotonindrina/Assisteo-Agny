@@ -319,7 +319,7 @@ describe("agenda: the whole", () => {
 
   it("has a source for each domain, each with its own id", () => {
     expect(new Set(agendaSources.map((source) => source.id)).size).toBe(agendaSources.length);
-    expect(agendaSources.map((source) => source.domain)).toEqual(["reminders", "health", "loans", "expenses", "parcels", "garage", "home", "papers", "plants"]);
+    expect(agendaSources.map((source) => source.domain)).toEqual(["reminders", "health", "vaccines", "pharmacy", "loans", "expenses", "parcels", "garage", "home", "papers", "plants"]);
   });
 
   it("gives an empty agenda for no data", () => {

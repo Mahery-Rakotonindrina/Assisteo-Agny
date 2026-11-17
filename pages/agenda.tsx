@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import { useMemo, useState } from "react";
-import { BellRing, CalendarDays, Car, FolderLock, HandCoins, HeartPulse, House, Package, Plus, Sprout, Wallet, type LucideIcon } from "lucide-react";
+import { BellRing, CalendarDays, Car, FolderLock, HandCoins, HeartPulse, House, Package, Pill, Plus, Sprout, Syringe, Wallet, type LucideIcon } from "lucide-react";
 import { Seo } from "@/components/Seo";
 import { useExpenses } from "@/hooks/useExpenses";
 import { useHistory } from "@/hooks/useHistory";
@@ -30,6 +30,8 @@ const MAX_DAYS = 360;
 const domainStyle: Record<string, { icon: LucideIcon; tone: string }> = {
   reminders: { icon: BellRing, tone: "var(--accent-text)" },
   health: { icon: HeartPulse, tone: "var(--danger)" },
+  vaccines: { icon: Syringe, tone: "var(--viz-1)" },
+  pharmacy: { icon: Pill, tone: "var(--cat-list)" },
   loans: { icon: HandCoins, tone: "var(--cat-document)" },
   expenses: { icon: Wallet, tone: "var(--cat-food)" },
   parcels: { icon: Package, tone: "var(--cat-parcel)" },
@@ -80,9 +82,9 @@ export default function AgendaPage() {
         from,
         to,
         has: allowed,
-        data: { entries, appointments: settings.appointments, profiles: settings.healthProfiles, loans: canLoans ? loans : [], records, parcels, vehicles, homeItems, plants },
+        data: { entries, appointments: settings.appointments, profiles: settings.healthProfiles, vaccines: settings.vaccines, pharmacy: settings.pharmacy, loans: canLoans ? loans : [], records, parcels, vehicles, homeItems, plants },
       }),
-    [now, from, to, allowed, canLoans, entries, settings.appointments, settings.healthProfiles, loans, records, parcels, vehicles, homeItems, plants],
+    [now, from, to, allowed, canLoans, entries, settings.appointments, settings.healthProfiles, settings.vaccines, settings.pharmacy, loans, records, parcels, vehicles, homeItems, plants],
   );
 
   const domains = useMemo(() => [...new Set(items.map((item) => item.domain))], [items]);

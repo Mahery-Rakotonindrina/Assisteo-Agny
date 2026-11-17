@@ -126,7 +126,7 @@ export function Pharmacy() {
             const status = statuses.get(medicine.id) ?? "ok";
             const who = whoName(medicine.forWho);
             return (
-              <li key={medicine.id} className={styles.item} data-status={status} data-testid="pharmacy-item">
+              <li key={medicine.id} className={styles.item} id={`med-${medicine.id}`} data-status={status} data-testid="pharmacy-item">
                 <div className={styles.top}>
                   <p className={styles.name}>
                     <Pill size={16} aria-hidden />
