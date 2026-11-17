@@ -8,7 +8,7 @@ import type { ExpenseSummary, ExpenseSummaryRequest } from "./schema";
 const MAX_FINDINGS = 5;
 
 export function withSavingsDemo(summary: ExpenseSummary, input: ExpenseSummaryRequest): ExpenseSummary {
-  const fr = input.locale === "fr";
+  const fr = input.locale !== "en";
   const money = (value: number) => formatAriary(value, input.locale);
   const extra: string[] = [];
   const saved = input.savedThisMonth ?? 0;

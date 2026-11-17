@@ -10,7 +10,7 @@ import { useNow } from "@/hooks/useNow";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Locale } from "@/i18n.config";
-import { formatDate, formatMonthYear } from "@/lib/format";
+import { formatDate, formatMonthYear, formatTag } from "@/lib/format";
 import { liveProfiles, ME } from "@/lib/healthProfiles";
 import {
   expiryDay,
@@ -236,7 +236,7 @@ function PharmacyForm({ medicine, prefill, onSave, onCancel }: { medicine: HomeM
     const list = Array.from({ length: 14 }, (_, index) => now - 3 + index);
     return start.year && !list.includes(start.year) ? [start.year, ...list].sort((a, b) => a - b) : list;
   });
-  const monthNames = Array.from({ length: 12 }, (_, index) => new Intl.DateTimeFormat(locale === "fr" ? "fr-FR" : "en-GB", { month: "long" }).format(new Date(2026, index, 1)));
+  const monthNames = Array.from({ length: 12 }, (_, index) => new Intl.DateTimeFormat(formatTag(locale), { month: "long" }).format(new Date(2026, index, 1)));
 
   const submit = (event: FormEvent) => {
     event.preventDefault();

@@ -1,4 +1,5 @@
 import type { Locale } from "@/i18n.config";
+import { formatTag } from "@/lib/format";
 import { eventTime, type ParcelInfo } from "@/lib/parcels";
 
 // The expected delivery day of a parcel, told in Madagascar time (UTC+3, no
@@ -72,11 +73,10 @@ export function clampHour(hour: number) {
   return Number.isFinite(hour) ? Math.min(23, Math.max(0, Math.round(hour))) : 8;
 }
 
-const localeTags: Record<Locale, string> = { fr: "fr-FR", en: "en-GB" };
 
 /** "lun. 20 oct." (or "20 oct." without the weekday), whatever the device's time zone. */
 export function formatDay(day: CalendarDay, locale: Locale, { weekday = true } = {}) {
-  return new Intl.DateTimeFormat(localeTags[locale], {
+  return new Intl.DateTimeFormat(formatTag(locale), {
     ...(weekday && { weekday: "short" as const }),
     day: "numeric",
     month: "short",

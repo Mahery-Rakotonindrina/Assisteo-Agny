@@ -7,7 +7,7 @@ import { useToast } from "@/components/Toast";
 import { useNow } from "@/hooks/useNow";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useVehicleReminderTexts } from "@/hooks/useVehicleReminderTexts";
-import { formatAriary, formatDate, formatDateTime, formatDecimal, formatNumber } from "@/lib/format";
+import { formatAriary, formatDate, formatDateTime, formatDecimal, formatNumber, formatTag } from "@/lib/format";
 import {
   expenseKinds,
   fuelConsumption,
@@ -537,7 +537,7 @@ function CostsPanel({ vehicle, readOnly }: PanelProps) {
             <span className={styles.column}>
               <span style={{ height: `${(total / peak) * 100}%` }} />
             </span>
-            <small>{new Date(month).toLocaleDateString(locale, { month: "short" })}</small>
+            <small>{new Date(month).toLocaleDateString(formatTag(locale), { month: "short" })}</small>
           </span>
         ))}
       </div>

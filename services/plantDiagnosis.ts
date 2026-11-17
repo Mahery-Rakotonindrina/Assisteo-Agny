@@ -1,3 +1,4 @@
+import type { Locale } from "@/i18n.config";
 import type { PlantDiagnosis, PlantDiagnosisResponse } from "@/lib/ai/schema";
 import { prepareCapture } from "@/lib/image";
 import type { Plant } from "@/lib/plants";
@@ -8,7 +9,7 @@ import { httpClient } from "./httpClient";
 // (/api/plants/diagnose, one of the month's scans). The server reads the
 // photo and forgets it; the app keeps the answer and a miniature with the plant.
 
-export async function checkPlant(src: string, plant: Pick<Plant, "name" | "species" | "place">, locale: "fr" | "en"): Promise<{ diagnosis: PlantDiagnosis; demo: boolean; thumbnail: string }> {
+export async function checkPlant(src: string, plant: Pick<Plant, "name" | "species" | "place">, locale: Locale): Promise<{ diagnosis: PlantDiagnosis; demo: boolean; thumbnail: string }> {
   const { upload, thumbnail } = await prepareCapture(src);
   const response = await httpClient.post<PlantDiagnosisResponse>(
     "/api/plants/diagnose",

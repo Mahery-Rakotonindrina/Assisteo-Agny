@@ -1,3 +1,4 @@
+import type { Locale } from "@/i18n.config";
 import { MAX_STATEMENT_PAGES, StatementSchema, type PageImage, type StatementResponse } from "@/lib/ai/schema";
 import { encodeImage } from "@/lib/image";
 import { dayString } from "@/lib/papers";
@@ -52,7 +53,7 @@ async function page(file: File): Promise<PageImage> {
 }
 
 /** Sends the statement to be read; the answer is checked against the contract. */
-export async function readStatementFiles(pick: { images: File[] } | { pdf: File }, locale: "fr" | "en"): Promise<StatementResponse> {
+export async function readStatementFiles(pick: { images: File[] } | { pdf: File }, locale: Locale): Promise<StatementResponse> {
   // The user's day: the histories say "Aujourd'hui" and "Hier".
   const today = dayString(Date.now());
   const body = "pdf" in pick ? { locale, today, pdf: await base64Of(pick.pdf) } : { locale, today, pages: await Promise.all(pick.images.map(page)) };

@@ -7,6 +7,7 @@ import { rise } from "@/lib/motion";
 import type { AdminStatsResponse } from "@/pages/api/admin/stats";
 import { httpClient } from "@/services/httpClient";
 import styles from "./AdminStats.module.scss";
+import { formatTag } from "@/lib/format";
 
 type Totals = Record<string, number>;
 
@@ -54,7 +55,7 @@ export function AdminStats({ token }: { token: string }) {
     .filter(([field]) => field.startsWith("errors:"))
     .map(([field, count]) => ({ code: field.replace(/^errors:/, ""), count }))
     .sort((a, b) => b.count - a.count);
-  const dayLabel = (date: string) => new Date(`${date}T12:00:00Z`).toLocaleDateString(locale, { day: "numeric", month: "short" });
+  const dayLabel = (date: string) => new Date(`${date}T12:00:00Z`).toLocaleDateString(formatTag(locale), { day: "numeric", month: "short" });
 
   return (
     <motion.section variants={rise} initial="hidden" animate="show" className={styles.card}>
@@ -157,7 +158,7 @@ export function AdminStats({ token }: { token: string }) {
                     {item.reason && <> · {t(`feedback.reasons.${item.reason}`)}</>} · {item.model}
                   </small>
                 </span>
-                <time>{new Date(item.at).toLocaleDateString(locale, { day: "numeric", month: "short" })}</time>
+                <time>{new Date(item.at).toLocaleDateString(formatTag(locale), { day: "numeric", month: "short" })}</time>
               </li>
             ))}
           </ul>

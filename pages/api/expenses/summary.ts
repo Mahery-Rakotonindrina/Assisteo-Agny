@@ -5,6 +5,7 @@ import { activeProvider, summarizeExpenses } from "@/lib/ai/provider";
 import { ExpenseSummaryRequestSchema, type ExpenseSummaryResponse } from "@/lib/ai/schema";
 import { withSavingsDemo } from "@/lib/ai/summaryDemo";
 import { applyCors, clientIp, sendError } from "@/lib/server/http";
+import { effectiveLocale } from "@/lib/localeAccess";
 import { resolvePlan } from "@/lib/server/plan";
 import { rateLimit, refundRateLimit } from "@/lib/server/rateLimit";
 import { reportError } from "@/lib/server/reportError";
@@ -40,6 +41,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   }
 
   const { account, features } = await resolvePlan(req);
+
+  // Malagasy is a plan feature: without it the AI answers in French.
+
+  parsed.data.locale = effectiveLocale(parsed.data.locale, (feature) => features.has(feature));
   if (!account || !features.has("expenses")) {
     return sendError(res, 403, "plan_required", "The month's review is not part of your plan.");
   }

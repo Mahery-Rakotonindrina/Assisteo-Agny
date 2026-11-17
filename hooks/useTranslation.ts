@@ -1,5 +1,5 @@
-import { useCallback } from "react";
-import { dictionaries } from "@/lib/i18n/dictionaries";
+import { useCallback, useEffect, useSyncExternalStore } from "react";
+import { loadDictionary, loadedDictionary, subscribeDictionaries } from "@/lib/i18n/dictionaries";
 import { defaultLocale } from "@/i18n.config";
 import { useSettings } from "@/lib/settings/SettingsProvider";
 
@@ -24,7 +24,12 @@ type Params = Record<string, string | number>;
 export function useTranslation() {
   const { settings } = useSettings();
   const locale = settings.locale;
-  const dictionary = dictionaries[locale] ?? dictionaries[defaultLocale];
+  // A language fetched on demand (Malagasy) shows in French until it is loaded.
+  const wanted = useSyncExternalStore(subscribeDictionaries, () => loadedDictionary(locale), () => undefined);
+  const dictionary = wanted ?? loadedDictionary(defaultLocale);
+  useEffect(() => {
+    loadDictionary(locale);
+  }, [locale]);
 
   const t = useCallback(
     (key: string, params?: Params) => {

@@ -1,10 +1,10 @@
-import type { PlantDiagnosis } from "./schema";
+import type { AiLocale, PlantDiagnosis } from "./schema";
 
 // Demo mode (no AI key on the server, end-to-end tests): the diagnosis
 // "found" on any photo, the most common problem of a houseplant.
 
-export function mockPlantDiagnosis(locale: "fr" | "en"): PlantDiagnosis {
-  return locale === "fr"
+export function mockPlantDiagnosis(locale: AiLocale): PlantDiagnosis {
+  return locale !== "en"
     ? {
         isPlant: true,
         healthy: false,
