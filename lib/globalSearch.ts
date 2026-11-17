@@ -4,6 +4,8 @@ import { isHealthScan } from "@/lib/health";
 import { liveAppointments, type Appointment } from "@/lib/appointments";
 import type { Vehicle } from "@/lib/garage";
 import { liveProfiles, type HealthProfile } from "@/lib/healthProfiles";
+import { expiryDay, homeMedicines, type HomeMedicine } from "@/lib/pharmacy";
+import { liveVaccines, vaccineOwner, type Vaccine } from "@/lib/vaccines";
 import type { HealthSpend } from "@/lib/healthSpending";
 import type { HomeItem } from "@/lib/inventory";
 import { personKey, type Loan } from "@/lib/loans";
@@ -282,8 +284,12 @@ export function loanItems(loans: Loan[], fmt: Fmt): SearchItem[] {
 
 export type HealthNames = { relation: (relation: HealthProfile["relation"]) => string; spend: (kind: HealthSpend["kind"]) => string; person: (profileId?: string) => string | undefined };
 
-/** Appointments, relatives and health expenses (the prescriptions are in `scanSources`). */
-export function healthItems(data: { appointments: Appointment[] | null | undefined; profiles: HealthProfile[] | null | undefined; spends: HealthSpend[] }, names: HealthNames, fmt: Fmt): SearchItem[] {
+/** Appointments, relatives, health expenses, vaccines and home medicines (the prescriptions are in `scanSources`). */
+export function healthItems(
+  data: { appointments: Appointment[] | null | undefined; profiles: HealthProfile[] | null | undefined; spends: HealthSpend[]; vaccines?: Vaccine[] | null; pharmacy?: HomeMedicine[] | null },
+  names: HealthNames,
+  fmt: Fmt,
+): SearchItem[] {
   const items: SearchItem[] = [];
   for (const appointment of liveAppointments(data.appointments)) {
     items.push({
@@ -315,6 +321,28 @@ export function healthItems(data: { appointments: Appointment[] | null | undefin
       amounts: [spend.amountMga],
       href: withQuery("/sante", { pour: spend.profileId ?? "me" }),
       at: spend.at,
+    });
+  }
+  for (const vaccine of liveVaccines(data.vaccines)) {
+    // A relative no longer on this device: their record is shown nowhere.
+    if (vaccineOwner(vaccine, data.profiles) === null) continue;
+    items.push({
+      key: `vax:${vaccine.id}`,
+      title: vaccine.name,
+      sub: fmt.date(vaccine.at),
+      parts: [vaccine.name, vaccine.place, vaccine.lot, vaccine.note, vaccine.dose, names.person(vaccine.profileId)],
+      href: withQuery("/sante", { vax: vaccine.id }),
+      at: vaccine.at,
+    });
+  }
+  for (const medicine of homeMedicines(data.pharmacy)) {
+    items.push({
+      key: `med:${medicine.id}`,
+      title: medicine.strength ? `${medicine.name} ${medicine.strength}` : medicine.name,
+      sub: fmt.date(expiryDay(medicine.expiry)),
+      parts: [medicine.name, medicine.strength, medicine.quantity, medicine.note, medicine.forWho && medicine.forWho !== "me" ? names.person(medicine.forWho) : undefined],
+      href: withQuery("/sante", { med: medicine.id }),
+      at: medicine.updatedAt,
     });
   }
   return items;

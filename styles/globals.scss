@@ -350,3 +350,23 @@ p {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+// An item opened from the agenda or the search ("Ma santé", pages/sante.tsx): lit up a moment.
+@keyframes flash-item {
+  from {
+    box-shadow: 0 0 0 3px var(--accent-mark);
+  }
+  to {
+    box-shadow: 0 0 0 3px transparent;
+  }
+}
+
+[data-flash] {
+  animation: flash-item 2.4s ease-out;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    outline: 3px solid var(--accent-mark);
+    outline-offset: 2px;
+  }
+}

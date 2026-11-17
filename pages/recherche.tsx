@@ -121,7 +121,7 @@ export default function SearchPage() {
   // The sources are read from what each screen already keeps; the texts of a source are folded once per change of its data (lib/globalSearch.ts).
   const built = useMemo<SearchSource[]>(() => {
     const scans = scanSources(entries, date);
-    const health = [...scans.health, ...healthItems({ appointments: settings.appointments, profiles: settings.healthProfiles, spends }, { relation: (relation) => t(`health.profiles.relations.${relation}`), spend: (kind) => t(`health.spending.kinds.${kind}`), person: personName }, date)];
+    const health = [...scans.health, ...healthItems({ appointments: settings.appointments, profiles: settings.healthProfiles, spends, vaccines: settings.vaccines, pharmacy: settings.pharmacy }, { relation: (relation) => t(`health.profiles.relations.${relation}`), spend: (kind) => t(`health.spending.kinds.${kind}`), person: personName }, date)];
     const all: SearchSource[] = [
       { domain: "scans", items: scans.scans },
       { domain: "papers", items: scans.papers },
@@ -134,7 +134,7 @@ export default function SearchPage() {
       { domain: "home", items: canHome ? homeItems(things, date) : [] },
     ];
     return all;
-  }, [entries, parcels, personalLists, sharedLists, loans, vehicles, plants, things, spends, settings.appointments, settings.healthProfiles, date, canLoans, canGarage, canPlants, canHome, personName, t]);
+  }, [entries, parcels, personalLists, sharedLists, loans, vehicles, plants, things, spends, settings.appointments, settings.healthProfiles, settings.vaccines, settings.pharmacy, date, canLoans, canGarage, canPlants, canHome, personName, t]);
 
   const results = useMemo<DomainResult[]>(() => {
     if (normalize(asked).length < MIN_QUERY) return [];

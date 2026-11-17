@@ -4909,6 +4909,8 @@
     "domains": {
       "reminders": "Reminders",
       "health": "Health",
+      "vaccines": "Vaccines",
+      "pharmacy": "Pharmacy",
       "loans": "Loans",
       "expenses": "Fixed expenses",
       "parcels": "Parcels",
@@ -4933,7 +4935,12 @@
       "warranty": "Warranty ends: {name}",
       "paper": "{title} expires",
       "expired": "Expired",
-      "watering": "Watering: {count} plant(s)"
+      "watering": "Watering: {count} plant(s)",
+      "vaccine": "Vaccine: {name}",
+      "vaccineLate": "Date gone by, not noted as done yet",
+      "vaccineLateFor": "For {name}: date gone by, not noted as done yet",
+      "medicineLastDay": "Last day: {name}",
+      "medicineExpired": "Expired: {name}"
     }
   },
   "search": {

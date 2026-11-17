@@ -180,7 +180,7 @@ function VaccineRow({ vaccine, onEdit, onRemove }: { vaccine: Vaccine; onEdit: (
   const details = [vaccine.dose && t("health.vaccines.doseShown", { dose: vaccine.dose }), vaccine.place, vaccine.lot && t("health.vaccines.lotShown", { lot: vaccine.lot })].filter(Boolean);
 
   return (
-    <li className={styles.row} data-testid="vaccine">
+    <li className={styles.row} id={`vax-${vaccine.id}`} data-testid="vaccine">
       <p className={styles.when}>{formatDate(vaccine.at, locale)}</p>
       <div className={styles.body}>
         <p className={styles.name}>{vaccine.name}</p>
