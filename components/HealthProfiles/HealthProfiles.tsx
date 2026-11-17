@@ -9,6 +9,7 @@ import { useNow } from "@/hooks/useNow";
 import { useMeasures } from "@/hooks/useMeasures";
 import { useTranslation } from "@/hooks/useTranslation";
 import { liveAppointments, reassignAppointments } from "@/lib/appointments";
+import { liveVaccines, removeVaccinesOf } from "@/lib/vaccines";
 import { ageOf, liveProfiles, ME, PROFILE_NAME_MAX, relations, removeProfile, saveProfile, type HealthProfile, type Relation } from "@/lib/healthProfiles";
 import { useSettings } from "@/lib/settings/SettingsProvider";
 import { haptics } from "@/services/device";
@@ -53,7 +54,7 @@ export function HealthProfiles({ selected, onSelect, entries }: { selected: stri
   const remove = async (profile: HealthProfile) => {
     haptics.press();
     const at = clock();
-    update({ healthProfiles: removeProfile(settings.healthProfiles, profile.id, at), appointments: reassignAppointments(settings.appointments, profile.id, at) });
+    update({ healthProfiles: removeProfile(settings.healthProfiles, profile.id, at), appointments: reassignAppointments(settings.appointments, profile.id, at), vaccines: removeVaccinesOf(settings.vaccines, profile.id, at) });
     // Their prescriptions and treatments come back to "Moi" too (synced with the scans).
     for (const entry of entries.filter((item) => item.profileId === profile.id)) await historyStore.update(entry.id, { profileId: undefined }).catch(() => undefined);
     await measureStore.reassign(profile.id).catch(() => undefined);
@@ -112,6 +113,7 @@ export function HealthProfiles({ selected, onSelect, entries }: { selected: stri
           <RemoveProfile
             profile={sheet.profile}
             appointments={liveAppointments(settings.appointments).filter((item) => item.profileId === sheet.profile.id).length}
+            vaccines={liveVaccines(settings.vaccines).filter((item) => item.profileId === sheet.profile.id).length}
             scans={entries.filter((item) => item.profileId === sheet.profile.id).length}
             measures={measures.filter((item) => item.profileId === sheet.profile.id).length}
             onConfirm={() => void remove(sheet.profile)}
@@ -179,6 +181,7 @@ function ProfileForm({ profile, onSave, onCancel }: { profile: HealthProfile | n
 function RemoveProfile({
   profile,
   appointments,
+  vaccines,
   scans,
   measures,
   onConfirm,
@@ -186,6 +189,7 @@ function RemoveProfile({
 }: {
   profile: HealthProfile;
   appointments: number;
+  vaccines: number;
   scans: number;
   measures: number;
   onConfirm: () => void;
@@ -196,10 +200,11 @@ function RemoveProfile({
     <div className={styles.remove} data-testid="health-profile-remove-window">
       <ul>
         {appointments > 0 && <li>{t(appointments === 1 ? "health.profiles.backAppointmentsOne" : "health.profiles.backAppointments", { count: appointments })}</li>}
+        {vaccines > 0 && <li>{t(vaccines === 1 ? "health.profiles.goneVaccinesOne" : "health.profiles.goneVaccines", { count: vaccines })}</li>}
         {scans > 0 && <li>{t(scans === 1 ? "health.profiles.backScansOne" : "health.profiles.backScans", { count: scans })}</li>}
         {measures > 0 && <li>{t(measures === 1 ? "health.profiles.backMeasuresOne" : "health.profiles.backMeasures", { count: measures })}</li>}
         {profile.card && <li>{t("health.profiles.cardGoes", { name: profile.name })}</li>}
-        {appointments === 0 && scans === 0 && measures === 0 && !profile.card && <li>{t("health.profiles.nothingElse")}</li>}
+        {appointments === 0 && vaccines === 0 && scans === 0 && measures === 0 && !profile.card && <li>{t("health.profiles.nothingElse")}</li>}
       </ul>
       <div className={styles.actions}>
         <Button variant="danger" icon={<Trash2 />} block onClick={onConfirm} data-testid="health-profile-remove-confirm">

@@ -4,6 +4,7 @@ import { defaultLocale, locales, type Locale } from "@/i18n.config";
 import type { Allergen, Diet } from "@/lib/ai/schema";
 import { noMask, type BalanceMask } from "@/lib/balanceMask";
 import type { Appointment } from "@/lib/appointments";
+import type { Vaccine } from "@/lib/vaccines";
 import type { EmergencyCard } from "@/lib/emergencyCard";
 import type { HealthProfile } from "@/lib/healthProfiles";
 import { defaultFoodGoals, type FoodGoals } from "@/lib/food";
@@ -49,6 +50,8 @@ export type Settings = {
   healthProfiles: HealthProfile[] | null;
   /** "Raccourcis de l'accueil": the ones hidden and the order chosen (lib/homeShortcuts.ts), never a fixed list. */
   homeShortcuts: HomeShortcutsPref;
+  /** "Vaccins" (Ma santé), each with its date, removals as tombstones (lib/vaccines.ts): null until one is written. */
+  vaccines: Vaccine[] | null;
   /** The first-run permission walkthrough has been completed or skipped. */
   onboardingDone: boolean;
   /** "Ma santé": the person last picked ("Pour qui ?"), this device only. */
@@ -60,7 +63,7 @@ export type Settings = {
 };
 
 /** Preferences that follow the account across devices (the rest is per device). */
-export const syncedSettingKeys = ["locale", "theme", "notifyOnResult", "parcelNotify", "parcelNotifyHour", "haptics", "allergies", "diets", "foodGoals", "emergencyCard", "appointments", "healthProfiles", "homeShortcuts"] as const;
+export const syncedSettingKeys = ["locale", "theme", "notifyOnResult", "parcelNotify", "parcelNotifyHour", "haptics", "allergies", "diets", "foodGoals", "emergencyCard", "appointments", "healthProfiles", "homeShortcuts", "vaccines"] as const;
 export type SyncedSettings = Pick<Settings, (typeof syncedSettingKeys)[number]>;
 
 type SettingsContextValue = {
@@ -90,6 +93,7 @@ const defaults: Settings = {
   appointments: null,
   healthProfiles: null,
   homeShortcuts: defaultShortcuts,
+  vaccines: null,
   onboardingDone: false,
   healthPerson: "me",
   hiddenBalances: noMask,

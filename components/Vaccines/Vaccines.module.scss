@@ -1,0 +1,214 @@
+@use "../../styles/mixins" as *;
+
+// "Vaccins" (Ma santé): the next doses as notes pinned on top, then the
+// record as a dated column, like the stamps of a paper booklet.
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  h2 {
+    @include eyebrow;
+  }
+
+  > button {
+    align-self: flex-start;
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.25;
+    padding-block: 0.4rem;
+  }
+}
+
+.empty {
+  color: var(--text-muted);
+  overflow-wrap: break-word;
+}
+
+.next {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+// A next dose: what to remember, ahead of the record.
+.dose {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent-mark);
+  background: var(--accent-soft);
+
+  > svg {
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+    color: var(--accent-text);
+  }
+
+  > button {
+    margin-left: auto;
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.25;
+  }
+
+  // Gone by and not noted: said plainly, without alarm.
+  &[data-overdue] {
+    border-left-color: var(--cat-food);
+    background: var(--card);
+
+    > svg {
+      color: var(--cat-food);
+    }
+  }
+}
+
+.doseText {
+  flex: 1 1 12rem;
+  min-width: 0;
+
+  p {
+    overflow-wrap: break-word;
+  }
+
+  strong {
+    font-weight: 800;
+  }
+}
+
+.late {
+  margin-top: 0.15rem;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--cat-food);
+}
+
+.bell {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.15rem;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--text-muted);
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+// The record: a date column, the latest on top.
+.history {
+  @include card;
+  display: flex;
+  flex-direction: column;
+  padding: 0.4rem 1rem;
+  border-radius: var(--radius-md);
+  list-style: none;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(5.5rem, auto) minmax(0, 1fr);
+  column-gap: 0.9rem;
+  padding-block: 0.7rem;
+
+  & + & {
+    border-top: 1px solid var(--border);
+  }
+}
+
+.when {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: break-word;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.name {
+  font-weight: 800;
+  overflow-wrap: break-word;
+}
+
+.details,
+.note {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  overflow-wrap: break-word;
+}
+
+.note {
+  white-space: pre-line;
+}
+
+// Under the whole row: side by side even on a narrow phone.
+.actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.25rem;
+  margin-top: 0.3rem;
+
+  > button {
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.25;
+  }
+}
+
+.share {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  > button {
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.25;
+  }
+}
+
+// Very large text: the date above the vaccine, no narrow column.
+:global(html[data-text-size="xlarge"]) .row {
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: 0.2rem;
+}
+
+.pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  gap: 0.6rem;
+}
+
+.hint {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--text-subtle);
+}
+
+.error {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--danger);
+  overflow-wrap: break-word;
+}

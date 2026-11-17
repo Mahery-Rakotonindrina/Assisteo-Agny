@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { BellOff, BellRing, Check, ChevronRight, Clock, FileDown, FileText, Pill, ScanLine, Share2 } from "lucide-react";
 import { Appointments } from "@/components/Appointments";
+import { Vaccines } from "@/components/Vaccines";
 import { Button } from "@/components/Button";
 import { EmergencyCard } from "@/components/EmergencyCard";
 import { EmptyState } from "@/components/EmptyState";
@@ -66,16 +67,16 @@ export default function HealthPage() {
   const linked = useRef<string | null>(null);
   useEffect(() => {
     if (!router.isReady || !ready || isLoading) return;
-    const key = JSON.stringify([router.query.pour, router.query.appt, router.query.scan]);
+    const key = JSON.stringify([router.query.pour, router.query.appt, router.query.vax, router.query.scan]);
     if (linked.current === key) return;
     linked.current = key;
-    const target = personFromLink(router.query, { profiles: settings.healthProfiles, appointments: settings.appointments, entries });
+    const target = personFromLink(router.query, { profiles: settings.healthProfiles, appointments: settings.appointments, vaccines: settings.vaccines, entries });
     if (target !== null && target !== settings.healthPerson) update({ healthPerson: target });
-  }, [router.isReady, router.query, ready, isLoading, settings.healthProfiles, settings.appointments, settings.healthPerson, entries, update]);
+  }, [router.isReady, router.query, ready, isLoading, settings.healthProfiles, settings.appointments, settings.vaccines, settings.healthPerson, entries, update]);
 
-  // An appointment's notification: its section in sight.
+  // An appointment's or a vaccine's notification: its section in sight.
   useEffect(() => {
-    if (show === "appointments") document.getElementById("appointments")?.scrollIntoView({ block: "start" });
+    if (show === "appointments" || show === "vaccines") document.getElementById(show)?.scrollIntoView({ block: "start" });
   }, [show]);
 
   // "Partager mes traitements": as a message, or as a PDF, with the medical warning.
@@ -118,6 +119,10 @@ export default function HealthPage() {
 
         <motion.div variants={rise}>
           <Appointments profileId={person} />
+        </motion.div>
+
+        <motion.div variants={rise}>
+          <Vaccines profileId={person} />
         </motion.div>
 
         <motion.div variants={rise}>
