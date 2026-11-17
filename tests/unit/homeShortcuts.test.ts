@@ -44,6 +44,20 @@ describe("home shortcuts: what the plan offers", () => {
     expect(availableShortcuts(context([], { inHousehold: true }))).toContain("expenses");
   });
 
+  it("offers the agenda to every plan, first by default", () => {
+    expect(availableShortcuts(context([]))[0]).toBe("agenda");
+    expect(homeShortcutKeys[0]).toBe("agenda");
+    expect(availableShortcuts(context(["shop", "expenses", "loans"], { hasBills: true }))).toContain("agenda");
+  });
+
+  it("lets the agenda be hidden and moved like the others", () => {
+    const available = availableShortcuts(context([]));
+    const hidden = setShortcutHidden(defaultShortcuts, "agenda", true);
+    expect(arrangeShortcuts(available, hidden).visible).not.toContain("agenda");
+    const down = moveShortcut(defaultShortcuts, available, "agenda", 1);
+    expect(arrangeShortcuts(available, down).all.slice(0, 2)).toEqual(["food", "agenda"]);
+  });
+
   it("shows bills only when there are some", () => {
     expect(availableShortcuts(context([]))).not.toContain("bills");
     expect(availableShortcuts(context([], { hasBills: true }))).toContain("bills");

@@ -6,7 +6,7 @@ import type { PlanFeature } from "@/lib/plans";
 // key that no longer exists is ignored. Pure, so it can be tested.
 
 /** Every shortcut, in the default order. */
-export const homeShortcutKeys = ["food", "papers", "bills", "garage", "inventory", "plants", "health", "shop", "expenses", "pockets", "loans"] as const;
+export const homeShortcutKeys = ["agenda", "food", "papers", "bills", "garage", "inventory", "plants", "health", "shop", "expenses", "pockets", "loans"] as const;
 export type HomeShortcutKey = (typeof homeShortcutKeys)[number];
 
 /** Synced with the account (a setting like the others). */
@@ -37,6 +37,8 @@ export type ShortcutContext = {
 /** The shortcuts the plan and the data allow today, in the default order. The setting never adds to them. */
 export function availableShortcuts({ has, hasBills, inHousehold, keptExpenses, keptLoans }: ShortcutContext): HomeShortcutKey[] {
   const offered: Record<HomeShortcutKey, boolean> = {
+    // An overview screen, for every plan: near the top by default.
+    agenda: true,
     food: true,
     papers: true,
     bills: hasBills,
