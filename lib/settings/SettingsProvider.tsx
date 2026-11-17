@@ -7,6 +7,7 @@ import type { Appointment } from "@/lib/appointments";
 import type { EmergencyCard } from "@/lib/emergencyCard";
 import type { HealthProfile } from "@/lib/healthProfiles";
 import { defaultFoodGoals, type FoodGoals } from "@/lib/food";
+import { defaultShortcuts, normalizeShortcuts, type HomeShortcutsPref } from "@/lib/homeShortcuts";
 import { setDataSaverPreference, type DataSaverPreference } from "@/services/dataSaver";
 import { setHapticsEnabled } from "@/services/device";
 
@@ -46,6 +47,8 @@ export type Settings = {
   appointments: Appointment[] | null;
   /** "Pour qui ?" (Ma santé): the relatives followed, each with their date (lib/healthProfiles.ts); null until one is added. */
   healthProfiles: HealthProfile[] | null;
+  /** "Raccourcis de l'accueil": the ones hidden and the order chosen (lib/homeShortcuts.ts), never a fixed list. */
+  homeShortcuts: HomeShortcutsPref;
   /** The first-run permission walkthrough has been completed or skipped. */
   onboardingDone: boolean;
   /** "Ma santé": the person last picked ("Pour qui ?"), this device only. */
@@ -57,7 +60,7 @@ export type Settings = {
 };
 
 /** Preferences that follow the account across devices (the rest is per device). */
-export const syncedSettingKeys = ["locale", "theme", "notifyOnResult", "parcelNotify", "parcelNotifyHour", "haptics", "allergies", "diets", "foodGoals", "emergencyCard", "appointments", "healthProfiles"] as const;
+export const syncedSettingKeys = ["locale", "theme", "notifyOnResult", "parcelNotify", "parcelNotifyHour", "haptics", "allergies", "diets", "foodGoals", "emergencyCard", "appointments", "healthProfiles", "homeShortcuts"] as const;
 export type SyncedSettings = Pick<Settings, (typeof syncedSettingKeys)[number]>;
 
 type SettingsContextValue = {
@@ -86,6 +89,7 @@ const defaults: Settings = {
   emergencyCard: null,
   appointments: null,
   healthProfiles: null,
+  homeShortcuts: defaultShortcuts,
   onboardingDone: false,
   healthPerson: "me",
   hiddenBalances: noMask,
@@ -109,7 +113,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       .then(({ value }) => {
         if (cancelled) return;
         const stored = value ? (JSON.parse(value) as Partial<Settings>) : {};
-        setSettings({ ...defaults, locale: detectLocale(), ...stored });
+        setSettings({ ...defaults, locale: detectLocale(), ...stored, homeShortcuts: normalizeShortcuts(stored.homeShortcuts) });
       })
       .catch(() => {
         if (!cancelled) setSettings({ ...defaults, locale: detectLocale() });
