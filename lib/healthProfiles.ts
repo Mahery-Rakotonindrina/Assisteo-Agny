@@ -144,12 +144,12 @@ export function removeAllProfiles(list: HealthProfile[] | null, now: number): He
 
 /**
  * Whom "Ma santé" opens on, from its link: `pour` (a relative), `appt` (an
- * appointment's notification) or `scan` (a dose notification). Checked: an
+ * appointment's notification), `vax` (a vaccine's) or `scan` (a dose notification). Checked: an
  * unknown or removed one is ignored (null), "Moi" included as such.
  */
 export function personFromLink(
-  query: { pour?: unknown; appt?: unknown; scan?: unknown },
-  data: { profiles: HealthProfile[] | null | undefined; appointments?: Array<{ id: string; profileId?: string }> | null; entries?: Array<{ id: string; profileId?: string }> },
+  query: { pour?: unknown; appt?: unknown; vax?: unknown; scan?: unknown },
+  data: { profiles: HealthProfile[] | null | undefined; appointments?: Array<{ id: string; profileId?: string }> | null; vaccines?: Array<{ id: string; profileId?: string }> | null; entries?: Array<{ id: string; profileId?: string }> },
 ): string | null {
   const live = (id: unknown) => (typeof id === "string" && liveProfiles(data.profiles).some((item) => item.id === id) ? id : null);
   if (query.pour === ME) return ME;
@@ -157,6 +157,12 @@ export function personFromLink(
   if (typeof query.appt === "string") {
     const appointment = data.appointments?.find((item) => item.id === query.appt);
     return appointment ? (live(appointment.profileId) ?? ME) : null;
+  }
+  if (typeof query.vax === "string") {
+    const vaccine = data.vaccines?.find((item) => item.id === query.vax);
+    // A vaccine is never "Moi"'s by default: its relative gone, the link is ignored.
+    if (!vaccine) return null;
+    return vaccine.profileId ? live(vaccine.profileId) : ME;
   }
   if (typeof query.scan === "string") {
     const entry = data.entries?.find((item) => item.id === query.scan);

@@ -381,7 +381,9 @@
         "measures": "{count} mesures (tension, glycémie, poids)",
         "measuresOne": "1 mesure",
         "healthSpending": "{count} dépenses de santé (celles de « Mes dépenses » restent)",
-        "healthSpendingOne": "1 dépense de santé (celles de « Mes dépenses » restent)"
+        "healthSpendingOne": "1 dépense de santé (celles de « Mes dépenses » restent)",
+        "vaccines": "{count} vaccins",
+        "vaccinesOne": "1 vaccin"
       },
       "stays": {
         "history": "Tes colis (avec leur photo), tes dépenses, tes prêts et tes listes.",
@@ -4625,7 +4627,9 @@
       "nothingElse": "Rien d’autre ne change.",
       "named": "{name} : {text}",
       "backMeasures": "Ses {count} mesures reviennent à « Moi »",
-      "backMeasuresOne": "Sa mesure revient à « Moi »"
+      "backMeasuresOne": "Sa mesure revient à « Moi »",
+      "goneVaccines": "Ses {count} vaccins seront supprimés",
+      "goneVaccinesOne": "Son vaccin sera supprimé"
     },
     "measures": {
       "title": "Mes mesures",
@@ -4752,6 +4756,81 @@
       "moved": "{count} dépenses mises dans « Mes dépenses », catégorie Santé",
       "movedOne": "1 dépense mise dans « Mes dépenses », catégorie Santé",
       "moveFailed": "Ça n’a pas marché. Réessaie."
+    },
+    "vaccines": {
+      "title": "Vaccins",
+      "add": "Ajouter un vaccin",
+      "edit": "Modifier le vaccin",
+      "editShort": "Modifier",
+      "remove": "Supprimer",
+      "removeConfirm": "Oui, supprimer",
+      "empty": "Aucun vaccin noté. Recopie ceux de ton carnet : le nom, la date, et la prochaine dose si elle est écrite.",
+      "emptyOf": "Aucun vaccin noté pour {name}. Recopie ceux de son carnet : le nom, la date, et la prochaine dose si elle est écrite.",
+      "nextTitle": "Prochaines doses",
+      "historyTitle": "Vaccins faits",
+      "next": "Prochain vaccin : {name} le {date}",
+      "overdue": "Date passée : pas encore noté comme fait.",
+      "reminded": "Rappel la veille à 9 h",
+      "markDone": "C’est fait",
+      "locked": "Le rappel de la prochaine dose est inclus à partir de {plan}.",
+      "name": "Vaccin",
+      "nameHint": "BCG, Polio, Rougeole-Rubéole…",
+      "day": "Date",
+      "dose": "Dose",
+      "doseHint": "1, 2, rappel…",
+      "doseShown": "dose {dose}",
+      "place": "Lieu",
+      "placeHint": "CSB, hôpital, école…",
+      "lot": "Numéro de lot",
+      "lotShown": "lot {lot}",
+      "note": "Note",
+      "nextDay": "Prochaine dose, si elle est écrite",
+      "nextHint": "Recopie la date notée sur le carnet.",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "added": "Vaccin ajouté",
+      "updated": "Vaccin modifié",
+      "removed": "Vaccin supprimé",
+      "missing": {
+        "name": "Écris le nom du vaccin.",
+        "day": "Choisis la date du vaccin.",
+        "next": "La prochaine dose doit venir après la date du vaccin."
+      },
+      "suggestions": [
+        "BCG",
+        "Polio",
+        "Pentavalent",
+        "Pneumocoque",
+        "Rotavirus",
+        "Rougeole-Rubéole",
+        "Fièvre jaune",
+        "Tétanos",
+        "Hépatite B",
+        "HPV",
+        "COVID-19",
+        "Typhoïde"
+      ],
+      "reminders": {
+        "title": "Vaccin demain : {name}",
+        "body": "Prochaine dose notée pour le {date}"
+      },
+      "share": {
+        "button": "Partager le carnet",
+        "whatsapp": "WhatsApp",
+        "pdf": "PDF",
+        "heading": "Mon carnet de vaccination",
+        "headingOf": "Carnet de vaccination de {name}",
+        "caption": "Recopié du carnet, au {date}",
+        "nextTitle": "Prochaines doses",
+        "doneTitle": "Vaccins faits",
+        "next": "{name} le {date}",
+        "nextLate": "{name} le {date} (date passée)",
+        "line": "{date} : {name}",
+        "dose": "dose {dose}",
+        "lot": "lot {lot}",
+        "copied": "Carnet copié : colle-le dans un message",
+        "failed": "Impossible de partager le carnet"
+      }
     }
   },
   "agenda": {

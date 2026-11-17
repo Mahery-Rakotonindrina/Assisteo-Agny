@@ -381,7 +381,9 @@
         "measures": "{count} measures (blood pressure, blood sugar, weight)",
         "measuresOne": "1 measure",
         "healthSpending": "{count} health expenses (those in “My expenses” stay)",
-        "healthSpendingOne": "1 health expense (those in “My expenses” stay)"
+        "healthSpendingOne": "1 health expense (those in “My expenses” stay)",
+        "vaccines": "{count} vaccines",
+        "vaccinesOne": "1 vaccine"
       },
       "stays": {
         "history": "Your parcels (with their photo), your expenses, your loans and your lists.",
@@ -4625,7 +4627,9 @@
       "nothingElse": "Nothing else changes.",
       "named": "{name}: {text}",
       "backMeasures": "Their {count} measures come back to “Me”",
-      "backMeasuresOne": "Their measure comes back to “Me”"
+      "backMeasuresOne": "Their measure comes back to “Me”",
+      "goneVaccines": "Their {count} vaccines will be deleted",
+      "goneVaccinesOne": "Their vaccine will be deleted"
     },
     "measures": {
       "title": "My measures",
@@ -4752,6 +4756,81 @@
       "moved": "{count} expenses put in “My expenses”, category Health",
       "movedOne": "1 expense put in “My expenses”, category Health",
       "moveFailed": "That didn't work. Try again."
+    },
+    "vaccines": {
+      "title": "Vaccines",
+      "add": "Add a vaccine",
+      "edit": "Edit the vaccine",
+      "editShort": "Edit",
+      "remove": "Delete",
+      "removeConfirm": "Yes, delete",
+      "empty": "No vaccine noted. Copy the ones from your booklet: the name, the date, and the next dose if it's written.",
+      "emptyOf": "No vaccine noted for {name}. Copy the ones from their booklet: the name, the date, and the next dose if it's written.",
+      "nextTitle": "Next doses",
+      "historyTitle": "Vaccines done",
+      "next": "Next vaccine: {name} on {date}",
+      "overdue": "Date gone by: not noted as done yet.",
+      "reminded": "Reminder the day before at 9 am",
+      "markDone": "It's done",
+      "locked": "The next dose reminder comes with {plan} and above.",
+      "name": "Vaccine",
+      "nameHint": "BCG, Polio, Measles-Rubella…",
+      "day": "Date",
+      "dose": "Dose",
+      "doseHint": "1, 2, booster…",
+      "doseShown": "dose {dose}",
+      "place": "Place",
+      "placeHint": "Health centre, hospital, school…",
+      "lot": "Batch number",
+      "lotShown": "batch {lot}",
+      "note": "Note",
+      "nextDay": "Next dose, if it's written",
+      "nextHint": "Copy the date noted in the booklet.",
+      "save": "Save",
+      "cancel": "Cancel",
+      "added": "Vaccine added",
+      "updated": "Vaccine updated",
+      "removed": "Vaccine deleted",
+      "missing": {
+        "name": "Write the vaccine's name.",
+        "day": "Pick the vaccine's date.",
+        "next": "The next dose must come after the vaccine's date."
+      },
+      "suggestions": [
+        "BCG",
+        "Polio",
+        "Pentavalent",
+        "Pneumococcal",
+        "Rotavirus",
+        "Measles-Rubella",
+        "Yellow fever",
+        "Tetanus",
+        "Hepatitis B",
+        "HPV",
+        "COVID-19",
+        "Typhoid"
+      ],
+      "reminders": {
+        "title": "Vaccine tomorrow: {name}",
+        "body": "Next dose noted for {date}"
+      },
+      "share": {
+        "button": "Share the record",
+        "whatsapp": "WhatsApp",
+        "pdf": "PDF",
+        "heading": "My vaccination record",
+        "headingOf": "{name}’s vaccination record",
+        "caption": "Copied from the booklet, on {date}",
+        "nextTitle": "Next doses",
+        "doneTitle": "Vaccines done",
+        "next": "{name} on {date}",
+        "nextLate": "{name} on {date} (date gone by)",
+        "line": "{date}: {name}",
+        "dose": "dose {dose}",
+        "lot": "batch {lot}",
+        "copied": "Record copied: paste it in a message",
+        "failed": "Couldn't share the record"
+      }
     }
   },
   "agenda": {
