@@ -29,6 +29,7 @@ import { startVehicleSync, syncVehicles } from "@/services/vehicleSync";
 import { homeItemStore } from "@/services/homeItemStore";
 import { startHomeItemSync, syncHomeItems } from "@/services/homeItemSync";
 import { wipeReviews } from "@/services/expenseReview";
+import { recentSearches } from "@/services/recentSearches";
 import { expenseStore } from "@/services/expenseStore";
 import { startExpenseSync, syncExpenses } from "@/services/expenseSync";
 import { householdStore } from "@/services/household";
@@ -329,6 +330,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await loanSharing.wipe();
     await householdStore.wipe();
     await wipeReviews().catch(() => undefined);
+    recentSearches.clear();
     await aiKeyStore.clear({ fromSync: true });
     await signOutAccount();
     ownerRef.current = null;
@@ -365,6 +367,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await loanSharing.wipe();
     await householdStore.wipe();
     await wipeReviews().catch(() => undefined);
+    recentSearches.clear();
     await aiKeyStore.clear({ fromSync: true });
     ownerRef.current = null;
     update(noHealth, { fromSync: true });

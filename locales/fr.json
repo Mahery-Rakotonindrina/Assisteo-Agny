@@ -34,7 +34,8 @@
       "admin": "Admin"
     },
     "shop": "Ma boutique",
-    "health": "Ma santé"
+    "health": "Ma santé",
+    "search": "Rechercher"
   },
   "scan": {
     "greeting": {
@@ -4749,6 +4750,33 @@
       "moved": "{count} dépenses mises dans « Mes dépenses », catégorie Santé",
       "movedOne": "1 dépense mise dans « Mes dépenses », catégorie Santé",
       "moveFailed": "Ça n’a pas marché. Réessaie."
+    }
+  },
+  "search": {
+    "title": "Rechercher",
+    "lead": "Dans tes scans, tes papiers, tes colis, tes dépenses et le reste, sur ton téléphone.",
+    "placeholder": "Cherche un mot, un nom, un montant…",
+    "field": "Rechercher dans toute l’app",
+    "clear": "Effacer la recherche",
+    "hint": "Écris un mot (ex. « jirama mars »). Tous les mots doivent être trouvés.",
+    "hintAmount": "Un montant se trouve sans les espaces : « 45000 » trouve « 45 000 Ar ». La recherche marche sans internet.",
+    "recent": "Dernières recherches",
+    "clearRecent": "Effacer",
+    "none": "Rien trouvé pour « {query} ». Essaie un seul mot, ou un autre.",
+    "found": "{count} résultats",
+    "seeAll": "Voir tout ({count})",
+    "open": "Rechercher",
+    "domains": {
+      "scans": "Scans",
+      "papers": "Mes papiers",
+      "parcels": "Colis",
+      "lists": "Listes",
+      "expenses": "Dépenses et revenus",
+      "loans": "Prêts",
+      "health": "Ma santé",
+      "garage": "Garage",
+      "plants": "Plantes",
+      "home": "Ma maison"
     }
   }
 }

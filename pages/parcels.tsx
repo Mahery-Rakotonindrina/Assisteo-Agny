@@ -125,6 +125,13 @@ export default function ParcelsPage() {
   const toggle = (id: string) => setPicked(openId === id ? null : id);
   // Another parcel asked for (this page already shown, a search or a filter
   // on): the list goes back to every parcel, so that one is always in sight.
+  // "?q=" (from the search screen) fills the search once.
+  const askedQuery = router.isReady && typeof router.query.q === "string" ? router.query.q : null;
+  const [queryFor, setQueryFor] = useState<string | null>(null);
+  if (askedQuery !== queryFor) {
+    setQueryFor(askedQuery);
+    if (askedQuery) setQuery(askedQuery);
+  }
   const [shownFor, setShownFor] = useState(opened);
   if (opened !== shownFor) {
     setShownFor(opened);

@@ -1,3 +1,5 @@
+import { useRouter } from "next/router";
+import { scanMatcher } from "@/lib/globalSearch";
 import { AnimatePresence, motion } from "motion/react";
 import { useDeferredValue, useMemo, useState, useSyncExternalStore } from "react";
 import { CalendarDays, CheckCheck, FileDown, Folder, ScanLine, Search, Star, X } from "lucide-react";
@@ -85,6 +87,14 @@ export default function HistoryPage() {
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
   const [exporting, setExporting] = useState(false);
   const [query, setQuery] = useState("");
+  // "?q=" (from the search screen) fills the search once.
+  const router = useRouter();
+  const asked = router.isReady && typeof router.query.q === "string" ? router.query.q : null;
+  const [shownFor, setShownFor] = useState<string | null>(null);
+  if (asked !== shownFor) {
+    setShownFor(asked);
+    if (asked) setQuery(asked);
+  }
   const deferredQuery = useDeferredValue(query);
   const showSwipeHint = useSyncExternalStore(subscribeSwipeHint, readSwipeHint, () => false);
   const now = useNow();
@@ -97,15 +107,13 @@ export default function HistoryPage() {
   }, [entries]);
 
   const groups = useMemo(() => {
-    const needle = deferredQuery.trim().toLowerCase();
+    const matchesQuery = scanMatcher(deferredQuery);
     const range = dateRange(datePreset, now, from, to);
     const visible = entries.filter((entry) => {
       if (filter !== "all" && entry.analysis.category !== filter) return false;
       if (!inCollection(entry, collection)) return false;
       if (!inRange(entry.createdAt, range)) return false;
-      if (!needle) return true;
-      const { title, summary, tags } = entry.analysis;
-      return [title, summary, ...tags].some((text) => text.toLowerCase().includes(needle));
+      return matchesQuery(entry);
     });
 
     const today = startOfDay(now);

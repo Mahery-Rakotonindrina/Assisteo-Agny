@@ -34,7 +34,8 @@
       "admin": "Admin"
     },
     "shop": "My shop",
-    "health": "My health"
+    "health": "My health",
+    "search": "Search"
   },
   "scan": {
     "greeting": {
@@ -4749,6 +4750,33 @@
       "moved": "{count} expenses put in “My expenses”, category Health",
       "movedOne": "1 expense put in “My expenses”, category Health",
       "moveFailed": "That didn't work. Try again."
+    }
+  },
+  "search": {
+    "title": "Search",
+    "lead": "In your scans, papers, parcels, expenses and the rest, on your phone.",
+    "placeholder": "Look for a word, a name, an amount…",
+    "field": "Search the whole app",
+    "clear": "Clear the search",
+    "hint": "Type a word (e.g. “jirama march”). Every word has to be found.",
+    "hintAmount": "An amount is found without spaces: “45000” finds “45 000 Ar”. Search works without internet.",
+    "recent": "Recent searches",
+    "clearRecent": "Clear",
+    "none": "Nothing found for “{query}”. Try one word, or another.",
+    "found": "{count} results",
+    "seeAll": "See all ({count})",
+    "open": "Search",
+    "domains": {
+      "scans": "Scans",
+      "papers": "My papers",
+      "parcels": "Parcels",
+      "lists": "Lists",
+      "expenses": "Expenses and income",
+      "loans": "Loans",
+      "health": "My health",
+      "garage": "Garage",
+      "plants": "Plants",
+      "home": "My home"
     }
   }
 }

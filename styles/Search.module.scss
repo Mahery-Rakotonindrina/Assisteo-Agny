@@ -1,0 +1,227 @@
+@use "mixins" as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  max-width: 720px;
+}
+
+.header {
+  padding-top: 1.25rem;
+
+  @include desktop {
+    padding-top: 0;
+  }
+
+  h1 {
+    @include display(2.6rem);
+  }
+
+  p {
+    margin-top: 0.3rem;
+    color: var(--text-muted);
+  }
+}
+
+// One big bar, the one thing on the screen.
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  height: 3.4rem;
+  padding: 0 0.6rem 0 1.1rem;
+  border-radius: var(--radius-lg, 22px);
+  background: var(--card);
+  box-shadow: var(--card-shadow);
+  border: 1px solid var(--border);
+  color: var(--text-subtle);
+  transition: border-color 0.2s var(--ease-out);
+
+  &:focus-within {
+    border-color: var(--accent-mark);
+  }
+
+  input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    @include field-font(1.05rem);
+  }
+}
+
+.clear {
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  background: var(--surface-strong);
+  color: var(--text-muted);
+}
+
+.hint,
+.none {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.none {
+  @include card;
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  overflow-wrap: anywhere;
+}
+
+.start {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.recentHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+
+  h2 {
+    @include eyebrow;
+  }
+
+  button {
+    min-height: 2rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--accent-mark);
+  }
+}
+
+.recent {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    max-width: 100%;
+    min-height: 2.4rem;
+    padding: 0 0.85rem;
+    border-radius: 999px;
+    background: var(--surface-strong);
+    color: var(--text);
+    font-size: 0.88rem;
+    overflow-wrap: anywhere;
+    text-align: left;
+
+    svg {
+      flex: none;
+      color: var(--text-muted);
+    }
+  }
+}
+
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.group {
+  @include card;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.8rem 0.9rem;
+  border-radius: var(--radius-md);
+}
+
+.groupHead {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-muted);
+
+  h2 {
+    flex: 1;
+    min-width: 0;
+    @include eyebrow;
+  }
+}
+
+.count {
+  padding: 0.05rem 0.55rem;
+  border-radius: 999px;
+  background: var(--surface-strong);
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.hits {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  li + li {
+    border-top: 1px solid var(--border);
+  }
+}
+
+.hit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-height: 2.75rem;
+  padding: 0.55rem 0.1rem;
+  overflow-wrap: anywhere;
+
+  strong {
+    font-size: 0.95rem;
+    line-height: 1.25;
+  }
+
+  small {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+
+  &:hover strong {
+    color: var(--accent-mark);
+  }
+}
+
+.excerpt {
+  font-size: 0.84rem;
+  line-height: 1.4;
+  color: var(--text-muted);
+
+  b {
+    color: var(--text);
+    font-weight: 700;
+  }
+}
+
+.all {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  align-self: flex-start;
+  min-height: 2.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent-mark);
+}
