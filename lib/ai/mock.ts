@@ -1026,6 +1026,7 @@ const prescriptionScan: Record<Locale, Analysis> = {
           durationDays: 7,
           precautions: ["À prendre au début du repas", "Peut donner des troubles digestifs"],
           contraindications: ["Allergie aux pénicillines"],
+          expiry: null,
         },
         {
           name: "Paracétamol",
@@ -1035,6 +1036,7 @@ const prescriptionScan: Record<Locale, Analysis> = {
           durationDays: null,
           precautions: ["Pas plus de la dose écrite", "Attention aux autres médicaments qui en contiennent"],
           contraindications: ["Maladie grave du foie"],
+          expiry: null,
         },
       ],
     },
@@ -1078,6 +1080,7 @@ const prescriptionScan: Record<Locale, Analysis> = {
           durationDays: 7,
           precautions: ["Take at the start of a meal", "May upset the stomach"],
           contraindications: ["Allergy to penicillins"],
+          expiry: null,
         },
         {
           name: "Paracetamol",
@@ -1087,6 +1090,7 @@ const prescriptionScan: Record<Locale, Analysis> = {
           durationDays: null,
           precautions: ["No more than the written dose", "Beware of other medicines that contain it"],
           contraindications: ["Serious liver disease"],
+          expiry: null,
         },
       ],
     },
@@ -1100,6 +1104,91 @@ const prescriptionScan: Record<Locale, Analysis> = {
  * scan in parallel expect the summary tab.
  */
 export const mockPrescription = (locale: Locale): Analysis => prescriptionScan[locale];
+
+// A fictional medicine box, for demo mode: one medicine, its expiry printed.
+const medicineBoxScan: Record<Locale, Analysis> = {
+  fr: {
+    category: "object",
+    title: "Boîte de Paracétamol 500 mg",
+    summary: "Une boîte de Paracétamol 500 mg, 16 comprimés. Date de péremption imprimée : mars 2028.",
+    confidence: 0.9,
+    tags: ["médicament", "santé"],
+    facts: [
+      { label: "Dosage", value: "500 mg" },
+      { label: "Péremption", value: "03/2028" },
+    ],
+    suggestions: [{ kind: "warning", title: "Suis l'avis du pharmacien", detail: "Prends la dose écrite sur la notice. En cas de doute, demande à ton pharmacien." }],
+    questions: ["À quoi sert le Paracétamol ?", "Combien de comprimés par jour au plus ?"],
+    nutrition: null,
+    recipe: null,
+    diet: null,
+    document: null,
+    vehicle: null,
+    parcel: null,
+    list: null,
+    plant: null,
+    medicine: {
+      kind: "box",
+      unreadable: null,
+      renewal: null,
+      items: [
+        {
+          name: "Paracétamol",
+          strength: "500 mg",
+          dose: null,
+          timesPerDay: null,
+          durationDays: null,
+          precautions: ["Pas plus de la dose écrite", "Attention aux autres médicaments qui en contiennent"],
+          contraindications: ["Maladie grave du foie"],
+          expiry: "2028-03",
+        },
+      ],
+    },
+    reminder: null,
+  },
+  en: {
+    category: "object",
+    title: "Box of Paracetamol 500 mg",
+    summary: "A box of Paracetamol 500 mg, 16 tablets. Printed expiry date: March 2028.",
+    confidence: 0.9,
+    tags: ["medicine", "health"],
+    facts: [
+      { label: "Strength", value: "500 mg" },
+      { label: "Expiry", value: "03/2028" },
+    ],
+    suggestions: [{ kind: "warning", title: "Follow the pharmacist's advice", detail: "Take the dose written on the leaflet. If in doubt, ask your pharmacist." }],
+    questions: ["What is Paracetamol for?", "How many tablets a day at most?"],
+    nutrition: null,
+    recipe: null,
+    diet: null,
+    document: null,
+    vehicle: null,
+    parcel: null,
+    list: null,
+    plant: null,
+    medicine: {
+      kind: "box",
+      unreadable: null,
+      renewal: null,
+      items: [
+        {
+          name: "Paracetamol",
+          strength: "500 mg",
+          dose: null,
+          timesPerDay: null,
+          durationDays: null,
+          precautions: ["No more than the written dose", "Mind other medicines that contain it"],
+          contraindications: ["Severe liver disease"],
+          expiry: "2028-03",
+        },
+      ],
+    },
+    reminder: null,
+  },
+};
+
+/** The demo medicine box (the end-to-end tests serve it in place of a scan), kept out of the auto rotation like the prescription. */
+export const mockMedicineBox = (locale: Locale): Analysis => medicineBoxScan[locale];
 
 export function mockAnalysis(mode: ScanMode, locale: Locale): Analysis {
   if (mode !== "auto") return byMode[mode][locale];

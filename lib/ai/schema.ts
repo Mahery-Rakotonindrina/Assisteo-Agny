@@ -322,6 +322,12 @@ export const AnalysisSchema = z.object({
             durationDays: z.number().nullable().describe("Days of treatment, only when written (pendant 7 jours = 7, 1 boîte is not a duration); null otherwise."),
             precautions: z.array(z.string()).describe("0 to 3 usual precautions for this medicine (with food, drowsiness, no alcohol…), short."),
             contraindications: z.array(z.string()).describe("0 to 3 commonly known general contraindications, each phrased as general information, short."),
+            // Missing from a provider's answer (a personal key, an OpenAI-compatible one): none read, the scan still valid.
+            expiry: z
+              .string()
+              .nullable()
+              .default(null)
+              .describe("Only on a box, blister or leaflet: the expiry date printed on it (EXP, Pér., À utiliser avant), as YYYY-MM, or YYYY-MM-DD when the day is printed; null when not visible or not certain. Never guess one."),
           }),
         )
         .describe("Every medicine shown, in the order written."),
@@ -343,6 +349,11 @@ export const AnalysisSchema = z.object({
 });
 
 export type Analysis = z.infer<typeof AnalysisSchema>;
+
+/** A medicine block read before the expiry of a box was asked for: none read. */
+function withExpiry(medicine: Record<string, unknown>) {
+  return Array.isArray(medicine.items) ? { ...medicine, items: medicine.items.map((item) => (item && typeof item === "object" ? { expiry: null, ...(item as Record<string, unknown>) } : item)) } : medicine;
+}
 
 /**
  * Analyses saved by older versions lack fields added since (recipe, vehicle,
@@ -374,8 +385,8 @@ export function normalizeStoredAnalysis(raw: unknown): unknown {
         }
       : null,
     parcel: analysis.parcel ? { shippingMode: null, ...(analysis.parcel as Record<string, unknown>) } : null,
-    // Read before the renewal was asked for: nothing said.
-    medicine: analysis.medicine ? { renewal: null, ...(analysis.medicine as Record<string, unknown>) } : null,
+    // Read before the renewal and the expiry were asked for: nothing said.
+    medicine: analysis.medicine ? withExpiry({ renewal: null, ...(analysis.medicine as Record<string, unknown>) }) : null,
   };
 }
 

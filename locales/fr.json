@@ -383,7 +383,9 @@
         "healthSpending": "{count} dépenses de santé (celles de « Mes dépenses » restent)",
         "healthSpendingOne": "1 dépense de santé (celles de « Mes dépenses » restent)",
         "vaccines": "{count} vaccins",
-        "vaccinesOne": "1 vaccin"
+        "vaccinesOne": "1 vaccin",
+        "pharmacy": "{count} médicaments de la pharmacie",
+        "pharmacyOne": "1 médicament de la pharmacie"
       },
       "stays": {
         "history": "Tes colis (avec leur photo), tes dépenses, tes prêts et tes listes.",
@@ -4831,6 +4833,64 @@
         "copied": "Carnet copié : colle-le dans un message",
         "failed": "Impossible de partager le carnet"
       }
+    },
+    "pharmacy": {
+      "title": "Pharmacie de la maison",
+      "lead": "Les médicaments gardés à la maison, pour tout le foyer, triés par date de péremption.",
+      "add": "Ajouter un médicament",
+      "edit": "Modifier le médicament",
+      "editShort": "Modifier",
+      "empty": "Rien de noté. Ajoute les boîtes de ton armoire à pharmacie, ou scanne une boîte pour lire sa date de péremption.",
+      "locked": "Les alertes de péremption sont incluses à partir de {plan}.",
+      "expiredNote": "Ne prends pas un médicament périmé : demande à ton pharmacien.",
+      "expired": "Périmé",
+      "soon": "Bientôt périmé",
+      "lastDay": "Dernier jour : périmé demain",
+      "expiresOn": "Péremption : {date}",
+      "for": "pour {name}",
+      "alerted": "Alerte un mois avant et le jour même, à 9 h",
+      "thrown": "Je l’ai jeté",
+      "finished": "Terminé",
+      "removed": {
+        "thrown": "{name} retiré : jeté",
+        "finished": "{name} retiré : terminé"
+      },
+      "addFromScan": "Ajouter {name} à ma pharmacie",
+      "inPharmacy": "{name} est dans ta pharmacie",
+      "name": "Médicament",
+      "nameHint": "Paracétamol, sirop pour la toux…",
+      "strength": "Dosage ou forme",
+      "strengthHint": "500 mg, sirop, comprimés…",
+      "quantity": "Quantité",
+      "quantityHint": "1 boîte, 12 comprimés…",
+      "expiry": "Date de péremption",
+      "month": "Mois",
+      "year": "Année",
+      "day": "Jour",
+      "pick": "Choisis…",
+      "noDay": "Pas écrit",
+      "expiryHint": "Le mois et l’année suffisent : sans jour, c’est la fin du mois.",
+      "missing": {
+        "name": "Écris le nom du médicament.",
+        "expiry": "Choisis le mois et l’année de péremption.",
+        "day": "Ce jour n’existe pas dans ce mois."
+      },
+      "forWho": "Pour qui ?",
+      "everyone": "Tout le foyer",
+      "note": "Note",
+      "noteHint": "Rangé dans la cuisine, ouvert le…",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "added": "Ajouté à ta pharmacie",
+      "updated": "Médicament modifié",
+      "reminders": {
+        "monthTitle": "Bientôt périmé : {name}",
+        "monthBody": "Péremption : {date}",
+        "dayTitle": "Dernier jour : {name}",
+        "dayBody": "Périmé demain. Péremption : {date}."
+      },
+      "undo": "Annuler",
+      "restored": "{name} remis dans ta pharmacie"
     }
   },
   "agenda": {

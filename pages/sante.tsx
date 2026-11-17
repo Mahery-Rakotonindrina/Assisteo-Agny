@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { BellOff, BellRing, Check, ChevronRight, Clock, FileDown, FileText, Pill, ScanLine, Share2 } from "lucide-react";
 import { Appointments } from "@/components/Appointments";
 import { Vaccines } from "@/components/Vaccines";
+import { Pharmacy } from "@/components/Pharmacy";
 import { Button } from "@/components/Button";
 import { EmergencyCard } from "@/components/EmergencyCard";
 import { EmptyState } from "@/components/EmptyState";
@@ -74,9 +75,9 @@ export default function HealthPage() {
     if (target !== null && target !== settings.healthPerson) update({ healthPerson: target });
   }, [router.isReady, router.query, ready, isLoading, settings.healthProfiles, settings.appointments, settings.vaccines, settings.healthPerson, entries, update]);
 
-  // An appointment's or a vaccine's notification: its section in sight.
+  // An appointment's, a vaccine's or a home medicine's notification: its section in sight.
   useEffect(() => {
-    if (show === "appointments" || show === "vaccines") document.getElementById(show)?.scrollIntoView({ block: "start" });
+    if (show === "appointments" || show === "vaccines" || show === "pharmacy") document.getElementById(show)?.scrollIntoView({ block: "start" });
   }, [show]);
 
   // "Partager mes traitements": as a message, or as a PDF, with the medical warning.
@@ -123,6 +124,10 @@ export default function HealthPage() {
 
         <motion.div variants={rise}>
           <Vaccines profileId={person} />
+        </motion.div>
+
+        <motion.div variants={rise}>
+          <Pharmacy />
         </motion.div>
 
         <motion.div variants={rise}>

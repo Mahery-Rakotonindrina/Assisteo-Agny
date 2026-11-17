@@ -2,6 +2,7 @@ import { pick } from "./account/pick";
 import { mergeAppointments, type Appointment } from "./appointments";
 import { newerCard, type EmergencyCard } from "./emergencyCard";
 import { mergeProfiles, type HealthProfile } from "./healthProfiles";
+import { mergePharmacy, type HomeMedicine } from "./pharmacy";
 import { mergeVaccines, type Vaccine } from "./vaccines";
 
 // "Ma santé" in the synced settings (user_settings.data): the emergency card
@@ -9,15 +10,16 @@ import { mergeVaccines, type Vaccine } from "./vaccines";
 // since an older app writes the settings without them. Pure, so it can be
 // tested; used by lib/account/AccountProvider.tsx.
 
-export type HealthSettings = { emergencyCard: EmergencyCard | null; appointments: Appointment[] | null; healthProfiles: HealthProfile[] | null; vaccines: Vaccine[] | null };
+export type HealthSettings = { emergencyCard: EmergencyCard | null; appointments: Appointment[] | null; healthProfiles: HealthProfile[] | null; vaccines: Vaccine[] | null; pharmacy: HomeMedicine[] | null };
 
-/** This device's and the account's together: the newer card, the appointments, relatives and vaccines merged one by one. */
+/** This device's and the account's together: the newer card, the appointments, relatives, vaccines and home medicines merged one by one. */
 export function mergeHealth(local: Partial<HealthSettings>, remote: Partial<HealthSettings>, now: number): HealthSettings {
   return {
     emergencyCard: newerCard(local.emergencyCard, remote.emergencyCard),
     appointments: mergeAppointments(local.appointments, remote.appointments, now),
     healthProfiles: mergeProfiles(local.healthProfiles, remote.healthProfiles, now),
     vaccines: mergeVaccines(local.vaccines, remote.vaccines, now),
+    pharmacy: mergePharmacy(local.pharmacy, remote.pharmacy, now),
   };
 }
 
@@ -26,7 +28,8 @@ export const healthChanged = (local: Partial<HealthSettings>, merged: HealthSett
   JSON.stringify(local.emergencyCard ?? null) !== JSON.stringify(merged.emergencyCard) ||
   JSON.stringify(local.appointments ?? null) !== JSON.stringify(merged.appointments) ||
   JSON.stringify(local.healthProfiles ?? null) !== JSON.stringify(merged.healthProfiles) ||
-  JSON.stringify(local.vaccines ?? null) !== JSON.stringify(merged.vaccines);
+  JSON.stringify(local.vaccines ?? null) !== JSON.stringify(merged.vaccines) ||
+  JSON.stringify(local.pharmacy ?? null) !== JSON.stringify(merged.pharmacy);
 
 /** What goes to the account: nothing written yet (null) is left out, so the account's stays. */
 export function healthPayload<T extends Partial<HealthSettings>>(data: T): T {
@@ -35,11 +38,12 @@ export function healthPayload<T extends Partial<HealthSettings>>(data: T): T {
   if (!payload.appointments) delete payload.appointments;
   if (!payload.healthProfiles) delete payload.healthProfiles;
   if (!payload.vaccines) delete payload.vaccines;
+  if (!payload.pharmacy) delete payload.pharmacy;
   return payload;
 }
 
 /** Nothing of "Ma santé" left on the device (signed out, account deleted). */
-export const noHealth: HealthSettings = { emergencyCard: null, appointments: null, healthProfiles: null, vaccines: null };
+export const noHealth: HealthSettings = { emergencyCard: null, appointments: null, healthProfiles: null, vaccines: null, pharmacy: null };
 
 /** The account's row of settings, as read: its data and the date of its last change. */
 export type SettingsRow = { data: unknown; updatedAt: number } | null;
