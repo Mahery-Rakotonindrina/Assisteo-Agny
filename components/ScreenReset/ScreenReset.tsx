@@ -17,6 +17,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useAccount } from "@/lib/account/AccountProvider";
 import { liveAppointments, removeAllAppointments } from "@/lib/appointments";
 import { liveVaccines, removeAllVaccines } from "@/lib/vaccines";
+import { homeMedicines, removeAllHomeMedicines } from "@/lib/pharmacy";
 import { liveProfiles, removeAllProfiles } from "@/lib/healthProfiles";
 import { blankCard, isCardEmpty } from "@/lib/emergencyCard";
 import { useSettings } from "@/lib/settings/SettingsProvider";
@@ -58,10 +59,11 @@ export function ScreenReset() {
   const hasCard = !isCardEmpty(settings.emergencyCard);
   const appointmentCount = liveAppointments(settings.appointments).length;
   const vaccineCount = liveVaccines(settings.vaccines).length;
+  const pharmacyCount = homeMedicines(settings.pharmacy).length;
   const profileCount = liveProfiles(settings.healthProfiles).length;
   const { measures } = useMeasures();
   const { spends } = useHealthSpending();
-  const hasHealth = hasCard || appointmentCount > 0 || vaccineCount > 0 || profileCount > 0 || measures.length > 0 || spends.length > 0;
+  const hasHealth = hasCard || appointmentCount > 0 || vaccineCount > 0 || pharmacyCount > 0 || profileCount > 0 || measures.length > 0 || spends.length > 0;
   const [open, setOpen] = useState<ResetScreen | null>(null);
   const [working, setWorking] = useState(false);
 
@@ -86,7 +88,7 @@ export function ScreenReset() {
     loans: [{ key: "loans", count: loanCounts.loans }, { key: "repayments", count: loanCounts.repayments }, { key: "proofs", count: loanCounts.proofs }, { key: "links" }],
     parcels: [{ key: "parcels", count: parcels.length }, { key: "parcelReminders" }],
     shop: [{ key: "shopSales", count: shopCounts.sales }, { key: "shopProducts", count: shopCounts.products }, { key: "shopPayments", count: shopCounts.payments }],
-    health: [...(hasCard ? [{ key: "emergencyCard" }] : []), { key: "appointments", count: appointmentCount }, { key: "vaccines", count: vaccineCount }, { key: "healthProfiles", count: profileCount }, { key: "measures", count: measures.length }, { key: "healthSpending", count: spends.length }],
+    health: [...(hasCard ? [{ key: "emergencyCard" }] : []), { key: "appointments", count: appointmentCount }, { key: "vaccines", count: vaccineCount }, { key: "pharmacy", count: pharmacyCount }, { key: "healthProfiles", count: profileCount }, { key: "measures", count: measures.length }, { key: "healthSpending", count: spends.length }],
   };
   const hasData: Record<ResetScreen, boolean> = {
     history: entries.length > 0,
@@ -124,6 +126,7 @@ export function ScreenReset() {
           ...(settings.emergencyCard && { emergencyCard: blankCard(now) }),
           ...(settings.appointments && { appointments: removeAllAppointments(settings.appointments, now) }),
           ...(settings.vaccines && { vaccines: removeAllVaccines(settings.vaccines, now) }),
+          ...(settings.pharmacy && { pharmacy: removeAllHomeMedicines(settings.pharmacy, now) }),
           // The relatives go with their cards; their scans come back to "Moi" by themselves (lib/healthProfiles.ts ownerOf).
           ...(settings.healthProfiles && { healthProfiles: removeAllProfiles(settings.healthProfiles, now) }),
         });

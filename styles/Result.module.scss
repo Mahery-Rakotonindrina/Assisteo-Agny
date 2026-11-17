@@ -793,3 +793,18 @@ $bar-height: calc(var(--safe-top) + 3.95rem);
     }
   }
 }
+
+// "Ajouter à ma pharmacie" under a scanned medicine box: one button per medicine read.
+.pharmacyAdd {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  > button {
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.25;
+    padding-block: 0.4rem;
+  }
+}

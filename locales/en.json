@@ -383,7 +383,9 @@
         "healthSpending": "{count} health expenses (those in “My expenses” stay)",
         "healthSpendingOne": "1 health expense (those in “My expenses” stay)",
         "vaccines": "{count} vaccines",
-        "vaccinesOne": "1 vaccine"
+        "vaccinesOne": "1 vaccine",
+        "pharmacy": "{count} home pharmacy medicines",
+        "pharmacyOne": "1 home pharmacy medicine"
       },
       "stays": {
         "history": "Your parcels (with their photo), your expenses, your loans and your lists.",
@@ -4831,6 +4833,64 @@
         "copied": "Record copied: paste it in a message",
         "failed": "Couldn't share the record"
       }
+    },
+    "pharmacy": {
+      "title": "Home pharmacy",
+      "lead": "The medicines kept at home, for the whole household, sorted by expiry date.",
+      "add": "Add a medicine",
+      "edit": "Edit the medicine",
+      "editShort": "Edit",
+      "empty": "Nothing noted. Add the boxes from your medicine cabinet, or scan a box to read its expiry date.",
+      "locked": "Expiry alerts come with {plan} and above.",
+      "expiredNote": "Don't take an expired medicine: ask your pharmacist.",
+      "expired": "Expired",
+      "soon": "Expires soon",
+      "lastDay": "Last day: expired tomorrow",
+      "expiresOn": "Expiry: {date}",
+      "for": "for {name}",
+      "alerted": "Alert a month before and on the day, at 9 am",
+      "thrown": "I threw it away",
+      "finished": "Finished",
+      "removed": {
+        "thrown": "{name} removed: thrown away",
+        "finished": "{name} removed: finished"
+      },
+      "addFromScan": "Add {name} to my pharmacy",
+      "inPharmacy": "{name} is in your pharmacy",
+      "name": "Medicine",
+      "nameHint": "Paracetamol, cough syrup…",
+      "strength": "Strength or form",
+      "strengthHint": "500 mg, syrup, tablets…",
+      "quantity": "Quantity",
+      "quantityHint": "1 box, 12 tablets…",
+      "expiry": "Expiry date",
+      "month": "Month",
+      "year": "Year",
+      "day": "Day",
+      "pick": "Pick…",
+      "noDay": "Not written",
+      "expiryHint": "The month and year are enough: without a day, it's the end of the month.",
+      "missing": {
+        "name": "Write the medicine's name.",
+        "expiry": "Pick the expiry month and year.",
+        "day": "This day doesn't exist in that month."
+      },
+      "forWho": "For whom?",
+      "everyone": "The whole household",
+      "note": "Note",
+      "noteHint": "Kept in the kitchen, opened on…",
+      "save": "Save",
+      "cancel": "Cancel",
+      "added": "Added to your pharmacy",
+      "updated": "Medicine updated",
+      "reminders": {
+        "monthTitle": "Expires soon: {name}",
+        "monthBody": "Expiry: {date}",
+        "dayTitle": "Last day: {name}",
+        "dayBody": "Expired tomorrow. Expiry: {date}."
+      },
+      "undo": "Undo",
+      "restored": "{name} back in your pharmacy"
     }
   },
   "agenda": {
