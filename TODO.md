@@ -326,13 +326,17 @@ Par ordre d’intérêt. Effort : petit, moyen, important.
 - [x] Dépenses de santé du mois, par type et par personne, mois précédents ; reliées à « Mes dépenses » quand l’offre l’a, sans double (#150, migration 0025)
 - [x] Migrations 0024 et 0025 appliquées en production (2026-11-13), tables vérifiées
 
-## 22. Propositions pour la suite (2026-11-16), à discuter
+## 22. Propositions pour la suite (2026-11-16), faites du 2026-11-16 au 2026-11-19
 
-- [ ] Agenda « À venir » : un seul écran avec tout ce qui arrive, jour par jour (rappels des scans, rendez-vous médicaux, prises, échéances de prêts et de loyer, colis attendus, vidange, fin de garantie) — moyen
-- [ ] Recherche dans toute l’app : une seule barre qui cherche dans les scans, papiers, colis, dépenses, prêts et santé — moyen
-- [ ] Dépense dite à la voix : « 5 000 Ar de taxi-be ce matin », et la dépense se remplit (montant, catégorie, poche, date) — moyen
-- [ ] L’app en malgache : tous les textes traduits, relus par une personne de langue maternelle avant la mise en ligne ; l’IA répond en malgache — gros
-- [ ] Carnet de vaccination de chaque proche (« Pour qui ? ») : vaccins faits, prochain rappel noté à la main, notification la veille — moyen
-- [ ] Pharmacie de la maison : les médicaments gardés à la maison avec leur date de péremption (scan de la boîte), alerte un mois avant — petit
-- [ ] Fiche d’urgence à imprimer au format carte de portefeuille, ou en fond d’écran du téléphone verrouillé — petit
-- [ ] Accueil à son goût : choisir et ranger ses raccourcis (santé, colis, dépenses…) — petit
+- [x] Agenda « À venir » : un seul écran avec tout ce qui arrive, jour par jour (rappels des scans, rendez-vous médicaux, prises, échéances de prêts et de loyer, colis attendus, vidange, fin de garantie) — fait (#161) : puces par domaine, « En retard », raccourci en tête de l’accueil ; vaccins et péremptions ajoutés (#163)
+- [x] Recherche dans toute l’app : une seule barre qui cherche dans les scans, papiers, colis, dépenses, prêts et santé — fait (#159) : sans accents ni majuscules, « 45000 » trouve « 45 000 Ar », loupe sur l’accueil ; vaccins et pharmacie compris (#163)
+- [x] Dépense dite à la voix : « 5 000 Ar de taxi-be ce matin », et la dépense se remplit (montant, catégorie, poche, date) — fait (#155) : dans « Mes dépenses », lu sur le téléphone, sans scan dépensé ; on vérifie avant d’enregistrer
+- [x] L’app en malgache : tous les textes traduits ; l’IA répond en malgache — fait (#164) : visible pour l’Admin et les comptes testeurs (fonctionnalité « malagasy »), en attendant la relecture
+- [x] Carnet de vaccination de chaque proche (« Pour qui ? ») : vaccins faits, prochain rappel noté à la main, notification la veille — fait (#160) : à partir de Lite pour le rappel, partage en PDF ; les vaccins partent avec le proche supprimé
+- [x] Pharmacie de la maison : les médicaments gardés à la maison avec leur date de péremption (scan de la boîte), alerte un mois avant — fait (#162) : alerte à partir de Lite, « Annuler » après « Je l’ai jeté »
+- [x] Fiche d’urgence à imprimer au format carte de portefeuille, ou en fond d’écran du téléphone verrouillé — fait (#157), pour Moi et chaque proche
+- [x] Accueil à son goût : choisir et ranger ses raccourcis (santé, colis, dépenses…) — fait (#158), aussi dans Réglages → Apparence
+- [ ] Faire relire le malgache par une personne de langue maternelle, puis ouvrir la fonctionnalité « malagasy » aux offres (Admin → Offres)
+- [ ] Agenda en malgache : les noms des jours restent en anglais (3 lignes de `pages/agenda.tsx`, à décider par le propriétaire)
+- [ ] Réglages synchronisés : une limite de taille côté serveur
+- [ ] Ma santé : le contour d’un élément ouvert par lien reste si on ouvre un 2e lien dans les 2 secondes
