@@ -17,7 +17,7 @@ import { addDays, daysBetween, groupByDay, localDay } from "@/lib/agenda/days";
 import { collectAgenda } from "@/lib/agenda/sources";
 import type { AgendaItem, AgendaText } from "@/lib/agenda/types";
 import type { PlanFeature } from "@/lib/plans";
-import { formatAriary, formatTime } from "@/lib/format";
+import { formatAriary, formatTag, formatTime } from "@/lib/format";
 import { rise, stagger } from "@/lib/motion";
 import { useSettings } from "@/lib/settings/SettingsProvider";
 import styles from "@/styles/Agenda.module.scss";
@@ -97,9 +97,9 @@ export default function AgendaPage() {
     const gap = daysBetween(now, day);
     if (gap === 0) return t("agenda.today");
     if (gap === 1) return t("agenda.tomorrow");
-    return new Intl.DateTimeFormat(locale === "fr" ? "fr-FR" : "en-GB", { weekday: "long", day: "numeric", month: "long" }).format(day);
+    return new Intl.DateTimeFormat(formatTag(locale), { weekday: "long", day: "numeric", month: "long" }).format(day);
   };
-  const until = new Intl.DateTimeFormat(locale === "fr" ? "fr-FR" : "en-GB", { day: "numeric", month: "long" }).format(to - 1);
+  const until = new Intl.DateTimeFormat(formatTag(locale), { day: "numeric", month: "long" }).format(to - 1);
 
   const row = (item: AgendaItem) => {
     const { icon: Icon, tone } = domainStyle[item.domain] ?? fallbackStyle;
