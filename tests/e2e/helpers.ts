@@ -34,7 +34,8 @@ export async function prepare(page: Page, { onboardingDone = true } = {}) {
 
   // A mock that does `route.fetch()` then `response.json()` throws "Response has been
   // disposed" when the page navigates away meanwhile (the request is cancelled): that
-  // is not a failure of the test, so such errors are swallowed in every page.route.
+  // is not a failure of the test, nor a request still on its way when the test ends
+  // ("Test ended"): such errors are swallowed in every page.route.
   const route = page.route.bind(page) as unknown as (url: Parameters<Page["route"]>[0], handler: (r: Route, q: Request) => unknown, options?: { times?: number }) => Promise<unknown>;
   const unroute = page.unroute.bind(page) as unknown as (url: Parameters<Page["route"]>[0], handler?: unknown) => Promise<void>;
   const wrapped = new Map<unknown, (r: Route, q: Request) => Promise<void>>();
@@ -43,7 +44,7 @@ export async function prepare(page: Page, { onboardingDone = true } = {}) {
       try {
         await handler(r, q);
       } catch (error) {
-        if (!/disposed|closed|Target page|aborted|already handled/i.test(String(error))) throw error;
+        if (!/disposed|closed|Target page|aborted|already handled|Test ended/i.test(String(error))) throw error;
       }
     };
     wrapped.set(handler, safe);
