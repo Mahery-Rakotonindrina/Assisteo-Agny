@@ -1,6 +1,6 @@
 // The Row Level Security of the shared budget (migration 0009_households.sql)
 // of the loans (0010_loans.sql), of the features offered for a while (0011),
-// of the loan links and household loans (0012), of the plants (0013), of the shop (0022), of the health measures (0024), of the health expenses (0025), of the home inventory (0014),
+// of the loan links and household loans (0012), of the plants (0013), of the shop (0022), of the health measures (0024), of the health expenses (0025), of the synced settings (0026), of the home inventory (0014),
 // with the plans created from the Admin a subscription may hold (0015), of the family seats (0016, 0019), of the photo quota (0020), of the lists and parcels shared with the household (0023),
 // tested as Supabase runs it: each query as the "authenticated" role with a
 // user id, or as the server ("service_role"). `client.query(text, params)`
@@ -319,6 +319,11 @@ export async function runRlsChecks(client) {
   await refused("nobody writes a health expense in someone else's name", () => tryUser(ben, "insert into public.health_spending (user_id, id, data, updated_at) values ($1, 'spend-2', '{}', now())", [anna]), /row-level security/);
   await refused("a health expense too big is refused", () => tryUser(anna, "insert into public.health_spending (id, data, updated_at) values ('spend-big', jsonb_build_object('note', repeat('x', 5000)), now())"), /health_spending_data_size/);
   await refused("a health expense id too long is refused", () => tryUser(anna, "insert into public.health_spending (id, data, updated_at) values (repeat('s', 65), '{}', now())"), /health_spending_id_length/);
+
+  // ---- Synced settings (migration 0026_limite_reglages.sql): bounded in size -------
+  await user(anna, "insert into public.user_settings (data, updated_at) values (jsonb_build_object('vaccines', repeat('x', 300000)), now())");
+  await check("a large settings row is kept", async () => ((await count(anna, "select 1 from public.user_settings")) === 1 ? null : "not kept"));
+  await refused("settings too big are refused", () => tryUser(anna, "update public.user_settings set data = jsonb_build_object('vaccines', repeat('x', 1000001))"), /user_settings_data_size/);
   await check("a visitor reads no health expenses", async () => {
     try {
       return (await tryVisitor("select 1 from public.health_spending")).length ? "health expenses visible" : null;
