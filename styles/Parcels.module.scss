@@ -362,6 +362,22 @@
   color: var(--text-subtle);
 }
 
+/* "Suivi automatique · vérifié il y a 2 h": a quiet line under the tracking number. */
+.tracking .autoTrack {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-subtle);
+}
+
+.tracking a.autoTrack {
+  color: var(--text-subtle);
+  font-weight: 500;
+}
+
 .clientFilter {
   align-self: flex-start;
   display: inline-flex;

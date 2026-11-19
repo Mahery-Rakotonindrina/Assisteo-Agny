@@ -1119,6 +1119,7 @@
       "names": {
         "reminders": "Reminders",
         "parcelCosts": "Parcel costs",
+        "parcelAutoTrack": "Parcel auto-tracking",
         "pdfExport": "PDF export",
         "ownKey": "Own AI key",
         "deepAnalysis": "Deep analysis",
@@ -1135,6 +1136,7 @@
       "descriptions": {
         "reminders": "Reminders on scans (repeat, snooze), insurance and parcel arrivals.",
         "parcelCosts": "Price and fees in ariary on each parcel.",
+        "parcelAutoTrack": "Followed parcels update their status by themselves (17TRACK), with a notification. Needs an account.",
         "pdfExport": "A clean PDF of a document, or of several scans from the history.",
         "ownKey": "Scanning with one’s own AI key, with no limit.",
         "deepAnalysis": "Analysing again with the most accurate (and costlier) AI, counted in the month’s quota.",
@@ -1590,7 +1592,22 @@
     "expected": "Expected delivery: {date}",
     "expectedToday": "Arrives today",
     "expectedLate": "Expected on {date}: overdue",
-    "costsReadOnly": "Total cost kept: {amount}. Your plan no longer includes parcel costs: you can’t change them anymore."
+    "costsReadOnly": "Total cost kept: {amount}. Your plan no longer includes parcel costs: you can’t change them anymore.",
+    "autoTrack": {
+      "checked": {
+        "now": "Auto-tracking · checked just now",
+        "minutes": "Auto-tracking · checked {count} min ago",
+        "hours": "Auto-tracking · checked {count} h ago",
+        "days": "Auto-tracking · checked {count} d ago"
+      },
+      "signIn": "Auto-tracking: sign in to turn it on",
+      "locked": "Auto-tracking, no rescanning",
+      "timeline": "Auto-tracking · {date}",
+      "push": {
+        "title": "{title}: {status}",
+        "body": "Tap to see the parcel."
+      }
+    }
   },
   "plans": {
     "offered": "{name} offered until {date}",
@@ -1632,6 +1649,7 @@
       "parcels": "Up to {count} parcels followed",
       "parcelsUnlimited": "No limit on parcels followed",
       "parcelCosts": "Parcel costs in ariary: price and fees",
+      "parcelAutoTrack": "Automatic parcel tracking, no rescanning, with a notification at each step",
       "ownKey": "Option: your own AI key, no limit",
       "allLite": "Everything in Lite, plus:",
       "allPremium": "Everything in Premium, plus:",

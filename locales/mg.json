@@ -1119,6 +1119,7 @@
       "names": {
         "reminders": "Fampahatsiahivana",
         "parcelCosts": "Vidin’ny entana",
+        "parcelAutoTrack": "Fanarahana ho azy ny entana",
         "pdfExport": "Fakana PDF",
         "ownKey": "Lakilen’ny AI manokana",
         "deepAnalysis": "Famakafakana lalina",
@@ -1135,6 +1136,7 @@
       "descriptions": {
         "reminders": "Fampahatsiahivana momba ny scan (famerenana, fanemorana), ny fiantohana ary ny fahatongavan’ny entana.",
         "parcelCosts": "Vidiny sy sarany amin’ny ariary isaky ny entana.",
+        "parcelAutoTrack": "Miova ho azy ny toeran’ireo entana arahina (17TRACK), miaraka amin’ny fampandrenesana. Mila kaonty.",
         "pdfExport": "PDF madio an’ny taratasy iray, na scan maromaro ao amin’ny tantara.",
         "ownKey": "Mandeha scan amin’ny lakilen’ny AI manokana, tsy misy fetra.",
         "deepAnalysis": "Averina ny famakafakana amin’ny AI mazava indrindra (lafo kokoa), voaisa ao amin’ny fetra isam-bolana.",
@@ -1590,7 +1592,22 @@
     "expected": "Fotoana andrasana ny fitaterana: {date}",
     "expectedToday": "Tonga anio",
     "expectedLate": "Nolaharana tamin'ny {date}: dila",
-    "costsReadOnly": "Vola rehetra voatahiry: {amount}. Tsy ao anatin'ny tolotrao intsony ny vidin'ny entana: tsy azonao ovaina intsony izany."
+    "costsReadOnly": "Vola rehetra voatahiry: {amount}. Tsy ao anatin'ny tolotrao intsony ny vidin'ny entana: tsy azonao ovaina intsony izany.",
+    "autoTrack": {
+      "checked": {
+        "now": "Fanarahana ho azy · nojerena izao",
+        "minutes": "Fanarahana ho azy · nojerena {count} min lasa izay",
+        "hours": "Fanarahana ho azy · nojerena {count} ora lasa izay",
+        "days": "Fanarahana ho azy · nojerena {count} andro lasa izay"
+      },
+      "signIn": "Fanarahana ho azy: midira amin’ny kaontinao hampandehanana azy",
+      "locked": "Fanarahana ho azy, tsy mila scan indray",
+      "timeline": "Fanarahana ho azy · {date}",
+      "push": {
+        "title": "{title}: {status}",
+        "body": "Kitiho raha hijery ilay entana."
+      }
+    }
   },
   "plans": {
     "offered": "{name} natolotra hatramin’ny {date}",
@@ -1632,6 +1649,7 @@
       "parcels": "Hatramin’ny entana {count} arahina",
       "parcelsUnlimited": "Entana arahina tsy misy fetra",
       "parcelCosts": "Ny vidin’ny entana amin’ny ariary: vidiny sy sarany",
+      "parcelAutoTrack": "Fanarahana ho azy ny entana, tsy mila scan indray, miaraka amin’ny fampandrenesana isaky ny dingana",
       "ownKey": "Safidy: ny fanalahidinao manokana amin’ny AI, tsy misy fetra",
       "allLite": "Ny Lite rehetra, ary:",
       "allPremium": "Ny Premium rehetra, ary:",

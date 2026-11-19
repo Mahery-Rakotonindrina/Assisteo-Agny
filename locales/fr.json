@@ -1119,6 +1119,7 @@
       "names": {
         "reminders": "Rappels",
         "parcelCosts": "Coûts des colis",
+        "parcelAutoTrack": "Suivi auto des colis",
         "pdfExport": "Export PDF",
         "ownKey": "Clé IA personnelle",
         "deepAnalysis": "Analyse approfondie",
@@ -1135,6 +1136,7 @@
       "descriptions": {
         "reminders": "Rappels sur les scans (répétition, report), l’assurance et l’arrivée des colis.",
         "parcelCosts": "Prix et frais en ariary sur chaque colis.",
+        "parcelAutoTrack": "Le statut des colis suivis se met à jour tout seul (17TRACK), avec une notification. Il faut un compte.",
         "pdfExport": "PDF propre d’un document, ou de plusieurs scans de l’historique.",
         "ownKey": "Scanner avec sa propre clé IA, sans limite.",
         "deepAnalysis": "Refaire une analyse avec l’IA la plus précise (plus chère), comptée au quota du mois.",
@@ -1590,7 +1592,22 @@
     "expected": "Livraison prévue : {date}",
     "expectedToday": "Arrive aujourd'hui",
     "expectedLate": "Prévue le {date} : dépassée",
-    "costsReadOnly": "Coût total gardé : {amount}. Ton offre ne comprend plus les coûts des colis : tu ne peux plus les modifier."
+    "costsReadOnly": "Coût total gardé : {amount}. Ton offre ne comprend plus les coûts des colis : tu ne peux plus les modifier.",
+    "autoTrack": {
+      "checked": {
+        "now": "Suivi automatique · vérifié à l’instant",
+        "minutes": "Suivi automatique · vérifié il y a {count} min",
+        "hours": "Suivi automatique · vérifié il y a {count} h",
+        "days": "Suivi automatique · vérifié il y a {count} j"
+      },
+      "signIn": "Suivi automatique : connecte-toi pour l’activer",
+      "locked": "Suivi automatique, sans rescanner",
+      "timeline": "Suivi automatique · {date}",
+      "push": {
+        "title": "{title} : {status}",
+        "body": "Touche pour voir le colis."
+      }
+    }
   },
   "plans": {
     "offered": "{name} offert jusqu’au {date}",
@@ -1632,6 +1649,7 @@
       "parcels": "Jusqu’à {count} colis suivis",
       "parcelsUnlimited": "Colis suivis sans limite",
       "parcelCosts": "Coûts des colis en ariary : prix et frais",
+      "parcelAutoTrack": "Suivi automatique des colis, sans rescanner, avec une notification à chaque étape",
       "ownKey": "Option : ta propre clé IA, sans limite",
       "allLite": "Tout Lite, et :",
       "allPremium": "Tout Premium, et :",
