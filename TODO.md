@@ -112,7 +112,7 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Envoi maritime (SEA) ou aérien (NORMAL) : détecté automatiquement (lu par l’IA sur la capture, ou déduit du n° de suivi / transitaire), modifiable à la main, badge, filtre, recherche et colonne dans l’export Excel
 - [x] Plusieurs captures de colis d'un coup : « Un colis par photo », chaque photo analysée à part (un scan chacune) puis ajoutée à Mes colis ou mise à jour, résumé à la fin — à partir de Premium, comme « Plusieurs pages »
 - [x] Date de livraison prévue dans la liste, notification le jour J à l'heure choisie (heure de Madagascar) — réglable dans Paramètres → Notifications, notification locale sur l'appareil
-- [ ] Suivi automatique sans rescanner, notification au changement de statut
+- [x] Suivi automatique sans rescanner, notification au changement de statut — fait (#169) : à partir de Premium, avec un compte, toutes les 3 h par 17TRACK ; en attente de la clé `TRACK17_API_KEY` dans Vercel
 - [x] Fret calculé au kilo (poids × tarif du transitaire) — tarif retenu par transitaire et par mode, mer ou avion (Pro, #130)
 - [x] Envoyer le statut au client par WhatsApp — jamais le prix d’achat, les frais ni le bénéfice (Pro, #132)
 - [x] Regrouper les colis par envoi (lot, conteneur) — onglet « Envois », statut changé d’un coup (Pro, #130)
@@ -337,6 +337,6 @@ Par ordre d’intérêt. Effort : petit, moyen, important.
 - [x] Fiche d’urgence à imprimer au format carte de portefeuille, ou en fond d’écran du téléphone verrouillé — fait (#157), pour Moi et chaque proche
 - [x] Accueil à son goût : choisir et ranger ses raccourcis (santé, colis, dépenses…) — fait (#158), aussi dans Réglages → Apparence
 - [ ] Faire relire le malgache par une personne de langue maternelle, puis ouvrir la fonctionnalité « malagasy » aux offres (Admin → Offres)
-- [ ] Agenda en malgache : les noms des jours restent en anglais (3 lignes de `pages/agenda.tsx`, à décider par le propriétaire)
-- [ ] Réglages synchronisés : une limite de taille côté serveur
-- [ ] Ma santé : le contour d’un élément ouvert par lien reste si on ouvre un 2e lien dans les 2 secondes
+- [x] Agenda en malgache : les noms des jours et des mois suivent la langue — fait (#166)
+- [x] Réglages synchronisés : une limite de taille côté serveur — fait (#167) : 1 Mo, appliquée en production
+- [x] Ma santé : le contour d’un élément ouvert par lien s’éteint aussi quand un 2e lien arrive tout de suite — fait (#168)
