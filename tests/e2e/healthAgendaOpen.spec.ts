@@ -65,6 +65,27 @@ test("agenda: an appointment opens Ma santé on it, lit up", async ({ page }) =>
   await expect(card).toBeInViewport();
 });
 
+test("a second link opened at once: only the second item stays lit up", async ({ page }) => {
+  await prepare(page);
+  await page.goto("/sante");
+  await addMedicine(page, "Sirop Toux", 3);
+  await addMedicine(page, "Vitamine C", 5);
+  await page.goto("/agenda");
+  const second = await page.getByRole("link", { name: /Vitamine C/ }).getAttribute("href");
+  expect(second).toContain("med=");
+  await page.getByRole("link", { name: /Sirop Toux/ }).click();
+  const firstRow = page.getByTestId("pharmacy-item").filter({ hasText: "Sirop Toux" });
+  await expect(firstRow).toHaveAttribute("data-flash", "");
+  await page.evaluate(async (url) => {
+    const { router } = (window as unknown as { next: { router: { push: (url: string) => Promise<boolean> } } }).next;
+    await router.push(url);
+  }, second!);
+  const secondRow = page.getByTestId("pharmacy-item").filter({ hasText: "Vitamine C" });
+  await expect(secondRow).toHaveAttribute("data-flash", "");
+  await expect(firstRow).not.toHaveAttribute("data-flash");
+  await expect(secondRow).not.toHaveAttribute("data-flash", { timeout: 5000 });
+});
+
 test("search: a vaccine then a medicine are found and opened", async ({ page }) => {
   await prepare(page);
   await page.goto("/sante");

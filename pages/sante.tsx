@@ -83,6 +83,7 @@ export default function HealthPage() {
     if (!flashId || !ready) return;
     let tries = 0;
     let timer: ReturnType<typeof setTimeout> | undefined;
+    let lit: HTMLElement | undefined;
     // The person changes first: the item shows a render later.
     const look = () => {
       const element = document.getElementById(flashId);
@@ -95,10 +96,15 @@ export default function HealthPage() {
       if (folded && !folded.open) folded.open = true;
       element.scrollIntoView({ block: "center", behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
       element.setAttribute("data-flash", "");
+      lit = element;
       timer = setTimeout(() => element.removeAttribute("data-flash"), 2400);
     };
     look();
-    return () => clearTimeout(timer);
+    // Another item opened before the end: this one goes out now, not never.
+    return () => {
+      clearTimeout(timer);
+      lit?.removeAttribute("data-flash");
+    };
   }, [flashId, ready]);
 
   // An appointment's, a vaccine's or a home medicine's notification: its section in sight.
