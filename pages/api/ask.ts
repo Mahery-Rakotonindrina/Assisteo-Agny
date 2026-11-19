@@ -13,6 +13,7 @@ import { applyCors, clientIp, sendError } from "@/lib/server/http";
 import { rateLimit } from "@/lib/server/rateLimit";
 import { reportError } from "@/lib/server/reportError";
 import { track } from "@/lib/server/stats";
+import { effectiveLocale } from "@/lib/localeAccess";
 import { limitsFor, resolvePlan } from "@/lib/server/plan";
 import { countServerCall, releaseAsk, releasePlanAsk, releaseServerCall, reserveAsk, reserveAskIp, releaseAskIp, reservePlanAsk, reserveServerCall, reserveTrialAiCall, releaseTrialAiCall } from "@/lib/server/trialStore";
 
@@ -51,12 +52,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   if (override === "invalid") return sendError(res, 400, "invalid_request", "Invalid AI provider, model or key.");
 
   const { account, current, features, quotas, onTrial } = await resolvePlan(req);
+
+  // Malagasy is a plan feature: without it the AI answers in French.
+
+  parsed.data.locale = effectiveLocale(parsed.data.locale, (feature) => features.has(feature));
   if (override && !features.has("ownKey")) {
     return sendError(res, 403, "plan_required", "Your own AI key needs a subscription.");
   }
 
   if (!override && activeProvider === "demo") {
-    const answer = parsed.data.task === "transcribe" || parsed.data.task === "translate" ? demoText[parsed.data.task] : demoAnswers[parsed.data.locale];
+    const answer = parsed.data.task === "transcribe" || parsed.data.task === "translate" ? demoText[parsed.data.task] : demoAnswers[parsed.data.locale === "en" ? "en" : "fr"];
     return res.status(200).json({ answer, model: "demo", demo: true } satisfies AskResponse);
   }
 

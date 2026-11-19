@@ -8,6 +8,7 @@ import { rateLimit } from "@/lib/server/rateLimit";
 import { bonusScansLeft, noteDevice, returnBonusScan, rewardFirstScan, takeBonusScan } from "@/lib/server/referralBonus";
 import { reportError } from "@/lib/server/reportError";
 import { track } from "@/lib/server/stats";
+import { effectiveLocale } from "@/lib/localeAccess";
 import { limitsFor, resolvePlan } from "@/lib/server/plan";
 import {
   countServerCall,
@@ -75,6 +76,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
   // The plan comes from the signed-in account's subscriptions (free when signed out).
   const { account, current, features, quotas, onTrial } = await resolvePlan(req);
+  // Malagasy is a plan feature: without it the AI answers in French.
+  parsed.data.locale = effectiveLocale(parsed.data.locale, (feature) => features.has(feature));
   if (override && !features.has("ownKey")) {
     return sendError(res, 403, "plan_required", "Your own AI key needs a subscription.");
   }

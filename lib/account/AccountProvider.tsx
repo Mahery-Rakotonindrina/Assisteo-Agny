@@ -66,7 +66,8 @@ const AccountContext = createContext<AccountContextValue | null>(null);
  * account keeps everything).
  */
 export function AccountProvider({ children }: { children: ReactNode }) {
-  const { settings, ready, update } = useSettings();
+  // The stored settings, not the shown ones: a language the plan does not allow now is still the chosen one.
+  const { stored: settings, ready, update } = useSettings();
   const [session, setSession] = useState<Session | null | undefined>(accountsAvailable ? undefined : null);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>(sync.status());
   const userId = session?.user.id ?? null;

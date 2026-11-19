@@ -10,14 +10,15 @@ import { config } from "@/lib/config";
 import { LEGAL_UPDATED_AT, legalDocuments, type LegalKind } from "@/lib/legal";
 import { rise, stagger } from "@/lib/motion";
 import styles from "./LegalPage.module.scss";
+import { formatTag } from "@/lib/format";
 
 /** Privacy policy or terms of use, in the app's language. Public URL for the stores. */
 export function LegalPage({ kind }: { kind: LegalKind }) {
   const { t, locale } = useTranslation();
   const router = useRouter();
-  const doc = legalDocuments[kind][locale];
+  const doc = legalDocuments[kind][locale === "en" ? "en" : "fr"];
   const other: LegalKind = kind === "privacy" ? "terms" : "privacy";
-  const updated = new Date(`${LEGAL_UPDATED_AT}T12:00:00`).toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" });
+  const updated = new Date(`${LEGAL_UPDATED_AT}T12:00:00`).toLocaleDateString(formatTag(locale), { day: "numeric", month: "long", year: "numeric" });
 
   const back = () => {
     if (window.history.length > 1) router.back();

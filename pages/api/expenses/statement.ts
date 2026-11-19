@@ -5,6 +5,7 @@ import { activeProvider, readStatement } from "@/lib/ai/provider";
 import { MAX_STATEMENT_PAGES, StatementRequestSchema, type Statement, type StatementResponse } from "@/lib/ai/schema";
 import { applyCors, clientIp, sendError } from "@/lib/server/http";
 import { isPdf, pdfPageCount } from "@/lib/server/pdfPages";
+import { effectiveLocale } from "@/lib/localeAccess";
 import { limitsFor, resolvePlan } from "@/lib/server/plan";
 import { rateLimit, refundRateLimit } from "@/lib/server/rateLimit";
 import { reportError } from "@/lib/server/reportError";
@@ -62,6 +63,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   }
 
   const { account, current, features, quotas } = await resolvePlan(req);
+
+  // Malagasy is a plan feature: without it the AI answers in French.
+
+  parsed.data.locale = effectiveLocale(parsed.data.locale, (feature) => features.has(feature));
   if (!account) return sendError(res, 401, "sign_in_required", "Sign in to import a statement.");
   if (!features.has("expenses")) return sendError(res, 403, "plan_required", "Importing a statement is not part of your plan.");
 

@@ -1129,7 +1129,8 @@
         "expenses": "My expenses",
         "inventory": "My home",
         "plants": "My plants",
-        "shop": "My shop"
+        "shop": "My shop",
+        "malagasy": "Malagasy"
       },
       "descriptions": {
         "reminders": "Reminders on scans (repeat, snooze), insurance and parcel arrivals.",
@@ -1144,7 +1145,8 @@
         "expenses": "The month’s budget, alone or as a household, and the AI’s month review.",
         "inventory": "The home inventory: items, warranties and their reminder, linked invoices, export for the insurer.",
         "plants": "Plants, their watering suggested by the AI, the morning reminder and the diagnosis of a sick plant (one of the month's scans).",
-        "shop": "The small shopkeeper’s book: the day’s sales, the stock with an alert, the customers’ credit with a WhatsApp reminder, the totals of the day and the month."
+        "shop": "The small shopkeeper’s book: the day’s sales, the stock with an alert, the customers’ credit with a WhatsApp reminder, the totals of the day and the month.",
+        "malagasy": "The app in Malagasy (language choice in Settings), and the AI’s answers in Malagasy. Open it once a native speaker has proofread it."
       },
       "deepNeedsLimit": "Can’t save: {list} has no deep analysis quota (0 = no limit). First set a number per month above, in the plans’ prices and quotas. Free has no quota: no deep analysis."
     }
@@ -1648,7 +1650,8 @@
       "plants": "My plants: watering, morning reminder, diagnosis of a sick plant",
       "allPlan": "Everything in {plan}, plus:",
       "family": "Up to {count} people of your family",
-      "shop": "My shop: the day’s sales, stock, customers’ credit"
+      "shop": "My shop: the day’s sales, stock, customers’ credit",
+      "malagasy": "The app in Malagasy"
     },
     "how": "How to subscribe",
     "step1": "Sign in",

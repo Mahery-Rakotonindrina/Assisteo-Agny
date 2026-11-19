@@ -1129,7 +1129,8 @@
         "expenses": "Mes dépenses",
         "inventory": "Ma maison",
         "plants": "Mes plantes",
-        "shop": "Ma boutique"
+        "shop": "Ma boutique",
+        "malagasy": "Malgache"
       },
       "descriptions": {
         "reminders": "Rappels sur les scans (répétition, report), l’assurance et l’arrivée des colis.",
@@ -1144,7 +1145,8 @@
         "expenses": "Le budget du mois, seul ou en foyer, et le bilan du mois par l’IA.",
         "inventory": "L’inventaire de la maison : objets, garanties et leur rappel, factures liées, export pour l’assurance.",
         "plants": "Les plantes, leur arrosage proposé par l’IA, le rappel du matin et le diagnostic d’une plante malade (un scan du mois).",
-        "shop": "Le carnet du petit commerçant : les ventes du jour, le stock avec alerte, le crédit des clients avec rappel WhatsApp, les totaux du jour et du mois."
+        "shop": "Le carnet du petit commerçant : les ventes du jour, le stock avec alerte, le crédit des clients avec rappel WhatsApp, les totaux du jour et du mois.",
+        "malagasy": "L’app en malgache (choix de langue des Réglages), et les réponses de l’IA en malgache. À ouvrir après relecture par une personne de langue maternelle."
       },
       "deepNeedsLimit": "Impossible d’enregistrer : {list} n’a pas de quota d’analyses approfondies (0 = sans limite). Mets d’abord un nombre par mois plus haut, dans les prix et quotas des offres. Gratuit n’a pas de quota : pas d’analyse approfondie."
     }
@@ -1648,7 +1650,8 @@
       "plants": "Mes plantes : arrosage, rappel le matin, diagnostic d’une plante malade",
       "allPlan": "Tout {plan}, et :",
       "family": "Jusqu’à {count} personnes de ta famille",
-      "shop": "Ma boutique : ventes du jour, stock, crédit des clients"
+      "shop": "Ma boutique : ventes du jour, stock, crédit des clients",
+      "malagasy": "L’app en malgache"
     },
     "how": "Comment s’abonner",
     "step1": "Connecte-toi",

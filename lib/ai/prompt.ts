@@ -28,7 +28,8 @@ const modeHints: Record<ScanMode, string> = {
     "The user says this is an object or a plant. Focus on identification, usage, care (for a plant: light, watering, health) and value.",
 };
 
-const languageNames = { fr: "French", en: "English" } as const;
+// Malagasy: the official language every Malagasy reads, plain and warm, never the dialect of one region.
+const languageNames = { fr: "French", en: "English", mg: "Malagasy (official Malagasy, simple and warm, addressing the user as \"ianao\"; keep proper names and brands such as MVola, Orange Money, Airtel Money, JIRAMA and Ar as they are)" } as const;
 
 /** `pageCount` > 1: the photos are the pages of one document (multi-page scan). */
 export function buildUserPrompt(mode: ScanMode, locale: keyof typeof languageNames, pageCount = 1) {

@@ -1,10 +1,13 @@
 import { formatAriary } from "@/lib/format";
-import type { Analysis, ExpenseSummary, ExpenseSummaryRequest, ScanMode, Statement } from "./schema";
+import type { AiLocale, Analysis, ExpenseSummary, ExpenseSummaryRequest, ScanMode, Statement } from "./schema";
 
 // Demo-mode analyses, used when no Claude API key is configured so the whole
 // flow (camera → analysis → history → reminders) can be tried end to end.
 
 type Locale = "fr" | "en";
+
+// The demo has no Malagasy: it answers in French (the real AI answers in Malagasy).
+const demoLocale = (locale: AiLocale): Locale => (locale === "mg" ? "fr" : locale);
 
 const food: Record<Locale, Analysis> = {
   fr: {
@@ -981,7 +984,8 @@ const withdrawal = (locale: Locale): Analysis => {
 };
 
 /** The demo Mobile Money receipt (the end-to-end tests serve it in place of a scan): money paid, received, or withdrawn. */
-export function mockReceipt(locale: Locale, direction: "out" | "in" | "own" = "out"): Analysis {
+export function mockReceipt(requested: AiLocale, direction: "out" | "in" | "own" = "out"): Analysis {
+  const locale = demoLocale(requested);
   return direction === "in" ? received(locale) : direction === "own" ? withdrawal(locale) : mobileMoneyScan[locale];
 }
 
@@ -1103,7 +1107,7 @@ const prescriptionScan: Record<Locale, Analysis> = {
  * Kept out of the auto rotation: it opens on its own tab, and the tests that
  * scan in parallel expect the summary tab.
  */
-export const mockPrescription = (locale: Locale): Analysis => prescriptionScan[locale];
+export const mockPrescription = (locale: AiLocale): Analysis => prescriptionScan[demoLocale(locale)];
 
 // A fictional medicine box, for demo mode: one medicine, its expiry printed.
 const medicineBoxScan: Record<Locale, Analysis> = {
@@ -1188,9 +1192,10 @@ const medicineBoxScan: Record<Locale, Analysis> = {
 };
 
 /** The demo medicine box (the end-to-end tests serve it in place of a scan), kept out of the auto rotation like the prescription. */
-export const mockMedicineBox = (locale: Locale): Analysis => medicineBoxScan[locale];
+export const mockMedicineBox = (locale: AiLocale): Analysis => medicineBoxScan[demoLocale(locale)];
 
-export function mockAnalysis(mode: ScanMode, locale: Locale): Analysis {
+export function mockAnalysis(mode: ScanMode, requested: AiLocale): Analysis {
+  const locale = demoLocale(requested);
   if (mode !== "auto") return byMode[mode][locale];
   // New examples go last: tests rely on the order of the first ones.
   const pool = [food, documentScan, vehicleScan, objectScan, parcelScan, listScan, registrationScan, mobileMoneyScan, tillReceiptScan];
@@ -1235,7 +1240,7 @@ export function mockStatement(now: number): Statement {
 
 /** A sample review of the month, built from the totals sent (demo mode). */
 export function mockExpenseSummary(input: ExpenseSummaryRequest): ExpenseSummary {
-  const fr = input.locale === "fr";
+  const fr = input.locale !== "en";
   const money = (value: number) => formatAriary(value, input.locale);
   const top = input.categories[0];
   const change = input.previousTotal > 0 ? Math.round(((input.total - input.previousTotal) / input.previousTotal) * 100) : null;

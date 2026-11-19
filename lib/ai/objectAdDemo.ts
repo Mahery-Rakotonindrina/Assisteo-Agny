@@ -13,7 +13,7 @@ const prices: Record<ObjectAdRequest["condition"], [number, number, number]> = {
 
 export function mockObjectAd(input: Pick<ObjectAdRequest, "condition" | "place" | "locale" | "malagasy">, title: string): ObjectAd {
   const [priceLow, price, priceHigh] = prices[input.condition];
-  const fr = input.locale === "fr";
+  const fr = input.locale !== "en";
   const place = input.place ? (fr ? ` À voir à ${input.place}.` : ` To see in ${input.place}.`) : "";
   return {
     title: fr ? `${title} à vendre` : `${title} for sale`,

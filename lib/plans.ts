@@ -38,10 +38,12 @@ export type PlanFeature =
   /** "Mes plantes": the plants, their watering and morning reminder, the diagnosis of a problem. */
   | "plants"
   /** "Ma boutique": the day's sales, the stock with its alert, the customers' credit (small shopkeepers). */
-  | "shop";
+  | "shop"
+  /** The app in Malagasy (Admin only, then 'test' for native speakers who proofread, then everyone). Without it the app stays in French. */
+  | "malagasy";
 
 /** Every feature, in the order of the Admin table and of the offers page. */
-export const planFeatures = ["reminders", "parcelCosts", "pdfExport", "ownKey", "deepAnalysis", "multiPage", "garage", "inventory", "plants", "reseller", "expenses", "loans", "shop"] as const satisfies readonly PlanFeature[];
+export const planFeatures = ["reminders", "parcelCosts", "pdfExport", "ownKey", "deepAnalysis", "multiPage", "garage", "inventory", "plants", "reseller", "expenses", "loans", "shop", "malagasy"] as const satisfies readonly PlanFeature[];
 // Fails to compile when a feature is missing from the list.
 const everyFeatureListed: Exclude<PlanFeature, (typeof planFeatures)[number]> extends never ? true : never = true;
 void everyFeatureListed;
@@ -51,7 +53,7 @@ void everyFeatureListed;
  * default of the Admin settings (`PlansConfig.features`), and what an app
  * goes by until the server sent its settings (an older APK keeps it).
  */
-const featureFrom: Record<PlanFeature, PlanId> = { ownKey: "lite", parcelCosts: "lite", reseller: "pro", deepAnalysis: "premium", multiPage: "premium", pdfExport: "lite", garage: "premium", inventory: "premium", reminders: "lite", expenses: "unlimited", loans: "unlimited", plants: "lite", shop: "pro" };
+const featureFrom: Record<PlanFeature, PlanId> = { ownKey: "lite", parcelCosts: "lite", reseller: "pro", deepAnalysis: "premium", multiPage: "premium", pdfExport: "lite", garage: "premium", inventory: "premium", reminders: "lite", expenses: "unlimited", loans: "unlimited", plants: "lite", shop: "pro", malagasy: "unlimited" };
 
 /**
  * What a feature needs to work: it is dropped when one of them is missing.

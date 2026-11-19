@@ -34,7 +34,7 @@ export function planIdProblem(id: string, taken: readonly string[]): "format" | 
 }
 
 /** The name in the app's language, else the French one. */
-export const localName = (name: PlanName, locale: Locale) => name[locale]?.trim() || name.fr;
+export const localName = (name: PlanName, locale: Locale) => (locale === "en" ? name.en : name.fr)?.trim() || name.fr;
 
 /** A created plan as the server described it (the account's own, or an offer); null when unknown. */
 export function createdPlanInfo(id: AnyPlanId, state: Pick<PlanResponse, "offers" | "customPlan"> | null): CustomPlanInfo | null {

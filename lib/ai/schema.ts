@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { locales } from "@/i18n.config";
 import { expenseCategories, incomeKinds } from "@/lib/expenses";
 
 // No eval-based fast paths: the web CSP forbids eval, and Zod's probe for it
@@ -413,6 +414,9 @@ export function imagesOf(input: { image: string; mediaType: PageImage["mediaType
 }
 
 /** Languages a document's text can be translated into. */
+/** The languages the AI can answer in (the app's: Malagasy is the plan feature "malagasy"). */
+export type AiLocale = (typeof locales)[number];
+
 export const translateLanguages = ["fr", "en", "mg", "zh"] as const;
 export type TranslateLanguage = (typeof translateLanguages)[number];
 
@@ -420,7 +424,7 @@ export const AnalyzeRequestSchema = z.object({
   image: z.string().min(1).max(MAX_IMAGE_BASE64_LENGTH),
   mediaType: z.enum(imageMediaTypes),
   mode: z.enum(scanModes),
-  locale: z.enum(["fr", "en"]),
+  locale: z.enum(locales),
   /** Analyse again with the more capable model (Premium and up). */
   deep: z.boolean().optional(),
   /** Multi-page scan (Premium and up): the other pages. */
@@ -448,7 +452,7 @@ export const AskRequestSchema = z.object({
     .min(1)
     .max(40)
     .refine((messages) => messages[messages.length - 1].role === "user", "The last message must be the user's question."),
-  locale: z.enum(["fr", "en"]),
+  locale: z.enum(locales),
   /** The other pages of a multi-page scan. */
   pages: ExtraPagesSchema,
   /** "transcribe": the full text, as written; "translate": that text in `target`. Default: a question. */
@@ -470,7 +474,7 @@ export type AskResponse = {
 const amount = z.number().int().min(0).max(1_000_000_000_000);
 
 export const ExpenseSummaryRequestSchema = z.strictObject({
-  locale: z.enum(["fr", "en"]),
+  locale: z.enum(locales),
   month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/),
   /** The day of the month reached when the month is still going, else null. */
   dayOfMonth: z.number().int().min(1).max(31).nullable(),
@@ -522,7 +526,7 @@ export const MAX_STATEMENT_PDF_BASE64_LENGTH = Math.floor((3 * 1024 * 1024 * 4) 
 
 export const StatementRequestSchema = z
   .strictObject({
-    locale: z.enum(["fr", "en"]),
+    locale: z.enum(locales),
     pages: z.array(PageSchema).min(1).max(MAX_STATEMENT_PAGES).optional(),
     pdf: z.string().min(1).max(MAX_STATEMENT_PDF_BASE64_LENGTH).optional(),
     /** The user's day (YYYY-MM-DD), for the "Aujourd'hui" and "Hier" of the histories. */
@@ -577,7 +581,7 @@ export type StatementResponse = { statement: Statement; model: string; demo: boo
 export const PlantDiagnosisRequestSchema = z.strictObject({
   image: z.string().min(1).max(MAX_IMAGE_BASE64_LENGTH),
   mediaType: z.enum(imageMediaTypes),
-  locale: z.enum(["fr", "en"]),
+  locale: z.enum(locales),
   /** The plant's name or species, when known. */
   plant: z.string().trim().max(80).optional(),
   /** Indoor or outdoor, when known. */
@@ -612,7 +616,7 @@ export type PlantDiagnosisResponse = {
 export const LoanScanRequestSchema = z.strictObject({
   image: z.string().min(1).max(MAX_IMAGE_BASE64_LENGTH),
   mediaType: z.enum(imageMediaTypes),
-  locale: z.enum(["fr", "en"]),
+  locale: z.enum(locales),
 });
 export type LoanScanRequest = z.infer<typeof LoanScanRequestSchema>;
 
@@ -661,7 +665,7 @@ export const ObjectAdRequestSchema = z.strictObject({
   condition: z.enum(objectConditions),
   /** The town where it is sold, when the seller gives it. */
   place: z.string().trim().max(60).optional(),
-  locale: z.enum(["fr", "en"]),
+  locale: z.enum(locales),
   /** The text in Malagasy too. */
   malagasy: z.boolean().optional(),
 });

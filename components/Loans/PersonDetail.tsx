@@ -5,7 +5,7 @@ import { Button } from "@/components/Button";
 import { useToast } from "@/components/Toast";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Locale } from "@/i18n.config";
-import { formatDate, formatMonthYear } from "@/lib/format";
+import { formatDate, formatMonthYear, formatTag } from "@/lib/format";
 import { ledgerMonths, personBadge, personLedger, type LedgerLine, type PersonBadge } from "@/lib/loanLedger";
 import type { PickedContact } from "@/lib/contactPick";
 import { hasProofs } from "@/lib/loanProof";
@@ -48,7 +48,7 @@ type Props = {
   pocketName?: (id: string) => string | undefined;
 };
 
-const shortDay = (time: number, locale: Locale) => new Intl.DateTimeFormat(locale === "fr" ? "fr-FR" : "en-GB", { day: "numeric", month: "short" }).format(time);
+const shortDay = (time: number, locale: Locale) => new Intl.DateTimeFormat(formatTag(locale), { day: "numeric", month: "short" }).format(time);
 
 /** The pill of a person: late, next due day, up to date, repaid. */
 export function BadgePill({ badge }: { badge: PersonBadge }) {

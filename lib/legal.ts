@@ -324,7 +324,7 @@ const termsEn: LegalDocument = {
   ],
 };
 
-export const legalDocuments: Record<LegalKind, Record<Locale, LegalDocument>> = {
+export const legalDocuments: Record<LegalKind, Record<"fr" | "en", LegalDocument>> = {
   privacy: { fr: privacyFr, en: privacyEn },
   terms: { fr: termsFr, en: termsEn },
 };

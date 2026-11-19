@@ -5,6 +5,7 @@ import { activeProvider, writeObjectAd } from "@/lib/ai/provider";
 import { AnalysisSchema, InstallIdSchema, installIdHeader, normalizeStoredAnalysis, ObjectAdRequestSchema, type ObjectAdResponse } from "@/lib/ai/schema";
 import { tidyAd } from "@/lib/objectAd";
 import { applyCors, clientIp, sendError } from "@/lib/server/http";
+import { effectiveLocale } from "@/lib/localeAccess";
 import { limitsFor, resolvePlan } from "@/lib/server/plan";
 import { rateLimit } from "@/lib/server/rateLimit";
 import { reportError } from "@/lib/server/reportError";
@@ -50,6 +51,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
   const statsDevice = InstallIdSchema.safeParse(req.headers[installIdHeader]).data ?? null;
   const { account, current, features, quotas, onTrial } = await resolvePlan(req);
+  // Malagasy is a plan feature: without it the AI answers in French.
+  input.locale = effectiveLocale(input.locale, (feature) => features.has(feature));
 
   // A subscriber's ad draws on the plan's daily questions...
   let planUser: string | null = null;

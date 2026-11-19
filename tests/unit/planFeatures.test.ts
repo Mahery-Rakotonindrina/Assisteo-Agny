@@ -43,9 +43,9 @@ const ladder: Record<PlanId, PlanFeature[]> = {
   lite: ["reminders", "parcelCosts", "pdfExport", "ownKey", "plants"],
   premium: ["reminders", "parcelCosts", "pdfExport", "ownKey", "plants", "deepAnalysis", "multiPage", "garage", "inventory"],
   pro: ["reminders", "parcelCosts", "pdfExport", "ownKey", "plants", "deepAnalysis", "multiPage", "garage", "inventory", "reseller", "shop"],
-  unlimited: ["reminders", "parcelCosts", "pdfExport", "ownKey", "deepAnalysis", "multiPage", "garage", "inventory", "reseller", "expenses", "loans", "plants", "shop"],
+  unlimited: ["reminders", "parcelCosts", "pdfExport", "ownKey", "deepAnalysis", "multiPage", "garage", "inventory", "reseller", "expenses", "loans", "plants", "shop", "malagasy"],
 };
-const ladderFrom: Record<PlanFeature, PlanId> = { ownKey: "lite", parcelCosts: "lite", reseller: "pro", deepAnalysis: "premium", multiPage: "premium", pdfExport: "lite", garage: "premium", inventory: "premium", reminders: "lite", expenses: "unlimited", loans: "unlimited", plants: "lite", shop: "pro" };
+const ladderFrom: Record<PlanFeature, PlanId> = { ownKey: "lite", parcelCosts: "lite", reseller: "pro", deepAnalysis: "premium", multiPage: "premium", pdfExport: "lite", garage: "premium", inventory: "premium", reminders: "lite", expenses: "unlimited", loans: "unlimited", plants: "lite", shop: "pro", malagasy: "unlimited" };
 
 const clone = (settings: FeatureSettings): FeatureSettings => JSON.parse(JSON.stringify(settings)) as FeatureSettings;
 const sorted = (features: Iterable<PlanFeature>) => [...features].sort();
