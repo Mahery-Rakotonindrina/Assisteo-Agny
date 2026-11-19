@@ -1,6 +1,6 @@
 import { AnalysisSchema, normalizeStoredAnalysis, type Analysis } from "@/lib/ai/schema";
 import { seatLive, seatWins, shareableSeats } from "@/lib/familySeats";
-import { activePlan, activeSubscription, defaultFeatureSettings, defaultPlansConfig, effectiveFeatures, type CustomPlan, type FeatureDiff, type FeatureGrant, type FeatureSettings, type PlansConfig, type SubscriptionPlanId } from "@/lib/plans";
+import { activePlan, activeSubscription, defaultFeatureSettings, defaultPlansConfig, effectiveFeatures, type CustomPlan, type FeatureDiff, type FeatureGrant, type FeatureSettings, type PlanFeature, type PlansConfig, type SubscriptionPlanId } from "@/lib/plans";
 import { nextOccurrence, parseRepeat } from "@/lib/reminderRepeat";
 
 // Decides which reminder pushes to send: pure, so it can be tested without
@@ -139,6 +139,7 @@ export function paidReminderUsers(
   config: FeatureSettings & { customPlans?: readonly CustomPlan[]; offers?: PlansConfig["offers"] } = defaultFeatureSettings,
   grants: ReadonlyArray<Pick<FeatureGrant, "email" | "feature" | "startsAt" | "endsAt">> = [],
   seats: readonly SeatRow[] = [],
+  feature: PlanFeature = "reminders",
 ) {
   const byEmail = new Map<string, SubscriptionRow[]>();
   for (const row of subscriptions) {
@@ -167,7 +168,7 @@ export function paidReminderUsers(
       }
     }
     const offered = email ? grants.filter((grant) => grant.email.toLowerCase() === email) : [];
-    if (effectiveFeatures({ plan: current.plan, custom: current.custom, email: user.email, config, subscription, grants: offered, now }).has("reminders")) paid.add(user.id);
+    if (effectiveFeatures({ plan: current.plan, custom: current.custom, email: user.email, config, subscription, grants: offered, now }).has(feature)) paid.add(user.id);
   }
   return paid;
 }
