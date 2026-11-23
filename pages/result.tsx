@@ -50,6 +50,8 @@ import { ReceiptHealthControls } from "@/components/HealthSpending";
 import { GarageControls } from "@/components/Garage";
 import { hasInventoryControls, InventoryControls, InventoryIcon } from "@/components/Inventory";
 import { MedicationPlanner, MedicineCard, MedicineDisclaimer } from "@/components/Medicine";
+import { AddToPharmacy } from "@/components/Pharmacy";
+import { hasReadableName } from "@/lib/medication";
 import { ObjectAdControls } from "@/components/ObjectAd";
 import { PlanBadge } from "@/components/PlanBadge";
 import { PlanLock } from "@/components/PlanLock";
@@ -625,6 +627,16 @@ function ResultView({ entry, onBack, example = false }: { entry: HistoryEntry; o
               <Section title={t("medicine.title")} icon={<Pill />}>
                 <MedicineCard medicine={analysis.medicine} />
               </Section>
+              {/* A box at home: into "Pharmacie de la maison", its name, dosage and expiry ready to check. */}
+              {!example && analysis.medicine.kind === "box" && analysis.medicine.items.some((item) => hasReadableName(item.name)) && (
+                <div className={styles.pharmacyAdd}>
+                  {analysis.medicine.items.map((item, index) =>
+                    hasReadableName(item.name) ? (
+                      <AddToPharmacy key={`${item.name}-${index}`} prefill={{ name: item.name, strength: item.strength ?? "", expiry: item.expiry ?? null, scanId: entry.id, index }} />
+                    ) : null,
+                  )}
+                </div>
+              )}
               {!example && analysis.medicine.items.length > 0 && (
                 <Section title={t("medicine.remindersTitle")} icon={<BellRing />}>
                   <MedicationPlanner entry={entry} medicine={analysis.medicine} />

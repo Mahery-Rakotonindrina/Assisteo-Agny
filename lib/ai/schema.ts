@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { locales } from "@/i18n.config";
 import { expenseCategories, incomeKinds } from "@/lib/expenses";
 
 // No eval-based fast paths: the web CSP forbids eval, and Zod's probe for it
@@ -322,6 +323,12 @@ export const AnalysisSchema = z.object({
             durationDays: z.number().nullable().describe("Days of treatment, only when written (pendant 7 jours = 7, 1 boîte is not a duration); null otherwise."),
             precautions: z.array(z.string()).describe("0 to 3 usual precautions for this medicine (with food, drowsiness, no alcohol…), short."),
             contraindications: z.array(z.string()).describe("0 to 3 commonly known general contraindications, each phrased as general information, short."),
+            // Missing from a provider's answer (a personal key, an OpenAI-compatible one): none read, the scan still valid.
+            expiry: z
+              .string()
+              .nullable()
+              .default(null)
+              .describe("Only on a box, blister or leaflet: the expiry date printed on it (EXP, Pér., À utiliser avant), as YYYY-MM, or YYYY-MM-DD when the day is printed; null when not visible or not certain. Never guess one."),
           }),
         )
         .describe("Every medicine shown, in the order written."),
@@ -343,6 +350,11 @@ export const AnalysisSchema = z.object({
 });
 
 export type Analysis = z.infer<typeof AnalysisSchema>;
+
+/** A medicine block read before the expiry of a box was asked for: none read. */
+function withExpiry(medicine: Record<string, unknown>) {
+  return Array.isArray(medicine.items) ? { ...medicine, items: medicine.items.map((item) => (item && typeof item === "object" ? { expiry: null, ...(item as Record<string, unknown>) } : item)) } : medicine;
+}
 
 /**
  * Analyses saved by older versions lack fields added since (recipe, vehicle,
@@ -374,8 +386,8 @@ export function normalizeStoredAnalysis(raw: unknown): unknown {
         }
       : null,
     parcel: analysis.parcel ? { shippingMode: null, ...(analysis.parcel as Record<string, unknown>) } : null,
-    // Read before the renewal was asked for: nothing said.
-    medicine: analysis.medicine ? { renewal: null, ...(analysis.medicine as Record<string, unknown>) } : null,
+    // Read before the renewal and the expiry were asked for: nothing said.
+    medicine: analysis.medicine ? withExpiry({ renewal: null, ...(analysis.medicine as Record<string, unknown>) }) : null,
   };
 }
 
@@ -402,6 +414,9 @@ export function imagesOf(input: { image: string; mediaType: PageImage["mediaType
 }
 
 /** Languages a document's text can be translated into. */
+/** The languages the AI can answer in (the app's: Malagasy is the plan feature "malagasy"). */
+export type AiLocale = (typeof locales)[number];
+
 export const translateLanguages = ["fr", "en", "mg", "zh"] as const;
 export type TranslateLanguage = (typeof translateLanguages)[number];
 
@@ -409,7 +424,7 @@ export const AnalyzeRequestSchema = z.object({
   image: z.string().min(1).max(MAX_IMAGE_BASE64_LENGTH),
   mediaType: z.enum(imageMediaTypes),
   mode: z.enum(scanModes),
-  locale: z.enum(["fr", "en"]),
+  locale: z.enum(locales),
   /** Analyse again with the more capable model (Premium and up). */
   deep: z.boolean().optional(),
   /** Multi-page scan (Premium and up): the other pages. */
@@ -437,7 +452,7 @@ export const AskRequestSchema = z.object({
     .min(1)
     .max(40)
     .refine((messages) => messages[messages.length - 1].role === "user", "The last message must be the user's question."),
-  locale: z.enum(["fr", "en"]),
+  locale: z.enum(locales),
   /** The other pages of a multi-page scan. */
   pages: ExtraPagesSchema,
   /** "transcribe": the full text, as written; "translate": that text in `target`. Default: a question. */
@@ -459,7 +474,7 @@ export type AskResponse = {
 const amount = z.number().int().min(0).max(1_000_000_000_000);
 
 export const ExpenseSummaryRequestSchema = z.strictObject({
-  locale: z.enum(["fr", "en"]),
+  locale: z.enum(locales),
   month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/),
   /** The day of the month reached when the month is still going, else null. */
   dayOfMonth: z.number().int().min(1).max(31).nullable(),
@@ -511,7 +526,7 @@ export const MAX_STATEMENT_PDF_BASE64_LENGTH = Math.floor((3 * 1024 * 1024 * 4) 
 
 export const StatementRequestSchema = z
   .strictObject({
-    locale: z.enum(["fr", "en"]),
+    locale: z.enum(locales),
     pages: z.array(PageSchema).min(1).max(MAX_STATEMENT_PAGES).optional(),
     pdf: z.string().min(1).max(MAX_STATEMENT_PDF_BASE64_LENGTH).optional(),
     /** The user's day (YYYY-MM-DD), for the "Aujourd'hui" and "Hier" of the histories. */
@@ -566,7 +581,7 @@ export type StatementResponse = { statement: Statement; model: string; demo: boo
 export const PlantDiagnosisRequestSchema = z.strictObject({
   image: z.string().min(1).max(MAX_IMAGE_BASE64_LENGTH),
   mediaType: z.enum(imageMediaTypes),
-  locale: z.enum(["fr", "en"]),
+  locale: z.enum(locales),
   /** The plant's name or species, when known. */
   plant: z.string().trim().max(80).optional(),
   /** Indoor or outdoor, when known. */
@@ -601,7 +616,7 @@ export type PlantDiagnosisResponse = {
 export const LoanScanRequestSchema = z.strictObject({
   image: z.string().min(1).max(MAX_IMAGE_BASE64_LENGTH),
   mediaType: z.enum(imageMediaTypes),
-  locale: z.enum(["fr", "en"]),
+  locale: z.enum(locales),
 });
 export type LoanScanRequest = z.infer<typeof LoanScanRequestSchema>;
 
@@ -650,7 +665,7 @@ export const ObjectAdRequestSchema = z.strictObject({
   condition: z.enum(objectConditions),
   /** The town where it is sold, when the seller gives it. */
   place: z.string().trim().max(60).optional(),
-  locale: z.enum(["fr", "en"]),
+  locale: z.enum(locales),
   /** The text in Malagasy too. */
   malagasy: z.boolean().optional(),
 });

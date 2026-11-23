@@ -4,6 +4,8 @@ import { motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { BellOff, BellRing, Check, ChevronRight, Clock, FileDown, FileText, Pill, ScanLine, Share2 } from "lucide-react";
 import { Appointments } from "@/components/Appointments";
+import { Vaccines } from "@/components/Vaccines";
+import { Pharmacy } from "@/components/Pharmacy";
 import { Button } from "@/components/Button";
 import { EmergencyCard } from "@/components/EmergencyCard";
 import { EmptyState } from "@/components/EmptyState";
@@ -66,16 +68,48 @@ export default function HealthPage() {
   const linked = useRef<string | null>(null);
   useEffect(() => {
     if (!router.isReady || !ready || isLoading) return;
-    const key = JSON.stringify([router.query.pour, router.query.appt, router.query.scan]);
+    const key = JSON.stringify([router.query.pour, router.query.appt, router.query.vax, router.query.scan]);
     if (linked.current === key) return;
     linked.current = key;
-    const target = personFromLink(router.query, { profiles: settings.healthProfiles, appointments: settings.appointments, entries });
+    const target = personFromLink(router.query, { profiles: settings.healthProfiles, appointments: settings.appointments, vaccines: settings.vaccines, entries });
     if (target !== null && target !== settings.healthPerson) update({ healthPerson: target });
-  }, [router.isReady, router.query, ready, isLoading, settings.healthProfiles, settings.appointments, settings.healthPerson, entries, update]);
+  }, [router.isReady, router.query, ready, isLoading, settings.healthProfiles, settings.appointments, settings.vaccines, settings.healthPerson, entries, update]);
 
-  // An appointment's notification: its section in sight.
+  // An appointment, a vaccine or a home medicine opened from the agenda or the
+  // search ("?appt=", "?vax=", "?med="): once on the right person, the item in
+  // sight (a past appointment unfolded) and lit up a moment.
+  const flashId = typeof router.query.appt === "string" ? `appt-${router.query.appt}` : typeof router.query.vax === "string" ? `vax-${router.query.vax}` : typeof router.query.med === "string" ? `med-${router.query.med}` : null;
   useEffect(() => {
-    if (show === "appointments") document.getElementById("appointments")?.scrollIntoView({ block: "start" });
+    if (!flashId || !ready) return;
+    let tries = 0;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let lit: HTMLElement | undefined;
+    // The person changes first: the item shows a render later.
+    const look = () => {
+      const element = document.getElementById(flashId);
+      if (!element) {
+        tries += 1;
+        if (tries < 30) timer = setTimeout(look, 100);
+        return;
+      }
+      const folded = element.closest("details");
+      if (folded && !folded.open) folded.open = true;
+      element.scrollIntoView({ block: "center", behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+      element.setAttribute("data-flash", "");
+      lit = element;
+      timer = setTimeout(() => element.removeAttribute("data-flash"), 2400);
+    };
+    look();
+    // Another item opened before the end: this one goes out now, not never.
+    return () => {
+      clearTimeout(timer);
+      lit?.removeAttribute("data-flash");
+    };
+  }, [flashId, ready]);
+
+  // An appointment's, a vaccine's or a home medicine's notification: its section in sight.
+  useEffect(() => {
+    if (show === "appointments" || show === "vaccines" || show === "pharmacy") document.getElementById(show)?.scrollIntoView({ block: "start" });
   }, [show]);
 
   // "Partager mes traitements": as a message, or as a PDF, with the medical warning.
@@ -118,6 +152,14 @@ export default function HealthPage() {
 
         <motion.div variants={rise}>
           <Appointments profileId={person} />
+        </motion.div>
+
+        <motion.div variants={rise}>
+          <Vaccines profileId={person} />
+        </motion.div>
+
+        <motion.div variants={rise}>
+          <Pharmacy />
         </motion.div>
 
         <motion.div variants={rise}>

@@ -1378,3 +1378,83 @@
   margin-left: 1.8rem;
   @include field-font(0.85rem);
 }
+
+// ---- Said or typed expense -----------------------------------------------------------
+
+.voiceForm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.voiceBox {
+  position: relative;
+
+  textarea {
+    width: 100%;
+    min-height: 5.5rem;
+    padding: 0.75rem 3.4rem 0.75rem 0.85rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+    resize: none;
+    outline: none;
+    @include field-font(1rem);
+
+    &:focus {
+      border-color: var(--accent-mark);
+    }
+  }
+
+  &[data-listening] textarea {
+    border-color: var(--danger);
+  }
+}
+
+.voiceMic {
+  position: absolute;
+  right: 0.55rem;
+  bottom: 0.55rem;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: var(--surface-strong);
+  color: var(--text);
+
+  &[data-listening] {
+    background: var(--danger);
+    color: #fff;
+    animation: voiceListening 1.2s ease-in-out infinite;
+  }
+}
+
+@keyframes voiceListening {
+  50% {
+    box-shadow: 0 0 0 7px var(--danger-soft);
+  }
+}
+
+.voiceExamples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  button {
+    max-width: 100%;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    border: 1px dashed var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    text-align: left;
+    overflow-wrap: anywhere;
+  }
+}

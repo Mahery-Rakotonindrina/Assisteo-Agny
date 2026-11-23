@@ -100,7 +100,7 @@ function AppointmentCard({ appointment, past, reminders, now, onEdit, onRemove }
   const kinds = reminders && !past ? remindedKinds(appointment, now) : [];
 
   return (
-    <li className={styles.card} data-testid="appointment" data-past={past || undefined}>
+    <li className={styles.card} id={`appt-${appointment.id}`} data-testid="appointment" data-past={past || undefined}>
       <p className={styles.when}>
         <Clock size={16} aria-hidden />
         <span>

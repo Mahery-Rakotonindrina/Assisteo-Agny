@@ -6,6 +6,8 @@ import { MotionConfig } from "motion/react";
 import { AppShell } from "@/components/AppShell";
 import { Onboarding } from "@/components/Onboarding";
 import { AppointmentReminderKeeper } from "@/components/AppointmentReminderKeeper";
+import { VaccineReminderKeeper } from "@/components/VaccineReminderKeeper";
+import { PharmacyReminderKeeper } from "@/components/PharmacyReminderKeeper";
 import { ExpenseReminderKeeper } from "@/components/ExpenseReminderKeeper";
 import { LoanReminderKeeper } from "@/components/LoanReminderKeeper";
 import { LoanSharingKeeper } from "@/components/LoanSharingKeeper";
@@ -91,6 +93,8 @@ export default function App({ Component, pageProps }: AppProps) {
               <PlantReminderKeeper />
               <MedicationReminderKeeper />
               <AppointmentReminderKeeper />
+              <VaccineReminderKeeper />
+              <PharmacyReminderKeeper />
               <LoanSharingKeeper />
               <ScanQueueRunner />
               <ShareReceiver />

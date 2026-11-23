@@ -34,7 +34,9 @@
       "admin": "Admin"
     },
     "shop": "Ma boutique",
-    "health": "Ma santé"
+    "health": "Ma santé",
+    "agenda": "À venir",
+    "search": "Rechercher"
   },
   "scan": {
     "greeting": {
@@ -379,7 +381,11 @@
         "measures": "{count} mesures (tension, glycémie, poids)",
         "measuresOne": "1 mesure",
         "healthSpending": "{count} dépenses de santé (celles de « Mes dépenses » restent)",
-        "healthSpendingOne": "1 dépense de santé (celles de « Mes dépenses » restent)"
+        "healthSpendingOne": "1 dépense de santé (celles de « Mes dépenses » restent)",
+        "vaccines": "{count} vaccins",
+        "vaccinesOne": "1 vaccin",
+        "pharmacy": "{count} médicaments de la pharmacie",
+        "pharmacyOne": "1 médicament de la pharmacie"
       },
       "stays": {
         "history": "Tes colis (avec leur photo), tes dépenses, tes prêts et tes listes.",
@@ -550,7 +556,9 @@
     "parcelNotifyHint": "Une notification le jour où un colis doit arriver.",
     "parcelNotifyHour": "Heure de la notification",
     "parcelNotifyHourHint": "Heure de Madagascar",
-    "myData": "Mes données"
+    "myData": "Mes données",
+    "shortcuts": "Raccourcis de l’accueil",
+    "shortcutsHint": "Choisis ceux qui s’affichent, et leur ordre."
   },
   "notifications": {
     "readyTitle": "Analyse prête ✨",
@@ -1111,6 +1119,7 @@
       "names": {
         "reminders": "Rappels",
         "parcelCosts": "Coûts des colis",
+        "parcelAutoTrack": "Suivi auto des colis",
         "pdfExport": "Export PDF",
         "ownKey": "Clé IA personnelle",
         "deepAnalysis": "Analyse approfondie",
@@ -1121,11 +1130,13 @@
         "expenses": "Mes dépenses",
         "inventory": "Ma maison",
         "plants": "Mes plantes",
-        "shop": "Ma boutique"
+        "shop": "Ma boutique",
+        "malagasy": "Malgache"
       },
       "descriptions": {
         "reminders": "Rappels sur les scans (répétition, report), l’assurance et l’arrivée des colis.",
         "parcelCosts": "Prix et frais en ariary sur chaque colis.",
+        "parcelAutoTrack": "Le statut des colis suivis se met à jour tout seul (17TRACK), avec une notification. Il faut un compte.",
         "pdfExport": "PDF propre d’un document, ou de plusieurs scans de l’historique.",
         "ownKey": "Scanner avec sa propre clé IA, sans limite.",
         "deepAnalysis": "Refaire une analyse avec l’IA la plus précise (plus chère), comptée au quota du mois.",
@@ -1136,7 +1147,8 @@
         "expenses": "Le budget du mois, seul ou en foyer, et le bilan du mois par l’IA.",
         "inventory": "L’inventaire de la maison : objets, garanties et leur rappel, factures liées, export pour l’assurance.",
         "plants": "Les plantes, leur arrosage proposé par l’IA, le rappel du matin et le diagnostic d’une plante malade (un scan du mois).",
-        "shop": "Le carnet du petit commerçant : les ventes du jour, le stock avec alerte, le crédit des clients avec rappel WhatsApp, les totaux du jour et du mois."
+        "shop": "Le carnet du petit commerçant : les ventes du jour, le stock avec alerte, le crédit des clients avec rappel WhatsApp, les totaux du jour et du mois.",
+        "malagasy": "L’app en malgache (choix de langue des Réglages), et les réponses de l’IA en malgache. À ouvrir après relecture par une personne de langue maternelle."
       },
       "deepNeedsLimit": "Impossible d’enregistrer : {list} n’a pas de quota d’analyses approfondies (0 = sans limite). Mets d’abord un nombre par mois plus haut, dans les prix et quotas des offres. Gratuit n’a pas de quota : pas d’analyse approfondie."
     }
@@ -1580,7 +1592,22 @@
     "expected": "Livraison prévue : {date}",
     "expectedToday": "Arrive aujourd'hui",
     "expectedLate": "Prévue le {date} : dépassée",
-    "costsReadOnly": "Coût total gardé : {amount}. Ton offre ne comprend plus les coûts des colis : tu ne peux plus les modifier."
+    "costsReadOnly": "Coût total gardé : {amount}. Ton offre ne comprend plus les coûts des colis : tu ne peux plus les modifier.",
+    "autoTrack": {
+      "checked": {
+        "now": "Suivi automatique · vérifié à l’instant",
+        "minutes": "Suivi automatique · vérifié il y a {count} min",
+        "hours": "Suivi automatique · vérifié il y a {count} h",
+        "days": "Suivi automatique · vérifié il y a {count} j"
+      },
+      "signIn": "Suivi automatique : connecte-toi pour l’activer",
+      "locked": "Suivi automatique, sans rescanner",
+      "timeline": "Suivi automatique · {date}",
+      "push": {
+        "title": "{title} : {status}",
+        "body": "Touche pour voir le colis."
+      }
+    }
   },
   "plans": {
     "offered": "{name} offert jusqu’au {date}",
@@ -1622,6 +1649,7 @@
       "parcels": "Jusqu’à {count} colis suivis",
       "parcelsUnlimited": "Colis suivis sans limite",
       "parcelCosts": "Coûts des colis en ariary : prix et frais",
+      "parcelAutoTrack": "Suivi automatique des colis, sans rescanner, avec une notification à chaque étape",
       "ownKey": "Option : ta propre clé IA, sans limite",
       "allLite": "Tout Lite, et :",
       "allPremium": "Tout Premium, et :",
@@ -1640,7 +1668,8 @@
       "plants": "Mes plantes : arrosage, rappel le matin, diagnostic d’une plante malade",
       "allPlan": "Tout {plan}, et :",
       "family": "Jusqu’à {count} personnes de ta famille",
-      "shop": "Ma boutique : ventes du jour, stock, crédit des clients"
+      "shop": "Ma boutique : ventes du jour, stock, crédit des clients",
+      "malagasy": "L’app en malgache"
     },
     "how": "Comment s’abonner",
     "step1": "Connecte-toi",
@@ -1927,7 +1956,20 @@
     "inventoryHint": "Objets, garanties, factures",
     "plantsHint": "Arrosage et rappels",
     "pocketsHint": "Espèces, MVola, banque…",
-    "shopHint": "Ventes, stock et crédit"
+    "shopHint": "Ventes, stock et crédit",
+    "edit": "Modifier",
+    "editTitle": "Raccourcis de l’accueil",
+    "editHint": "Choisis ceux que tu veux voir sur l’accueil, et leur ordre. Un raccourci caché n’est pas supprimé : tu peux le remettre quand tu veux.",
+    "up": "Monter {name}",
+    "down": "Descendre {name}",
+    "show": "Afficher {name} sur l’accueil",
+    "moved": "{name} : place {position} sur {total}",
+    "reset": "Remettre par défaut",
+    "done": "Terminer",
+    "close": "Fermer",
+    "allHidden": "Tous tes raccourcis sont cachés. Appuie sur « Modifier » pour les remettre.",
+    "editAria": "Modifier les raccourcis",
+    "agendaHint": "Rappels, rendez-vous, échéances"
   },
   "food": {
     "title": "Journal alimentaire",
@@ -3610,6 +3652,24 @@
         "amountMga": "Montant",
         "parcels": "Colis"
       }
+    },
+    "voice": {
+      "button": "Dire ou écrire",
+      "title": "Dis ta dépense",
+      "hint": "Dis ou écris une phrase : le montant, ce que c’est, le jour et comment tu as payé. Je remplis la dépense, et tu vérifies avant d’enregistrer.",
+      "placeholder": "ex. 5 000 Ar de taxi-be ce matin",
+      "listening": "Je t’écoute…",
+      "prompt": "Dis ta dépense",
+      "mic": "Dire la dépense à voix haute",
+      "stop": "Arrêter l’écoute",
+      "denied": "Autorise le micro dans les réglages du téléphone pour parler à l’app.",
+      "unavailable": "La voix n’est pas disponible sur cet appareil : écris ta phrase.",
+      "fill": "Remplir la dépense",
+      "check": "C’est rempli : vérifie, puis enregistre.",
+      "noAmount": "Je n’ai pas trouvé de montant : ajoute-le avant d’enregistrer.",
+      "example1": "5 000 Ar de taxi-be ce matin",
+      "example2": "hier 12000 ariary au marché en MVola",
+      "example3": "JIRAMA 45.000 payé par Orange Money avant-hier"
     }
   },
   "objectAd": {
@@ -4504,7 +4564,21 @@
         "headingOf": "Fiche d’urgence de {name}"
       },
       "titleOf": "Fiche d’urgence de {name}",
-      "emptyOf": "Remplis celle de {name} : son groupe sanguin, ses allergies, qui prévenir."
+      "emptyOf": "Remplis celle de {name} : son groupe sanguin, ses allergies, qui prévenir.",
+      "print": {
+        "button": "Imprimer la carte",
+        "wallpaper": "Fond d’écran",
+        "making": "Préparation…",
+        "howTo": "Imprime cette page, découpe la carte le long des traits, plie-la au milieu et colle les deux faces. Elle tient dans un portefeuille.",
+        "fold": "Plier ici",
+        "seeBack": "Personne à prévenir au dos.",
+        "keep": "Garde la carte avec tes papiers. Imprime-la de nouveau quand ta fiche change.",
+        "keepOf": "Donne la carte à {name}, à garder avec ses papiers. Imprime-la de nouveau quand sa fiche change.",
+        "pictureSaved": "Image téléchargée",
+        "failed": "Le fichier n’a pas pu être créé. Réessaie.",
+        "help": "Pour la mettre sur ton écran verrouillé : ouvre l’image dans ta galerie, touche ⋮ puis « Définir comme fond d’écran » et choisis « Écran de verrouillage ». Sur iPhone : Partager, puis « Utiliser comme fond d’écran ».",
+        "emptyHint": "Une fois remplie, tu pourras l’imprimer en carte de portefeuille ou la mettre en fond d’écran."
+      }
     },
     "appointments": {
       "title": "Rendez-vous",
@@ -4576,7 +4650,9 @@
       "nothingElse": "Rien d’autre ne change.",
       "named": "{name} : {text}",
       "backMeasures": "Ses {count} mesures reviennent à « Moi »",
-      "backMeasuresOne": "Sa mesure revient à « Moi »"
+      "backMeasuresOne": "Sa mesure revient à « Moi »",
+      "goneVaccines": "Ses {count} vaccins seront supprimés",
+      "goneVaccinesOne": "Son vaccin sera supprimé"
     },
     "measures": {
       "title": "Mes mesures",
@@ -4703,6 +4779,216 @@
       "moved": "{count} dépenses mises dans « Mes dépenses », catégorie Santé",
       "movedOne": "1 dépense mise dans « Mes dépenses », catégorie Santé",
       "moveFailed": "Ça n’a pas marché. Réessaie."
+    },
+    "vaccines": {
+      "title": "Vaccins",
+      "add": "Ajouter un vaccin",
+      "edit": "Modifier le vaccin",
+      "editShort": "Modifier",
+      "remove": "Supprimer",
+      "removeConfirm": "Oui, supprimer",
+      "empty": "Aucun vaccin noté. Recopie ceux de ton carnet : le nom, la date, et la prochaine dose si elle est écrite.",
+      "emptyOf": "Aucun vaccin noté pour {name}. Recopie ceux de son carnet : le nom, la date, et la prochaine dose si elle est écrite.",
+      "nextTitle": "Prochaines doses",
+      "historyTitle": "Vaccins faits",
+      "next": "Prochain vaccin : {name} le {date}",
+      "overdue": "Date passée : pas encore noté comme fait.",
+      "reminded": "Rappel la veille à 9 h",
+      "markDone": "C’est fait",
+      "locked": "Le rappel de la prochaine dose est inclus à partir de {plan}.",
+      "name": "Vaccin",
+      "nameHint": "BCG, Polio, Rougeole-Rubéole…",
+      "day": "Date",
+      "dose": "Dose",
+      "doseHint": "1, 2, rappel…",
+      "doseShown": "dose {dose}",
+      "place": "Lieu",
+      "placeHint": "CSB, hôpital, école…",
+      "lot": "Numéro de lot",
+      "lotShown": "lot {lot}",
+      "note": "Note",
+      "nextDay": "Prochaine dose, si elle est écrite",
+      "nextHint": "Recopie la date notée sur le carnet.",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "added": "Vaccin ajouté",
+      "updated": "Vaccin modifié",
+      "removed": "Vaccin supprimé",
+      "missing": {
+        "name": "Écris le nom du vaccin.",
+        "day": "Choisis la date du vaccin.",
+        "next": "La prochaine dose doit venir après la date du vaccin."
+      },
+      "suggestions": [
+        "BCG",
+        "Polio",
+        "Pentavalent",
+        "Pneumocoque",
+        "Rotavirus",
+        "Rougeole-Rubéole",
+        "Fièvre jaune",
+        "Tétanos",
+        "Hépatite B",
+        "HPV",
+        "COVID-19",
+        "Typhoïde"
+      ],
+      "reminders": {
+        "title": "Vaccin demain : {name}",
+        "body": "Prochaine dose notée pour le {date}"
+      },
+      "share": {
+        "button": "Partager le carnet",
+        "whatsapp": "WhatsApp",
+        "pdf": "PDF",
+        "heading": "Mon carnet de vaccination",
+        "headingOf": "Carnet de vaccination de {name}",
+        "caption": "Recopié du carnet, au {date}",
+        "nextTitle": "Prochaines doses",
+        "doneTitle": "Vaccins faits",
+        "next": "{name} le {date}",
+        "nextLate": "{name} le {date} (date passée)",
+        "line": "{date} : {name}",
+        "dose": "dose {dose}",
+        "lot": "lot {lot}",
+        "copied": "Carnet copié : colle-le dans un message",
+        "failed": "Impossible de partager le carnet"
+      }
+    },
+    "pharmacy": {
+      "title": "Pharmacie de la maison",
+      "lead": "Les médicaments gardés à la maison, pour tout le foyer, triés par date de péremption.",
+      "add": "Ajouter un médicament",
+      "edit": "Modifier le médicament",
+      "editShort": "Modifier",
+      "empty": "Rien de noté. Ajoute les boîtes de ton armoire à pharmacie, ou scanne une boîte pour lire sa date de péremption.",
+      "locked": "Les alertes de péremption sont incluses à partir de {plan}.",
+      "expiredNote": "Ne prends pas un médicament périmé : demande à ton pharmacien.",
+      "expired": "Périmé",
+      "soon": "Bientôt périmé",
+      "lastDay": "Dernier jour : périmé demain",
+      "expiresOn": "Péremption : {date}",
+      "for": "pour {name}",
+      "alerted": "Alerte un mois avant et le jour même, à 9 h",
+      "thrown": "Je l’ai jeté",
+      "finished": "Terminé",
+      "removed": {
+        "thrown": "{name} retiré : jeté",
+        "finished": "{name} retiré : terminé"
+      },
+      "addFromScan": "Ajouter {name} à ma pharmacie",
+      "inPharmacy": "{name} est dans ta pharmacie",
+      "name": "Médicament",
+      "nameHint": "Paracétamol, sirop pour la toux…",
+      "strength": "Dosage ou forme",
+      "strengthHint": "500 mg, sirop, comprimés…",
+      "quantity": "Quantité",
+      "quantityHint": "1 boîte, 12 comprimés…",
+      "expiry": "Date de péremption",
+      "month": "Mois",
+      "year": "Année",
+      "day": "Jour",
+      "pick": "Choisis…",
+      "noDay": "Pas écrit",
+      "expiryHint": "Le mois et l’année suffisent : sans jour, c’est la fin du mois.",
+      "missing": {
+        "name": "Écris le nom du médicament.",
+        "expiry": "Choisis le mois et l’année de péremption.",
+        "day": "Ce jour n’existe pas dans ce mois."
+      },
+      "forWho": "Pour qui ?",
+      "everyone": "Tout le foyer",
+      "note": "Note",
+      "noteHint": "Rangé dans la cuisine, ouvert le…",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "added": "Ajouté à ta pharmacie",
+      "updated": "Médicament modifié",
+      "reminders": {
+        "monthTitle": "Bientôt périmé : {name}",
+        "monthBody": "Péremption : {date}",
+        "dayTitle": "Dernier jour : {name}",
+        "dayBody": "Périmé demain. Péremption : {date}."
+      },
+      "undo": "Annuler",
+      "restored": "{name} remis dans ta pharmacie"
+    }
+  },
+  "agenda": {
+    "title": "À venir",
+    "lead": "Tes rappels, rendez-vous, échéances et arrosages, jour par jour.",
+    "filter": "Filtrer par sujet",
+    "all": "Tout",
+    "late": "En retard",
+    "today": "Aujourd’hui",
+    "tomorrow": "Demain",
+    "empty": "Rien de prévu dans les {days} prochains jours.",
+    "until": "Jusqu’au {date}",
+    "more": "Voir {days} jours de plus",
+    "seeAll": "Tout voir",
+    "plain": "{text}",
+    "domains": {
+      "reminders": "Rappels",
+      "health": "Santé",
+      "vaccines": "Vaccins",
+      "pharmacy": "Pharmacie",
+      "loans": "Prêts",
+      "expenses": "Dépenses fixes",
+      "parcels": "Colis",
+      "garage": "Garage",
+      "home": "Maison",
+      "papers": "Papiers",
+      "plants": "Plantes"
+    },
+    "items": {
+      "forPerson": "Pour {name}",
+      "doses": "{count} prise(s) : {names}",
+      "lastDay": "Dernier jour",
+      "loanLent": "{person} doit te rembourser",
+      "loanBorrowed": "Tu rembourses {person}",
+      "late": "En retard",
+      "expenseDue": "À payer",
+      "incomeDue": "À recevoir",
+      "parcel": "Colis attendu : {title}",
+      "insurance": "Assurance de {name}",
+      "inspection": "Visite technique de {name}",
+      "oilChange": "Vidange de {name} (estimée)",
+      "warranty": "Fin de garantie : {name}",
+      "paper": "{title} expire",
+      "expired": "Expiré",
+      "watering": "Arrosage : {count} plante(s)",
+      "vaccine": "Vaccin : {name}",
+      "vaccineLate": "Date passée, pas encore noté comme fait",
+      "vaccineLateFor": "Pour {name} : date passée, pas encore noté comme fait",
+      "medicineLastDay": "Dernier jour : {name}",
+      "medicineExpired": "Périmé : {name}"
+    }
+  },
+  "search": {
+    "title": "Rechercher",
+    "lead": "Dans tes scans, tes papiers, tes colis, tes dépenses et le reste, sur ton téléphone.",
+    "placeholder": "Cherche un mot, un nom, un montant…",
+    "field": "Rechercher dans toute l’app",
+    "clear": "Effacer la recherche",
+    "hint": "Écris un mot (ex. « jirama mars »). Tous les mots doivent être trouvés.",
+    "hintAmount": "Un montant se trouve sans les espaces : « 45000 » trouve « 45 000 Ar ». La recherche marche sans internet.",
+    "recent": "Dernières recherches",
+    "clearRecent": "Effacer",
+    "none": "Rien trouvé pour « {query} ». Essaie un seul mot, ou un autre.",
+    "found": "{count} résultats",
+    "seeAll": "Voir tout ({count})",
+    "open": "Rechercher",
+    "domains": {
+      "scans": "Scans",
+      "papers": "Mes papiers",
+      "parcels": "Colis",
+      "lists": "Listes",
+      "expenses": "Dépenses et revenus",
+      "loans": "Prêts",
+      "health": "Ma santé",
+      "garage": "Garage",
+      "plants": "Plantes",
+      "home": "Ma maison"
     }
   }
 }

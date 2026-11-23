@@ -37,8 +37,16 @@ export async function reconcileAppointmentReminderState(
   deps: AppointmentReminderDeps,
   { enabled = true, now = Date.now(), language = "" }: { enabled?: boolean; now?: number; language?: string } = {},
 ) {
+  return reconcileScheduledReminders(appointmentReminders(appointments, now, enabled), texts, deps, language);
+}
+
+/**
+ * The common part (appointments, vaccines): cancels what is no longer in
+ * `reminders`, schedules what is missing, keeps the rest.
+ */
+export async function reconcileScheduledReminders<R extends { key: string; at: number; entryId: string }>(reminders: R[], texts: (reminder: R) => Texts, deps: AppointmentReminderDeps, language: string) {
   const scheduled = deps.load();
-  const wanted = new Map(appointmentReminders(appointments, now, enabled).map((reminder) => [`${language}|${reminder.key}`, reminder]));
+  const wanted = new Map(reminders.map((reminder) => [`${language}|${reminder.key}`, reminder]));
   // Without the plan: cancelled even without the permission (nothing to keep).
   if (wanted.size > 0 && (await deps.permission()) !== "granted") return;
   const pending = wanted.size > 0 ? await deps.pending() : null;
@@ -63,20 +71,23 @@ const readJson = <T>(key: string, fallback: T): T => {
   }
 };
 
-const deviceDeps: AppointmentReminderDeps = {
+/** This device's notifications, what was scheduled kept in localStorage under `storageKey`. */
+export const deviceReminderDeps = (storageKey: string): AppointmentReminderDeps => ({
   permission: getNotificationPermission,
   notify,
   cancel: cancelNotification,
   pending: pendingNotificationIds,
-  load: () => readJson<ScheduledAppointmentReminders>(STORAGE_KEY, {}),
+  load: () => readJson<ScheduledAppointmentReminders>(storageKey, {}),
   save: (scheduled) => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(scheduled));
+      localStorage.setItem(storageKey, JSON.stringify(scheduled));
     } catch {
       // Private mode or full storage: done again next time.
     }
   },
-};
+});
+
+const deviceDeps = deviceReminderDeps(STORAGE_KEY);
 
 /** Reconciles this device's appointment reminders. */
 export function reconcileAppointmentReminders(appointments: Appointment[] | null, texts: (reminder: AppointmentReminder) => Texts, enabled: boolean, language: string) {

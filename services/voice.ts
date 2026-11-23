@@ -7,7 +7,7 @@ import type { Locale } from "@/i18n.config";
 // app, the phone's own recognizer (Google voice input dialog) and voices; in
 // a browser, the Web Speech API where it exists (Chrome, Edge, Safari).
 
-const speechTags: Record<Locale, string> = { fr: "fr-FR", en: "en-US" };
+const speechTags: Record<Locale, string> = { fr: "fr-FR", en: "en-US", mg: "fr-FR" };
 
 export type VoiceFailure = "unavailable" | "denied" | "no_speech";
 

@@ -15,6 +15,7 @@ import {
   Package,
   Pencil,
   Plane,
+  RefreshCw,
   RotateCcw,
   ScanLine,
   Search,
@@ -27,6 +28,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
+import { PlanBadge } from "@/components/PlanBadge";
 import { ParcelClients } from "@/components/ParcelClients";
 import { ParcelCosts } from "@/components/ParcelCosts";
 import { ParcelEditSheet } from "@/components/ParcelEditSheet";
@@ -40,13 +42,15 @@ import { useHousehold } from "@/hooks/useHousehold";
 import { useParcels, useSharedParcels } from "@/hooks/useParcels";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
-import { formatAriary, formatDate, formatDateTime, formatMonthYear, toDateInput } from "@/lib/format";
+import { useAccount } from "@/lib/account/AccountProvider";
+import { formatAriary, formatDate, formatDateTime, formatMonthYear, formatNumber, toDateInput } from "@/lib/format";
 import { easeOut, rise, stagger } from "@/lib/motion";
 import { deliveryState, formatDay } from "@/lib/parcelDelivery";
 import { exportFileName, parcelsWorkbook, XLSX_TYPE } from "@/lib/parcelExport";
 import { inPeriod, isForClient, isValidRange, parcelDate, type DayRange, type Period } from "@/lib/parcelReport";
 import { whatsappLink } from "@/lib/loans";
 import { clientPhone, parcelStatusMessage } from "@/lib/parcelMessage";
+import { AUTO_TRACK_SCAN_ID, checkedAgo } from "@/lib/parcelTracking";
 import { compareParcels, matchesSearch, parcelStep, parcelSteps, parcelTone, shippingModeOf, trackingUrl } from "@/lib/parcels";
 import { shippingModes, type ShippingMode } from "@/lib/ai/schema";
 import { haptics, openExternal, shareText } from "@/services/device";
@@ -125,6 +129,13 @@ export default function ParcelsPage() {
   const toggle = (id: string) => setPicked(openId === id ? null : id);
   // Another parcel asked for (this page already shown, a search or a filter
   // on): the list goes back to every parcel, so that one is always in sight.
+  // "?q=" (from the search screen) fills the search once.
+  const askedQuery = router.isReady && typeof router.query.q === "string" ? router.query.q : null;
+  const [queryFor, setQueryFor] = useState<string | null>(null);
+  if (askedQuery !== queryFor) {
+    setQueryFor(askedQuery);
+    if (askedQuery) setQuery(askedQuery);
+  }
   const [shownFor, setShownFor] = useState(opened);
   if (opened !== shownFor) {
     setShownFor(opened);
@@ -440,6 +451,46 @@ export default function ParcelsPage() {
   );
 }
 
+/**
+ * One discreet line under the tracking number: when the server last checked
+ * the parcel (Premium, signed in), how to turn it on (signed out), or the
+ * plan that has it. Nothing while the plan isn't known, nor before the first
+ * check (the tracking may be off on the server: nothing looks broken).
+ */
+function AutoTrackLine({ parcel, now }: { parcel: Parcel; now: number }) {
+  const { t, locale } = useTranslation();
+  const { plan, has, planFor } = usePlan();
+  const { email } = useAccount();
+  if (plan === null) return null;
+  if (!has("parcelAutoTrack")) {
+    const from = planFor("parcelAutoTrack");
+    if (!from) return null;
+    return (
+      <Link href="/plans" className={styles.autoTrack} data-testid="parcel-autotrack-locked">
+        <RefreshCw size={12} /> {t("parcels.autoTrack.locked")} <PlanBadge plan={from} />
+      </Link>
+    );
+  }
+  // A number 17TRACK refused: not followed, so no line (the user would think it is).
+  if (parcel.autoTrack?.refused) return null;
+  if (parcel.autoTrack) {
+    const ago = checkedAgo(parcel.autoTrack.checkedAt, now);
+    return (
+      <span className={styles.autoTrack} data-testid="parcel-autotrack">
+        <RefreshCw size={12} /> {t(`parcels.autoTrack.checked.${ago.unit}`, { count: formatNumber(ago.count, locale) })}
+      </span>
+    );
+  }
+  if (!email) {
+    return (
+      <Link href="/settings?section=account" className={styles.autoTrack} data-testid="parcel-autotrack-signin">
+        <RefreshCw size={12} /> {t("parcels.autoTrack.signIn")}
+      </Link>
+    );
+  }
+  return null;
+}
+
 type ParcelRowProps = {
   parcel: Parcel;
   thumbnail?: string;
@@ -622,6 +673,7 @@ function ParcelRow({ parcel, thumbnail, clients, phone, phoneOf, hasScan, resell
                   <a href={trackingUrl(info.trackingNumber, locale)} target="_blank" rel="noopener noreferrer">
                     {t("parcel.trackOnline")} <ExternalLink size={14} />
                   </a>
+                  {!received && info.status !== "delivered" && info.status !== "returned" && <AutoTrackLine parcel={parcel} now={now} />}
                 </div>
               )}
 
@@ -645,6 +697,8 @@ function ParcelRow({ parcel, thumbnail, clients, phone, phoneOf, hasScan, resell
                         <Link href={{ pathname: "/result", query: { id: item.scanId } }} className={styles.scanLink}>
                           {t("parcels.scannedOn", { date: formatDateTime(item.at, locale) })}
                         </Link>
+                      ) : item.scanId === AUTO_TRACK_SCAN_ID ? (
+                        <span className={styles.manual}>{t("parcels.autoTrack.timeline", { date: formatDateTime(item.at, locale) })}</span>
                       ) : item.scanId ? (
                         <span className={styles.manual}>{t("parcels.scannedOn", { date: formatDateTime(item.at, locale) })}</span>
                       ) : (

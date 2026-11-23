@@ -41,3 +41,23 @@
 .error svg {
   color: var(--danger);
 }
+
+// "Annuler": the one thing in the message that takes a tap.
+.action {
+  pointer-events: auto;
+  flex-shrink: 0;
+  min-height: 2.25rem;
+  padding: 0 0.75rem;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--surface-strong);
+  color: var(--text);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--accent-mark);
+    outline-offset: 2px;
+  }
+}

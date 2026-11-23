@@ -41,11 +41,11 @@ vi.mock("@/lib/server/subscriptions", () => ({
 const ladder: Record<PlanId, PlanFeature[]> = {
   free: [],
   lite: ["reminders", "parcelCosts", "pdfExport", "ownKey", "plants"],
-  premium: ["reminders", "parcelCosts", "pdfExport", "ownKey", "plants", "deepAnalysis", "multiPage", "garage", "inventory"],
-  pro: ["reminders", "parcelCosts", "pdfExport", "ownKey", "plants", "deepAnalysis", "multiPage", "garage", "inventory", "reseller", "shop"],
-  unlimited: ["reminders", "parcelCosts", "pdfExport", "ownKey", "deepAnalysis", "multiPage", "garage", "inventory", "reseller", "expenses", "loans", "plants", "shop"],
+  premium: ["reminders", "parcelCosts", "pdfExport", "ownKey", "plants", "deepAnalysis", "multiPage", "parcelAutoTrack", "garage", "inventory"],
+  pro: ["reminders", "parcelCosts", "pdfExport", "ownKey", "plants", "deepAnalysis", "multiPage", "parcelAutoTrack", "garage", "inventory", "reseller", "shop"],
+  unlimited: ["reminders", "parcelCosts", "pdfExport", "ownKey", "deepAnalysis", "multiPage", "parcelAutoTrack", "garage", "inventory", "reseller", "expenses", "loans", "plants", "shop", "malagasy"],
 };
-const ladderFrom: Record<PlanFeature, PlanId> = { ownKey: "lite", parcelCosts: "lite", reseller: "pro", deepAnalysis: "premium", multiPage: "premium", pdfExport: "lite", garage: "premium", inventory: "premium", reminders: "lite", expenses: "unlimited", loans: "unlimited", plants: "lite", shop: "pro" };
+const ladderFrom: Record<PlanFeature, PlanId> = { ownKey: "lite", parcelCosts: "lite", parcelAutoTrack: "premium", reseller: "pro", deepAnalysis: "premium", multiPage: "premium", pdfExport: "lite", garage: "premium", inventory: "premium", reminders: "lite", expenses: "unlimited", loans: "unlimited", plants: "lite", shop: "pro", malagasy: "unlimited" };
 
 const clone = (settings: FeatureSettings): FeatureSettings => JSON.parse(JSON.stringify(settings)) as FeatureSettings;
 const sorted = (features: Iterable<PlanFeature>) => [...features].sort();
@@ -85,7 +85,7 @@ describe("features by plan: nothing changes until the owner changes something", 
     const lines = (id: "lite" | "premium" | "pro", below: "lite" | "premium" | null) =>
       offerLines({ id, features: ladder[id], deepPerMonth: 60 }, below && { id: below, features: ladder[below] }, ["limits"], t, "fr");
     expect(lines("pro", "premium")).toEqual([{ text: "plans.features.allPremium", inherit: true }, { text: "limits" }, { text: 'plans.features.deep {"count":"60"}' }, { text: "plans.features.clients" }, { text: "plans.features.reseller" }, { text: "parcelLots.perk" }, { text: "plans.features.shop" }]);
-    expect(lines("premium", "lite").map((line) => line.text)).toEqual(["plans.features.allLite", "limits", 'plans.features.deep {"count":"60"}', "plans.features.priority", "plans.features.multiPage", "plans.features.garage", "plans.features.inventory"]);
+    expect(lines("premium", "lite").map((line) => line.text)).toEqual(["plans.features.allLite", "limits", 'plans.features.deep {"count":"60"}', "plans.features.priority", "plans.features.multiPage", "plans.features.parcelAutoTrack", "plans.features.garage", "plans.features.inventory"]);
     expect(lines("lite", null).map((line) => line.text)).toEqual(["limits", "plans.features.reminders", "plans.features.parcelCosts", "plans.features.pdfExport", "plans.features.ownKey", "plans.features.plants"]);
   });
 

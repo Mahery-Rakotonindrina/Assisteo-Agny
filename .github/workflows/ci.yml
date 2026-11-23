@@ -18,7 +18,9 @@ concurrency:
 jobs:
   checks:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # Lint, types, unit and ~420 end-to-end tests: about 17 minutes on a free runner,
+    # more with a retry or a slow runner.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
 

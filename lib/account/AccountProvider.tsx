@@ -29,6 +29,7 @@ import { startVehicleSync, syncVehicles } from "@/services/vehicleSync";
 import { homeItemStore } from "@/services/homeItemStore";
 import { startHomeItemSync, syncHomeItems } from "@/services/homeItemSync";
 import { wipeReviews } from "@/services/expenseReview";
+import { recentSearches } from "@/services/recentSearches";
 import { expenseStore } from "@/services/expenseStore";
 import { startExpenseSync, syncExpenses } from "@/services/expenseSync";
 import { householdStore } from "@/services/household";
@@ -65,7 +66,8 @@ const AccountContext = createContext<AccountContextValue | null>(null);
  * account keeps everything).
  */
 export function AccountProvider({ children }: { children: ReactNode }) {
-  const { settings, ready, update } = useSettings();
+  // The stored settings, not the shown ones: a language the plan does not allow now is still the chosen one.
+  const { stored: settings, ready, update } = useSettings();
   const [session, setSession] = useState<Session | null | undefined>(accountsAvailable ? undefined : null);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>(sync.status());
   const userId = session?.user.id ?? null;
@@ -329,6 +331,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await loanSharing.wipe();
     await householdStore.wipe();
     await wipeReviews().catch(() => undefined);
+    recentSearches.clear();
     await aiKeyStore.clear({ fromSync: true });
     await signOutAccount();
     ownerRef.current = null;
@@ -365,6 +368,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     await loanSharing.wipe();
     await householdStore.wipe();
     await wipeReviews().catch(() => undefined);
+    recentSearches.clear();
     await aiKeyStore.clear({ fromSync: true });
     ownerRef.current = null;
     update(noHealth, { fromSync: true });

@@ -2,6 +2,7 @@ import { clear, createStore, del, get, set, values } from "idb-keyval";
 import type { ParcelStatus, ShippingMode } from "@/lib/ai/schema";
 import { encodeImage } from "@/lib/image";
 import { isFreightFee, latestLots, type ParcelFreight, type ParcelLot } from "@/lib/parcelLots";
+import type { ParcelAutoTrack } from "@/lib/parcelTracking";
 import { parcelScanHasNews, parcelsFor, type ParcelInfo } from "@/lib/parcels";
 import type { HistoryEntry } from "@/types/history";
 import { createId } from "./historyStore";
@@ -73,6 +74,12 @@ export type Parcel = {
   freight?: ParcelFreight;
   /** Resellers: the shipment (lot, container) it travels in. */
   lot?: ParcelLot;
+  /**
+   * Premium, signed in: written by the server's automatic tracking
+   * (pages/api/cron/parcel-tracking.ts) with the status it found. Kept as is
+   * by every save here (an older app too: it spreads the parcel).
+   */
+  autoTrack?: ParcelAutoTrack;
   /** Sync bookkeeping, like the history. */
   deletedAt?: number;
   dirty?: boolean;

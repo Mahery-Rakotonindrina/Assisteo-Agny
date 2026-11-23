@@ -34,7 +34,9 @@
       "admin": "Admin"
     },
     "shop": "My shop",
-    "health": "My health"
+    "health": "My health",
+    "agenda": "Coming up",
+    "search": "Search"
   },
   "scan": {
     "greeting": {
@@ -379,7 +381,11 @@
         "measures": "{count} measures (blood pressure, blood sugar, weight)",
         "measuresOne": "1 measure",
         "healthSpending": "{count} health expenses (those in “My expenses” stay)",
-        "healthSpendingOne": "1 health expense (those in “My expenses” stay)"
+        "healthSpendingOne": "1 health expense (those in “My expenses” stay)",
+        "vaccines": "{count} vaccines",
+        "vaccinesOne": "1 vaccine",
+        "pharmacy": "{count} home pharmacy medicines",
+        "pharmacyOne": "1 home pharmacy medicine"
       },
       "stays": {
         "history": "Your parcels (with their photo), your expenses, your loans and your lists.",
@@ -550,7 +556,9 @@
     "parcelNotifyHint": "A notification on the day a parcel should arrive.",
     "parcelNotifyHour": "Notification time",
     "parcelNotifyHourHint": "Madagascar time",
-    "myData": "My data"
+    "myData": "My data",
+    "shortcuts": "Home shortcuts",
+    "shortcutsHint": "Pick which ones show, and their order."
   },
   "notifications": {
     "readyTitle": "Analysis ready ✨",
@@ -1111,6 +1119,7 @@
       "names": {
         "reminders": "Reminders",
         "parcelCosts": "Parcel costs",
+        "parcelAutoTrack": "Parcel auto-tracking",
         "pdfExport": "PDF export",
         "ownKey": "Own AI key",
         "deepAnalysis": "Deep analysis",
@@ -1121,11 +1130,13 @@
         "expenses": "My expenses",
         "inventory": "My home",
         "plants": "My plants",
-        "shop": "My shop"
+        "shop": "My shop",
+        "malagasy": "Malagasy"
       },
       "descriptions": {
         "reminders": "Reminders on scans (repeat, snooze), insurance and parcel arrivals.",
         "parcelCosts": "Price and fees in ariary on each parcel.",
+        "parcelAutoTrack": "Followed parcels update their status by themselves (17TRACK), with a notification. Needs an account.",
         "pdfExport": "A clean PDF of a document, or of several scans from the history.",
         "ownKey": "Scanning with one’s own AI key, with no limit.",
         "deepAnalysis": "Analysing again with the most accurate (and costlier) AI, counted in the month’s quota.",
@@ -1136,7 +1147,8 @@
         "expenses": "The month’s budget, alone or as a household, and the AI’s month review.",
         "inventory": "The home inventory: items, warranties and their reminder, linked invoices, export for the insurer.",
         "plants": "Plants, their watering suggested by the AI, the morning reminder and the diagnosis of a sick plant (one of the month's scans).",
-        "shop": "The small shopkeeper’s book: the day’s sales, the stock with an alert, the customers’ credit with a WhatsApp reminder, the totals of the day and the month."
+        "shop": "The small shopkeeper’s book: the day’s sales, the stock with an alert, the customers’ credit with a WhatsApp reminder, the totals of the day and the month.",
+        "malagasy": "The app in Malagasy (language choice in Settings), and the AI’s answers in Malagasy. Open it once a native speaker has proofread it."
       },
       "deepNeedsLimit": "Can’t save: {list} has no deep analysis quota (0 = no limit). First set a number per month above, in the plans’ prices and quotas. Free has no quota: no deep analysis."
     }
@@ -1580,7 +1592,22 @@
     "expected": "Expected delivery: {date}",
     "expectedToday": "Arrives today",
     "expectedLate": "Expected on {date}: overdue",
-    "costsReadOnly": "Total cost kept: {amount}. Your plan no longer includes parcel costs: you can’t change them anymore."
+    "costsReadOnly": "Total cost kept: {amount}. Your plan no longer includes parcel costs: you can’t change them anymore.",
+    "autoTrack": {
+      "checked": {
+        "now": "Auto-tracking · checked just now",
+        "minutes": "Auto-tracking · checked {count} min ago",
+        "hours": "Auto-tracking · checked {count} h ago",
+        "days": "Auto-tracking · checked {count} d ago"
+      },
+      "signIn": "Auto-tracking: sign in to turn it on",
+      "locked": "Auto-tracking, no rescanning",
+      "timeline": "Auto-tracking · {date}",
+      "push": {
+        "title": "{title}: {status}",
+        "body": "Tap to see the parcel."
+      }
+    }
   },
   "plans": {
     "offered": "{name} offered until {date}",
@@ -1622,6 +1649,7 @@
       "parcels": "Up to {count} parcels followed",
       "parcelsUnlimited": "No limit on parcels followed",
       "parcelCosts": "Parcel costs in ariary: price and fees",
+      "parcelAutoTrack": "Automatic parcel tracking, no rescanning, with a notification at each step",
       "ownKey": "Option: your own AI key, no limit",
       "allLite": "Everything in Lite, plus:",
       "allPremium": "Everything in Premium, plus:",
@@ -1640,7 +1668,8 @@
       "plants": "My plants: watering, morning reminder, diagnosis of a sick plant",
       "allPlan": "Everything in {plan}, plus:",
       "family": "Up to {count} people of your family",
-      "shop": "My shop: the day’s sales, stock, customers’ credit"
+      "shop": "My shop: the day’s sales, stock, customers’ credit",
+      "malagasy": "The app in Malagasy"
     },
     "how": "How to subscribe",
     "step1": "Sign in",
@@ -1927,7 +1956,20 @@
     "inventoryHint": "Items, warranties, invoices",
     "plantsHint": "Watering and reminders",
     "pocketsHint": "Cash, mobile money, bank…",
-    "shopHint": "Sales, stock and credit"
+    "shopHint": "Sales, stock and credit",
+    "edit": "Edit",
+    "editTitle": "Home shortcuts",
+    "editHint": "Pick the ones you want on the home screen, and their order. A hidden shortcut isn’t deleted: you can bring it back any time.",
+    "up": "Move {name} up",
+    "down": "Move {name} down",
+    "show": "Show {name} on the home screen",
+    "moved": "{name}: place {position} of {total}",
+    "reset": "Reset to default",
+    "done": "Done",
+    "close": "Close",
+    "allHidden": "All your shortcuts are hidden. Tap “Edit” to bring them back.",
+    "editAria": "Edit the shortcuts",
+    "agendaHint": "Reminders, appointments, due dates"
   },
   "food": {
     "title": "Food journal",
@@ -3610,6 +3652,24 @@
         "amountMga": "Amount",
         "parcels": "Parcels"
       }
+    },
+    "voice": {
+      "button": "Say or type",
+      "title": "Say your expense",
+      "hint": "Say or type one sentence: the amount, what it was, the day and how you paid. I fill in the expense, and you check it before saving.",
+      "placeholder": "e.g. 5,000 Ar for the taxi-be this morning",
+      "listening": "I’m listening…",
+      "prompt": "Say your expense",
+      "mic": "Say the expense aloud",
+      "stop": "Stop listening",
+      "denied": "Allow the microphone in your phone’s settings to talk to the app.",
+      "unavailable": "Voice isn’t available on this device: type your sentence.",
+      "fill": "Fill in the expense",
+      "check": "It’s filled in: check it, then save.",
+      "noAmount": "I couldn’t find an amount: add it before saving.",
+      "example1": "5,000 Ar for the taxi-be this morning",
+      "example2": "yesterday 12000 ariary at the market with MVola",
+      "example3": "JIRAMA 45,000 paid by Orange Money the day before yesterday"
     }
   },
   "objectAd": {
@@ -4504,7 +4564,21 @@
         "headingOf": "{name}’s emergency card"
       },
       "titleOf": "{name}’s emergency card",
-      "emptyOf": "Fill in {name}’s: their blood group, their allergies, who to call."
+      "emptyOf": "Fill in {name}’s: their blood group, their allergies, who to call.",
+      "print": {
+        "button": "Print the card",
+        "wallpaper": "Wallpaper",
+        "making": "Preparing…",
+        "howTo": "Print this page, cut the card out along the marks, fold it in the middle and glue both sides together. It fits in a wallet.",
+        "fold": "Fold here",
+        "seeBack": "Person to call on the back.",
+        "keep": "Keep the card with your papers. Print it again when your card changes.",
+        "keepOf": "Give the card to {name} to keep with their papers. Print it again when their card changes.",
+        "pictureSaved": "Picture downloaded",
+        "failed": "The file couldn't be made. Try again.",
+        "help": "To put it on your lock screen: open the picture in your gallery, tap ⋮ then “Set as wallpaper” and choose “Lock screen”. On iPhone: Share, then “Use as Wallpaper”.",
+        "emptyHint": "Once filled in, you can print it as a wallet card or set it as your wallpaper."
+      }
     },
     "appointments": {
       "title": "Appointments",
@@ -4576,7 +4650,9 @@
       "nothingElse": "Nothing else changes.",
       "named": "{name}: {text}",
       "backMeasures": "Their {count} measures come back to “Me”",
-      "backMeasuresOne": "Their measure comes back to “Me”"
+      "backMeasuresOne": "Their measure comes back to “Me”",
+      "goneVaccines": "Their {count} vaccines will be deleted",
+      "goneVaccinesOne": "Their vaccine will be deleted"
     },
     "measures": {
       "title": "My measures",
@@ -4703,6 +4779,216 @@
       "moved": "{count} expenses put in “My expenses”, category Health",
       "movedOne": "1 expense put in “My expenses”, category Health",
       "moveFailed": "That didn't work. Try again."
+    },
+    "vaccines": {
+      "title": "Vaccines",
+      "add": "Add a vaccine",
+      "edit": "Edit the vaccine",
+      "editShort": "Edit",
+      "remove": "Delete",
+      "removeConfirm": "Yes, delete",
+      "empty": "No vaccine noted. Copy the ones from your booklet: the name, the date, and the next dose if it's written.",
+      "emptyOf": "No vaccine noted for {name}. Copy the ones from their booklet: the name, the date, and the next dose if it's written.",
+      "nextTitle": "Next doses",
+      "historyTitle": "Vaccines done",
+      "next": "Next vaccine: {name} on {date}",
+      "overdue": "Date gone by: not noted as done yet.",
+      "reminded": "Reminder the day before at 9 am",
+      "markDone": "It's done",
+      "locked": "The next dose reminder comes with {plan} and above.",
+      "name": "Vaccine",
+      "nameHint": "BCG, Polio, Measles-Rubella…",
+      "day": "Date",
+      "dose": "Dose",
+      "doseHint": "1, 2, booster…",
+      "doseShown": "dose {dose}",
+      "place": "Place",
+      "placeHint": "Health centre, hospital, school…",
+      "lot": "Batch number",
+      "lotShown": "batch {lot}",
+      "note": "Note",
+      "nextDay": "Next dose, if it's written",
+      "nextHint": "Copy the date noted in the booklet.",
+      "save": "Save",
+      "cancel": "Cancel",
+      "added": "Vaccine added",
+      "updated": "Vaccine updated",
+      "removed": "Vaccine deleted",
+      "missing": {
+        "name": "Write the vaccine's name.",
+        "day": "Pick the vaccine's date.",
+        "next": "The next dose must come after the vaccine's date."
+      },
+      "suggestions": [
+        "BCG",
+        "Polio",
+        "Pentavalent",
+        "Pneumococcal",
+        "Rotavirus",
+        "Measles-Rubella",
+        "Yellow fever",
+        "Tetanus",
+        "Hepatitis B",
+        "HPV",
+        "COVID-19",
+        "Typhoid"
+      ],
+      "reminders": {
+        "title": "Vaccine tomorrow: {name}",
+        "body": "Next dose noted for {date}"
+      },
+      "share": {
+        "button": "Share the record",
+        "whatsapp": "WhatsApp",
+        "pdf": "PDF",
+        "heading": "My vaccination record",
+        "headingOf": "{name}’s vaccination record",
+        "caption": "Copied from the booklet, on {date}",
+        "nextTitle": "Next doses",
+        "doneTitle": "Vaccines done",
+        "next": "{name} on {date}",
+        "nextLate": "{name} on {date} (date gone by)",
+        "line": "{date}: {name}",
+        "dose": "dose {dose}",
+        "lot": "batch {lot}",
+        "copied": "Record copied: paste it in a message",
+        "failed": "Couldn't share the record"
+      }
+    },
+    "pharmacy": {
+      "title": "Home pharmacy",
+      "lead": "The medicines kept at home, for the whole household, sorted by expiry date.",
+      "add": "Add a medicine",
+      "edit": "Edit the medicine",
+      "editShort": "Edit",
+      "empty": "Nothing noted. Add the boxes from your medicine cabinet, or scan a box to read its expiry date.",
+      "locked": "Expiry alerts come with {plan} and above.",
+      "expiredNote": "Don't take an expired medicine: ask your pharmacist.",
+      "expired": "Expired",
+      "soon": "Expires soon",
+      "lastDay": "Last day: expired tomorrow",
+      "expiresOn": "Expiry: {date}",
+      "for": "for {name}",
+      "alerted": "Alert a month before and on the day, at 9 am",
+      "thrown": "I threw it away",
+      "finished": "Finished",
+      "removed": {
+        "thrown": "{name} removed: thrown away",
+        "finished": "{name} removed: finished"
+      },
+      "addFromScan": "Add {name} to my pharmacy",
+      "inPharmacy": "{name} is in your pharmacy",
+      "name": "Medicine",
+      "nameHint": "Paracetamol, cough syrup…",
+      "strength": "Strength or form",
+      "strengthHint": "500 mg, syrup, tablets…",
+      "quantity": "Quantity",
+      "quantityHint": "1 box, 12 tablets…",
+      "expiry": "Expiry date",
+      "month": "Month",
+      "year": "Year",
+      "day": "Day",
+      "pick": "Pick…",
+      "noDay": "Not written",
+      "expiryHint": "The month and year are enough: without a day, it's the end of the month.",
+      "missing": {
+        "name": "Write the medicine's name.",
+        "expiry": "Pick the expiry month and year.",
+        "day": "This day doesn't exist in that month."
+      },
+      "forWho": "For whom?",
+      "everyone": "The whole household",
+      "note": "Note",
+      "noteHint": "Kept in the kitchen, opened on…",
+      "save": "Save",
+      "cancel": "Cancel",
+      "added": "Added to your pharmacy",
+      "updated": "Medicine updated",
+      "reminders": {
+        "monthTitle": "Expires soon: {name}",
+        "monthBody": "Expiry: {date}",
+        "dayTitle": "Last day: {name}",
+        "dayBody": "Expired tomorrow. Expiry: {date}."
+      },
+      "undo": "Undo",
+      "restored": "{name} back in your pharmacy"
+    }
+  },
+  "agenda": {
+    "title": "Coming up",
+    "lead": "Your reminders, appointments, due dates and watering, day by day.",
+    "filter": "Filter by topic",
+    "all": "All",
+    "late": "Late",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "empty": "Nothing planned in the next {days} days.",
+    "until": "Until {date}",
+    "more": "Show {days} more days",
+    "seeAll": "See all",
+    "plain": "{text}",
+    "domains": {
+      "reminders": "Reminders",
+      "health": "Health",
+      "vaccines": "Vaccines",
+      "pharmacy": "Pharmacy",
+      "loans": "Loans",
+      "expenses": "Fixed expenses",
+      "parcels": "Parcels",
+      "garage": "Garage",
+      "home": "Home",
+      "papers": "Papers",
+      "plants": "Plants"
+    },
+    "items": {
+      "forPerson": "For {name}",
+      "doses": "{count} dose(s): {names}",
+      "lastDay": "Last day",
+      "loanLent": "{person} owes you",
+      "loanBorrowed": "You pay back {person}",
+      "late": "Late",
+      "expenseDue": "To pay",
+      "incomeDue": "To receive",
+      "parcel": "Parcel expected: {title}",
+      "insurance": "Insurance of {name}",
+      "inspection": "Technical inspection of {name}",
+      "oilChange": "Oil change of {name} (estimated)",
+      "warranty": "Warranty ends: {name}",
+      "paper": "{title} expires",
+      "expired": "Expired",
+      "watering": "Watering: {count} plant(s)",
+      "vaccine": "Vaccine: {name}",
+      "vaccineLate": "Date gone by, not noted as done yet",
+      "vaccineLateFor": "For {name}: date gone by, not noted as done yet",
+      "medicineLastDay": "Last day: {name}",
+      "medicineExpired": "Expired: {name}"
+    }
+  },
+  "search": {
+    "title": "Search",
+    "lead": "In your scans, papers, parcels, expenses and the rest, on your phone.",
+    "placeholder": "Look for a word, a name, an amount…",
+    "field": "Search the whole app",
+    "clear": "Clear the search",
+    "hint": "Type a word (e.g. “jirama march”). Every word has to be found.",
+    "hintAmount": "An amount is found without spaces: “45000” finds “45 000 Ar”. Search works without internet.",
+    "recent": "Recent searches",
+    "clearRecent": "Clear",
+    "none": "Nothing found for “{query}”. Try one word, or another.",
+    "found": "{count} results",
+    "seeAll": "See all ({count})",
+    "open": "Search",
+    "domains": {
+      "scans": "Scans",
+      "papers": "My papers",
+      "parcels": "Parcels",
+      "lists": "Lists",
+      "expenses": "Expenses and income",
+      "loans": "Loans",
+      "health": "My health",
+      "garage": "Garage",
+      "plants": "Plants",
+      "home": "My home"
     }
   }
 }

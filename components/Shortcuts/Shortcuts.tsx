@@ -1,10 +1,9 @@
 import Link from "next/link";
-import { BookOpen, Car, FolderLock, Store, HandCoins, HeartPulse, House, Receipt, Sprout, Wallet, WalletCards } from "lucide-react";
+import { Fragment, useRef, useState, type ReactNode } from "react";
+import { Pencil, BookOpen, CalendarDays, Car, FolderLock, Store, HandCoins, HeartPulse, House, Receipt, Sprout, Wallet, WalletCards } from "lucide-react";
 import { PlanBadge } from "@/components/PlanBadge";
-import { useKeptExpenses } from "@/hooks/useExpenses";
 import { useHomeItems } from "@/hooks/useHomeItems";
-import { useInHousehold } from "@/hooks/useHousehold";
-import { useKeptLoans, useLoans } from "@/hooks/useLoans";
+import { useLoans } from "@/hooks/useLoans";
 import { useNow } from "@/hooks/useNow";
 import { usePlan } from "@/hooks/usePlan";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -18,6 +17,10 @@ import { loanMoney, loansByPerson, loanTotals } from "@/lib/loans";
 import { listPapers } from "@/lib/papers";
 import { needsWater } from "@/lib/plants";
 import { healthOverview } from "@/lib/health";
+import { arrangeShortcuts, normalizeShortcuts, type HomeShortcutKey } from "@/lib/homeShortcuts";
+import { useShortcutKeys } from "@/hooks/useShortcutKeys";
+import { useSettings } from "@/lib/settings/SettingsProvider";
+import { ShortcutsEditor } from "./ShortcutsEditor";
 import type { HistoryEntry } from "@/types/history";
 import styles from "./Shortcuts.module.scss";
 
@@ -31,11 +34,7 @@ export function Shortcuts({ entries }: { entries: HistoryEntry[] }) {
   const bills = listBills(entries, now);
   const { toPay } = billTotals(bills, now);
   const { has, planFor } = usePlan();
-  const inHousehold = useInHousehold();
-  // Without the feature, one's kept expenses stay reachable (read only); false until mounted.
-  const keptExpenses = useKeptExpenses(!has("expenses"));
   const { vehicles } = useVehicles();
-  const keptLoans = useKeptLoans(!has("loans"));
   const { loans } = useLoans();
   const owed = loanTotals(loansByPerson(loans, "lent", now));
   const { plants } = usePlants();
@@ -44,9 +43,24 @@ export function Shortcuts({ entries }: { entries: HistoryEntry[] }) {
   const { items: homeItems } = useHomeItems();
   // "Ma santé", for everyone (the emergency card): the treatments in progress, if any.
   const health = healthOverview(entries, now);
+  const { settings } = useSettings();
+  const [editing, setEditing] = useState(false);
+  const editButton = useRef<HTMLButtonElement>(null);
+  const available = useShortcutKeys(entries);
+  const { visible } = arrangeShortcuts(available, normalizeShortcuts(settings.homeShortcuts));
 
-  return (
-    <nav className={styles.shortcuts} aria-label={t("shortcuts.label")}>
+  // What each shortcut shows; which ones appear, and in what order, comes from lib/homeShortcuts.ts.
+  const items: Partial<Record<HomeShortcutKey, ReactNode>> = {
+    agenda: (
+      <Link href="/agenda" className={styles.shortcut} style={{ "--tone": "var(--accent-text)" } as React.CSSProperties}>
+        <CalendarDays size={18} />
+        <span>
+          <strong>{t("agenda.title")}</strong>
+          <small>{t("shortcuts.agendaHint")}</small>
+        </span>
+      </Link>
+    ),
+    food: (
       <Link href="/food" className={styles.shortcut} style={{ "--tone": "var(--cat-food)" } as React.CSSProperties}>
         <BookOpen size={18} />
         <span>
@@ -58,6 +72,8 @@ export function Shortcuts({ entries }: { entries: HistoryEntry[] }) {
           </small>
         </span>
       </Link>
+    ),
+    papers: (
       <Link href="/papers" className={styles.shortcut} style={{ "--tone": "var(--cat-document)" } as React.CSSProperties}>
         <FolderLock size={18} />
         <span>
@@ -67,15 +83,17 @@ export function Shortcuts({ entries }: { entries: HistoryEntry[] }) {
           </small>
         </span>
       </Link>
-      {bills.length > 0 && (
-        <Link href="/papers?tab=bills" className={styles.shortcut} style={{ "--tone": "var(--cat-food)" } as React.CSSProperties}>
-          <Receipt size={18} />
-          <span>
-            <strong>{t("bills.title")}</strong>
-            <small>{toPay > 0 ? t("bills.shortcutToPay", { amount: formatAriary(toPay, locale) }) : t("bills.shortcutPaid")}</small>
-          </span>
-        </Link>
-      )}
+    ),
+    bills: (
+      <Link href="/papers?tab=bills" className={styles.shortcut} style={{ "--tone": "var(--cat-food)" } as React.CSSProperties}>
+        <Receipt size={18} />
+        <span>
+          <strong>{t("bills.title")}</strong>
+          <small>{toPay > 0 ? t("bills.shortcutToPay", { amount: formatAriary(toPay, locale) }) : t("bills.shortcutPaid")}</small>
+        </span>
+      </Link>
+    ),
+    garage: (
       <Link href="/garage" className={styles.shortcut} style={{ "--tone": "var(--cat-vehicle)" } as React.CSSProperties}>
         <Car size={18} />
         <span>
@@ -93,6 +111,8 @@ export function Shortcuts({ entries }: { entries: HistoryEntry[] }) {
           </small>
         </span>
       </Link>
+    ),
+    inventory: (
       <Link href="/inventory" className={styles.shortcut} style={{ "--tone": "var(--cat-object)" } as React.CSSProperties}>
         <House size={18} />
         <span>
@@ -102,6 +122,8 @@ export function Shortcuts({ entries }: { entries: HistoryEntry[] }) {
           </small>
         </span>
       </Link>
+    ),
+    plants: (
       <Link href="/plants" className={styles.shortcut} style={{ "--tone": "var(--cat-plant)" } as React.CSSProperties}>
         <Sprout size={18} />
         <span>
@@ -119,6 +141,8 @@ export function Shortcuts({ entries }: { entries: HistoryEntry[] }) {
           </small>
         </span>
       </Link>
+    ),
+    health: (
       <Link href="/sante" className={styles.shortcut} style={{ "--tone": "var(--danger)" } as React.CSSProperties} data-testid="shortcut-health">
         <HeartPulse size={18} />
         <span>
@@ -126,48 +150,77 @@ export function Shortcuts({ entries }: { entries: HistoryEntry[] }) {
           <small>{health.treatments.length > 0 ? t("health.shortcutOngoing", { count: health.treatments.length }) : t("health.shortcutHint")}</small>
         </span>
       </Link>
-      {has("shop") && (
-        <Link href="/boutique" className={styles.shortcut} style={{ "--tone": "var(--cat-object)" } as React.CSSProperties}>
-          <Store size={18} />
-          <span>
-            <strong>{t("shop.title")}</strong>
-            <small>{t("shortcuts.shopHint")}</small>
-          </span>
-        </Link>
+    ),
+    shop: (
+      <Link href="/boutique" className={styles.shortcut} style={{ "--tone": "var(--cat-object)" } as React.CSSProperties}>
+        <Store size={18} />
+        <span>
+          <strong>{t("shop.title")}</strong>
+          <small>{t("shortcuts.shopHint")}</small>
+        </span>
+      </Link>
+    ),
+    expenses: (
+      <Link href="/expenses" className={styles.shortcut} style={{ "--tone": "var(--cat-food)" } as React.CSSProperties}>
+        <Wallet size={18} />
+        <span>
+          <strong>{t("expenses.title")}</strong>
+          <small>{t("shortcuts.expensesHint")}</small>
+        </span>
+      </Link>
+    ),
+    pockets: (
+      <Link href="/pockets" className={styles.shortcut} style={{ "--tone": "var(--cat-food)" } as React.CSSProperties}>
+        <WalletCards size={18} />
+        <span>
+          <strong>{t("expenses.pockets.title")}</strong>
+          <small>{t("shortcuts.pocketsHint")}</small>
+        </span>
+      </Link>
+    ),
+    loans: (
+      <Link href="/loans" className={styles.shortcut} style={{ "--tone": "var(--cat-document)" } as React.CSSProperties}>
+        <HandCoins size={18} />
+        <span>
+          <strong>{t("loans.title")}</strong>
+          <small data-urgent={owed.late > 0 || undefined}>
+            {owed.late > 0
+              ? t("loans.shortcutLate", { amount: loanMoney(owed.late, locale) })
+              : owed.total > 0
+                ? t("loans.shortcutOwed", { amount: loanMoney(owed.total, locale) })
+                : t("shortcuts.loansHint")}
+          </small>
+        </span>
+      </Link>
+    ),
+  };
+
+  return (
+    <div className={styles.wrap}>
+      <div className={styles.head}>
+        <button ref={editButton} type="button" className={styles.edit} onClick={() => setEditing(true)} aria-label={t("shortcuts.editAria")}>
+          <Pencil size={14} />
+          {t("shortcuts.edit")}
+        </button>
+      </div>
+      {visible.length > 0 ? (
+        <nav className={styles.shortcuts} aria-label={t("shortcuts.label")}>
+          {visible.map((key) => (
+            <Fragment key={key}>{items[key as HomeShortcutKey]}</Fragment>
+          ))}
+        </nav>
+      ) : (
+        <p className={styles.empty}>{t("shortcuts.allHidden")}</p>
       )}
-      {(has("expenses") || inHousehold || keptExpenses) && (
-        <Link href="/expenses" className={styles.shortcut} style={{ "--tone": "var(--cat-food)" } as React.CSSProperties}>
-          <Wallet size={18} />
-          <span>
-            <strong>{t("expenses.title")}</strong>
-            <small>{t("shortcuts.expensesHint")}</small>
-          </span>
-        </Link>
-      )}
-      {has("expenses") && (
-        <Link href="/pockets" className={styles.shortcut} style={{ "--tone": "var(--cat-food)" } as React.CSSProperties}>
-          <WalletCards size={18} />
-          <span>
-            <strong>{t("expenses.pockets.title")}</strong>
-            <small>{t("shortcuts.pocketsHint")}</small>
-          </span>
-        </Link>
-      )}
-      {(has("loans") || keptLoans) && (
-        <Link href="/loans" className={styles.shortcut} style={{ "--tone": "var(--cat-document)" } as React.CSSProperties}>
-          <HandCoins size={18} />
-          <span>
-            <strong>{t("loans.title")}</strong>
-            <small data-urgent={owed.late > 0 || undefined}>
-              {owed.late > 0
-                ? t("loans.shortcutLate", { amount: loanMoney(owed.late, locale) })
-                : owed.total > 0
-                  ? t("loans.shortcutOwed", { amount: loanMoney(owed.total, locale) })
-                  : t("shortcuts.loansHint")}
-            </small>
-          </span>
-        </Link>
-      )}
-    </nav>
+      <ShortcutsEditor
+        open={editing}
+        onClose={() => {
+          setEditing(false);
+          // Back to the button that opened the sheet.
+          requestAnimationFrame(() => editButton.current?.focus());
+        }}
+        entries={entries}
+      />
+    </div>
   );
 }

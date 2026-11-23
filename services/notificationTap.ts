@@ -1,4 +1,6 @@
 import { APPOINTMENT_NOTIFICATION_PREFIX } from "@/lib/appointments";
+import { VACCINE_NOTIFICATION_PREFIX } from "@/lib/vaccines";
+import { PHARMACY_NOTIFICATION_PREFIX } from "@/lib/pharmacy";
 import { LOAN_NOTIFICATION_PREFIX, loanTapTarget } from "@/lib/loanReminders";
 import { EVENING_ENTRY_ID } from "./eveningReminder";
 import { EXPENSE_NOTIFICATION_PREFIX } from "./expenseReminders";
@@ -45,6 +47,13 @@ export function tapTarget(entryId: string): TapTarget {
     const id = entryId.slice(APPOINTMENT_NOTIFICATION_PREFIX.length);
     return { pathname: "/sante", query: { show: "appointments", ...(id && { appt: id }) } };
   }
+  // A next vaccine dose: "Ma santé", its vaccines, on that person.
+  if (entryId.startsWith(VACCINE_NOTIFICATION_PREFIX)) {
+    const id = entryId.slice(VACCINE_NOTIFICATION_PREFIX.length);
+    return { pathname: "/sante", query: { show: "vaccines", ...(id && { vax: id }) } };
+  }
+  // A home medicine about to expire: "Ma santé", the pharmacy.
+  if (entryId.startsWith(PHARMACY_NOTIFICATION_PREFIX)) return { pathname: "/sante", query: { show: "pharmacy" } };
   if (entryId === EVENING_ENTRY_ID) return { pathname: "/expenses", query: { add: "expense" } };
   if (entryId.startsWith(EXPENSE_NOTIFICATION_PREFIX)) return { pathname: "/expenses" };
   return { pathname: "/result", query: { id: entryId, reminded: "1" } };
@@ -56,7 +65,7 @@ export function tapTarget(entryId: string): TapTarget {
  * fails, the scan opens so nothing is silently lost. Anything else opens.
  */
 export async function handleNotificationTap(entryId: string, actionId: string, notificationId: number, actions: TapActions) {
-  const isScan = ![PARCEL_NOTIFICATION_PREFIX, VEHICLE_NOTIFICATION_PREFIX, EXPENSE_NOTIFICATION_PREFIX, LOAN_NOTIFICATION_PREFIX, HOME_ITEM_NOTIFICATION_PREFIX, PLANT_NOTIFICATION_PREFIX, MEDICATION_NOTIFICATION_PREFIX, APPOINTMENT_NOTIFICATION_PREFIX].some((prefix) => entryId.startsWith(prefix)) && entryId !== WEEKLY_ENTRY_ID;
+  const isScan = ![PARCEL_NOTIFICATION_PREFIX, VEHICLE_NOTIFICATION_PREFIX, EXPENSE_NOTIFICATION_PREFIX, LOAN_NOTIFICATION_PREFIX, HOME_ITEM_NOTIFICATION_PREFIX, PLANT_NOTIFICATION_PREFIX, MEDICATION_NOTIFICATION_PREFIX, APPOINTMENT_NOTIFICATION_PREFIX, VACCINE_NOTIFICATION_PREFIX, PHARMACY_NOTIFICATION_PREFIX].some((prefix) => entryId.startsWith(prefix)) && entryId !== WEEKLY_ENTRY_ID;
   // "J'ai pris": ticked from the notification; if that fails, "Ma santé" opens.
   if (actionId === TAKEN_ACTION && entryId.startsWith(MEDICATION_NOTIFICATION_PREFIX)) {
     if (await takenFromNotification(entryId, notificationId).catch(() => false)) {

@@ -1,10 +1,13 @@
 import { formatAriary } from "@/lib/format";
-import type { Analysis, ExpenseSummary, ExpenseSummaryRequest, ScanMode, Statement } from "./schema";
+import type { AiLocale, Analysis, ExpenseSummary, ExpenseSummaryRequest, ScanMode, Statement } from "./schema";
 
 // Demo-mode analyses, used when no Claude API key is configured so the whole
 // flow (camera → analysis → history → reminders) can be tried end to end.
 
 type Locale = "fr" | "en";
+
+// The demo has no Malagasy: it answers in French (the real AI answers in Malagasy).
+const demoLocale = (locale: AiLocale): Locale => (locale === "mg" ? "fr" : locale);
 
 const food: Record<Locale, Analysis> = {
   fr: {
@@ -981,7 +984,8 @@ const withdrawal = (locale: Locale): Analysis => {
 };
 
 /** The demo Mobile Money receipt (the end-to-end tests serve it in place of a scan): money paid, received, or withdrawn. */
-export function mockReceipt(locale: Locale, direction: "out" | "in" | "own" = "out"): Analysis {
+export function mockReceipt(requested: AiLocale, direction: "out" | "in" | "own" = "out"): Analysis {
+  const locale = demoLocale(requested);
   return direction === "in" ? received(locale) : direction === "own" ? withdrawal(locale) : mobileMoneyScan[locale];
 }
 
@@ -1026,6 +1030,7 @@ const prescriptionScan: Record<Locale, Analysis> = {
           durationDays: 7,
           precautions: ["À prendre au début du repas", "Peut donner des troubles digestifs"],
           contraindications: ["Allergie aux pénicillines"],
+          expiry: null,
         },
         {
           name: "Paracétamol",
@@ -1035,6 +1040,7 @@ const prescriptionScan: Record<Locale, Analysis> = {
           durationDays: null,
           precautions: ["Pas plus de la dose écrite", "Attention aux autres médicaments qui en contiennent"],
           contraindications: ["Maladie grave du foie"],
+          expiry: null,
         },
       ],
     },
@@ -1078,6 +1084,7 @@ const prescriptionScan: Record<Locale, Analysis> = {
           durationDays: 7,
           precautions: ["Take at the start of a meal", "May upset the stomach"],
           contraindications: ["Allergy to penicillins"],
+          expiry: null,
         },
         {
           name: "Paracetamol",
@@ -1087,6 +1094,7 @@ const prescriptionScan: Record<Locale, Analysis> = {
           durationDays: null,
           precautions: ["No more than the written dose", "Beware of other medicines that contain it"],
           contraindications: ["Serious liver disease"],
+          expiry: null,
         },
       ],
     },
@@ -1099,9 +1107,95 @@ const prescriptionScan: Record<Locale, Analysis> = {
  * Kept out of the auto rotation: it opens on its own tab, and the tests that
  * scan in parallel expect the summary tab.
  */
-export const mockPrescription = (locale: Locale): Analysis => prescriptionScan[locale];
+export const mockPrescription = (locale: AiLocale): Analysis => prescriptionScan[demoLocale(locale)];
 
-export function mockAnalysis(mode: ScanMode, locale: Locale): Analysis {
+// A fictional medicine box, for demo mode: one medicine, its expiry printed.
+const medicineBoxScan: Record<Locale, Analysis> = {
+  fr: {
+    category: "object",
+    title: "Boîte de Paracétamol 500 mg",
+    summary: "Une boîte de Paracétamol 500 mg, 16 comprimés. Date de péremption imprimée : mars 2028.",
+    confidence: 0.9,
+    tags: ["médicament", "santé"],
+    facts: [
+      { label: "Dosage", value: "500 mg" },
+      { label: "Péremption", value: "03/2028" },
+    ],
+    suggestions: [{ kind: "warning", title: "Suis l'avis du pharmacien", detail: "Prends la dose écrite sur la notice. En cas de doute, demande à ton pharmacien." }],
+    questions: ["À quoi sert le Paracétamol ?", "Combien de comprimés par jour au plus ?"],
+    nutrition: null,
+    recipe: null,
+    diet: null,
+    document: null,
+    vehicle: null,
+    parcel: null,
+    list: null,
+    plant: null,
+    medicine: {
+      kind: "box",
+      unreadable: null,
+      renewal: null,
+      items: [
+        {
+          name: "Paracétamol",
+          strength: "500 mg",
+          dose: null,
+          timesPerDay: null,
+          durationDays: null,
+          precautions: ["Pas plus de la dose écrite", "Attention aux autres médicaments qui en contiennent"],
+          contraindications: ["Maladie grave du foie"],
+          expiry: "2028-03",
+        },
+      ],
+    },
+    reminder: null,
+  },
+  en: {
+    category: "object",
+    title: "Box of Paracetamol 500 mg",
+    summary: "A box of Paracetamol 500 mg, 16 tablets. Printed expiry date: March 2028.",
+    confidence: 0.9,
+    tags: ["medicine", "health"],
+    facts: [
+      { label: "Strength", value: "500 mg" },
+      { label: "Expiry", value: "03/2028" },
+    ],
+    suggestions: [{ kind: "warning", title: "Follow the pharmacist's advice", detail: "Take the dose written on the leaflet. If in doubt, ask your pharmacist." }],
+    questions: ["What is Paracetamol for?", "How many tablets a day at most?"],
+    nutrition: null,
+    recipe: null,
+    diet: null,
+    document: null,
+    vehicle: null,
+    parcel: null,
+    list: null,
+    plant: null,
+    medicine: {
+      kind: "box",
+      unreadable: null,
+      renewal: null,
+      items: [
+        {
+          name: "Paracetamol",
+          strength: "500 mg",
+          dose: null,
+          timesPerDay: null,
+          durationDays: null,
+          precautions: ["No more than the written dose", "Mind other medicines that contain it"],
+          contraindications: ["Severe liver disease"],
+          expiry: "2028-03",
+        },
+      ],
+    },
+    reminder: null,
+  },
+};
+
+/** The demo medicine box (the end-to-end tests serve it in place of a scan), kept out of the auto rotation like the prescription. */
+export const mockMedicineBox = (locale: AiLocale): Analysis => medicineBoxScan[demoLocale(locale)];
+
+export function mockAnalysis(mode: ScanMode, requested: AiLocale): Analysis {
+  const locale = demoLocale(requested);
   if (mode !== "auto") return byMode[mode][locale];
   // New examples go last: tests rely on the order of the first ones.
   const pool = [food, documentScan, vehicleScan, objectScan, parcelScan, listScan, registrationScan, mobileMoneyScan, tillReceiptScan];
@@ -1146,7 +1240,7 @@ export function mockStatement(now: number): Statement {
 
 /** A sample review of the month, built from the totals sent (demo mode). */
 export function mockExpenseSummary(input: ExpenseSummaryRequest): ExpenseSummary {
-  const fr = input.locale === "fr";
+  const fr = input.locale !== "en";
   const money = (value: number) => formatAriary(value, input.locale);
   const top = input.categories[0];
   const change = input.previousTotal > 0 ? Math.round(((input.total - input.previousTotal) / input.previousTotal) * 100) : null;

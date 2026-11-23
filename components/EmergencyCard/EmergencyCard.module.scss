@@ -207,3 +207,12 @@
     overflow-wrap: break-word;
   }
 }
+
+// "Imprimer la carte" / "Fond d'écran": apart from the sharing, with how to use the picture.
+.print {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--border);
+}

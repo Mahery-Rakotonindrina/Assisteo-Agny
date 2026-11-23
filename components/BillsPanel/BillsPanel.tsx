@@ -7,7 +7,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { useNow } from "@/hooks/useNow";
 import { useTranslation } from "@/hooks/useTranslation";
 import { billTotals, listBills, monthlySpending, spendingByKind, type Bill } from "@/lib/bills";
-import { formatAriary, formatDate } from "@/lib/format";
+import { formatAriary, formatDate, formatTag } from "@/lib/format";
 import { rise } from "@/lib/motion";
 import { haptics } from "@/services/device";
 import { historyStore } from "@/services/historyStore";
@@ -73,7 +73,7 @@ export function BillsPanel({ entries, loading }: { entries: HistoryEntry[]; load
               <span className={styles.column}>
                 <span style={{ height: `${(total / peak) * 100}%` }} />
               </span>
-              <small>{new Date(month).toLocaleDateString(locale, { month: "short" })}</small>
+              <small>{new Date(month).toLocaleDateString(formatTag(locale), { month: "short" })}</small>
             </span>
           ))}
         </div>

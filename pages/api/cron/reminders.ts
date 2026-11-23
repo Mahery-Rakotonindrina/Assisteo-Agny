@@ -2,13 +2,10 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { isCron } from "@/lib/server/cronAuth";
 import { pushEnabled } from "@/lib/server/fcm";
 import { sendError } from "@/lib/server/http";
-import { getPlansConfig } from "@/lib/server/planConfig";
 import { sendToDevice } from "@/lib/server/pushSend";
-import { collectPending, nextReminderAt, paidReminderUsers, planPushes, reachableDevices, type DueRow, type PushDevice, type PushLocale } from "@/lib/server/reminderPush";
+import { collectPending, nextReminderAt, planPushes, reachableDevices, type DueRow, type PushDevice, type PushLocale } from "@/lib/server/reminderPush";
 import { reportError } from "@/lib/server/reportError";
-import { seatsForMembers } from "@/lib/server/familySeats";
-import { currentGrantsForEmails } from "@/lib/server/featureGrants";
-import { subscriptionRowsForEmails } from "@/lib/server/subscriptions";
+import { usersWithFeature } from "@/lib/server/featureUsers";
 import { accountsEnabled, supabaseAdmin } from "@/lib/server/supabaseAdmin";
 import { webPushEnabled } from "@/lib/server/webPush";
 
@@ -31,30 +28,6 @@ const BATCH = 200;
 const MAX_CATCH_UP_MS = 400 * 86_400_000;
 /** Pages of due rows read at most per run (already handled rows are skipped). */
 const MAX_PAGES = 10;
-
-/**
- * Of these users, those with a paid plan right now: their e-mails from the
- * user list (a few pages, not one call per user), then one read of the
- * subscriptions. Throws when either can't be read: nothing is marked then,
- * and the next run tries again.
- */
-async function paidUsers(db: ReturnType<typeof supabaseAdmin>, userIds: string[], now: number) {
-  const wanted = new Set(userIds);
-  const emails = new Map<string, string | null>();
-  for (let page = 1; emails.size < wanted.size; page += 1) {
-    const { data, error } = await db.auth.admin.listUsers({ page, perPage: 1000 });
-    if (error) throw error;
-    for (const user of data.users) if (wanted.has(user.id)) emails.set(user.id, user.email ?? null);
-    if (data.users.length < 1000) break;
-  }
-  const users = userIds.map((id) => ({ id, email: emails.get(id) ?? null }));
-  const known = users.map((user) => user.email).filter((email): email is string => Boolean(email));
-  // Family seats (migration 0016; none before it): their subscribers' subscriptions are read too.
-  const seats = await seatsForMembers(known).catch(() => []);
-  const owners = [...new Set(seats.map((seat) => seat.ownerEmail))].filter((email) => !known.includes(email));
-  const [rows, config, grants] = await Promise.all([subscriptionRowsForEmails([...known, ...owners]), getPlansConfig(), currentGrantsForEmails(known, now).catch(() => [])]);
-  return paidReminderUsers(users, rows, now, config, grants, seats);
-}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "GET" && req.method !== "POST") return sendError(res, 405, "method_not_allowed", "Use GET or POST.");
@@ -109,7 +82,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   let paid: Set<string>;
   try {
-    paid = await paidUsers(db, [...new Set(pending.map((row) => row.user_id))], now.getTime());
+    paid = await usersWithFeature(db, [...new Set(pending.map((row) => row.user_id))], now.getTime(), "reminders");
   } catch (planError) {
     await reportError(planError, { route: "cron-reminders", step: "plans" });
     return sendError(res, 502, "upstream_error", "Couldn't read plans.");

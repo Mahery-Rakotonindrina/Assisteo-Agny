@@ -112,7 +112,7 @@ Ce que l'app fait déjà (coché) et ce qu'on peut y ajouter (à cocher).
 - [x] Envoi maritime (SEA) ou aérien (NORMAL) : détecté automatiquement (lu par l’IA sur la capture, ou déduit du n° de suivi / transitaire), modifiable à la main, badge, filtre, recherche et colonne dans l’export Excel
 - [x] Plusieurs captures de colis d'un coup : « Un colis par photo », chaque photo analysée à part (un scan chacune) puis ajoutée à Mes colis ou mise à jour, résumé à la fin — à partir de Premium, comme « Plusieurs pages »
 - [x] Date de livraison prévue dans la liste, notification le jour J à l'heure choisie (heure de Madagascar) — réglable dans Paramètres → Notifications, notification locale sur l'appareil
-- [ ] Suivi automatique sans rescanner, notification au changement de statut
+- [x] Suivi automatique sans rescanner, notification au changement de statut — fait (#169) : à partir de Premium, avec un compte, toutes les 3 h par 17TRACK ; en attente de la clé `TRACK17_API_KEY` dans Vercel
 - [x] Fret calculé au kilo (poids × tarif du transitaire) — tarif retenu par transitaire et par mode, mer ou avion (Pro, #130)
 - [x] Envoyer le statut au client par WhatsApp — jamais le prix d’achat, les frais ni le bénéfice (Pro, #132)
 - [x] Regrouper les colis par envoi (lot, conteneur) — onglet « Envois », statut changé d’un coup (Pro, #130)
@@ -324,4 +324,19 @@ Par ordre d’intérêt. Effort : petit, moyen, important.
 - [x] « Pour qui ? » : un profil par proche, tout l’écran filtré par personne, une fiche d’urgence chacun, notifications au prénom (#148)
 - [x] Mes mesures : tension, glycémie (g/L), poids, avec une courbe sur 30 jours, 3 mois ou 1 an, sans aucune interprétation ; partage pour le médecin (#149, migration 0024)
 - [x] Dépenses de santé du mois, par type et par personne, mois précédents ; reliées à « Mes dépenses » quand l’offre l’a, sans double (#150, migration 0025)
-- [ ] Migrations 0024 et 0025 à appliquer en production avant la mise en ligne (sinon mesures et dépenses de santé restent sur l’appareil)
+- [x] Migrations 0024 et 0025 appliquées en production (2026-11-13), tables vérifiées
+
+## 22. Propositions pour la suite (2026-11-16), faites du 2026-11-16 au 2026-11-19
+
+- [x] Agenda « À venir » : un seul écran avec tout ce qui arrive, jour par jour (rappels des scans, rendez-vous médicaux, prises, échéances de prêts et de loyer, colis attendus, vidange, fin de garantie) — fait (#161) : puces par domaine, « En retard », raccourci en tête de l’accueil ; vaccins et péremptions ajoutés (#163)
+- [x] Recherche dans toute l’app : une seule barre qui cherche dans les scans, papiers, colis, dépenses, prêts et santé — fait (#159) : sans accents ni majuscules, « 45000 » trouve « 45 000 Ar », loupe sur l’accueil ; vaccins et pharmacie compris (#163)
+- [x] Dépense dite à la voix : « 5 000 Ar de taxi-be ce matin », et la dépense se remplit (montant, catégorie, poche, date) — fait (#155) : dans « Mes dépenses », lu sur le téléphone, sans scan dépensé ; on vérifie avant d’enregistrer
+- [x] L’app en malgache : tous les textes traduits ; l’IA répond en malgache — fait (#164) : visible pour l’Admin et les comptes testeurs (fonctionnalité « malagasy »), en attendant la relecture
+- [x] Carnet de vaccination de chaque proche (« Pour qui ? ») : vaccins faits, prochain rappel noté à la main, notification la veille — fait (#160) : à partir de Lite pour le rappel, partage en PDF ; les vaccins partent avec le proche supprimé
+- [x] Pharmacie de la maison : les médicaments gardés à la maison avec leur date de péremption (scan de la boîte), alerte un mois avant — fait (#162) : alerte à partir de Lite, « Annuler » après « Je l’ai jeté »
+- [x] Fiche d’urgence à imprimer au format carte de portefeuille, ou en fond d’écran du téléphone verrouillé — fait (#157), pour Moi et chaque proche
+- [x] Accueil à son goût : choisir et ranger ses raccourcis (santé, colis, dépenses…) — fait (#158), aussi dans Réglages → Apparence
+- [ ] Faire relire le malgache par une personne de langue maternelle, puis ouvrir la fonctionnalité « malagasy » aux offres (Admin → Offres)
+- [x] Agenda en malgache : les noms des jours et des mois suivent la langue — fait (#166)
+- [x] Réglages synchronisés : une limite de taille côté serveur — fait (#167) : 1 Mo, appliquée en production
+- [x] Ma santé : le contour d’un élément ouvert par lien s’éteint aussi quand un 2e lien arrive tout de suite — fait (#168)

@@ -4,6 +4,7 @@ import { formatDate, formatDateTime, formatMeasure } from "@/lib/format";
 import { measureReport, measuresText, type Measure, type ShareOptions } from "@/lib/measures";
 import { treatmentLines, treatmentsText, type Treatment } from "@/lib/health";
 import { pdfFileName, PdfWriter } from "@/lib/pdf";
+import { vaccineReport, vaccinesText, type Vaccine } from "@/lib/vaccines";
 import type { HistoryEntry } from "@/types/history";
 import { openExternal, shareText } from "./device";
 import { shareFile } from "./fileShare";
@@ -43,6 +44,33 @@ export function shareEmergencyCard(card: EmergencyCard, t: Translate, locale: Lo
 /** The card in WhatsApp: the person picks whom to send it to. */
 export function whatsappEmergencyCard(card: EmergencyCard, t: Translate, locale: Locale, name: string | null = null) {
   openExternal(`https://wa.me/?text=${encodeURIComponent(cardText(card, t, (at) => formatDate(at, locale), name))}`);
+}
+
+// "Partager le carnet" (vaccins): one person's record, for the school or the
+// doctor, as a message, in WhatsApp or as a PDF. Only what was written.
+
+export function shareVaccines(vaccines: Vaccine[], t: Translate, locale: Locale, name: string | null = null) {
+  const text = vaccinesText(vaccines, t, (at) => formatDate(at, locale), Date.now(), name);
+  return shareText(vaccineReport(vaccines, t, (at) => formatDate(at, locale), Date.now(), name).title, text, { copyTitle: false });
+}
+
+export function whatsappVaccines(vaccines: Vaccine[], t: Translate, locale: Locale, name: string | null = null) {
+  openExternal(`https://wa.me/?text=${encodeURIComponent(vaccinesText(vaccines, t, (at) => formatDate(at, locale), Date.now(), name))}`);
+}
+
+export async function exportVaccinesPdf(vaccines: Vaccine[], t: Translate, locale: Locale, name: string | null = null) {
+  const report = vaccineReport(vaccines, t, (at) => formatDate(at, locale), Date.now(), name);
+  const pdf = await PdfWriter.create();
+  pdf.title(report.title);
+  pdf.caption(report.caption);
+  if (report.next.length) {
+    pdf.heading(t("health.vaccines.share.nextTitle"));
+    pdf.bullets(report.next);
+  }
+  pdf.heading(t("health.vaccines.share.doneTitle"));
+  pdf.bullets(report.done);
+  const bytes = pdf.finish(t("pdf.footer"));
+  return shareFile(pdfFileName(report.title), bytes, "application/pdf", report.title);
 }
 
 // "Partager mes mesures": a period's measures for the doctor, as a message or

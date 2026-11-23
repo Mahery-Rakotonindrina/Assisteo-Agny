@@ -55,6 +55,7 @@ export const EXPORT_DEVICE_SOURCES: Record<string, CopyFile | `left out: ${strin
   "services/loanReminders.ts": "reglages",
   "services/objectAd.ts": "reglages",
   "services/fx.ts": "reglages",
+  "services/recentSearches.ts": "left out: the last five words searched, kept for convenience on this device",
   "services/pendingReferral.ts": "left out: a referral code received by a link, not the person's data",
   "services/weeklySummary.ts": "left out: only the id of a scheduled notification, a technical identifier",
   "services/syncCursor.ts": "left out: where a sync stopped, a technical bookmark",

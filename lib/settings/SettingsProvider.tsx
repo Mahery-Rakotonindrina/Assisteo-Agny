@@ -1,12 +1,17 @@
 import { Preferences } from "@capacitor/preferences";
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
 import { defaultLocale, locales, type Locale } from "@/i18n.config";
 import type { Allergen, Diet } from "@/lib/ai/schema";
 import { noMask, type BalanceMask } from "@/lib/balanceMask";
 import type { Appointment } from "@/lib/appointments";
+import type { Vaccine } from "@/lib/vaccines";
+import type { HomeMedicine } from "@/lib/pharmacy";
 import type { EmergencyCard } from "@/lib/emergencyCard";
 import type { HealthProfile } from "@/lib/healthProfiles";
 import { defaultFoodGoals, type FoodGoals } from "@/lib/food";
+import { defaultShortcuts, normalizeShortcuts, type HomeShortcutsPref } from "@/lib/homeShortcuts";
+import { effectiveLocaleFor } from "@/lib/localeAccess";
+import { planStore } from "@/services/plan";
 import { setDataSaverPreference, type DataSaverPreference } from "@/services/dataSaver";
 import { setHapticsEnabled } from "@/services/device";
 
@@ -46,6 +51,12 @@ export type Settings = {
   appointments: Appointment[] | null;
   /** "Pour qui ?" (Ma santé): the relatives followed, each with their date (lib/healthProfiles.ts); null until one is added. */
   healthProfiles: HealthProfile[] | null;
+  /** "Raccourcis de l'accueil": the ones hidden and the order chosen (lib/homeShortcuts.ts), never a fixed list. */
+  homeShortcuts: HomeShortcutsPref;
+  /** "Vaccins" (Ma santé), each with its date, removals as tombstones (lib/vaccines.ts): null until one is written. */
+  vaccines: Vaccine[] | null;
+  /** "Pharmacie de la maison" (Ma santé), each with its date, removals as tombstones (lib/pharmacy.ts): null until one is written. */
+  pharmacy: HomeMedicine[] | null;
   /** The first-run permission walkthrough has been completed or skipped. */
   onboardingDone: boolean;
   /** "Ma santé": the person last picked ("Pour qui ?"), this device only. */
@@ -57,11 +68,14 @@ export type Settings = {
 };
 
 /** Preferences that follow the account across devices (the rest is per device). */
-export const syncedSettingKeys = ["locale", "theme", "notifyOnResult", "parcelNotify", "parcelNotifyHour", "haptics", "allergies", "diets", "foodGoals", "emergencyCard", "appointments", "healthProfiles"] as const;
+export const syncedSettingKeys = ["locale", "theme", "notifyOnResult", "parcelNotify", "parcelNotifyHour", "haptics", "allergies", "diets", "foodGoals", "emergencyCard", "appointments", "healthProfiles", "homeShortcuts", "vaccines", "pharmacy"] as const;
 export type SyncedSettings = Pick<Settings, (typeof syncedSettingKeys)[number]>;
 
 type SettingsContextValue = {
+  /** What the app shows: the language is the one really used (French when the chosen one is not allowed). */
   settings: Settings;
+  /** What is stored and synced: the language as chosen, even when the plan does not allow it now. */
+  stored: Settings;
   /** False until persisted settings have been read on the client. */
   ready: boolean;
   /** `fromSync` applies values received from the account without re-sending them. */
@@ -86,6 +100,9 @@ const defaults: Settings = {
   emergencyCard: null,
   appointments: null,
   healthProfiles: null,
+  homeShortcuts: defaultShortcuts,
+  vaccines: null,
+  pharmacy: null,
   onboardingDone: false,
   healthPerson: "me",
   hiddenBalances: noMask,
@@ -102,6 +119,9 @@ function detectLocale(): Locale {
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<Settings>(defaults);
   const [ready, setReady] = useState(false);
+  // Malagasy is a plan feature: the app falls back to French when it is gone (or not yet known).
+  const plan = useSyncExternalStore(planStore.subscribe, planStore.get, () => null);
+  const locale = effectiveLocaleFor(settings.locale, plan);
 
   useEffect(() => {
     let cancelled = false;
@@ -109,7 +129,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       .then(({ value }) => {
         if (cancelled) return;
         const stored = value ? (JSON.parse(value) as Partial<Settings>) : {};
-        setSettings({ ...defaults, locale: detectLocale(), ...stored });
+        setSettings({ ...defaults, locale: detectLocale(), ...stored, homeShortcuts: normalizeShortcuts(stored.homeShortcuts) });
       })
       .catch(() => {
         if (!cancelled) setSettings({ ...defaults, locale: detectLocale() });
@@ -125,12 +145,12 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   // Reflect settings on the document and on device services.
   useEffect(() => {
     const root = document.documentElement;
-    root.lang = settings.locale;
+    root.lang = locale;
     if (settings.theme === "system") delete root.dataset.theme;
     else root.dataset.theme = settings.theme;
     setHapticsEnabled(settings.haptics);
     setDataSaverPreference(settings.dataSaver);
-  }, [settings]);
+  }, [settings, locale]);
 
   // The text size waits for the stored settings: until then, the size put
   // there before the first paint (pages/_document.tsx) stays, so it never jumps.
@@ -156,7 +176,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const value = useMemo(() => ({ settings, ready, update }), [settings, ready, update]);
+  const shown = useMemo(() => (locale === settings.locale ? settings : { ...settings, locale }), [settings, locale]);
+  const value = useMemo(() => ({ settings: shown, stored: settings, ready, update }), [shown, settings, ready, update]);
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
 }

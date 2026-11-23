@@ -10,7 +10,7 @@ import { useHistory } from "@/hooks/useHistory";
 import { useNow } from "@/hooks/useNow";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cleanGoals, journalDay, mealAt, mealKinds, portionChoices, sameTimeOn, totalIntake, type FoodGoals, type MealKind } from "@/lib/food";
-import { formatDay, formatDecimal, formatNumber, formatTime, startOfDay } from "@/lib/format";
+import { formatDay, formatDecimal, formatNumber, formatTime, startOfDay, formatTag } from "@/lib/format";
 import { rise, stagger } from "@/lib/motion";
 import { useSettings } from "@/lib/settings/SettingsProvider";
 import { haptics } from "@/services/device";
@@ -258,7 +258,7 @@ export default function FoodPage() {
                     <span className={styles.column}>
                       <span style={{ height: `${Math.min(100, (calories / goals.calories) * 100)}%` }} data-over={calories > goals.calories || undefined} />
                     </span>
-                    <small>{new Date(date).toLocaleDateString(locale, { weekday: "narrow" })}</small>
+                    <small>{new Date(date).toLocaleDateString(formatTag(locale), { weekday: "narrow" })}</small>
                   </button>
                 ))}
               </div>
